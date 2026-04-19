@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 文件选择组件
 class FileSelectionWidget extends StatelessWidget {
@@ -54,22 +53,22 @@ class FileSelectionWidget extends StatelessWidget {
               }
             },
             icon: const Icon(Icons.attach_file),
-            label: const Text('选择文件'),
+            label: Text(AppLocalizations.of(context)?.seller_file_select ?? 'Select File'),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: Colors.blue,
             ),
           ),
         
-        SizedBox(height: AppDimensions.spacingLg),
-
+        const SizedBox(height: 16),
+        
         // 已选择文件列表
         if (selectedFiles.isNotEmpty) ...[
-          const Text(
-            '已选择的文件:',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)?.seller_file_selected ?? 'Selected files:',
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: 8),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -80,7 +79,7 @@ class FileSelectionWidget extends StatelessWidget {
               final fileExtension = path.extension(filePath).toLowerCase();
               
               return Card(
-                margin: EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: _buildFileIcon(fileExtension),
                   title: Text(
@@ -89,12 +88,12 @@ class FileSelectionWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   subtitle: Text(
-                    '大小: ${_getFileSize(filePath)}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    AppLocalizations.of(context)?.seller_file_size(_getFileSize(filePath)) ?? 'Size: ${_getFileSize(filePath)}',
+                    style: const TextStyle(fontSize: 12),
                   ),
                   trailing: !disabled
                       ? IconButton(
-                          icon: Icon(Icons.delete, color: AppColors.error),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () => onFileRemoved(index),
                         )
                       : null,
@@ -124,11 +123,11 @@ class FileSelectionWidget extends StatelessWidget {
       case '.gif':
       case '.bmp':
         iconData = Icons.image;
-        iconColor = Colors.blue; // TODO(reskin): review this color
+        iconColor = Colors.blue;
         break;
       case '.pdf':
         iconData = Icons.picture_as_pdf;
-        iconColor = AppColors.error;
+        iconColor = Colors.red;
         break;
       case '.doc':
       case '.docx':
@@ -138,16 +137,16 @@ class FileSelectionWidget extends StatelessWidget {
       case '.xls':
       case '.xlsx':
         iconData = Icons.table_chart;
-        iconColor = AppColors.success;
+        iconColor = Colors.green;
         break;
       case '.ppt':
       case '.pptx':
         iconData = Icons.slideshow;
-        iconColor = AppColors.warning;
+        iconColor = Colors.orange;
         break;
       case '.txt':
         iconData = Icons.text_snippet;
-        iconColor = AppColors.textTertiary;
+        iconColor = Colors.grey;
         break;
       case '.zip':
       case '.rar':
@@ -157,14 +156,14 @@ class FileSelectionWidget extends StatelessWidget {
         break;
       default:
         iconData = Icons.insert_drive_file;
-        iconColor = AppColors.textTertiary;
+        iconColor = Colors.grey;
     }
-
+    
     return Container(
-      padding: EdgeInsets.all(AppDimensions.spacingSm),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: iconColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Icon(iconData, color: iconColor),
     );
@@ -186,7 +185,7 @@ class FileSelectionWidget extends StatelessWidget {
         return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
       }
     } catch (e) {
-      return '无法获取大小';
+      return 'N/A';
     }
   }
   
@@ -222,7 +221,7 @@ class FileSelectionWidget extends StatelessWidget {
       // 非图片文件，显示信息
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('无法预览该类型文件: $fileName'),
+          content: Text(AppLocalizations.of(context)?.seller_file_preview_unsupported(fileName) ?? 'Cannot preview this file type: $fileName'),
           duration: const Duration(seconds: 2),
         ),
       );

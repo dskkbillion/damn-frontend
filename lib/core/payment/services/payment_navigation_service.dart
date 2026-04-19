@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../models/payment_models.dart';
 import '../../../features/orders/domain/entities/order_status.dart';
-import 'package:dskk_flutter_refactor/core/widgets/app_toast.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 支付导航服务
 /// 根据不同的支付结果类型，采用相应的导航策略
@@ -26,9 +26,9 @@ class PaymentNavigationService {
       case PaymentResultType.userCancelled:
         // 用户取消 - 跳转到订单页面的待付款状态
         _navigateToOrdersWithMessage(
-          context, 
+          context,
           orderId,
-          '您已取消支付，可以继续完成订单支付',
+          AppLocalizations.of(context)!.payment_nav_cancel_continue,
           OrderStatus.awaitingPayment,
         );
         break;
@@ -48,7 +48,7 @@ class PaymentNavigationService {
         _navigateToOrdersWithMessage(
           context,
           orderId,
-          '支付正在处理中，请稍后查看订单状态',
+          AppLocalizations.of(context)!.payment_nav_processing,
           OrderStatus.awaitingPayment,
         );
         break;
@@ -67,7 +67,7 @@ class PaymentNavigationService {
     PaymentResponse response,
   ) {
     // 显示支付成功提示
-    _showSuccessSnackBar(context, response.message ?? '支付成功');
+    _showSuccessSnackBar(context, response.message ?? AppLocalizations.of(context)!.payment_nav_success);
     
     // 如果当前已经在订单详情页，触发数据刷新而不是导航
     final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
@@ -92,7 +92,7 @@ class PaymentNavigationService {
     PaymentResponse response,
   ) {
     // 显示失败提示
-    _showErrorSnackBar(context, response.message ?? '支付失败');
+    _showErrorSnackBar(context, response.message ?? AppLocalizations.of(context)!.payment_nav_failed);
     
     // 如果当前在订单详情页，只需返回即可
     final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
@@ -132,11 +132,12 @@ class PaymentNavigationService {
     BuildContext context,
     PaymentResponse response,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('网络连接失败'),
-        content: Text(response.message ?? '网络连接出错，请检查网络后重试'),
+        title: Text(l10n.payment_nav_network_failed),
+        content: Text(response.message ?? l10n.payment_nav_network_error_message),
         actions: [
           TextButton(
             onPressed: () {
@@ -144,7 +145,7 @@ class PaymentNavigationService {
               // 跳转到待付款订单
               context.go('/orders?status=awaitingPayment');
             },
-            child: const Text('查看订单'),
+            child: Text(l10n.payment_nav_view_orders),
           ),
           TextButton(
             onPressed: () {
@@ -152,7 +153,7 @@ class PaymentNavigationService {
               // 触发重新支付逻辑
               _retryPayment(context, response.orderId);
             },
-            child: const Text('重试支付'),
+            child: Text(l10n.payment_nav_retry_payment),
           ),
         ],
       ),
@@ -164,11 +165,12 @@ class PaymentNavigationService {
     BuildContext context,
     PaymentResponse response,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('支付结果未知'),
-        content: const Text('支付结果暂时无法确认，请稍后查看订单状态或联系客服'),
+        title: Text(l10n.payment_nav_result_unknown_title),
+        content: Text(l10n.payment_nav_result_unknown_message),
         actions: [
           TextButton(
             onPressed: () {
@@ -176,7 +178,7 @@ class PaymentNavigationService {
               // 跳转到待付款订单
               context.go('/orders?status=awaitingPayment');
             },
-            child: const Text('查看订单'),
+            child: Text(l10n.payment_nav_view_orders),
           ),
           TextButton(
             onPressed: () {
@@ -184,7 +186,7 @@ class PaymentNavigationService {
               // 触发状态查询
               _queryPaymentStatus(context, response.orderId);
             },
-            child: const Text('查询状态'),
+            child: Text(l10n.payment_nav_query_status),
           ),
         ],
       ),
@@ -193,43 +195,81 @@ class PaymentNavigationService {
   
   /// 重试支付逻辑
   static void _retryPayment(BuildContext context, String? orderId) {
+    final l10n = AppLocalizations.of(context)!;
     if (orderId != null) {
       // 重新跳转到支付页面或触发支付流程
       // 这里需要根据实际的支付流程来实现
-      _showInfoSnackBar(context, '正在重新发起支付...');
-      
+      _showInfoSnackBar(context, l10n.payment_nav_retrying);
+
       // 示例：跳转到订单详情页面，用户可以在那里重新支付
-      context.push('/orderDetail/$orderId');
+      context.go('/orderDetail/$orderId');
     } else {
-      _showErrorSnackBar(context, '无法重试支付，订单信息丢失');
+      _showErrorSnackBar(context, l10n.payment_nav_retry_failed);
     }
   }
 
   /// 查询支付状态
   static void _queryPaymentStatus(BuildContext context, String? orderId) {
+    final l10n = AppLocalizations.of(context)!;
     if (orderId != null) {
       // 触发支付状态查询
-      _showInfoSnackBar(context, '正在查询支付状态...');
+      _showInfoSnackBar(context, l10n.payment_nav_querying);
 
       // 跳转到订单详情页面，用户可以查看最新状态
-      context.push('/orderDetail/$orderId');
+      context.go('/orderDetail/$orderId');
     } else {
-      _showErrorSnackBar(context, '无法查询状态，订单信息丢失');
+      _showErrorSnackBar(context, l10n.payment_nav_query_failed);
     }
   }
   
   /// 显示成功提示
   static void _showSuccessSnackBar(BuildContext context, String message) {
-    AppToast.success(context, message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
-
+  
   /// 显示错误提示
   static void _showErrorSnackBar(BuildContext context, String message) {
-    AppToast.error(context, message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
-
+  
   /// 显示信息提示
   static void _showInfoSnackBar(BuildContext context, String message) {
-    AppToast.info(context, message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.blue,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 } 

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../domain/entities/order.dart';
 import '../../../domain/entities/order_status.dart';
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 卖家订单材料交付组件
 class SellerOrderMaterialsSection extends StatelessWidget {
@@ -23,7 +22,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // 判断是否需要显示此组件
     bool shouldShowMaterials = false;
-
+    
     // 待接单及之后的状态都需要显示买家提供的材料
     if (order.state == OrderStatus.awaitingStart ||
         order.state == OrderStatus.awaitingDelivery ||
@@ -34,20 +33,20 @@ class SellerOrderMaterialsSection extends StatelessWidget {
         order.state == OrderStatus.applyForRefuse) {
       shouldShowMaterials = true;
     }
-
+    
     if (!shouldShowMaterials || (materials == null || materials!.isEmpty)) {
       return const SizedBox.shrink();
     }
-
+    
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: AppDimensions.spacingSm),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(12.0),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -57,18 +56,18 @@ class SellerOrderMaterialsSection extends StatelessWidget {
                 Icon(
                   Icons.folder_outlined,
                   size: 20,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).primaryColor,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: 8),
                 Text(
-                  '买家提供的材料',
+                  AppLocalizations.of(context)!.order_seller_buyer_materials,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: 16),
             // 材料内容
             _buildBuyerMaterialsContent(context),
           ],
@@ -82,12 +81,12 @@ class SellerOrderMaterialsSection extends StatelessWidget {
     return Column(
       children: materials!.map((material) => Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.blue[200]!),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,18 +94,18 @@ class SellerOrderMaterialsSection extends StatelessWidget {
             // 显示特征问答
             if (material.features.isNotEmpty) ...[
               ...material.features.map((feature) => Padding(
-                padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       feature.question,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: 4),
                     Text(
                       feature.answer,
                       style: Theme.of(context).textTheme.bodyMedium,
@@ -117,19 +116,19 @@ class SellerOrderMaterialsSection extends StatelessWidget {
             ],
             // 显示附件
             if (material.files.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: 8),
               const Divider(height: 16),
               Text(
-                '附件:',
+                AppLocalizations.of(context)!.order_seller_attachment_label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: 8),
               Wrap(
-                spacing: AppDimensions.spacingSm,
-                runSpacing: AppDimensions.spacingSm,
+                spacing: 8,
+                runSpacing: 8,
                 children: material.files.map((fileUrl) => _buildFileChip(context, _extractFileName(fileUrl))).toList(),
               ),
             ],
@@ -145,18 +144,18 @@ class SellerOrderMaterialsSection extends StatelessWidget {
       onTap: () {
         // TODO: 实现文件下载/预览功能
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('查看附件功能待实现: $fileName')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_view_attachment(fileName))),
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs + 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.backgroundCard,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
-          border: Border.all(color: AppColors.borderPrimary),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey[300]!),
           boxShadow: [
             BoxShadow(
-              color: AppColors.borderSecondary,
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 2,
               offset: const Offset(0, 1),
             ),
@@ -168,21 +167,21 @@ class SellerOrderMaterialsSection extends StatelessWidget {
             Icon(
               _getFileIcon(fileName),
               size: 16,
-              color: Theme.of(context).colorScheme.primary,
+              color: Colors.blue[600],
             ),
             const SizedBox(width: 6),
             Text(
               fileName,
               style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textPrimary,
+                color: Colors.grey[800],
               ),
             ),
             const SizedBox(width: 6),
             Icon(
               Icons.download_outlined,
               size: 14,
-              color: AppColors.textSecondary,
+              color: Colors.grey[600],
             ),
           ],
         ),
@@ -203,7 +202,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
       default: return Icons.insert_drive_file;
     }
   }
-
+  
   /// 从URL中提取文件名
   String _extractFileName(String fileUrl) {
     if (fileUrl.contains('/')) {

@@ -1,10 +1,8 @@
 {
     "@@locale": "en",
-    
     "language_settings": "Language Settings",
     "system_language": "System Language",
     "system_language_description": "Automatically use device language settings",
-    
     "ai_docs_assistant_title": "AI Assistant",
     "ai_docs_unnamed_conversation": "Unnamed Conversation",
     "ai_docs_loading": "Loading...",
@@ -14,29 +12,26 @@
     "ai_docs_recommended_services": "Recommended Services",
     "ai_docs_recommendations_error": "Failed to load recommendations: {error}",
     "@ai_docs_recommendations_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "ai_docs_no_recommendations": "No recommendations available",
     "ai_docs_dispatched": "Dispatched",
     "ai_docs_enter_chat": "Enter Chat",
     "ai_docs_let_them_see": "Let them see",
-    
     "ai_docs_welcome_title": "Welcome to AI Assistant",
     "ai_docs_welcome_message": "Just send a message to start chatting, and the system will automatically create a chat room for you",
     "ai_docs_auto_create_text": "No conversation selected, automatically creating a new conversation and sending message",
     "ai_docs_auto_create_voice": "No conversation selected, automatically creating a new conversation and sending voice message",
     "ai_docs_cancelling_generation": "Cancelling generation...",
-    
     "allocating_step1": "Allocating",
     "allocating_step2": "Allocating.",
     "allocating_step3": "Allocating..",
     "allocating_step4": "Allocating...",
-    
     "ai_docs_add_image": "Add Image",
     "ai_docs_stop_recording": "Stop Recording",
     "ai_docs_start_recording": "Record Voice",
@@ -48,36 +43,35 @@
     "ai_docs_mic_permission_denied": "Microphone permission denied",
     "ai_docs_recording_error": "Error starting recording: {error}",
     "@ai_docs_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Permission error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission error"
+            }
         }
-      }
     },
     "ai_docs_recording_file_not_found": "Error: Recording file not found",
     "ai_docs_stop_recording_error": "Error stopping recording",
     "ai_docs_stop_recording_error_with_reason": "Error stopping recording: {error}",
     "@ai_docs_stop_recording_error_with_reason": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "File save failed"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "File save failed"
+            }
         }
-      }
     },
     "ai_docs_image_picking_error": "Error selecting image: {error}",
     "@ai_docs_image_picking_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "File too large"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "File too large"
+            }
         }
-      }
     },
     "ai_docs_conversation_list": "Conversation List",
     "ai_docs_no_messages": "No messages yet. Start chatting!",
-    
     "ai_docs_new_chat": "New Chat",
     "ai_docs_load_conversations_failed": "Failed to load conversations",
     "ai_docs_retry": "Retry",
@@ -88,56 +82,52 @@
     "ai_docs_cancel": "Cancel",
     "ai_docs_delete": "Delete",
     "ai_docs_please_select_conversation_to_delete": "Please select the conversation to delete first",
-    
     "ai_docs_generate_title": "AI Generate Title",
     "ai_docs_generate_title_tooltip": "Let AI generate a title for this conversation",
     "ai_docs_generating_title": "Generating title...",
     "ai_docs_title_generated": "Title generated",
     "ai_docs_title_generation_failed": "Title generation failed: {error}",
     "@ai_docs_title_generation_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "ai_docs_edit_title": "Edit Title",
     "ai_docs_edit_title_hint": "Please enter a new title",
     "ai_docs_title_updated": "Title updated",
     "ai_docs_title_update_failed": "Title update failed: {error}",
     "@ai_docs_title_update_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "ai_docs_title_too_long": "Title cannot exceed 50 characters",
     "ai_docs_title_empty": "Title cannot be empty",
-    
     "nav_ai_assistant": "Look",
     "nav_home": "Browse",
     "nav_messages": "Chat",
     "nav_profile": "Profile",
     "nav_dev": "Dev",
-    
     "nav_seller_analytics": "Analytics",
     "nav_seller_products": "Products",
     "nav_seller_messages": "Messages",
     "nav_seller_profile": "Profile",
-    
     "chat_list_title": "Chat List",
     "chat_loading": "Loading...",
     "chat_error_loading": "Loading failed: {error}",
     "@chat_error_loading": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "chat_no_messages": "No messages yet. Start chatting!",
     "chat_admin_title": "System Admin",
@@ -155,7 +145,6 @@
     "chat_unknown_user": "Unknown User",
     "chat_invalid_session": "Invalid session",
     "chat_opponent_not_found": "Cannot find the other party's information",
-    
     "chat_message_recalled": "Message recalled",
     "chat_copy": "Copy",
     "chat_recall": "Recall",
@@ -169,7 +158,6 @@
     "chat_admin_connection_error": "Unable to connect to system admin",
     "chat_audio_pause": "Pause",
     "chat_audio_play": "Play",
-    
     "chat_markdown_example_title1": "This is a level 1 heading",
     "chat_markdown_example_title2": "This is a level 2 heading",
     "chat_markdown_example_bold_italic": "This is **bold** text and *italic* text.",
@@ -183,7 +171,6 @@
     "chat_markdown_example_table_content2": "Content 2",
     "chat_markdown_example_table_content3": "Content 3",
     "chat_markdown_example_table_content4": "Content 4",
-    
     "chat_pick_from_gallery": "Pick from Gallery",
     "chat_take_photo": "Take Photo",
     "chat_send_markdown": "Send Markdown Example",
@@ -200,14 +187,13 @@
     "chat_press_to_talk": "Press to Talk",
     "chat_release_to_send": "Release to Send ({duration}s)",
     "@chat_release_to_send": {
-      "placeholders": {
-        "duration": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "duration": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
-    
     "chat_camera_permission_denied_title": "Camera Permission Denied",
     "chat_camera_permission_denied_message": "Please enable camera permission in system settings to use the photo feature.",
     "chat_mic_permission_denied_title": "Microphone Permission Denied",
@@ -218,37 +204,35 @@
     "chat_camera_permission_denied": "Camera permission denied, cannot take photo",
     "chat_recording_error": "Error starting recording: {error}",
     "@chat_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Permission error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission error"
+            }
         }
-      }
     },
     "chat_stop_recording_error": "Error stopping recording: {error}",
     "@chat_stop_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "File save failed"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "File save failed"
+            }
         }
-      }
     },
     "chat_image_picking_error": "Error selecting image: {error}",
     "@chat_image_picking_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "File too large"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "File too large"
+            }
         }
-      }
     },
     "chat_web_recording_not_supported": "Recording is not supported on Web platform",
-    
     "profile_personal_center": "Personal Center",
     "profile_login_prompt": "Please login to view your profile",
     "profile_login_button": "Login",
-    
     "auth_phone_number": "Phone Number",
     "auth_select_country_region": "Select Country/Region",
     "auth_phone_validation_empty": "Please enter phone number",
@@ -259,14 +243,13 @@
     "auth_phone_validation_invalid_general": "Please enter a valid phone number",
     "profile_loading_error": "Loading failed: {error}",
     "@profile_loading_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
-    
     "profile_my_dskk": "My DSKK",
     "profile_favorites": "Favorites",
     "profile_my_wallet": "My Wallet",
@@ -276,18 +259,16 @@
     "profile_message_notifications": "Message Notifications",
     "profile_about_us": "About Us",
     "profile_assistant_mission": "Assistant's Mission",
-    
     "profile_switch_to_seller": "Switch to Seller Mode",
     "profile_switch_error": "Unable to switch to seller mode: {error}",
     "@profile_switch_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
-    
     "profile_edit_nickname": "Edit Nickname",
     "profile_nickname_hint": "Please enter new nickname",
     "profile_nickname_empty_error": "Nickname cannot be empty",
@@ -298,7 +279,6 @@
     "profile_online": "Online",
     "profile_offline": "Offline",
     "profile_avatar_upload_failed": "Avatar upload failed, please try again",
-    
     "profile_orders": "My Orders",
     "profile_pending_payment": "Unpaid",
     "profile_in_progress": "In Chat",
@@ -306,25 +286,24 @@
     "profile_refund": "After-sale",
     "profile_navigation_error": "Unable to navigate to order list: {error}",
     "@profile_navigation_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Navigation error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Navigation error"
+            }
         }
-      }
     },
-
     "home_title": "Home",
     "home_search_hint": "Search services",
     "home_loading": "Loading...",
     "home_loading_failed": "Loading failed: {error}",
     "@home_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "home_retry": "Retry",
     "home_end_of_list": "End of list",
@@ -332,40 +311,38 @@
     "home_pull_to_refresh": "Pull to refresh for recommendations",
     "home_banner_clicked": "Banner clicked: {targetType} - {targetValue}",
     "@home_banner_clicked": {
-      "placeholders": {
-        "targetType": {
-          "type": "String",
-          "example": "Product"
-        },
-        "targetValue": {
-          "type": "String",
-          "example": "12345"
+        "placeholders": {
+            "targetType": {
+                "type": "String",
+                "example": "Product"
+            },
+            "targetValue": {
+                "type": "String",
+                "example": "12345"
+            }
         }
-      }
     },
     "home_product_card_clicked": "Service card clicked: {name}",
     "@home_product_card_clicked": {
-      "placeholders": {
-        "name": {
-          "type": "String",
-          "example": "Design service"
+        "placeholders": {
+            "name": {
+                "type": "String",
+                "example": "Design service"
+            }
         }
-      }
     },
     "home_recommend_clicked": "Let them see button clicked: {name}",
     "@home_recommend_clicked": {
-      "placeholders": {
-        "name": {
-          "type": "String",
-          "example": "Design service"
+        "placeholders": {
+            "name": {
+                "type": "String",
+                "example": "Design service"
+            }
         }
-      }
     },
-    
     "product_recommend_button": "Let them see",
     "product_image_loading_failed": "Image loading failed",
     "product_default_name": "Product",
-    
     "search_title": "Search",
     "search_button": "Search",
     "search_hot_keywords": "Hot Keywords",
@@ -373,22 +350,21 @@
     "search_no_results": "No relevant services found",
     "search_failed": "Search failed: {error}",
     "@search_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
-    
     "product_detail_loading_failed": "Loading failed: {error}",
     "@product_detail_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "product_detail_retry": "Retry",
     "product_detail_please_wait": "Please wait...",
@@ -402,24 +378,24 @@
     "product_detail_buy_now": "Buy Now (1)",
     "product_detail_buy_now_with_price": "Buy Now ¥{price}",
     "@product_detail_buy_now_with_price": {
-      "placeholders": {
-        "price": {
-          "type": "String",
-          "example": "99.00"
+        "placeholders": {
+            "price": {
+                "type": "String",
+                "example": "99.00"
+            }
         }
-      }
     },
     "product_detail_faq": "FAQ",
     "product_detail_case_showcase": "Case Showcase",
     "product_detail_no_cases": "No cases available",
     "product_detail_reviews": "Reviews ({count})",
     "@product_detail_reviews": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "product_detail_view_all": "View All",
     "product_detail_no_reviews": "No reviews yet",
@@ -431,93 +407,91 @@
     "product_detail_premium_tier": "Premium",
     "product_detail_sample_review": "Great service, very patient",
     "product_detail_sample_user": "Ray123",
-    
     "product_reviews_title": "Reviews",
     "product_reviews_loading_failed": "Loading failed: {error}",
     "@product_reviews_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "product_reviews_retry": "Retry",
     "product_reviews_no_reviews": "No reviews yet",
     "product_reviews_sample_content": "Great service, very patient",
     "product_reviews_years_ago": "{count} years ago",
     "@product_reviews_years_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "product_reviews_months_ago": "{count} months ago",
     "@product_reviews_months_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "3"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
         }
-      }
     },
     "product_reviews_days_ago": "{count} days ago",
     "@product_reviews_days_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "product_reviews_hours_ago": "{count} hours ago",
     "@product_reviews_hours_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "product_reviews_minutes_ago": "{count} minutes ago",
     "@product_reviews_minutes_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "30"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "30"
+            }
         }
-      }
     },
     "product_reviews_just_now": "Just now",
     "product_reviews_seller_reply": "Seller Reply",
     "product_reviews_total_count": "{count} reviews",
     "@product_reviews_total_count": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "100"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "100"
+            }
         }
-      }
     },
     "product_reviews_filter_all": "All",
     "product_reviews_filter_with_images": "With Images",
     "product_reviews_filter_good": "Good",
     "product_reviews_filter_medium": "Medium",
     "product_reviews_filter_bad": "Bad",
-    
     "seller_profile_default_title": "Seller Profile",
     "seller_profile_seller": "Seller",
     "seller_profile_no_description": "No description",
     "seller_profile_followers": "{count} followers",
     "@seller_profile_followers": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "seller_profile_followed": "Following",
     "seller_profile_follow": "Follow",
@@ -525,21 +499,21 @@
     "seller_profile_follow_success": "Followed successfully",
     "seller_profile_chat_failed": "Failed to create chat: {error}",
     "@seller_profile_chat_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "seller_profile_error_occurred": "Error occurred: {error}",
     "@seller_profile_error_occurred": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "seller_profile_about_merchant": "About Merchant",
     "seller_profile_my_services": "My Services",
@@ -555,7 +529,6 @@
     "seller_profile_no_products": "No products",
     "seller_profile_image_load_failed": "Image loading failed",
     "seller_profile_no_image": "No image",
-    
     "seller_profile_title": "Profile",
     "seller_profile_auth_management": "Auth",
     "seller_profile_my_wallet": "Wallet",
@@ -575,14 +548,13 @@
     "seller_profile_order_refund": "Refund/Support",
     "seller_profile_feature_not_implemented": "{feature} feature not yet implemented",
     "@seller_profile_feature_not_implemented": {
-      "placeholders": {
-        "feature": {
-          "type": "String",
-          "example": "Authentication Management"
+        "placeholders": {
+            "feature": {
+                "type": "String",
+                "example": "Authentication Management"
+            }
         }
-      }
     },
-    
     "seller_home_loading_failed": "Loading failed",
     "seller_home_no_data": "No data",
     "seller_home_no_store_info": "No store information",
@@ -590,22 +562,22 @@
     "seller_home_offline": "Offline",
     "seller_home_completion_rate": "Completion Rate {rate}%",
     "@seller_home_completion_rate": {
-      "placeholders": {
-        "rate": {
-          "type": "String",
-          "example": "95.5"
+        "placeholders": {
+            "rate": {
+                "type": "String",
+                "example": "95.5"
+            }
         }
-      }
     },
     "seller_home_switch_to_buyer": "Switch to Buyer Mode",
     "seller_home_switch_failed": "Unable to switch to buyer mode: {error}",
     "@seller_home_switch_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "seller_home_income": "Revenue",
     "seller_home_view_details": "Details",
@@ -629,7 +601,6 @@
     "seller_home_recent_income": "Recent Revenue",
     "seller_home_no_recent_income": "No recent revenue data",
     "seller_home_no_income_data": "No revenue data",
-    
     "seller_statistics_title": "Analytics",
     "seller_statistics_seller_homepage": "Seller Profile",
     "seller_statistics_heat_value": "Heat",
@@ -639,30 +610,30 @@
     "seller_statistics_upgrade_to_next_level": "Upgrade to Next Level",
     "seller_statistics_become_level3_seller": "Level 3 Seller for {days} days",
     "@seller_statistics_become_level3_seller": {
-      "placeholders": {
-        "days": {
-          "type": "String",
-          "example": "30"
+        "placeholders": {
+            "days": {
+                "type": "String",
+                "example": "30"
+            }
         }
-      }
     },
     "seller_statistics_complete_orders": "Complete {orderNum} orders",
     "@seller_statistics_complete_orders": {
-      "placeholders": {
-        "orderNum": {
-          "type": "String",
-          "example": "10"
+        "placeholders": {
+            "orderNum": {
+                "type": "String",
+                "example": "10"
+            }
         }
-      }
     },
     "seller_statistics_profit_amount": "Earn ${amount}",
     "@seller_statistics_profit_amount": {
-      "placeholders": {
-        "amount": {
-          "type": "String",
-          "example": "1000.00"
+        "placeholders": {
+            "amount": {
+                "type": "String",
+                "example": "1000.00"
+            }
         }
-      }
     },
     "seller_statistics_indicators": "Metrics",
     "seller_statistics_total_earnings": "Total Revenue",
@@ -677,15 +648,14 @@
     "seller_statistics_earliest": "Earliest",
     "seller_statistics_loading_failed": "Loading failed: {error}",
     "@seller_statistics_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "seller_statistics_retry": "Retry",
-    
     "seller_auth_management_title": "Authentication Management",
     "seller_auth_management_certified_items": "Certified Items",
     "seller_auth_management_open_certification": "Open Certification",
@@ -713,22 +683,21 @@
     "seller_auth_management_contact_tech": "• If the problem persists, please contact technical support",
     "seller_auth_management_reload": "Reload",
     "seller_auth_management_back": "Back",
-    
     "seller_auth_application_title": "{type} Certification",
     "@seller_auth_application_title": {
-      "placeholders": {
-        "type": {
-          "type": "String"
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
         }
-      }
     },
     "seller_auth_application_desc": "{type} Certification Description",
     "@seller_auth_application_desc": {
-      "placeholders": {
-        "type": {
-          "type": "String"
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
         }
-      }
     },
     "seller_auth_application_review_time": "Certification review usually takes 1-3 business days, please be patient.",
     "seller_auth_application_basic_info": "Basic Information",
@@ -774,11 +743,11 @@
     "seller_auth_application_upload_file": "Upload File",
     "seller_auth_application_selected_files": "{count} file(s) selected",
     "@seller_auth_application_selected_files": {
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "seller_auth_application_selected_images": "Selected Images:",
     "seller_auth_application_load_failed": "Load Failed",
@@ -801,13 +770,12 @@
     "seller_auth_application_ok": "OK",
     "seller_auth_application_select_file_failed": "File selection failed: {error}",
     "@seller_auth_application_select_file_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String"
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
         }
-      }
     },
-    
     "product_management_title": "Product Management",
     "product_management_tab_on_sale": "On Sale",
     "product_management_tab_draft": "Drafts",
@@ -837,11 +805,11 @@
     "product_management_confirm_off_shelf_title": "Confirm Off Shelf",
     "product_management_confirm_off_shelf_message": "Are you sure you want to take the product \"{name}\" off shelf?",
     "@product_management_confirm_off_shelf_message": {
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "product_management_confirm_off_shelf_desc": "After off shelf:",
     "product_management_confirm_off_shelf_point1": "• Buyers will not be able to see or purchase this product",
@@ -852,7 +820,6 @@
     "product_management_cancel": "Cancel",
     "product_management_confirm": "Confirm Off Shelf",
     "product_management_delete": "Delete",
-    
     "product_edit_title_create": "Create Product",
     "product_edit_title_edit": "Edit Product",
     "product_edit_basic_info": "Basic Information",
@@ -877,23 +844,21 @@
     "product_edit_validation_name_required": "Please enter product name",
     "product_edit_validation_description_required": "Please enter product description",
     "product_edit_validation_image_required": "Please upload at least one product image",
-    
     "product_preview_current_seller": "Current Seller",
     "product_preview_seller_user": "Seller User",
-    
     "product_edit_success_cases": "Success Cases",
     "product_edit_add_success_case": "Add Success Case",
     "product_edit_edit_success_case": "Edit Success Case",
     "product_edit_uploading_progress": "Uploading {uploaded}/{total}",
     "@product_edit_uploading_progress": {
-      "placeholders": {
-        "uploaded": {
-          "type": "int"
-        },
-        "total": {
-          "type": "int"
+        "placeholders": {
+            "uploaded": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
-      }
     },
     "product_edit_please_enter_label": "Please enter information label",
     "product_edit_please_enter_attribute_name": "Please enter attribute name",
@@ -905,13 +870,12 @@
     "product_edit_edit_service": "Edit Service",
     "product_edit_max_characters": "Max {max} characters",
     "@product_edit_max_characters": {
-      "placeholders": {
-        "max": {
-          "type": "int"
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
         }
-      }
     },
-    
     "after_sales_review_title": "After-sales Review",
     "after_sales_detail_title": "After-sales Details",
     "after_sales_refresh": "Refresh",
@@ -938,11 +902,9 @@
     "after_sales_reject_reason": "Rejection Reason",
     "after_sales_reject_reason_hint": "Please enter rejection reason",
     "after_sales_reject_reason_required": "Please enter rejection reason",
-    
     "after_sales_type_refund_only": "Refund Only",
     "after_sales_type_refund_return": "Return & Refund",
     "after_sales_type_unknown": "Unknown Type",
-    
     "after_sales_status_wait_audit": "Pending Review",
     "after_sales_status_refused": "Rejected",
     "after_sales_status_audit_pass": "Approved",
@@ -951,7 +913,6 @@
     "after_sales_status_finished": "Completed",
     "after_sales_status_canceled": "Canceled",
     "after_sales_status_unknown": "Unknown Status",
-    
     "time_management_title": "Time Management",
     "time_management_current_status": "Current Status",
     "time_management_online": "Online",
@@ -965,7 +926,6 @@
     "time_management_load_failed": "Load Failed",
     "time_management_retry": "Retry",
     "time_management_unknown_status": "Unknown Status",
-    
     "auto_reply_title": "Auto Reply Settings",
     "auto_reply_enable": "Auto Reply",
     "auto_reply_content": "Reply Content",
@@ -975,16 +935,15 @@
     "auto_reply_settings_saved": "Settings Saved",
     "auto_reply_content_required": "Reply content cannot be empty",
     "auto_reply_load_failed": "Load failed, please try again",
-    
     "order_delivery_title": "Order Delivery",
     "order_delivery_title_with_sn": "Order Delivery: {orderSn}",
     "@order_delivery_title_with_sn": {
-      "placeholders": {
-        "orderSn": {
-          "type": "String",
-          "example": "SN123456"
+        "placeholders": {
+            "orderSn": {
+                "type": "String",
+                "example": "SN123456"
+            }
         }
-      }
     },
     "order_delivery_submitting": "Submitting delivery content...",
     "order_delivery_load_failed": "Load failed, please try again",
@@ -1007,7 +966,6 @@
     "order_delivery_confirm_shipment": "Confirm Shipment",
     "order_delivery_view_details": "View Details",
     "order_delivery_no_pending_orders": "No pending orders",
-    
     "notification_center_title": "Notification Center",
     "notification_tab_all": "All",
     "notification_tab_order": "Orders",
@@ -1037,12 +995,12 @@
     "notification_retry": "Retry",
     "notification_load_failed": "Failed to load notification center: {error}",
     "@notification_load_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "Network error"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
         }
-      }
     },
     "notification_detail_title": "Notification Details",
     "notification_detail_view": "View Details",
@@ -1052,41 +1010,40 @@
     "notification_time_just_now": "Just now",
     "notification_time_minutes_ago": "{minutes} minutes ago",
     "@notification_time_minutes_ago": {
-      "placeholders": {
-        "minutes": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "minutes": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "notification_time_hours_ago": "{hours} hours ago",
     "@notification_time_hours_ago": {
-      "placeholders": {
-        "hours": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "hours": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "notification_time_days_ago": "{days} days ago",
     "@notification_time_days_ago": {
-      "placeholders": {
-        "days": {
-          "type": "int",
-          "example": "3"
+        "placeholders": {
+            "days": {
+                "type": "int",
+                "example": "3"
+            }
         }
-      }
     },
     "notification_time_months_ago": "{months} months ago",
     "@notification_time_months_ago": {
-      "placeholders": {
-        "months": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "months": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
-    
     "materialsInfo": "Materials Info",
     "buyerSubmittedMaterials": "Buyer Submitted Materials",
     "sellerDeliveryContent": "Seller Delivery Content",
@@ -1095,7 +1052,6 @@
     "attachments": "Attachments:",
     "deliveryFiles": "Delivery Files:",
     "deliveryDescription": "Delivery Description",
-    
     "tapToPreview": "Tap to preview",
     "tapToOpen": "Tap to open",
     "downloadFile": "Download file",
@@ -1110,16 +1066,2052 @@
     "storagePermissionRequired": "Storage permission required to download files",
     "pdfLoadFailed": "Failed to load PDF",
     "retry": "Retry",
-
     "product_detail_translated_from": "Translated from {language}",
     "@product_detail_translated_from": {
-      "placeholders": {
-        "language": {
-          "type": "String",
-          "example": "Chinese"
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "Chinese"
+            }
         }
-      }
     },
     "product_detail_translation_auto": "Auto-translated",
-    "product_detail_show_original": "Show original"
+    "product_detail_show_original": "Show original",
+    "order_status_awaiting_payment": "Awaiting Payment",
+    "order_status_awaiting_submission": "Awaiting Submission",
+    "order_status_buy_awaiting_submission": "Resubmission Required",
+    "order_status_awaiting_start": "Awaiting Acceptance",
+    "order_status_awaiting_delivery": "Awaiting Delivery",
+    "order_status_awaiting_confirmation": "Awaiting Confirmation",
+    "order_status_awaiting_evaluation": "Awaiting Review",
+    "order_status_completed": "Completed",
+    "order_status_canceled": "Canceled",
+    "order_status_after_sale": "After-Sales",
+    "order_status_unknown": "Unknown Status",
+    "order_action_cancel": "Cancel Order",
+    "order_action_go_pay": "Pay Now",
+    "order_action_submit_materials": "Submit Materials",
+    "order_action_contact_support": "Contact Support",
+    "order_action_view_feedback": "View Feedback",
+    "order_action_remind_delivery": "Remind Delivery",
+    "order_action_platform_intervention": "Platform Intervention",
+    "order_action_view_delivery": "View Delivery",
+    "order_action_apply_after_sale": "Apply After-Sales",
+    "order_action_confirm_receipt": "Confirm Receipt",
+    "order_action_view_logistics": "View Logistics",
+    "order_action_go_evaluate": "Write Review",
+    "order_action_apply_rework": "Request Rework",
+    "order_action_delete_order": "Delete Order",
+    "order_action_view_order": "View Order",
+    "order_action_view_details": "View Details",
+    "order_action_processing": "Processing...",
+    "order_confirm_cancel_title": "Cancel Order",
+    "order_confirm_cancel_content": "Are you sure you want to cancel this order?",
+    "order_confirm_receipt_title": "Confirm Receipt",
+    "order_confirm_receipt_content": "Are you sure you have received the goods and want to confirm receipt?",
+    "order_confirm_delete_title": "Delete Order",
+    "order_confirm_delete_content": "Are you sure you want to delete this order? This action cannot be undone.",
+    "order_dialog_cancel": "Cancel",
+    "order_dialog_confirm": "Confirm",
+    "order_dialog_close": "Close",
+    "order_dialog_submit": "Submit",
+    "order_snackbar_connecting_support": "Connecting to support...",
+    "order_snackbar_feedback_in_progress": "View seller feedback feature is under development",
+    "order_snackbar_reminded_delivery": "Seller has been reminded to deliver",
+    "order_snackbar_nav_failed": "Navigation failed: {error}",
+    "@order_snackbar_nav_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_snackbar_no_items_after_sale": "Error: Cannot apply after-sales for an order with no items",
+    "order_snackbar_no_items_evaluate": "Error: Cannot evaluate an order with no items",
+    "order_snackbar_operation_failed": "Operation failed: {error}",
+    "@order_snackbar_operation_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_dialog_data_not_loaded": "Data not loaded yet, please try again later",
+    "order_dialog_view_delivery_title": "View Delivery",
+    "order_dialog_seller_delivery_content": "Seller Delivery Content:",
+    "order_dialog_buyer_materials": "Buyer Submitted Materials:",
+    "order_dialog_no_seller_delivery": "No delivery content from seller yet",
+    "order_dialog_no_buyer_materials": "No materials submitted by buyer",
+    "order_dialog_delivery_note": "Delivery Note: {content}",
+    "@order_dialog_delivery_note": {
+        "placeholders": {
+            "content": {
+                "type": "String"
+            }
+        }
+    },
+    "order_dialog_delivery_files": "Delivery Files:",
+    "order_intervention_title": "Apply for Platform Intervention",
+    "order_intervention_desc": "Having unresolved disputes? Platform support will intervene within 24 hours.",
+    "order_intervention_problem_type": "Problem Type:",
+    "order_intervention_problem_desc": "Problem Description:",
+    "order_intervention_problem_hint": "Please describe the problem in detail...",
+    "order_intervention_validation_empty": "Please enter a problem description",
+    "order_intervention_validation_min": "Problem description must be at least 10 characters",
+    "order_intervention_tip": "Note: Once submitted, it cannot be revoked. Each order can apply up to 2 times.",
+    "order_intervention_reason_communication": "Communication Issue",
+    "order_intervention_reason_quality": "Quality Dispute",
+    "order_intervention_reason_delivery": "Delivery Issue",
+    "order_intervention_reason_refund": "Refund Dispute",
+    "order_intervention_reason_service": "Service Attitude",
+    "order_intervention_reason_other": "Other Issues",
+    "order_intervention_submitting": "Submitting application...",
+    "order_intervention_failed": "Application failed: {error}",
+    "@order_intervention_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_demand_replenishment_title": "Request Supplementary Materials",
+    "order_demand_reform_title": "Request Rework",
+    "order_demand_replenishment_desc": "If you need the seller to provide more materials or explanations, please describe your needs in detail.",
+    "order_demand_reform_desc": "If you are not satisfied with the delivery, you can request a rework. Please describe the specific issue.",
+    "order_demand_detail_label": "Details:",
+    "order_demand_replenishment_hint": "Please describe the materials or information needed...",
+    "order_demand_reform_hint": "Please describe the reasons and requirements for rework...",
+    "order_demand_validation_empty": "Please enter details",
+    "order_demand_validation_min": "Details must be at least 10 characters",
+    "order_demand_replenishment_tip": "Note: The seller will respond and provide supplementary materials within 24 hours.",
+    "order_demand_reform_tip": "Note: After the rework request is submitted, the seller will reprocess your order.",
+    "order_demand_reason_incomplete": "Incomplete Information",
+    "order_demand_reason_unclear": "Unclear Requirements",
+    "order_demand_reason_additional": "Additional Explanation Needed",
+    "order_demand_reason_reference": "Reference Materials Needed",
+    "order_demand_reason_other": "Other Reasons",
+    "order_demand_reason_quality": "Quality Not Satisfactory",
+    "order_demand_reason_requirement": "Does Not Meet Requirements",
+    "order_demand_reason_content_incomplete": "Incomplete Content",
+    "order_demand_reason_error": "Contains Errors",
+    "order_demand_submitting_replenishment": "Submitting supplementary materials request...",
+    "order_demand_submitting_reform": "Submitting rework request...",
+    "order_demand_failed": "Application failed: {error}",
+    "@order_demand_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_demand_edit_info_auto": "Delivered {current} times, {remaining} free revision(s) remaining (auto-approved)",
+    "@order_demand_edit_info_auto": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "remaining": {
+                "type": "int"
+            }
+        }
+    },
+    "order_demand_edit_info_approval": "Delivered {current} times, free revisions used up, seller approval required",
+    "@order_demand_edit_info_approval": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            }
+        }
+    },
+    "order_info_title": "Order Info",
+    "order_info_order_number": "Order No.: ",
+    "order_info_order_time": "Order Time: ",
+    "order_info_pay_time": "Payment Time: ",
+    "order_info_complete_time": "Completion Time: ",
+    "order_info_remark": "Order Remark: ",
+    "order_items_title": "Product Info",
+    "order_items_empty": "No product information",
+    "order_items_count": "{count} items",
+    "@order_items_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_price_title": "Price Details",
+    "order_price_total": "Product Total",
+    "order_price_shipping": "Shipping",
+    "order_price_discount": "Discount",
+    "order_price_paid": "Amount Paid",
+    "order_price_total_amount": "Product Total",
+    "order_price_actual_paid": "Amount Paid",
+    "order_requirement_title": "Submit Requirements",
+    "order_requirement_service_selected": "Selected service: {skuName} - ¥{price}",
+    "@order_requirement_service_selected": {
+        "placeholders": {
+            "skuName": {
+                "type": "String"
+            },
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "order_requirement_q1": "1. Please describe your requirements in detail",
+    "order_requirement_q1_hint": "Please describe your requirements in as much detail as possible, including specific needs and expected results",
+    "order_requirement_q1_helper": "If you need to provide reference materials, upload them in the attachment section below",
+    "order_requirement_q2": "2. Additional notes (optional)",
+    "order_requirement_q2_hint": "If you have any other notes or special requirements, please fill in here",
+    "order_requirement_warning": "Please fill in your requirements carefully. After submission, the seller will start service based on your requirements",
+    "order_requirement_attachment_title": "Attachments",
+    "order_requirement_attachment_limit": "Max {maxCount} files, each up to {maxSize}MB",
+    "@order_requirement_attachment_limit": {
+        "placeholders": {
+            "maxCount": {
+                "type": "int"
+            },
+            "maxSize": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_add": "Add",
+    "order_requirement_click_select_file": "Click here to select files",
+    "order_requirement_confirm_submit": "Confirm Submit",
+    "order_requirement_wait_upload": "Please wait for file upload to complete",
+    "order_requirement_upload_failed_title": "File Upload Failed",
+    "order_requirement_upload_failed_count": "{count} file(s) failed to upload. Retry?",
+    "@order_requirement_upload_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_remove_failed": "Remove Failed Files",
+    "order_requirement_retry_upload": "Retry Upload",
+    "order_requirement_error_product_id": "Error: Cannot get product ID",
+    "order_requirement_load_draft_failed": "Failed to load draft",
+    "order_requirement_save_draft_failed": "Failed to save draft",
+    "order_requirement_max_files": "Maximum {count} attachments allowed",
+    "@order_requirement_max_files": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_pick_failed": "Failed to select file: {error}",
+    "@order_requirement_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_requirement_default_service": "Basic Service",
+    "order_evaluation_title": "Review Product",
+    "order_evaluation_hint": "Share your experience~",
+    "order_evaluation_add_images": "Add Images (max 9)",
+    "order_evaluation_anonymous": "Anonymous Review",
+    "order_evaluation_submit": "Submit Review",
+    "order_evaluation_error_no_item": "Error: Cannot find the product item to review",
+    "order_evaluation_max_images": "Maximum 9 images allowed",
+    "order_evaluation_success_count": "Successfully processed {count} images, average compression {ratio}%",
+    "@order_evaluation_success_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "ratio": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_failed_count": "{count} image(s) failed to process",
+    "@order_evaluation_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_evaluation_pick_failed": "Failed to select image: {error}",
+    "@order_evaluation_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_processing": "Processing...",
+    "order_evaluation_page_title": "Write Review",
+    "order_delivery_not_satisfied": "Not satisfied with delivery?",
+    "order_delivery_communicate_tip": "When delivery count is insufficient, please communicate with the seller about additional deliveries",
+    "order_delivery_supplement": "Request Supplement",
+    "order_delivery_remake": "Request Remake",
+    "order_delivery_refund": "Request Refund",
+    "order_delivery_unknown_file": "Unknown File",
+    "order_item_delivery_days": "Delivery: {days} days",
+    "@order_item_delivery_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_item_edit_count": "Revisions: {count} times",
+    "@order_item_edit_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_expired": "Expired",
+    "order_countdown_days_hours": "{days}d {hours}h",
+    "@order_countdown_days_hours": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_hours_minutes": "{hours}h {minutes}m",
+    "@order_countdown_hours_minutes": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_minutes": "{minutes}m",
+    "@order_countdown_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_seconds": "{seconds}s",
+    "@order_countdown_seconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_days": "{days}d",
+    "@order_countdown_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_minutes_seconds": "{minutes}m {seconds}s",
+    "@order_countdown_minutes_seconds": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "order_upload_progress": "Uploading {percent}%",
+    "@order_upload_progress": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "order_upload_retry": "Retry Upload",
+    "order_upload_failed": "Upload failed: {error}",
+    "@order_upload_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_upload_size_limit": "File size exceeds limit (max {size})",
+    "@order_upload_size_limit": {
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "order_upload_max_retry": "Maximum retry count reached ({count} times)",
+    "@order_upload_max_retry": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_after_sale_processing": "After-Sales Processing",
+    "order_after_sale_processing_msg": "Your after-sales request is being processed. The seller will handle it within xx hours. Please be patient.",
+    "order_after_sale_mediation": "Platform Mediation in Progress",
+    "order_after_sale_mediation_msg": "Platform support has intervened. A resolution will be provided within xx business days. Please watch for notifications.",
+    "order_after_sale_rejected": "After-Sales Request Rejected",
+    "order_after_sale_rejected_msg": "Sorry, your after-sales request was not approved.",
+    "order_after_sale_default_title": "After-Sales Status",
+    "order_after_sale_default_msg": "This order is currently in the after-sales process.",
+    "order_after_sale_contact_seller": "Contact Seller",
+    "order_after_sale_cancel_apply": "Cancel Request",
+    "order_after_sale_contact_platform": "Contact Platform Support",
+    "order_after_sale_add_evidence": "Add Evidence",
+    "order_after_sale_add_evidence_tip": "You can add evidence or wait patiently for the platform's resolution.",
+    "order_after_sale_apply_intervention": "Apply for Platform Intervention",
+    "order_after_sale_refund_status": "Refund Status:",
+    "order_after_sale_refund_amount": "Refund Amount:",
+    "order_after_sale_reject_reason": "Rejection Reason:",
+    "order_after_sale_reject_reason_detail": "Reason: Insufficient evidence or does not meet refund conditions.",
+    "order_platform_intervention_title": "Platform Intervention",
+    "order_platform_intervention_desc": "If disputes cannot be resolved through negotiation, you can apply for platform support intervention",
+    "order_platform_intervention_apply": "Apply for Platform Intervention",
+    "order_platform_intervention_in_progress": "Platform Intervention in Progress",
+    "order_platform_intervention_processing": "Processing",
+    "order_platform_intervention_processing_msg": "Your application has been submitted. Platform support will contact you within 24 hours",
+    "order_platform_intervention_step1": "Application Submitted",
+    "order_platform_intervention_step1_desc": "Waiting for platform support",
+    "order_platform_intervention_step2": "Support Intervention",
+    "order_platform_intervention_step2_desc": "Contact both parties within 24 hours",
+    "order_platform_intervention_step3": "Issue Resolved",
+    "order_platform_intervention_step3_desc": "Handled based on platform decision",
+    "order_card_product_unknown": "Product name unknown",
+    "order_card_deleting": "Deleting order...",
+    "order_card_deleted": "Order deleted",
+    "order_card_delete_failed": "Delete failed: {error}",
+    "@order_card_delete_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_load_detail_failed": "Failed to load order details: {error}",
+    "@order_card_load_detail_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_timeout_canceling": "Timed out, will be canceled soon",
+    "order_card_pay_in_time": "Pay within {time}",
+    "@order_card_pay_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_timeout_submit": "Timed out, please submit soon",
+    "order_card_submit_in_time": "Submit materials within {time}",
+    "@order_card_submit_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_seller_timeout": "Seller timed out",
+    "order_card_seller_accept_in_time": "Seller will accept within {time}",
+    "@order_card_seller_accept_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_delivery_days": "Delivery: within {days} days",
+    "@order_card_delivery_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_auto_confirm_soon": "Auto-confirmation soon",
+    "order_card_auto_confirm_in": "Auto-confirm in {time}",
+    "@order_card_auto_confirm_in": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_evaluate_for_points": "Awaiting review, earn points after review",
+    "order_card_duration_days_hours": "{days} days {hours} hours",
+    "@order_card_duration_days_hours": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_hours_minutes": "{hours} hours {minutes} minutes",
+    "@order_card_duration_hours_minutes": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_minutes": "{minutes} minutes",
+    "@order_card_duration_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_less_than_minute": "Less than 1 minute",
+    "order_detail_invalid_id": "Invalid Order ID",
+    "order_detail_error": "Error",
+    "order_detail_title": "Order Details",
+    "order_detail_title_with_id": "Order Details (ID: {id})",
+    "@order_detail_title_with_id": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            }
+        }
+    },
+    "order_detail_load_failed": "Load failed: {error}",
+    "@order_detail_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_detail_reload": "Reload",
+    "order_detail_unavailable": "Order data unavailable",
+    "order_list_title": "My Orders",
+    "order_list_search_hint": "Search order number or product name",
+    "order_list_empty": "No orders found",
+    "order_list_load_error": "Load error: {error}",
+    "@order_list_load_error": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_list_load_failed": "Load failed: {error}",
+    "@order_list_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_list_select_category": "Select a category to view orders",
+    "order_list_tab_all": "All",
+    "order_list_tab_awaiting_payment": "Payment",
+    "order_list_tab_awaiting_submission": "Submission",
+    "order_list_tab_awaiting_start": "Acceptance",
+    "order_list_tab_awaiting_delivery": "Delivery",
+    "order_list_tab_awaiting_confirmation": "Receipt",
+    "order_list_tab_awaiting_evaluation": "Review",
+    "order_list_tab_after_sale": "After-Sales",
+    "order_route_error": "Error",
+    "order_route_invalid_item_id": "Invalid product ID: {id}",
+    "@order_route_invalid_item_id": {
+        "placeholders": {
+            "id": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_detail_title": "Order Details (Seller) - #{id}",
+    "@order_seller_detail_title": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_load_failed": "Failed to load order #{id}: {error}",
+    "@order_seller_load_failed": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            },
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_preparing": "Preparing to load...",
+    "order_seller_order_number": "Order No.",
+    "order_seller_order_time": "Order Time",
+    "order_seller_pay_time": "Payment Time",
+    "order_seller_complete_time": "Completion Time",
+    "order_seller_cancel_time": "Cancellation Time",
+    "order_seller_list_title": "My Orders (Seller)",
+    "order_seller_tab_all": "All",
+    "order_seller_tab_awaiting_start": "Pending",
+    "order_seller_tab_awaiting_delivery": "To Deliver",
+    "order_seller_tab_awaiting_confirmation": "Awaiting Receipt",
+    "order_seller_tab_awaiting_evaluation": "Awaiting Review",
+    "order_seller_tab_completed": "Completed",
+    "order_seller_tab_after_sale": "After-Sales",
+    "order_seller_tab_canceled": "Canceled",
+    "order_seller_load_failed_msg": "Load failed: {error}",
+    "@order_seller_load_failed_msg": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_empty": "No orders in this status",
+    "order_seller_action_failed": "Action failed: {error}",
+    "@order_seller_action_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_pending_count": "You have {count} orders to process",
+    "@order_seller_pending_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_pending_awaiting_start": "{count} pending acceptance",
+    "@order_seller_pending_awaiting_start": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_pending_awaiting_delivery": "{count} to deliver",
+    "@order_seller_pending_awaiting_delivery": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_reject_order": "Reject Order",
+    "order_seller_confirm_order": "Accept Order",
+    "order_seller_contact_buyer": "Contact Buyer",
+    "order_seller_go_deliver": "Deliver",
+    "order_seller_view_delivery_content": "View Delivery",
+    "order_seller_remind_buyer": "Remind Buyer",
+    "order_seller_delete_record": "Delete Record",
+    "order_seller_confirm_accept_title": "Confirm Acceptance",
+    "order_seller_confirm_accept_content": "Are you sure you want to accept this order?",
+    "order_seller_confirm_delete_title": "Confirm Delete",
+    "order_seller_confirm_delete_content": "Are you sure you want to delete this order record? This action cannot be undone.",
+    "order_seller_confirm_delete_canceled_content": "Are you sure you want to delete this canceled order record? This action cannot be undone.",
+    "order_seller_confirm_btn": "Confirm",
+    "order_seller_confirm_reject_title": "Confirm Rejection",
+    "order_seller_confirm_reject_content": "Are you sure you want to reject this order?",
+    "order_seller_confirm_reject_btn": "Confirm Rejection",
+    "order_seller_reject_dialog_title": "Reject Order",
+    "order_seller_reject_reason_label": "Rejection Reason *",
+    "order_seller_reject_reason_hint": "Please enter the rejection reason",
+    "order_seller_reject_reason_empty": "Rejection reason cannot be empty",
+    "order_seller_reject_reason_required": "Please enter the rejection reason",
+    "order_seller_remarks_label": "Additional Notes (Optional)",
+    "order_seller_remarks_hint": "Optional",
+    "order_seller_delivery_dialog_title": "Delivery Content",
+    "order_seller_delivery_desc_label": "Delivery Description *",
+    "order_seller_delivery_desc_hint": "Please describe your delivery content",
+    "order_seller_delivery_desc_empty": "Delivery description cannot be empty",
+    "order_seller_delivery_desc_required": "Please enter delivery description",
+    "order_seller_delivery_attachment": "Attachments",
+    "order_seller_delivery_select_file": "Click the button below to select files",
+    "order_seller_delivery_add_attachment": "Add Attachment",
+    "order_seller_delivery_file_select_soon": "File selection feature coming soon",
+    "order_seller_delivery_confirm": "Confirm Delivery",
+    "order_seller_delivery_chat_hint": "Please select the chat about product \"{productName}\"",
+    "@order_seller_delivery_chat_hint": {
+        "placeholders": {
+            "productName": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_dynamic_delivered": "Service Delivered",
+    "order_seller_dynamic_delivered_msg": "You have completed the service delivery. Please wait for the buyer to confirm. If there are issues, the buyer may initiate after-sales.",
+    "order_seller_dynamic_completed": "This order has been completed successfully.",
+    "order_seller_dynamic_canceled": "This order has been canceled.",
+    "order_seller_dynamic_refused": "Order Rejection Submitted",
+    "order_seller_dynamic_refused_msg": "Your rejection request has been submitted and is awaiting processing.",
+    "order_seller_buyer_materials": "Buyer Provided Materials",
+    "order_seller_attachment_label": "Attachments:",
+    "order_seller_view_attachment": "View attachment coming soon: {fileName}",
+    "@order_seller_view_attachment": {
+        "placeholders": {
+            "fileName": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_product_info": "Product Information",
+    "order_list_retry": "Retry",
+    "chat_get_user_info_failed": "Failed to get user info: {error}",
+    "@chat_get_user_info_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "chat_user_refer_id_not_found": "User referId not found",
+    "chat_no_chat_records": "No chat records",
+    "chat_opponent_info_missing": "Opponent info not available",
+    "chat_product_default": "Product",
+    "chat_view_details": "View Details",
+    "chat_product_info_incomplete": "Product info incomplete, cannot view details",
+    "chat_uploading": "Uploading...",
+    "chat_upload_failed": "Upload failed",
+    "chat_retry": "Retry",
+    "chat_image_loading": "Loading...",
+    "chat_image_load_failed": "Load failed",
+    "chat_revoke_time_missing": "Message time info missing, cannot recall",
+    "chat_revoke_available": "Can recall",
+    "chat_revoke_expired": "Message sent over 2 minutes ago, cannot recall (exceeded by {seconds}s)",
+    "@chat_revoke_expired": {
+        "placeholders": {
+            "seconds": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "chat_unknown_seller": "Unknown Seller",
+    "chat_product_conversation": "Product conversation",
+    "chat_product_conversation_count": "{count} product conversations",
+    "@chat_product_conversation_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "chat_unknown_product": "Unknown Product",
+    "chat_user_inquiry_count": "{count} user inquiries",
+    "@chat_user_inquiry_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "chat_weekday_mon": "Mon",
+    "chat_weekday_tue": "Tue",
+    "chat_weekday_wed": "Wed",
+    "chat_weekday_thu": "Thu",
+    "chat_weekday_fri": "Fri",
+    "chat_weekday_sat": "Sat",
+    "chat_weekday_sun": "Sun",
+    "chat_select_multiple_images": "Select multiple images",
+    "chat_image_compressed": "Image compressed {ratio}%",
+    "@chat_image_compressed": {
+        "placeholders": {
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "chat_image_process_failed": "Image processing failed: {error}",
+    "@chat_image_process_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Unknown error"
+            }
+        }
+    },
+    "chat_images_processed_success": "Successfully processed {count} images, avg compression {ratio}%",
+    "@chat_images_processed_success": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "chat_images_process_failed_count": "{count} images failed to process",
+    "@chat_images_process_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "chat_tap_to_view_product": "Tap to view product details",
+    "chat_yesterday_time": "Yesterday {time}",
+    "@chat_yesterday_time": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "14:30"
+            }
+        }
+    },
+    "chat_no_messages_brief": "No messages",
+    "chat_select_image_error": "Error selecting images: {error}",
+    "@chat_select_image_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission denied"
+            }
+        }
+    },
+    "after_sales_reason_none": "None",
+    "seller_auth_status_title": "{type} Certification",
+    "@seller_auth_status_title": {
+        "placeholders": {
+            "type": {
+                "type": "String",
+                "example": "Identity"
+            }
+        }
+    },
+    "seller_auth_status_label": "Status: ",
+    "seller_auth_status_name_label": "Name: ",
+    "seller_auth_status_materials": "Certification Materials",
+    "seller_auth_status_no_materials": "No certification materials",
+    "seller_auth_status_info": "Certification Info",
+    "seller_auth_status_history": "Certification History",
+    "seller_auth_status_no_history": "No history records",
+    "seller_auth_status_reapply": "Reapply",
+    "seller_auth_status_approved_hint": "Certification approved, no need to resubmit",
+    "seller_auth_status_pending_hint": "Certification under review, please wait",
+    "seller_auth_status_tag_approved": "Certified",
+    "seller_auth_status_tag_pending": "Under Review",
+    "seller_auth_status_tag_rejected": "Rejected",
+    "seller_auth_status_tag_not_submitted": "Not Submitted",
+    "seller_auth_status_type_idcard": "Identity",
+    "seller_auth_status_type_education": "Education",
+    "seller_auth_status_type_profession": "Profession",
+    "seller_auth_status_type_company": "Company",
+    "seller_auth_status_type_other": "Other",
+    "seller_auth_status_field_auth_name": "Certification Name",
+    "seller_auth_status_field_auth_type": "Certification Type",
+    "seller_auth_status_field_company_name": "Company Name",
+    "seller_auth_status_field_name": "Name",
+    "seller_auth_status_field_school_name": "School Name",
+    "seller_auth_status_field_profession": "Profession/Position",
+    "seller_auth_status_field_name_or_title": "Name/Title",
+    "seller_auth_status_field_remarks": "Remarks",
+    "seller_auth_status_field_cert_number": "Certificate Number",
+    "seller_auth_status_field_work_experience": "Work Experience",
+    "seller_auth_status_field_issuer": "Issuing Authority",
+    "seller_auth_status_field_credit_code": "Unified Social Credit Code",
+    "seller_auth_status_field_legal_rep": "Legal Representative",
+    "seller_auth_status_field_registered_capital": "Registered Capital",
+    "seller_auth_status_field_establishment_date": "Establishment Date",
+    "seller_auth_status_field_degree": "Degree",
+    "seller_auth_status_field_major": "Major",
+    "seller_auth_status_field_graduation_year": "Graduation Year",
+    "seller_auth_status_field_id_number": "ID Number",
+    "seller_auth_status_field_valid_period": "Valid Period",
+    "seller_auth_status_field_submit_time": "Submission Time",
+    "seller_auth_status_field_reject_reason": "Rejection Reason",
+    "seller_auth_status_history_approved_title": "Certification Approved",
+    "seller_auth_status_history_approved_desc": "Your {type} certification has been approved. You can now enjoy all certified seller benefits.",
+    "@seller_auth_status_history_approved_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_submitted_title": "Certification Submitted",
+    "seller_auth_status_history_submitted_desc": "Your {type} certification has been submitted. Review will be completed within 1-3 business days.",
+    "@seller_auth_status_history_submitted_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_rejected_title": "Certification Rejected",
+    "seller_auth_status_history_rejected_desc": "Your {type} certification was rejected. Reason: {reason}",
+    "@seller_auth_status_history_rejected_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            },
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_rejected_default_reason": "Materials do not meet requirements",
+    "seller_product_preview_title": "Product Preview",
+    "seller_product_preview_back_to_edit": "Back to Edit",
+    "seller_product_preview_loading": "Loading product info...",
+    "seller_product_preview_load_failed": "Failed to load product info",
+    "seller_product_preview_retry": "Retry",
+    "seller_product_preview_fetching": "Fetching product data...",
+    "seller_product_preview_hint": "This is preview mode. Buyers will see a similar interface.",
+    "seller_product_edit_unsaved_changes_title": "Unsaved Changes Detected",
+    "seller_product_edit_unsaved_changes_message": "You have unsaved content. Save as draft?",
+    "seller_product_edit_cancel": "Cancel",
+    "seller_product_edit_discard": "Discard",
+    "seller_product_edit_operation_failed": "Operation failed",
+    "seller_product_edit_draft_saved": "Draft saved successfully",
+    "seller_product_edit_publish_success": "Service published! Under review. Check the \"On Sale\" list.",
+    "seller_product_edit_update_success": "Service updated successfully",
+    "seller_product_edit_max_images": "Maximum 9 images allowed. First 9 selected.",
+    "seller_product_edit_price_required": "{tierName} price must be greater than 0",
+    "@seller_product_edit_price_required": {
+        "placeholders": {
+            "tierName": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_form_incomplete": "Form data incomplete. Please check highlighted fields.",
+    "seller_product_edit_add_attribute": "Add Attribute",
+    "seller_product_edit_attribute_max_chars": "Attribute name max {max} characters",
+    "@seller_product_edit_attribute_max_chars": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_confirm": "Confirm",
+    "seller_product_edit_options_config": "Options Configuration",
+    "seller_product_edit_new_option": "New Option",
+    "seller_product_edit_option_hint": "Enter option content",
+    "seller_product_edit_service_name_hint": "Service Name",
+    "seller_product_edit_description_hint": "Describe your service details, such as...",
+    "seller_product_edit_faq_title": "FAQ Editor",
+    "seller_product_edit_faq_count": "{count} questions",
+    "@seller_product_edit_faq_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_add_question": "Add Question",
+    "seller_product_edit_question_label": "Question",
+    "seller_product_edit_question_hint": "Enter a question buyers may ask",
+    "seller_product_edit_delete_question": "Delete Question",
+    "seller_product_edit_answer_label": "Answer",
+    "seller_product_edit_answer_hint": "Enter the answer",
+    "seller_product_edit_buyer_info_title": "Buyer Information Required",
+    "seller_product_edit_buyer_info_count": "{count} items",
+    "@seller_product_edit_buyer_info_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_buyer_info_desc": "Select the information types buyers need to provide (shown on order details page)",
+    "seller_product_edit_selected_items": "Selected items:",
+    "seller_product_edit_required": "Required",
+    "seller_product_edit_edit_tooltip": "Edit",
+    "seller_product_edit_delete_tooltip": "Delete",
+    "seller_product_edit_add_info_title": "Add {type} Info",
+    "@seller_product_edit_add_info_title": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_info_label": "Info Label",
+    "seller_product_edit_info_label_hint": "e.g., Company Logo Design Requirements",
+    "seller_product_edit_info_description": "Detailed Description",
+    "seller_product_edit_info_description_hint": "Describe the information buyers need to provide",
+    "seller_product_edit_required_field": "Required Field",
+    "seller_product_edit_add": "Add",
+    "seller_product_edit_edit_info_title": "Edit {type} Info",
+    "@seller_product_edit_edit_info_title": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_save": "Save",
+    "seller_product_edit_cases_count": "{count} cases",
+    "@seller_product_edit_cases_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_add_case": "Add Case",
+    "seller_product_edit_image_load_failed": "Image load failed",
+    "seller_product_edit_click_select_image": "Click to select image",
+    "seller_product_edit_upload_failed": "Upload Failed",
+    "seller_product_edit_upload_retry": "Retry",
+    "seller_product_edit_case_title_label": "Case Title",
+    "seller_product_edit_case_title_hint": "Brief description of this case",
+    "seller_product_edit_case_desc_label": "Case Description",
+    "seller_product_edit_case_desc_hint": "Describe the background, process, or results",
+    "seller_product_edit_select_image_and_title": "Please select an image and enter a title",
+    "seller_product_edit_cover_image": "Service Cover Image",
+    "seller_product_edit_upload_success": "Upload Successful",
+    "seller_product_edit_upload_error": "Upload error: {error}",
+    "@seller_product_edit_upload_error": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_image_format_hint": "Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.",
+    "seller_product_edit_main_image": "Main",
+    "seller_product_edit_tier_price_label": "{tierName} Price",
+    "@seller_product_edit_tier_price_label": {
+        "placeholders": {
+            "tierName": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_max_price": "Maximum: {max}",
+    "@seller_product_edit_max_price": {
+        "placeholders": {
+            "max": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_price_exceed_max": "Price cannot exceed {max}",
+    "@seller_product_edit_price_exceed_max": {
+        "placeholders": {
+            "max": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_price_min": "Minimum price is 0.01",
+    "seller_product_edit_delivery_period": "Delivery Period",
+    "seller_product_edit_delivery_days_suffix": "days",
+    "seller_product_edit_max_days": "Max {max} days",
+    "@seller_product_edit_max_days": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_times": "Revisions",
+    "seller_product_edit_times_suffix": "times",
+    "seller_product_edit_max_times": "Max {max} times",
+    "@seller_product_edit_max_times": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_input": "Input",
+    "seller_product_edit_radio": "Radio",
+    "seller_product_edit_draft_label": "Draft",
+    "seller_product_edit_draft_unsaved_label": "Draft*",
+    "seller_product_edit_publish": "Publish",
+    "seller_product_edit_yes": "Yes",
+    "seller_product_edit_no": "No",
+    "seller_product_edit_add_selection_attribute": "Add Selection Attribute",
+    "seller_product_edit_default_options_yes_no": "Default options: Yes/No",
+    "seller_product_edit_attribute_name_label": "Attribute Name *",
+    "seller_product_edit_attribute_name_example": "e.g.: Color, Model, Material, Suitable Age",
+    "seller_product_edit_attribute_type_label": "Attribute Type",
+    "seller_product_edit_required_item": "Required",
+    "seller_product_card_sales": "Sales: {count}",
+    "@seller_product_card_sales": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_card_view": "View",
+    "seller_image_preview_main_image": "Main",
+    "seller_image_preview_set_main": "Set as Main",
+    "seller_image_preview_load_failed": "Image load failed",
+    "seller_image_preview_delete_title": "Delete Image",
+    "seller_image_preview_delete_confirm": "Delete image {index}?",
+    "@seller_image_preview_delete_confirm": {
+        "placeholders": {
+            "index": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_image_preview_delete": "Delete",
+    "seller_file_select": "Select File",
+    "seller_file_selected": "Selected files:",
+    "seller_file_size": "Size: {size}",
+    "@seller_file_size": {
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_file_size_unknown": "Unable to get size",
+    "seller_file_preview_unsupported": "Cannot preview this file type: {name}",
+    "@seller_file_preview_unsupported": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_common_cancel": "Cancel",
+    "profile_user_name_default": "Username",
+    "profile_buyer_mode": "Buyer Mode",
+    "profile_my_orders": "My Orders",
+    "profile_my_dskk_section": "My DSKK",
+    "profile_liked_stories": "Liked Stories",
+    "profile_logout": "Log Out",
+    "profile_avatar_updated_local": "Avatar updated, but not saved to server yet",
+    "profile_image_pick_error": "Error selecting image: {error}",
+    "@profile_image_pick_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission denied"
+            }
+        }
+    },
+    "profile_feature_not_implemented": "{feature} feature is not yet available",
+    "@profile_feature_not_implemented": {
+        "placeholders": {
+            "feature": {
+                "type": "String",
+                "example": "Favorites"
+            }
+        }
+    },
+    "profile_pending_payment_order": "Pending Payment",
+    "profile_in_progress_order": "In Progress",
+    "profile_completed_order": "Completed",
+    "profile_refund_after_sales": "Refund/After-sales",
+    "profile_account_deletion": "Delete Account",
+    "profile_bound_phone": "Bound Phone",
+    "profile_not_bound": "Not Bound",
+    "profile_nickname": "Nickname",
+    "profile_confirm_logout": "Confirm Logout",
+    "profile_confirm_logout_message": "Are you sure you want to log out?",
+    "profile_confirm": "Confirm",
+    "profile_update_avatar": "Update Avatar",
+    "profile_update_avatar_confirm": "Are you sure you want to update your avatar?",
+    "profile_info_updated": "Profile updated successfully!",
+    "profile_avatar_upload_timeout": "Avatar upload timed out, please check your network and try again",
+    "profile_network_failed": "Network connection failed, please check your network and try again",
+    "profile_avatar_optimized": "Avatar optimized, compressed {ratio}%",
+    "@profile_avatar_optimized": {
+        "placeholders": {
+            "ratio": {
+                "type": "String",
+                "example": "50.0"
+            }
+        }
+    },
+    "profile_avatar_process_failed": "Avatar processing failed: {error}",
+    "@profile_avatar_process_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "File too large"
+            }
+        }
+    },
+    "profile_logout_error": "Error logging out: {error}",
+    "@profile_logout_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_nickname_empty": "Please enter a nickname",
+    "profile_nickname_too_short": "Nickname must be at least 2 characters",
+    "profile_nickname_too_long": "Nickname cannot exceed 20 characters",
+    "profile_nickname_no_spaces": "Nickname cannot contain spaces",
+    "profile_nickname_invalid_chars": "Nickname can only contain Chinese, English, numbers, and underscores",
+    "profile_nickname_only_underscores": "Nickname cannot contain only underscores",
+    "profile_nickname_unchanged": "Nickname has not changed",
+    "profile_edit_nickname_title": "Edit Nickname",
+    "profile_nickname_input_hint": "Enter nickname",
+    "profile_nickname_rules": "Set 2-20 characters, only Chinese, English, numbers, and underscores allowed",
+    "profile_nickname_updated": "Nickname updated successfully!",
+    "profile_nickname_update_failed": "Nickname update failed: {error}",
+    "@profile_nickname_update_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_submit_changes": "Submit Changes",
+    "profile_avatar_uploaded": "Avatar uploaded successfully",
+    "profile_updated": "Profile updated successfully",
+    "profile_reload": "Reload",
+    "profile_account_balance": "Account Balance",
+    "profile_pending_settlement": "Pending Settlement",
+    "profile_total_income": "Total Income",
+    "profile_load_wallet": "Tap to load wallet info",
+    "profile_all_orders": "All Orders",
+    "profile_awaiting_payment": "Pending Payment",
+    "profile_awaiting_shipment": "Pending Shipment",
+    "profile_awaiting_receipt": "Pending Receipt",
+    "profile_awaiting_review": "Pending Review",
+    "profile_shipping_address": "Shipping Address",
+    "profile_browsing_history": "Browsing History",
+    "profile_contact_support": "Contact Support",
+    "profile_help_center": "Help Center",
+    "profile_feedback": "Feedback",
+    "profile_switch_to_seller_mode": "Switch to Seller Mode",
+    "profile_take_photo": "Take Photo",
+    "profile_choose_from_album": "Choose from Album",
+    "profile_image_pick_failed": "Failed to select image: {error}",
+    "@profile_image_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission denied"
+            }
+        }
+    },
+    "profile_edit_profile": "Edit Profile",
+    "profile_online_status": "Online Status",
+    "profile_mission_title": "Assistant's Mission",
+    "profile_mission_our_mission": "Our Mission",
+    "profile_mission_our_mission_content": "Connecting creativity with demand, making every idea possible. Our assistant is dedicated to providing the most thoughtful and intelligent service experience, becoming your most reliable digital partner in life and work.",
+    "profile_mission_core_values": "Core Values",
+    "profile_mission_core_values_content": "• User First: Always starting from user needs\n• Innovation Driven: Continuously exploring new technologies and methods\n• Integrity Service: Providing reliable and transparent service experiences\n• Growing Together: Moving forward with users and partners",
+    "profile_mission_service_promise": "Service Promise",
+    "profile_mission_service_promise_content": "We promise to provide every user with:\n\n✓ 24/7 intelligent service support\n✓ Personalized solution recommendations\n✓ Secure and reliable data protection\n✓ Continuously optimized user experience\n✓ Responsive customer service",
+    "profile_mission_future_vision": "Future Vision",
+    "profile_mission_future_vision_content": "To become a globally leading intelligent service platform, empowered by AI technology, enabling everyone to enjoy personalized and efficient digital life experiences. We believe technology should make life better and creativity easier to realize.",
+    "profile_mission_questions_suggestions": "Questions or Suggestions?",
+    "profile_mission_listening": "We are always listening to your voice, looking forward to creating a better future together.",
+    "profile_mission_contact_us": "Contact Us",
+    "profile_mission_contact_coming_soon": "Contact feature coming soon, stay tuned!",
+    "profile_wallet_title": "My Wallet",
+    "profile_wallet_error": "Error: {error}",
+    "@profile_wallet_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_wallet_occurred_error": "An error occurred: {error}",
+    "@profile_wallet_occurred_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_wallet_retry": "Retry",
+    "profile_wallet_filter_all": "All",
+    "profile_wallet_filter_income": "Income",
+    "profile_wallet_filter_expense": "Expense",
+    "profile_wallet_no_transactions": "No transaction records",
+    "profile_wallet_load_failed": "Loading failed: {error}",
+    "@profile_wallet_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_wallet_load_more_failed": "Failed to load more: {error}",
+    "@profile_wallet_load_more_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "profile_wallet_account_balance": "Account Balance",
+    "profile_wallet_pending_amount": "Pending Amount",
+    "profile_wallet_total_income": "Total Income",
+    "profile_wallet_withdraw": "Withdraw",
+    "profile_wallet_status_completed": "Completed",
+    "profile_wallet_status_pending": "Processing",
+    "profile_wallet_status_failed": "Failed",
+    "profile_wallet_status_unknown": "Unknown",
+    "profile_wallet_transaction_details": "Transaction Details",
+    "profile_wallet_transaction_id": "Transaction ID",
+    "profile_wallet_transaction_type": "Type",
+    "profile_wallet_transaction_type_income": "Income",
+    "profile_wallet_transaction_type_expense": "Expense",
+    "profile_wallet_transaction_amount": "Amount",
+    "profile_wallet_transaction_description": "Description",
+    "profile_wallet_transaction_date": "Date",
+    "profile_wallet_transaction_status": "Status",
+    "profile_wallet_close": "Close",
+    "profile_wallet_available_balance": "Available balance: {symbol}{amount}",
+    "@profile_wallet_available_balance": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "profile_wallet_withdraw_amount": "Withdrawal Amount",
+    "profile_wallet_withdraw_hint": "Enter withdrawal amount",
+    "profile_wallet_withdraw_time": "Withdrawal arrival time: 1-3 business days",
+    "profile_wallet_invalid_amount": "Please enter a valid withdrawal amount",
+    "profile_wallet_exceed_balance": "Withdrawal amount cannot exceed available balance",
+    "profile_wallet_confirm_withdraw": "Confirm Withdrawal",
+    "profile_wallet_withdraw_submitted": "Withdrawal request submitted: {symbol}{amount}",
+    "@profile_wallet_withdraw_submitted": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "profile_wallet_not_implemented": "This feature is not yet available",
+    "auth_verification_expired": "Verification code has expired",
+    "auth_login_failed": "Login failed: {error}",
+    "@auth_login_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "auth_code_send_failed": "Failed to send verification code: {error}",
+    "@auth_code_send_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "auth_login_success": "Login successful!",
+    "auth_login": "Login",
+    "auth_privacy_policy": "Privacy Policy",
+    "auth_and": "and",
+    "auth_user_agreement": "User Agreement",
+    "auth_invalid_phone": "Please enter a valid 11-digit phone number",
+    "auth_get_code": "Get Code",
+    "payment_creating_order": "Creating order...",
+    "payment_processing": "Processing payment...",
+    "payment_credit_card": "Credit Card Payment",
+    "payment_confirm_order": "Confirm Order",
+    "payment_quantity_label": "Quantity:",
+    "payment_order_summary": "Order Summary",
+    "payment_product_amount": "Product Amount",
+    "payment_quantity": "Quantity",
+    "payment_order_total": "Order Total",
+    "payment_method": "Payment Method",
+    "payment_processing_ellipsis": "Processing...",
+    "payment_confirm_pay": "Confirm Payment",
+    "payment_success": "Payment Successful",
+    "payment_failed": "Payment Failed",
+    "payment_view_order_detail": "View Order Details",
+    "payment_back_to_orders": "Back to Orders",
+    "payment_success_tip": "Thank you for your purchase! You can view details in your orders.",
+    "payment_failed_tip": "Payment was not successful. Please try again or choose another payment method.",
+    "home_banner_image_load_failed": "Image failed to load",
+    "home_banner_placeholder": "Banner {index}",
+    "@home_banner_placeholder": {
+        "placeholders": {
+            "index": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "home_no_data": "No data available",
+    "product_detail_no_faq": "No FAQs available",
+    "product_detail_buy_button": "Buy Now {price}",
+    "@product_detail_buy_button": {
+        "placeholders": {
+            "price": {
+                "type": "String",
+                "example": "$99.00"
+            }
+        }
+    },
+    "product_detail_buyer_requirements": "Buyer Requirements",
+    "product_detail_no_buyer_requirements": "Seller has not set buyer requirements yet",
+    "after_sales_apply": "Apply for After-sales",
+    "after_sales_apply_remake": "Apply for Remake",
+    "after_sales_apply_supplement": "Apply for Supplement",
+    "after_sales_apply_refund": "Apply for Refund",
+    "after_sales_max_images": "Maximum {max} images allowed",
+    "@after_sales_max_images": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_images_processed": "Successfully processed {count} images, average compression {ratio}%",
+    "@after_sales_images_processed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "50.0"
+            }
+        }
+    },
+    "after_sales_images_failed": "{count} images failed to process",
+    "@after_sales_images_failed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_image_pick_failed": "Failed to select images: {error}",
+    "@after_sales_image_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission denied"
+            }
+        }
+    },
+    "after_sales_select_reason": "Please select a reason",
+    "after_sales_reason_label": "Reason",
+    "after_sales_reason_quality": "Product quality issue",
+    "after_sales_reason_mismatch": "Product doesn't match description",
+    "after_sales_reason_wrong_item": "Seller sent wrong item",
+    "after_sales_reason_unwanted": "No longer wanted",
+    "after_sales_reason_other": "Other",
+    "after_sales_description_label": "Description",
+    "after_sales_description_hint": "Please describe the issue in detail...",
+    "after_sales_refund_max_hint": "Maximum refund {symbol}{amount}",
+    "@after_sales_refund_max_hint": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_enter_refund_amount": "Please enter the refund amount",
+    "after_sales_invalid_amount": "Please enter a valid amount",
+    "after_sales_amount_must_positive": "Refund amount must be greater than 0",
+    "after_sales_amount_exceed": "Refund amount cannot exceed {symbol}{amount}",
+    "@after_sales_amount_exceed": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_upload_proof": "Upload proof (max {max} images)",
+    "@after_sales_upload_proof": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_remove_image": "Remove image",
+    "after_sales_submit": "Submit Application",
+    "after_sales_loading_failed": "Loading failed: {error}",
+    "@after_sales_loading_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "after_sales_detail_retry": "Retry",
+    "after_sales_initializing": "Initializing...",
+    "after_sales_status_audit_reject": "After-Sales Application Rejected",
+    "after_sales_status_refund_success": "Refund Successful",
+    "after_sales_status_processing": "After-Sales Processing",
+    "after_sales_subtitle_wait_audit": "Seller will process your application within 48 hours",
+    "after_sales_subtitle_audit_pass": "Refund will arrive within 1-3 business days",
+    "after_sales_subtitle_audit_reject": "If you disagree, you can request platform intervention",
+    "after_sales_subtitle_refund_success": "Refund completed, please check your account",
+    "after_sales_subtitle_canceled": "You have canceled the after-sales application",
+    "after_sales_subtitle_default": "Please wait patiently for the result",
+    "after_sales_product_info": "Product Information",
+    "after_sales_product_unknown": "Unknown Product",
+    "after_sales_spec": "Spec: {spec}",
+    "@after_sales_spec": {
+        "placeholders": {
+            "spec": {
+                "type": "String",
+                "example": "Red/Large"
+            }
+        }
+    },
+    "after_sales_quantity": "Quantity: {count}",
+    "@after_sales_quantity": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_info": "After-sales Information",
+    "after_sales_application_number": "Application Number",
+    "after_sales_application_time": "Application Time",
+    "after_sales_refund_amount_label": "Refund Amount",
+    "after_sales_application_reason": "Application Reason",
+    "after_sales_detailed_description": "Detailed Description",
+    "after_sales_audit_remark": "Audit Remark",
+    "after_sales_revoke": "Revoke Application",
+    "after_sales_modify": "Modify Application",
+    "after_sales_platform_intervention": "Platform Intervention",
+    "after_sales_list_title": "After-Sales List",
+    "after_sales_no_records": "No after-sales records",
+    "after_sales_please_wait": "Please wait...",
+    "after_sales_unknown_product": "Unknown Product",
+    "after_sales_status_label": "Status: {status}",
+    "@after_sales_status_label": {
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "Processing"
+            }
+        }
+    },
+    "after_sales_select_type": "Select After-sales Type",
+    "after_sales_type_remake": "Request Remake",
+    "after_sales_type_remake_desc": "Not satisfied with the result? Negotiate a remake with the creator",
+    "after_sales_type_supplement": "Request Supplement",
+    "after_sales_type_supplement_desc": "Result incomplete? Negotiate a supplement with the creator",
+    "after_sales_type_refund": "Request Refund",
+    "after_sales_type_refund_desc": "Negotiate a refund",
+    "after_sales_no_record_for_order": "No after-sales record found for this order",
+    "after_sales_unknown_error": "Unknown error loading after-sales details: {error}",
+    "@after_sales_unknown_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "after_sales_server_error": "Server error",
+    "after_sales_cache_error": "Cache error",
+    "after_sales_network_error": "Network connection error",
+    "after_sales_general_unknown_error": "An unknown error occurred",
+    "favorites_title": "My Favorites",
+    "favorites_tab_services": "Services",
+    "favorites_tab_sellers": "Sellers",
+    "favorites_close": "Close",
+    "favorites_empty_services": "No saved services yet",
+    "favorites_empty_sellers": "No followed sellers yet",
+    "favorites_empty_services_hint": "Tap the favorite button when browsing services",
+    "favorites_empty_sellers_hint": "Tap the follow button when browsing sellers",
+    "favorites_unfollow": "Unfollow",
+    "favorites_remove": "Remove from favorites",
+    "favorites_seller_type_member": "Individual Seller",
+    "favorites_seller_type_enterprise": "Enterprise Seller",
+    "favorites_seller_type_platform": "Platform Seller",
+    "favorites_seller_type_default": "Seller",
+    "favorites_status_active": "Active",
+    "favorites_status_inactive": "Inactive",
+    "favorites_status_suspended": "Suspended",
+    "favorites_status_banned": "Banned",
+    "ai_docs_chat_create_failed": "Unable to create chat session: {error}",
+    "@ai_docs_chat_create_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "ai_docs_chat_room_empty": "Chat room ID is empty, cannot enter chat",
+    "ai_docs_chat_enter_error": "Error entering chat: {error}",
+    "@ai_docs_chat_enter_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "ai_docs_rate_limit_details": "Usage Details",
+    "ai_docs_rate_limit_remaining": "{count} remaining",
+    "@ai_docs_rate_limit_remaining": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "ai_docs_rate_limit_reset_in": "Resets in {time}",
+    "@ai_docs_rate_limit_reset_in": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "2 hours"
+            }
+        }
+    },
+    "ai_docs_rate_limit_rules": "Usage Rules",
+    "ai_docs_rate_limit_burst": "Burst Limit",
+    "ai_docs_rate_limit_hourly": "Hourly Limit",
+    "ai_docs_rate_limit_upgrade": "Upgrade for More",
+    "ai_docs_rate_limit_upgrade_coming": "Upgrade feature coming soon",
+    "ai_docs_rate_limit_time_hours": "{hours} hours",
+    "@ai_docs_rate_limit_time_hours": {
+        "placeholders": {
+            "hours": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "ai_docs_rate_limit_time_minutes": "{minutes} minutes",
+    "@ai_docs_rate_limit_time_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "ai_docs_rate_limit_time_seconds": "{seconds} seconds",
+    "@ai_docs_rate_limit_time_seconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int",
+                "example": "45"
+            }
+        }
+    },
+    "ai_docs_rate_limit_reset": "Reset",
+    "ai_docs_rate_limit_warning_title": "Running Low on Usage",
+    "ai_docs_rate_limit_today_remaining": "Today's Remaining",
+    "ai_docs_rate_limit_remaining_info": "{count} uses remaining, resets in {time}",
+    "@ai_docs_rate_limit_remaining_info": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "time": {
+                "type": "String",
+                "example": "2 hours"
+            }
+        }
+    },
+    "ai_docs_rate_limit_today_usage": "Today's Usage",
+    "auth_verification_code_expired": "Verification code has expired",
+    "auth_get_verification_code": "Get Code",
+    "home_image_load_failed": "Image load failed",
+    "home_reached_end": "You've reached the end",
+    "home_reviews_title": "Reviews",
+    "home_reviews_load_failed": "Load failed: {error}",
+    "@home_reviews_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "home_reviews_no_reviews": "No reviews yet",
+    "home_reviews_default_content": "Great, very patient",
+    "home_reviews_seller_reply": "Seller Reply",
+    "home_reviews_years_ago": "{count} year(s) ago",
+    "@home_reviews_years_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "home_reviews_months_ago": "{count} month(s) ago",
+    "@home_reviews_months_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "home_reviews_days_ago": "{count} day(s) ago",
+    "@home_reviews_days_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "home_reviews_hours_ago": "{count} hour(s) ago",
+    "@home_reviews_hours_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "home_reviews_minutes_ago": "{count} minute(s) ago",
+    "@home_reviews_minutes_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "10"
+            }
+        }
+    },
+    "home_reviews_just_now": "Just now",
+    "after_sales_apply_title": "Apply for After-Sales",
+    "after_sales_select_reason_hint": "Please select a reason",
+    "after_sales_select_reason_validator": "Please select a reason",
+    "after_sales_refund_amount_hint": "Maximum refund {symbol}{amount}",
+    "@after_sales_refund_amount_hint": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_refund_amount_required": "Please enter refund amount",
+    "after_sales_refund_amount_invalid": "Please enter a valid amount",
+    "after_sales_refund_amount_positive": "Refund amount must be greater than 0",
+    "after_sales_refund_amount_exceed": "Refund amount cannot exceed {symbol}{amount}",
+    "@after_sales_refund_amount_exceed": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_upload_evidence": "Upload evidence (max {max} images)",
+    "@after_sales_upload_evidence": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_image_process_success": "Successfully processed {count} images, avg compression {ratio}%",
+    "@after_sales_image_process_success": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "after_sales_image_process_failed": "{count} image(s) failed to process",
+    "@after_sales_image_process_failed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_detail_load_failed": "Load failed: {error}",
+    "@after_sales_detail_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "after_sales_detail_initializing": "Initializing...",
+    "after_sales_info_title": "After-Sales Information",
+    "after_sales_info_order_number": "Application No.",
+    "after_sales_info_apply_time": "Application Time",
+    "after_sales_info_refund_amount": "Refund Amount",
+    "after_sales_info_reason": "Reason",
+    "after_sales_info_description": "Description",
+    "after_sales_info_audit_remark": "Review Remark",
+    "after_sales_list_load_failed": "Load failed: {error}",
+    "@after_sales_list_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "after_sales_list_empty": "No after-sales applications",
+    "after_sales_list_loading": "Please wait...",
+    "after_sales_list_unknown_product": "Unknown Product",
+    "after_sales_list_status": "Status: {status}",
+    "@after_sales_list_status": {
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "Pending"
+            }
+        }
+    },
+    "after_sales_list_apply_time": "Applied: {time}",
+    "@after_sales_list_apply_time": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "2024-01-01"
+            }
+        }
+    },
+    "after_sales_select_type_title": "Select After-Sales Type",
+    "after_sales_type_remake_title": "I want a remake",
+    "after_sales_type_remake_subtitle": "Not satisfied with the result, negotiate a redo with the creator",
+    "after_sales_type_supplement_title": "I want a supplement",
+    "after_sales_type_supplement_subtitle": "Result is incomplete, negotiate supplementation with the creator",
+    "after_sales_type_refund_title": "I want a refund",
+    "after_sales_type_refund_subtitle": "Negotiate refund",
+    "favorites_seller_status_active": "Active",
+    "favorites_seller_status_inactive": "Inactive",
+    "favorites_seller_status_suspended": "Suspended",
+    "favorites_seller_status_banned": "Banned",
+    "app_store_settings": "Store Settings",
+    "app_wallet": "Wallet",
+    "app_wallet_init_failed": "Failed to initialize wallet page",
+    "app_error_label": "Error",
+    "app_go_back": "Go Back",
+    "app_page_not_found": "Page Not Found",
+    "app_path_error": "Path error",
+    "app_error_generic": "Error",
+    "app_dev_menu_title": "Developer Debug Menu",
+    "app_dev_common_entries": "Common Entries",
+    "app_dev_dskk": "DSKK",
+    "app_dev_order_module_buyer": "Order Module (Buyer)",
+    "app_dev_order_list": "Order List",
+    "app_dev_order_detail_example": "Order Detail (Example)",
+    "app_dev_order_module_seller": "Order Module (Seller)",
+    "app_dev_seller_order_list": "Seller Order List",
+    "app_dev_seller_order_detail_example": "Seller Order Detail (Example)",
+    "app_dev_seller_module": "Seller Module",
+    "app_dev_seller_center": "Seller Center (Home)",
+    "app_dev_ai_docs_module": "AI Docs Module",
+    "app_dev_ai_chat": "AI Chat",
+    "app_dev_test_other": "Test/Other",
+    "app_dev_current_credentials": "Current Test Credentials (Hardcoded): ",
+    "app_dev_temp_injection": "(Temporary injection, will be removed after Auth module merge)",
+    "app_dev_navigation_failed": "Navigation failed: {path} - {error}",
+    "@app_dev_navigation_failed": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            },
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "core_processing": "Processing...",
+    "core_yesterday": "Yesterday",
+    "payment_test_title": "Payment Test",
+    "payment_check_availability": "Check payment method availability",
+    "payment_test_params": "Test Parameters",
+    "payment_order_number": "Order Number",
+    "payment_amount_yuan": "Amount",
+    "payment_product_name": "Product Name",
+    "payment_select_method": "Select Payment Method",
+    "payment_test_button": "Test {method} ¥{amount}",
+    "@payment_test_button": {
+        "placeholders": {
+            "method": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_usage_instructions": "Instructions",
+    "payment_instruction_1": "1. Modify test parameters above",
+    "payment_instruction_2": "2. Select payment method to test",
+    "payment_instruction_3": "3. Click test button to initiate payment",
+    "payment_instruction_4": "4. Click info button to check payment method availability",
+    "payment_test_warning": "Note: Use 0.01 for testing in test environment",
+    "payment_test_product": "Test Product",
+    "payment_initiated_success": "Payment initiated: {message}",
+    "@payment_initiated_success": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_failed_message": "Payment failed: {message}",
+    "@payment_failed_message": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_exception": "Payment error: {error}",
+    "@payment_exception": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_availability_title": "Payment Method Availability",
+    "payment_alipay": "Alipay",
+    "payment_wechat": "WeChat Pay",
+    "payment_wallet_balance": "Wallet Balance",
+    "payment_confirm": "OK",
+    "payment_check_failed": "Check failed: {error}",
+    "@payment_check_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_alipay_subtitle": "Fast & secure payment",
+    "payment_wechat_subtitle": "WeChat secure payment",
+    "payment_amount_label": "Amount: ",
+    "payment_terms_agreement": "By clicking \"Pay Now\" you agree to our terms of service",
+    "payment_create_order_failed": "Failed to create payment order",
+    "payment_method_test_title": "Payment Method Test",
+    "payment_alipay_pay": "Alipay Payment",
+    "payment_test_functions": "Test Functions",
+    "payment_test_alipay": "Test Alipay Payment",
+    "payment_test_wechat": "Test WeChat Payment",
+    "payment_test_credit_card": "Test Credit Card Payment",
+    "payment_recent_test_result": "Recent Test Results",
+    "payment_no_test_result": "No test results yet",
+    "payment_available": "Available",
+    "payment_unavailable": "Unavailable",
+    "payment_method_label": "Payment method: {name}",
+    "@payment_method_label": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_mock_mode": "Mock Mode",
+    "payment_error_label": "Error: {error}",
+    "@payment_error_label": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_nav_network_failed": "Network Connection Failed",
+    "payment_nav_network_error_message": "Network error, please check your connection and try again",
+    "payment_nav_view_orders": "View Orders",
+    "payment_nav_retry_payment": "Retry Payment",
+    "payment_nav_result_unknown_title": "Payment Result Unknown",
+    "payment_nav_result_unknown_message": "Payment result cannot be confirmed. Please check order status later or contact support",
+    "payment_nav_query_status": "Check Status",
+    "payment_nav_cancel_continue": "Payment cancelled. You can continue to complete the payment",
+    "payment_nav_processing": "Payment is being processed. Please check order status later",
+    "payment_nav_success": "Payment successful",
+    "payment_nav_failed": "Payment failed",
+    "payment_nav_retrying": "Retrying payment...",
+    "payment_nav_retry_failed": "Cannot retry payment, order information lost",
+    "payment_nav_querying": "Checking payment status...",
+    "payment_nav_query_failed": "Cannot check status, order information lost",
+    "payment_test_description": "{subject} - Payment Test",
+    "@payment_test_description": {
+        "placeholders": {
+            "subject": {
+                "type": "String"
+            }
+        }
+    }
 }

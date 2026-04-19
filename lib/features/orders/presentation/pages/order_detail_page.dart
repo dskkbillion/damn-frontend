@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 // 新的组件导入
 import '../widgets/order_action_buttons.dart';
-import '../widgets/order_completion_summary.dart';
 import '../widgets/order_payment_status_warning.dart';
 import '../widgets/order_items_section.dart';
 import '../widgets/order_info_section.dart';
-// import '../widgets/order_materials_section.dart'; // 轻咨询模式：隐藏材料上传
+import '../widgets/order_materials_section.dart';
 import '../widgets/order_price_details_section.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 订单详情页面
 class OrderDetailPage extends StatefulWidget {
@@ -33,8 +28,6 @@ class OrderDetailPage extends StatefulWidget {
 
 class _OrderDetailPageState extends State<OrderDetailPage> {
   int? _orderIdInt;
-  bool _isCreatingChat = false;
-  late final IChatRepository _chatRepository = GetIt.I<IChatRepository>();
 
   @override
   void initState() {
@@ -51,7 +44,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text('无效的订单 ID'), backgroundColor: AppColors.error),
+            SnackBar(content: Text(AppLocalizations.of(context)!.order_detail_invalid_id), backgroundColor: Colors.red),
           );
           Navigator.of(context).pop();
         }
@@ -79,80 +72,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     return null;
   }
 
-  /// 处理联系卖家功能
-  Future<void> _handleContactSeller(Order order) async {
-    if (_isCreatingChat) return;
-
-    if (order.tenant == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法获取卖家信息')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isCreatingChat = true;
-    });
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
-
-    try {
-      final productId = order.items.isNotEmpty ? order.items.first.productId : null;
-
-      final result = await _chatRepository.createRoom(
-        order.tenant!.id,
-        productId: productId,
-      );
-
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-
-      result.fold(
-        (failure) {
-          if (mounted) {
-            setState(() {
-              _isCreatingChat = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('创建聊天失败: ${failure.message}')),
-            );
-          }
-        },
-        (chatId) {
-          if (mounted) {
-            // 使用 go 而不是 push，因为跨 StatefulShellBranch 导航
-            GoRouter.of(context).go('/chat/refactored/$chatId');
-          }
-        },
-      );
-    } catch (e) {
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        setState(() {
-          _isCreatingChat = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('发生错误: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    AppLogger.d('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
+    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
     
     if (_orderIdInt == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('错误')),
-        body: const Center(child: Text('无效的订单 ID')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.order_detail_error)),
+        body: Center(child: Text(AppLocalizations.of(context)!.order_detail_invalid_id)),
       );
     }
 
@@ -172,7 +99,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
             builder: (context, state) {
               final extractedOrder = _extractOrder(state);
-              return Text('订单详情${extractedOrder != null ? ' (ID: ${extractedOrder.id})' : ''}');
+              return Text(extractedOrder != null ? AppLocalizations.of(context)!.order_detail_title_with_id(extractedOrder.id) : AppLocalizations.of(context)!.order_detail_title);
             },
           ),
         ),
@@ -190,25 +117,17 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 处理BLoC状态变化
   void _handleBlocStateChanges(BuildContext context, OrderDetailState state) {
-    if (state is OrderDetailNavigateToPaymentSelection) {
-      // 导航到支付方式选择页面
-      AppLogger.d('[OrderDetailPage] 导航到支付方式选择页面，订单ID: ${state.order.id}');
-      context.pushNamed(
-        'orderPaymentMethodSelection',
-        pathParameters: {'orderId': state.order.id.toString()},
-        extra: {'order': state.order},
-      );
-    } else if (state is OrderDetailActionSuccess) {
+    if (state is OrderDetailActionSuccess) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: AppColors.success,
+            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
-
+      
       if (state.actionType == OrderAction.cancel || state.actionType == OrderAction.delete) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (mounted) {
@@ -228,7 +147,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: AppColors.error,
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -246,13 +165,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('加载失败: ${state.message}'),
+            Text(AppLocalizations.of(context)!.order_detail_load_failed(state.message)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
               },
-              child: const Text('重新加载'),
+              child: Text(AppLocalizations.of(context)!.order_detail_reload),
             ),
           ],
         ),
@@ -261,7 +180,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     final extractedOrder = _extractOrder(state);
     if (extractedOrder == null) {
-      return const Center(child: Text('订单数据不可用'));
+      return Center(child: Text(AppLocalizations.of(context)!.order_detail_unavailable));
     }
 
     return Stack(
@@ -289,19 +208,19 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.95),
+                        Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
                         Theme.of(context).scaffoldBackgroundColor,
                       ],
                     ),
                     border: Border(
                       top: BorderSide(
-                        color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+                        color: Theme.of(context).dividerColor.withOpacity(0.2),
                         width: 1,
                       ),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.borderSecondary,
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -309,11 +228,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                   ),
                   padding: const EdgeInsets.all(16.0),
                   child: SafeArea(
-                    child: OrderDetailActionButtons(
-                      order: buttonOrder,
-                      onContactSeller: _handleContactSeller,
-                      isCreatingChat: _isCreatingChat,
-                    ),
+                    child: OrderDetailActionButtons(order: buttonOrder),
                   ),
                 );
               }
@@ -325,7 +240,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // Loading overlay for action processing
         if (state is OrderDetailActionLoading)
           Container(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             child: const Center(
               child: CircularProgressIndicator(),
             ),
@@ -336,7 +251,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 构建订单详情内容
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    AppLogger.d('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
+    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
     
     return Column(
       children: [
@@ -360,18 +275,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                 // 订单信息
                 OrderInfoSection(order: order),
                 const SizedBox(height: 16),
-
-                if (order.state == OrderStatus.orderCompleted ||
-                    order.state == OrderStatus.canceled) ...[
-                  OrderCompletionSummary(order: order),
-                  const SizedBox(height: 16),
-                ],
                 
-                // 轻咨询模式：隐藏材料上传部分
-                // if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[
-                //   OrderMaterialsSection(order: order),
-                //   const SizedBox(height: 16),
-                // ],
+                // 材料信息
+                OrderMaterialsSection(order: order),
+                const SizedBox(height: 16),
                 
                 // 价格详情
                 OrderPriceDetailsSection(order: order),
@@ -384,11 +291,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // 底部操作按钮
         BlocBuilder<OrderDetailBloc, OrderDetailState>(
           builder: (context, buttonState) {
-            return OrderDetailActionButtons(
-              order: order,
-              onContactSeller: _handleContactSeller,
-              isCreatingChat: _isCreatingChat,
-            );
+            return OrderDetailActionButtons(order: order);
           },
         ),
       ],

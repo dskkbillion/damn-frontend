@@ -1,12 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
-import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
@@ -15,7 +11,6 @@ import '../../domain/entities/participant.dart';
 class ChatListItem extends StatefulWidget { // Change to StatefulWidget for initState
   final ChatRoom chatRoom;
   final VoidCallback? onTap;
-  final VoidCallback? onDelete;
   final int currentUserId;
 
   const ChatListItem({
@@ -23,7 +18,6 @@ class ChatListItem extends StatefulWidget { // Change to StatefulWidget for init
     required this.chatRoom,
     required this.currentUserId,
     this.onTap,
-    this.onDelete,
   });
 
   @override
@@ -41,7 +35,7 @@ class _ChatListItemState extends State<ChatListItem> {
   // Updated timestamp formatting based on frontend.md
   String _formatTimestamp(DateTime? timestamp) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     if (timestamp == null) return '';
     final now = DateTime.now();
@@ -54,7 +48,7 @@ class _ChatListItemState extends State<ChatListItem> {
       return DateFormat('HH:mm', 'zh_CN').format(timestamp);
     } else if (difference == 1) {
       // Yesterday
-      return appLocalizations.chat_yesterday;
+      return s.chat_yesterday;
     } else if (difference < 7) {
        // Within a week: Weekday (e.g., 星期一)
        // Ensure zh_CN is initialized for this
@@ -67,46 +61,34 @@ class _ChatListItemState extends State<ChatListItem> {
 
   String _getLastMessagePreview(ChatMessage? message) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
-
+    final s = AppLocalizations.of(context)!;
+    
     if (message == null) return '';
-    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
-
-    // Debug: 打印消息类型
-    AppLogger.d('[ChatListItem] Message type: ${message.type}, context: ${message.context.substring(0, message.context.length > 20 ? 20 : message.context.length)}');
+    // Limit preview length for text messages
+    const maxLength = 30; 
+    String contextPreview = message.context.length > maxLength 
+        ? '${message.context.substring(0, maxLength)}...' 
+        : message.context;
 
     switch (message.type) {
       case 'text':
-        // Limit preview length for text messages
-        const maxLength = 30;
-        String contextPreview = message.context.length > maxLength
-            ? '${message.context.substring(0, maxLength)}...'
-            : message.context;
         return contextPreview;
       case 'image':
-        return appLocalizations.chat_image_message;
+        return s.chat_image_message;
       case 'audio':
-        return appLocalizations.chat_audio_message;
-      case 'file':
-        return appLocalizations.chat_file_message;
-      case 'allocate':
-        return appLocalizations.chat_allocate_message;
-      case 'payment_prompt':
-        return appLocalizations.chat_payment_prompt_message;
+        return s.chat_audio_message;
+      // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
+      // TODO: Add cases for other custom types ('order', 'distribute')
       default:
         // Show context for unknown types if not empty, otherwise indicate unknown
-        const maxLength = 30;
-        String contextPreview = message.context.length > maxLength
-            ? '${message.context.substring(0, maxLength)}...'
-            : message.context;
-        return contextPreview.isNotEmpty ? contextPreview : appLocalizations.chat_unknown_message;
+        return contextPreview.isNotEmpty ? contextPreview : s.chat_unknown_message;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     // 获取对方信息（可能是买家或卖家）
     final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
@@ -115,21 +97,21 @@ class _ChatListItemState extends State<ChatListItem> {
     if (opponent == null) {
       return ListTile(
         leading: CircleAvatar(child: Icon(Icons.error)),
-        title: Text(appLocalizations.chat_invalid_session),
-        subtitle: Text('对方信息不存在'),
+        title: Text(s.chat_invalid_session),
+        subtitle: Text(s.chat_opponent_info_missing),
       );
     }
 
     final timestampText = _formatTimestamp(widget.chatRoom.lastActivityTime);
     final lastMessageText = _getLastMessagePreview(widget.chatRoom.lastMessage);
 
-    final listTile = ListTile(
+    return ListTile(
       leading: CircleAvatar(
         radius: 25, // Standard ListTile leading size adjust if needed
         backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(opponent.avatar!)
             : null, // Use provider for CircleAvatar
-        backgroundColor: AppColors.borderPrimary, // Placeholder background
+        backgroundColor: Colors.grey[200], // Placeholder background
         child: (opponent.avatar == null || opponent.avatar!.isEmpty)
             ? Text(
                 opponent.nickName?.isNotEmpty == true
@@ -143,7 +125,7 @@ class _ChatListItemState extends State<ChatListItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            opponent.nickName ?? '未知用户',
+            opponent.nickName ?? s.chat_unknown_user,
             style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16), // Adjust font size
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -154,9 +136,9 @@ class _ChatListItemState extends State<ChatListItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.info.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                border: Border.all(color: AppColors.info.withOpacity(0.2)),
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue[200]!),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -174,7 +156,7 @@ class _ChatListItemState extends State<ChatListItem> {
                           return Container(
                             width: 20,
                             height: 20,
-                            color: AppColors.borderInput,
+                            color: Colors.grey[300],
                             child: const Icon(Icons.image, size: 12),
                           );
                         },
@@ -186,10 +168,10 @@ class _ChatListItemState extends State<ChatListItem> {
                   // 商品名称
                   Flexible(
                     child: Text(
-                      widget.chatRoom.productName ?? '商品',
+                      widget.chatRoom.productName ?? s.chat_product_default,
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.info,
+                        color: Colors.blue[700],
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -200,10 +182,10 @@ class _ChatListItemState extends State<ChatListItem> {
                   if (widget.chatRoom.productPrice != null) ...[
                     const SizedBox(width: 4),
                     Text(
-                      PriceFormatter.format(widget.chatRoom.productPrice!),
+                      '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.error,
+                        color: Colors.red[600],
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -216,7 +198,7 @@ class _ChatListItemState extends State<ChatListItem> {
       ),
       subtitle: Text(
         lastMessageText,
-        style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -226,15 +208,15 @@ class _ChatListItemState extends State<ChatListItem> {
         children: [
           Text(
             timestampText,
-            style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
           ),
           const SizedBox(height: 5.0), // Space for badge
           if (widget.chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), // Adjusted padding
               decoration: BoxDecoration(
-                color: AppColors.error,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10), // Make it slightly pill-shaped
               ),
               constraints: const BoxConstraints(
                 minWidth: 18,
@@ -255,51 +237,5 @@ class _ChatListItemState extends State<ChatListItem> {
       onTap: widget.onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding
     );
-
-    // 如果有删除回调，包裹在 Dismissible 中实现滑动删除
-    if (widget.onDelete != null) {
-      return Dismissible(
-        key: ValueKey('chat_${widget.chatRoom.id}'),
-        direction: DismissDirection.endToStart, // 从右向左滑动
-        confirmDismiss: (direction) async {
-          // 显示确认对话框
-          return await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('确认删除'),
-                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                    child: const Text('删除'),
-                  ),
-                ],
-              );
-            },
-          ) ?? false;
-        },
-        onDismissed: (direction) {
-          widget.onDelete!();
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          color: AppColors.error,
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
-        ),
-        child: listTile,
-      );
-    }
-
-    return listTile;
   }
 } 

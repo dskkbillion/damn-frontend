@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart'; // Import intl for date formatting
@@ -10,10 +7,8 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_message_bubble.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_order_status_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
-import '../utils/debounce_throttle.dart'; // 导入防抖节流工具
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -46,26 +41,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   final int _pageSize = 20;
   bool _isLoadingMore = false;
   bool _hasMoreMessages = true;
-  
-  // 添加滚动优化器
-  late final ScrollOptimizer _scrollOptimizer;
 
   @override
   void initState() {
     super.initState();
-    // 初始化滚动优化器
-    _scrollOptimizer = ScrollOptimizer(
-      loadDebounceDelay: const Duration(milliseconds: 500), // 防抖延迟500ms
-      uiThrottleInterval: const Duration(milliseconds: 100), // UI更新节流100ms
-    );
-    
     // 监听滚动事件
     _scrollController.addListener(_onScroll);
     
     // 触发加载聊天消息事件
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        AppLogger.d('[ChatRoomPage] 触发LoadChatMessages事件，chatId: ${widget.chatId}');
+        print('[ChatRoomPage] 触发LoadChatMessages事件，chatId: ${widget.chatId}');
         context.read<ChatMessagesBloc>().add(LoadChatMessages(widget.chatId));
       }
       
@@ -76,8 +62,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // 处理滚动事件
   void _onScroll() {
-    if (_scrollController.hasClients &&
-        _scrollController.position.hasContentDimensions) {
+    if (_scrollController.hasClients) {
       final maxScroll = _scrollController.position.maxScrollExtent;
       final currentScroll = _scrollController.offset;
       
@@ -86,32 +71,24 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       final isScrollingDown = scrollDelta > 0; // 在reverse模式下，向下滚动offset增加
       final isScrollingUp = scrollDelta < 0;
       
-      // 使用防抖处理加载更多消息
+      // 检查是否需要加载更多历史消息（在reverse模式下，滚动到顶部时加载更多）
       if (currentScroll >= maxScroll * 0.8 && !_isLoadingMore && _hasMoreMessages) {
-        _scrollOptimizer.debounceLoadMore(() {
-          if (mounted && !_isLoadingMore && _hasMoreMessages) {
-            _loadMoreMessages();
-          }
-        });
+        _loadMoreMessages();
       }
       
-      // 使用节流处理UI更新
+      // 更新商品头部显示状态
       if (scrollDelta.abs() > 5.0) { // 避免微小滚动触发
-        _scrollOptimizer.throttleUIUpdate(() {
-          if (mounted) {
-            setState(() {
-              if (isScrollingDown && currentScroll > _scrollThreshold) {
-                // 向下滚动且超过阈值时隐藏商品头部
-                _showProductHeader = false;
-              } else if (isScrollingUp || currentScroll <= _scrollThreshold) {
-                // 向上滚动或接近顶部时显示商品头部
-                _showProductHeader = true;
-              }
-              
-              // 更新滚动到底部按钮状态
-              _showScrollToBottomButton = currentScroll > 300;
-            });
+        setState(() {
+          if (isScrollingDown && currentScroll > _scrollThreshold) {
+            // 向下滚动且超过阈值时隐藏商品头部
+            _showProductHeader = false;
+          } else if (isScrollingUp || currentScroll <= _scrollThreshold) {
+            // 向上滚动或接近顶部时显示商品头部
+            _showProductHeader = true;
           }
+          
+          // 更新滚动到底部按钮状态
+          _showScrollToBottomButton = currentScroll > 300;
         });
       }
       
@@ -127,7 +104,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       _isLoadingMore = true;
     });
     
-    AppLogger.d('[ChatRoomPage] Loading more messages, pageNum: ${_pageNum + 1}');
+    print('[ChatRoomPage] Loading more messages, pageNum: ${_pageNum + 1}');
     
     // 调用bloc加载更多消息
     context.read<ChatMessagesBloc>().add(
@@ -144,7 +121,6 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   @override
   void dispose() {
-    _scrollOptimizer.dispose(); // 释放滚动优化器资源
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -152,22 +128,21 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
   // 优化滚动到底部的方法 - 在reverse模式下，底部是位置0
   void _scrollToBottom() {
-    if (_scrollController.hasClients &&
-        _scrollController.position.hasContentDimensions) {
+    if (_scrollController.hasClients) {
       try {
         final currentScroll = _scrollController.position.pixels;
-
+        
         // 在reverse模式下，如果当前不在底部（位置0），使用直接跳转，避免卡顿
         if (currentScroll > 10) { // 允许10像素的误差
           _scrollController.jumpTo(0); // 在reverse模式下，底部是位置0
-          AppLogger.d("[ChatRoom] Scrolled to bottom (position 0)");
+          print("[ChatRoom] Scrolled to bottom (position 0)");
         }
       } catch (e) {
         // 处理可能的异常，避免因滚动问题导致应用崩溃
-        AppLogger.d("[ChatRoom] Error scrolling to bottom: $e");
+        print("[ChatRoom] Error scrolling to bottom: $e");
       }
-    } else if (!_scrollController.hasClients) {
-      AppLogger.d("[ChatRoom] ScrollController has no clients yet");
+    } else {
+      print("[ChatRoom] ScrollController has no clients yet");
     }
   }
 
@@ -203,13 +178,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       formattedTime = DateFormat('HH:mm').format(timestamp);
     } else if (messageDate.isAtSameMomentAs(yesterday)) {
       // 昨天的消息
-      formattedTime = '昨天 ${DateFormat('HH:mm').format(timestamp)}';
+      formattedTime = AppLocalizations.of(context)!.chat_yesterday_time(DateFormat('HH:mm').format(timestamp));
     } else if (timestamp.year == now.year) {
       // 今年的消息显示月日和时间
-      formattedTime = DateFormat('MM月dd日 HH:mm', 'zh_CN').format(timestamp);
+      formattedTime = DateFormat.MMMd(Intl.getCurrentLocale()).add_Hm().format(timestamp);
     } else {
       // 跨年的消息显示完整日期
-      formattedTime = DateFormat('yyyy年MM月dd日 HH:mm', 'zh_CN').format(timestamp);
+      formattedTime = DateFormat.yMMMd(Intl.getCurrentLocale()).add_Hm().format(timestamp);
     }
 
     return Center(
@@ -217,13 +192,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         margin: const EdgeInsets.symmetric(vertical: 12.0),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         decoration: BoxDecoration(
-          color: AppColors.borderPrimary,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12.0),
         ),
         child: Text(
           formattedTime,
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: Colors.grey[600],
             fontSize: 12.0,
             fontWeight: FontWeight.w500,
           ),
@@ -235,15 +210,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     return Scaffold(
-      backgroundColor: AppColors.backgroundSecondary,
+      backgroundColor: const Color(0xFFEDEDED), // Set background color here
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundCard,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0.5,
-        shadowColor: AppColors.borderInput,
+        backgroundColor: Colors.white,    // Set AppBar background
+        foregroundColor: Colors.black,    // Set AppBar foreground (text/icons)
+        elevation: 0.5,                 // Add subtle elevation
+        shadowColor: Colors.grey[300],    // Set shadow color
         centerTitle: true,              // Center the title
         // Add custom leading to control back button behavior
         leading: BackButton(
@@ -257,17 +232,17 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         title: BlocBuilder<ChatMessagesBloc, ChatMessagesState>(
           builder: (context, state) {
             if (state is ChatMessagesLoaded) {
-              return Text(state.opponent.nickName ?? appLocalizations.chat_unknown_user);
+              return Text(state.opponent.nickName ?? s.chat_unknown_user);
             } else if (state is ChatMessagesLoading && state is! ChatMessagesInitial) {
                  final bloc = context.read<ChatMessagesBloc>();
                  if (bloc.state is ChatMessagesLoaded) {
-                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? appLocalizations.chat_unknown_user);
+                     return Text((bloc.state as ChatMessagesLoaded).opponent.nickName ?? s.chat_unknown_user);
                  }
-                  return Text(appLocalizations.chat_loading);
+                  return Text(s.chat_loading);
             } else if (state is ChatMessagesInitial) {
-                 return Text(appLocalizations.chat_loading);
+                 return Text(s.chat_loading);
             } else {
-              return Text(appLocalizations.chat_unknown_user);
+              return Text(s.chat_unknown_user);
             }
           },
         ),
@@ -293,43 +268,31 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         final chatRoom = bloc.currentRoom;
                         
                         if (chatRoom != null && chatRoom.hasProduct) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ProductChatHeader(
-                                chatRoom: chatRoom,
-                                actionText: '查看详情',
-                                onProductTap: () {
-                                  // 导航到商品详情页
-                                  if (chatRoom.productId != null) {
-                                    AppLogger.d('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                    // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                    context.push(
-                                      '/home/product/${chatRoom.productId}',
-                                      extra: {'chatRoomId': chatRoom.id},
-                                    );
-                                  } else {
-                                    AppLogger.d('商品ID为空，无法导航到商品详情页');
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('商品信息不完整，无法查看详情')),
-                                    );
-                                  }
-                                },
-                                onActionTap: () {
-                                  // 处理操作按钮点击（如立即购买）
-                                  if (chatRoom.productId != null) {
-                                    AppLogger.d('点击操作按钮: ${chatRoom.productName}');
-                                    // 也可以导航到商品详情页，或者实现其他操作
-                                    // Navigate to product detail using GoRouter with push to preserve navigation stack
-                                    context.push(
-                                      '/home/product/${chatRoom.productId}',
-                                      extra: {'chatRoomId': chatRoom.id},
-                                    );
-                                  }
-                                },
-                              ),
-                              ChatOrderStatusBar(chatRoom: chatRoom),
-                            ],
+                          return ProductChatHeader(
+                            chatRoom: chatRoom,
+                            actionText: s.chat_view_details,
+                            onProductTap: () {
+                              // 导航到商品详情页
+                              if (chatRoom.productId != null) {
+                                print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
+                                // Navigate to product detail using GoRouter
+                                context.push('/product/${chatRoom.productId}');
+                              } else {
+                                print('商品ID为空，无法导航到商品详情页');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(s.chat_product_info_incomplete)),
+                                );
+                              }
+                            },
+                            onActionTap: () {
+                              // 处理操作按钮点击（如立即购买）
+                              if (chatRoom.productId != null) {
+                                print('点击操作按钮: ${chatRoom.productName}');
+                                // 也可以导航到商品详情页，或者实现其他操作
+                                // Navigate to product detail using GoRouter
+                                context.push('/product/${chatRoom.productId}');
+                              }
+                            },
                           );
                         }
                       }
@@ -346,13 +309,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                      if (state is ChatMessagesLoaded) {
                         // 当消息首次加载成功时，触发回调通知聊天列表更新未读数量
                         if (state.isInitialLoad) {
-                          AppLogger.d('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
+                          print('[ChatRoomPage] Messages loaded successfully, triggering onMessagesLoaded callback');
                           widget.onMessagesLoaded?.call();
                         }
                         
                         // 检查是否有消息被撤回
                         if (state.hasMessageRevoked) {
-                          AppLogger.d('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
+                          print('[ChatRoomPage] Message revoked detected, triggering onMessageRevoked callback');
                           // 获取新的最后一条消息
                           final newLastMessage = state.messages.isNotEmpty ? state.messages.last : null;
                           widget.onMessageRevoked?.call(widget.chatId, newLastMessage);
@@ -367,7 +330,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         
                         // 检查是否有消息发送成功
                         if (state.hasMessageSent) {
-                          AppLogger.d('[ChatRoomPage] Message sent detected, triggering onMessageSent callback');
+                          print('[ChatRoomPage] Message sent detected, triggering onMessageSent callback');
                           widget.onMessageSent?.call();
                           
                           // 重置发送标志
@@ -407,7 +370,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       return Center(child: CircularProgressIndicator());
                     } else if (state is ChatMessagesLoaded) {
                       if (state.messages.isEmpty) {
-                        return Center(child: Text(appLocalizations.chat_no_messages));
+                        return Center(child: Text(s.chat_no_messages));
                       }
                       
                       return Stack(
@@ -454,7 +417,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               final bool isFirstInList = messageIndex == 0;
 
                               if (currentMessage.createTime == null) {
-                                AppLogger.d('Error: Message ID ${currentMessage.id} has null createTime.');
+                                print('Error: Message ID ${currentMessage.id} has null createTime.');
                                 return ChatMessageBubble(
                                   key: ValueKey(currentMessage.id), 
                                   message: currentMessage,
@@ -484,11 +447,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       );
                     } else if (state is ChatMessagesError) {
                       return Center(
-                        child: Text(appLocalizations.chat_error_loading(state.message)),
+                        child: Text(s.chat_error_loading(state.message)),
                       );
                     } else {
                       // Initial state or unexpected state
-                      return Center(child: Text(appLocalizations.chat_loading));
+                      return Center(child: Text(s.chat_loading));
                     }
                   },
                 ),
@@ -503,10 +466,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               bottom: 80.0, // 距离底部80像素，避免与输入栏重合
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: AppColors.backgroundCard,
+                backgroundColor: Colors.white,
                 elevation: 4.0,
                 onPressed: _scrollToBottom,
-                child: Icon(Icons.arrow_downward, color: AppColors.textTertiary),
+                child: const Icon(Icons.arrow_downward, color: Colors.grey),
               ),
             ),
         ],

@@ -1,10 +1,8 @@
 {
     "@@locale": "zh",
-    
     "language_settings": "语言设置",
     "system_language": "跟随系统",
     "system_language_description": "自动使用设备的语言设置",
-    
     "ai_docs_assistant_title": "AI 助手",
     "ai_docs_unnamed_conversation": "未命名会话",
     "ai_docs_loading": "加载中...",
@@ -14,32 +12,29 @@
     "ai_docs_recommended_services": "推荐服务",
     "ai_docs_recommendations_error": "加载推荐服务失败: {error}",
     "@ai_docs_recommendations_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "ai_docs_no_recommendations": "暂无推荐服务",
     "ai_docs_dispatched": "已分发",
     "ai_docs_enter_chat": "进入聊天",
     "ai_docs_let_them_see": "让ta看看",
-    
     "ai_docs_welcome_title": "欢迎使用AI助手",
     "ai_docs_welcome_message": "直接发送消息即可开始对话，系统会自动为您创建聊天室",
     "ai_docs_auto_create_text": "没有选择对话，自动创建新对话并发送消息",
     "ai_docs_auto_create_voice": "没有选择对话，自动创建新对话并发送语音消息",
     "ai_docs_cancelling_generation": "正在取消生成中...",
-    
     "allocating_step1": "分发中",
     "allocating_step2": "分发中.",
     "allocating_step3": "分发中..",
     "allocating_step4": "分发中...",
-    
     "ai_docs_add_image": "添加图片",
     "ai_docs_stop_recording": "停止录音",
-    "ai_docs_start_recording": "录制语音", 
+    "ai_docs_start_recording": "录制语音",
     "ai_docs_recording": "正在录音...点击停止发送",
     "ai_docs_enter_message": "输入消息...",
     "ai_docs_stop_generation": "停止生成",
@@ -48,36 +43,35 @@
     "ai_docs_mic_permission_denied": "麦克风权限被拒绝",
     "ai_docs_recording_error": "开始录音出错: {error}",
     "@ai_docs_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "权限错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "权限错误"
+            }
         }
-      }
     },
     "ai_docs_recording_file_not_found": "错误：未找到录音文件",
     "ai_docs_stop_recording_error": "停止录音出错",
     "ai_docs_stop_recording_error_with_reason": "停止录音出错: {error}",
     "@ai_docs_stop_recording_error_with_reason": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "文件保存失败"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "文件保存失败"
+            }
         }
-      }
     },
     "ai_docs_image_picking_error": "选择图片出错: {error}",
     "@ai_docs_image_picking_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "文件过大"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "文件过大"
+            }
         }
-      }
     },
     "ai_docs_conversation_list": "会话列表",
     "ai_docs_no_messages": "暂无消息，开始聊天吧！",
-    
     "ai_docs_new_chat": "新建聊天",
     "ai_docs_load_conversations_failed": "加载会话失败",
     "ai_docs_retry": "重试",
@@ -88,56 +82,52 @@
     "ai_docs_cancel": "取消",
     "ai_docs_delete": "删除",
     "ai_docs_please_select_conversation_to_delete": "请先选择要删除的会话",
-    
     "ai_docs_generate_title": "AI生成标题",
     "ai_docs_generate_title_tooltip": "让AI为这个会话生成一个标题",
     "ai_docs_generating_title": "正在生成标题...",
     "ai_docs_title_generated": "标题已生成",
     "ai_docs_title_generation_failed": "标题生成失败: {error}",
     "@ai_docs_title_generation_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "ai_docs_edit_title": "编辑标题",
     "ai_docs_edit_title_hint": "请输入新的标题",
     "ai_docs_title_updated": "标题已更新",
     "ai_docs_title_update_failed": "标题更新失败: {error}",
     "@ai_docs_title_update_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "ai_docs_title_too_long": "标题长度不能超过50个字符",
     "ai_docs_title_empty": "标题不能为空",
-    
     "nav_ai_assistant": "看看",
     "nav_home": "逛逛",
     "nav_messages": "聊聊",
     "nav_profile": "我的",
     "nav_dev": "开发",
-    
     "nav_seller_analytics": "数据",
     "nav_seller_products": "商品",
     "nav_seller_messages": "消息",
     "nav_seller_profile": "我的",
-    
     "chat_list_title": "聊天列表",
     "chat_loading": "正在加载...",
     "chat_error_loading": "加载失败: {error}",
     "@chat_error_loading": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "chat_no_messages": "暂无消息，开始聊天吧！",
     "chat_admin_title": "系统管理员",
@@ -155,7 +145,6 @@
     "chat_unknown_user": "未知用户",
     "chat_invalid_session": "无效的会话",
     "chat_opponent_not_found": "无法找到对方信息",
-    
     "chat_message_recalled": "消息已撤回",
     "chat_copy": "复制",
     "chat_recall": "撤回",
@@ -169,7 +158,6 @@
     "chat_admin_connection_error": "无法连接到系统管理员",
     "chat_audio_pause": "暂停",
     "chat_audio_play": "播放",
-    
     "chat_markdown_example_title1": "这是一级标题",
     "chat_markdown_example_title2": "这是二级标题",
     "chat_markdown_example_bold_italic": "这是**粗体**文本和*斜体*文本。",
@@ -183,7 +171,6 @@
     "chat_markdown_example_table_content2": "内容2",
     "chat_markdown_example_table_content3": "内容3",
     "chat_markdown_example_table_content4": "内容4",
-    
     "chat_pick_from_gallery": "从相册选择",
     "chat_take_photo": "拍照",
     "chat_send_markdown": "发送Markdown示例",
@@ -200,14 +187,13 @@
     "chat_press_to_talk": "按住 说话",
     "chat_release_to_send": "松开 发送 ({duration}s)",
     "@chat_release_to_send": {
-      "placeholders": {
-        "duration": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "duration": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
-    
     "chat_camera_permission_denied_title": "相机权限已被禁用",
     "chat_camera_permission_denied_message": "请在系统设置中手动开启相机权限才能使用拍照功能。",
     "chat_mic_permission_denied_title": "麦克风权限已被禁用",
@@ -218,37 +204,35 @@
     "chat_camera_permission_denied": "未获得相机权限，无法拍照",
     "chat_recording_error": "无法开始录音: {error}",
     "@chat_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "权限错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "权限错误"
+            }
         }
-      }
     },
     "chat_stop_recording_error": "停止录音失败: {error}",
     "@chat_stop_recording_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "文件保存失败"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "文件保存失败"
+            }
         }
-      }
     },
     "chat_image_picking_error": "选择图片出错: {error}",
     "@chat_image_picking_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "文件过大"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "文件过大"
+            }
         }
-      }
     },
     "chat_web_recording_not_supported": "Web 平台暂不支持录音功能",
-    
     "profile_personal_center": "个人中心",
     "profile_login_prompt": "请登录以查看您的个人资料",
     "profile_login_button": "去登录",
-    
     "auth_phone_number": "手机号",
     "auth_select_country_region": "选择国家/地区",
     "auth_phone_validation_empty": "请输入手机号",
@@ -259,14 +243,13 @@
     "auth_phone_validation_invalid_general": "请输入有效的电话号码",
     "profile_loading_error": "加载失败: {error}",
     "@profile_loading_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
-    
     "profile_my_dskk": "我的多看",
     "profile_favorites": "收藏",
     "profile_my_wallet": "我的钱包",
@@ -276,18 +259,16 @@
     "profile_message_notifications": "消息通知",
     "profile_about_us": "关于我们",
     "profile_assistant_mission": "小帮手的使命",
-    
     "profile_switch_to_seller": "切换到卖家模式",
     "profile_switch_error": "无法切换到卖家模式: {error}",
     "@profile_switch_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
-    
     "profile_edit_nickname": "修改昵称",
     "profile_nickname_hint": "请输入新昵称",
     "profile_nickname_empty_error": "昵称不能为空",
@@ -298,7 +279,6 @@
     "profile_online": "在线",
     "profile_offline": "离线",
     "profile_avatar_upload_failed": "头像上传失败，请重试",
-    
     "profile_orders": "我的订单",
     "profile_pending_payment": "待付款",
     "profile_in_progress": "咨询中",
@@ -306,25 +286,24 @@
     "profile_refund": "售后",
     "profile_navigation_error": "无法导航到订单列表: {error}",
     "@profile_navigation_error": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "导航错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "导航错误"
+            }
         }
-      }
     },
-
     "home_title": "首页",
     "home_search_hint": "搜索服务",
     "home_loading": "加载中...",
     "home_loading_failed": "加载失败: {error}",
     "@home_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "home_retry": "重试",
     "home_end_of_list": "已经到底了",
@@ -332,40 +311,38 @@
     "home_pull_to_refresh": "下拉刷新获取推荐内容",
     "home_banner_clicked": "点击了轮播图: {targetType} - {targetValue}",
     "@home_banner_clicked": {
-      "placeholders": {
-        "targetType": {
-          "type": "String",
-          "example": "商品"
-        },
-        "targetValue": {
-          "type": "String",
-          "example": "12345"
+        "placeholders": {
+            "targetType": {
+                "type": "String",
+                "example": "商品"
+            },
+            "targetValue": {
+                "type": "String",
+                "example": "12345"
+            }
         }
-      }
     },
     "home_product_card_clicked": "点击了服务卡片: {name}",
     "@home_product_card_clicked": {
-      "placeholders": {
-        "name": {
-          "type": "String",
-          "example": "设计服务"
+        "placeholders": {
+            "name": {
+                "type": "String",
+                "example": "设计服务"
+            }
         }
-      }
     },
     "home_recommend_clicked": "点击了\"让ta看看\"按钮: {name}",
     "@home_recommend_clicked": {
-      "placeholders": {
-        "name": {
-          "type": "String",
-          "example": "设计服务"
+        "placeholders": {
+            "name": {
+                "type": "String",
+                "example": "设计服务"
+            }
         }
-      }
     },
-    
     "product_recommend_button": "让ta看看",
     "product_image_loading_failed": "图片加载失败",
     "product_default_name": "商品",
-    
     "search_title": "搜索",
     "search_button": "搜索",
     "search_hot_keywords": "热搜榜",
@@ -373,22 +350,21 @@
     "search_no_results": "没有找到相关的服务",
     "search_failed": "搜索失败: {error}",
     "@search_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
-    
     "product_detail_loading_failed": "加载失败: {error}",
     "@product_detail_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "product_detail_retry": "重试",
     "product_detail_please_wait": "请稍等...",
@@ -402,24 +378,24 @@
     "product_detail_buy_now": "一键购买(1)",
     "product_detail_buy_now_with_price": "一键购买 ¥{price}",
     "@product_detail_buy_now_with_price": {
-      "placeholders": {
-        "price": {
-          "type": "String",
-          "example": "99.00"
+        "placeholders": {
+            "price": {
+                "type": "String",
+                "example": "99.00"
+            }
         }
-      }
     },
     "product_detail_faq": "常见问题",
     "product_detail_case_showcase": "案例展示",
     "product_detail_no_cases": "暂无案例展示",
     "product_detail_reviews": "评论({count})",
     "@product_detail_reviews": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "product_detail_view_all": "查看全部",
     "product_detail_no_reviews": "暂无评价",
@@ -431,93 +407,91 @@
     "product_detail_premium_tier": "豪华",
     "product_detail_sample_review": "不错，很有耐心",
     "product_detail_sample_user": "瑞123",
-    
     "product_reviews_title": "评论",
     "product_reviews_loading_failed": "加载失败: {error}",
     "@product_reviews_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "product_reviews_retry": "重试",
     "product_reviews_no_reviews": "暂无评论",
     "product_reviews_sample_content": "不错，很有耐心",
     "product_reviews_years_ago": "{count}年前",
     "@product_reviews_years_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "product_reviews_months_ago": "{count}月前",
     "@product_reviews_months_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "3"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
         }
-      }
     },
     "product_reviews_days_ago": "{count}天前",
     "@product_reviews_days_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "product_reviews_hours_ago": "{count}小时前",
     "@product_reviews_hours_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "product_reviews_minutes_ago": "{count}分钟前",
     "@product_reviews_minutes_ago": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "30"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "30"
+            }
         }
-      }
     },
     "product_reviews_just_now": "刚刚",
     "product_reviews_seller_reply": "卖家回复",
     "product_reviews_total_count": "共{count}条评价",
     "@product_reviews_total_count": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "100"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "100"
+            }
         }
-      }
     },
     "product_reviews_filter_all": "全部",
     "product_reviews_filter_with_images": "有图",
     "product_reviews_filter_good": "好评",
     "product_reviews_filter_medium": "中评",
     "product_reviews_filter_bad": "差评",
-    
     "seller_profile_default_title": "卖家主页",
     "seller_profile_seller": "卖家",
     "seller_profile_no_description": "暂无简介",
     "seller_profile_followers": "{count}粉丝",
     "@seller_profile_followers": {
-      "placeholders": {
-        "count": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "seller_profile_followed": "已关注",
     "seller_profile_follow": "关注",
@@ -525,21 +499,21 @@
     "seller_profile_follow_success": "关注成功",
     "seller_profile_chat_failed": "创建聊天失败: {error}",
     "@seller_profile_chat_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "seller_profile_error_occurred": "发生错误: {error}",
     "@seller_profile_error_occurred": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "seller_profile_about_merchant": "关于商家",
     "seller_profile_my_services": "我的服务",
@@ -555,7 +529,6 @@
     "seller_profile_no_products": "暂无商品",
     "seller_profile_image_load_failed": "图片加载失败",
     "seller_profile_no_image": "暂无图片",
-    
     "seller_profile_title": "我的",
     "seller_profile_auth_management": "认证管理",
     "seller_profile_my_wallet": "我的钱包",
@@ -575,14 +548,13 @@
     "seller_profile_order_refund": "退款/售后",
     "seller_profile_feature_not_implemented": "{feature}功能尚未实现",
     "@seller_profile_feature_not_implemented": {
-      "placeholders": {
-        "feature": {
-          "type": "String",
-          "example": "认证管理"
+        "placeholders": {
+            "feature": {
+                "type": "String",
+                "example": "认证管理"
+            }
         }
-      }
     },
-    
     "seller_home_loading_failed": "加载失败",
     "seller_home_no_data": "暂无数据",
     "seller_home_no_store_info": "暂无店铺信息",
@@ -590,22 +562,22 @@
     "seller_home_offline": "离线",
     "seller_home_completion_rate": "完成率 {rate}%",
     "@seller_home_completion_rate": {
-      "placeholders": {
-        "rate": {
-          "type": "String",
-          "example": "95.5"
+        "placeholders": {
+            "rate": {
+                "type": "String",
+                "example": "95.5"
+            }
         }
-      }
     },
     "seller_home_switch_to_buyer": "切换到买家模式",
     "seller_home_switch_failed": "无法切换到买家模式: {error}",
     "@seller_home_switch_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "seller_home_income": "收入",
     "seller_home_view_details": "查看明细",
@@ -629,7 +601,6 @@
     "seller_home_recent_income": "近期收入",
     "seller_home_no_recent_income": "暂无近期收入数据",
     "seller_home_no_income_data": "暂无收入数据",
-    
     "seller_statistics_title": "卖家数据",
     "seller_statistics_seller_homepage": "卖家主页",
     "seller_statistics_heat_value": "热度值",
@@ -639,30 +610,30 @@
     "seller_statistics_upgrade_to_next_level": "升到下一级",
     "seller_statistics_become_level3_seller": "成为三级会员卖家{days}天",
     "@seller_statistics_become_level3_seller": {
-      "placeholders": {
-        "days": {
-          "type": "String",
-          "example": "30"
+        "placeholders": {
+            "days": {
+                "type": "String",
+                "example": "30"
+            }
         }
-      }
     },
     "seller_statistics_complete_orders": "完成订单{orderNum}笔",
     "@seller_statistics_complete_orders": {
-      "placeholders": {
-        "orderNum": {
-          "type": "String",
-          "example": "10"
+        "placeholders": {
+            "orderNum": {
+                "type": "String",
+                "example": "10"
+            }
         }
-      }
     },
     "seller_statistics_profit_amount": "盈利{amount}元",
     "@seller_statistics_profit_amount": {
-      "placeholders": {
-        "amount": {
-          "type": "String",
-          "example": "1000.00"
+        "placeholders": {
+            "amount": {
+                "type": "String",
+                "example": "1000.00"
+            }
         }
-      }
     },
     "seller_statistics_indicators": "指标",
     "seller_statistics_total_earnings": "总盈利",
@@ -677,15 +648,14 @@
     "seller_statistics_earliest": "最早",
     "seller_statistics_loading_failed": "加载失败: {error}",
     "@seller_statistics_loading_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "seller_statistics_retry": "重试",
-    
     "seller_auth_management_title": "认证管理",
     "seller_auth_management_certified_items": "已认证项目",
     "seller_auth_management_open_certification": "开放认证",
@@ -713,22 +683,21 @@
     "seller_auth_management_contact_tech": "• 如问题持续存在，请联系技术支持",
     "seller_auth_management_reload": "重新加载",
     "seller_auth_management_back": "返回",
-    
     "seller_auth_application_title": "{type}认证",
     "@seller_auth_application_title": {
-      "placeholders": {
-        "type": {
-          "type": "String"
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
         }
-      }
     },
     "seller_auth_application_desc": "{type}认证说明",
     "@seller_auth_application_desc": {
-      "placeholders": {
-        "type": {
-          "type": "String"
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
         }
-      }
     },
     "seller_auth_application_review_time": "认证审核通常需要1-3个工作日，请耐心等待。",
     "seller_auth_application_basic_info": "基本信息",
@@ -774,11 +743,11 @@
     "seller_auth_application_upload_file": "上传文件",
     "seller_auth_application_selected_files": "已选择 {count} 个文件",
     "@seller_auth_application_selected_files": {
-      "placeholders": {
-        "count": {
-          "type": "int"
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
         }
-      }
     },
     "seller_auth_application_selected_images": "已选择的图片：",
     "seller_auth_application_load_failed": "加载失败",
@@ -801,13 +770,12 @@
     "seller_auth_application_ok": "确定",
     "seller_auth_application_select_file_failed": "选择文件失败: {error}",
     "@seller_auth_application_select_file_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String"
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
         }
-      }
     },
-    
     "product_management_title": "商品管理",
     "product_management_tab_on_sale": "在售",
     "product_management_tab_draft": "草稿箱",
@@ -837,11 +805,11 @@
     "product_management_confirm_off_shelf_title": "确认下架",
     "product_management_confirm_off_shelf_message": "确定要下架商品 \"{name}\" 吗？",
     "@product_management_confirm_off_shelf_message": {
-      "placeholders": {
-        "name": {
-          "type": "String"
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
         }
-      }
     },
     "product_management_confirm_off_shelf_desc": "下架后：",
     "product_management_confirm_off_shelf_point1": "• 买家将无法看到和购买此商品",
@@ -852,7 +820,6 @@
     "product_management_cancel": "取消",
     "product_management_confirm": "确认下架",
     "product_management_delete": "删除",
-    
     "product_edit_title_create": "创建商品",
     "product_edit_title_edit": "编辑商品",
     "product_edit_basic_info": "基础信息",
@@ -877,23 +844,21 @@
     "product_edit_validation_name_required": "请输入商品名称",
     "product_edit_validation_description_required": "请输入商品描述",
     "product_edit_validation_image_required": "请至少上传一张商品图片",
-    
     "product_preview_current_seller": "当前卖家",
     "product_preview_seller_user": "卖家用户",
-    
     "product_edit_success_cases": "成功案例",
     "product_edit_add_success_case": "添加成功案例",
     "product_edit_edit_success_case": "编辑成功案例",
     "product_edit_uploading_progress": "上传中 {uploaded}/{total}",
     "@product_edit_uploading_progress": {
-      "placeholders": {
-        "uploaded": {
-          "type": "int"
-        },
-        "total": {
-          "type": "int"
+        "placeholders": {
+            "uploaded": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
         }
-      }
     },
     "product_edit_please_enter_label": "请输入信息标签",
     "product_edit_please_enter_attribute_name": "请输入属性名称",
@@ -905,13 +870,12 @@
     "product_edit_edit_service": "编辑服务",
     "product_edit_max_characters": "最多{max}个字符",
     "@product_edit_max_characters": {
-      "placeholders": {
-        "max": {
-          "type": "int"
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
         }
-      }
     },
-    
     "after_sales_review_title": "售后审核",
     "after_sales_detail_title": "售后详情",
     "after_sales_refresh": "刷新",
@@ -938,11 +902,9 @@
     "after_sales_reject_reason": "拒绝原因",
     "after_sales_reject_reason_hint": "请输入拒绝原因",
     "after_sales_reject_reason_required": "请输入拒绝原因",
-    
     "after_sales_type_refund_only": "仅退款",
     "after_sales_type_refund_return": "退货退款",
     "after_sales_type_unknown": "未知类型",
-    
     "after_sales_status_wait_audit": "待审核",
     "after_sales_status_refused": "已拒绝",
     "after_sales_status_audit_pass": "审核通过",
@@ -951,7 +913,6 @@
     "after_sales_status_finished": "已完成",
     "after_sales_status_canceled": "已取消",
     "after_sales_status_unknown": "未知状态",
-    
     "time_management_title": "时间管理",
     "time_management_current_status": "当前状态",
     "time_management_online": "在线",
@@ -965,7 +926,6 @@
     "time_management_load_failed": "加载失败",
     "time_management_retry": "重试",
     "time_management_unknown_status": "未知状态",
-    
     "auto_reply_title": "自动回复设置",
     "auto_reply_enable": "自动回复",
     "auto_reply_content": "回复内容",
@@ -975,16 +935,15 @@
     "auto_reply_settings_saved": "设置已保存",
     "auto_reply_content_required": "回复内容不能为空",
     "auto_reply_load_failed": "加载失败，请重试",
-    
     "order_delivery_title": "订单交付",
     "order_delivery_title_with_sn": "订单交付: {orderSn}",
     "@order_delivery_title_with_sn": {
-      "placeholders": {
-        "orderSn": {
-          "type": "String",
-          "example": "SN123456"
+        "placeholders": {
+            "orderSn": {
+                "type": "String",
+                "example": "SN123456"
+            }
         }
-      }
     },
     "order_delivery_submitting": "正在提交交付内容...",
     "order_delivery_load_failed": "加载失败，请重试",
@@ -1007,7 +966,6 @@
     "order_delivery_confirm_shipment": "确认发货",
     "order_delivery_view_details": "查看详情",
     "order_delivery_no_pending_orders": "暂无待发货订单",
-    
     "notification_center_title": "通知中心",
     "notification_tab_all": "全部",
     "notification_tab_order": "订单",
@@ -1037,12 +995,12 @@
     "notification_retry": "重试",
     "notification_load_failed": "加载通知中心失败: {error}",
     "@notification_load_failed": {
-      "placeholders": {
-        "error": {
-          "type": "String",
-          "example": "网络错误"
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
         }
-      }
     },
     "notification_detail_title": "通知详情",
     "notification_detail_view": "查看详情",
@@ -1052,41 +1010,40 @@
     "notification_time_just_now": "刚刚",
     "notification_time_minutes_ago": "{minutes}分钟前",
     "@notification_time_minutes_ago": {
-      "placeholders": {
-        "minutes": {
-          "type": "int",
-          "example": "5"
+        "placeholders": {
+            "minutes": {
+                "type": "int",
+                "example": "5"
+            }
         }
-      }
     },
     "notification_time_hours_ago": "{hours}小时前",
     "@notification_time_hours_ago": {
-      "placeholders": {
-        "hours": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "hours": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
     "notification_time_days_ago": "{days}天前",
     "@notification_time_days_ago": {
-      "placeholders": {
-        "days": {
-          "type": "int",
-          "example": "3"
+        "placeholders": {
+            "days": {
+                "type": "int",
+                "example": "3"
+            }
         }
-      }
     },
     "notification_time_months_ago": "{months}个月前",
     "@notification_time_months_ago": {
-      "placeholders": {
-        "months": {
-          "type": "int",
-          "example": "2"
+        "placeholders": {
+            "months": {
+                "type": "int",
+                "example": "2"
+            }
         }
-      }
     },
-    
     "materialsInfo": "材料信息",
     "buyerSubmittedMaterials": "买家提交的材料",
     "sellerDeliveryContent": "卖家交付内容",
@@ -1095,7 +1052,6 @@
     "attachments": "附件:",
     "deliveryFiles": "交付文件:",
     "deliveryDescription": "交付说明",
-    
     "tapToPreview": "点击预览",
     "tapToOpen": "点击打开",
     "downloadFile": "下载文件",
@@ -1110,16 +1066,2052 @@
     "storagePermissionRequired": "需要存储权限才能下载文件",
     "pdfLoadFailed": "PDF加载失败",
     "retry": "重试",
-
     "product_detail_translated_from": "翻译自{language}",
     "@product_detail_translated_from": {
-      "placeholders": {
-        "language": {
-          "type": "String",
-          "example": "中文"
+        "placeholders": {
+            "language": {
+                "type": "String",
+                "example": "中文"
+            }
         }
-      }
     },
     "product_detail_translation_auto": "自动翻译",
-    "product_detail_show_original": "显示原文"
+    "product_detail_show_original": "显示原文",
+    "order_status_awaiting_payment": "待付款",
+    "order_status_awaiting_submission": "待提交",
+    "order_status_buy_awaiting_submission": "待重传",
+    "order_status_awaiting_start": "待接单",
+    "order_status_awaiting_delivery": "待发货",
+    "order_status_awaiting_confirmation": "待收货",
+    "order_status_awaiting_evaluation": "待评价",
+    "order_status_completed": "已完成",
+    "order_status_canceled": "已取消",
+    "order_status_after_sale": "售后中",
+    "order_status_unknown": "未知状态",
+    "order_action_cancel": "取消订单",
+    "order_action_go_pay": "去支付",
+    "order_action_submit_materials": "提交材料",
+    "order_action_contact_support": "联系客服",
+    "order_action_view_feedback": "查看反馈",
+    "order_action_remind_delivery": "提醒发货",
+    "order_action_platform_intervention": "平台介入",
+    "order_action_view_delivery": "查看交付",
+    "order_action_apply_after_sale": "申请售后",
+    "order_action_confirm_receipt": "确认收货",
+    "order_action_view_logistics": "查看物流",
+    "order_action_go_evaluate": "去评价",
+    "order_action_apply_rework": "申请重做",
+    "order_action_delete_order": "删除订单",
+    "order_action_view_order": "查看订单",
+    "order_action_view_details": "查看详情",
+    "order_action_processing": "处理中...",
+    "order_confirm_cancel_title": "取消订单",
+    "order_confirm_cancel_content": "您确定要取消这个订单吗？",
+    "order_confirm_receipt_title": "确认收货",
+    "order_confirm_receipt_content": "您确定已经收到货品，并确认收货吗？",
+    "order_confirm_delete_title": "删除订单",
+    "order_confirm_delete_content": "您确定要删除这个订单吗？删除后将无法恢复。",
+    "order_dialog_cancel": "取消",
+    "order_dialog_confirm": "确定",
+    "order_dialog_close": "关闭",
+    "order_dialog_submit": "提交申请",
+    "order_snackbar_connecting_support": "正在连接客服...",
+    "order_snackbar_feedback_in_progress": "查看卖家反馈功能开发中",
+    "order_snackbar_reminded_delivery": "已提醒卖家发货",
+    "order_snackbar_nav_failed": "导航失败: {error}",
+    "@order_snackbar_nav_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_snackbar_no_items_after_sale": "错误：无法为没有商品的订单申请售后",
+    "order_snackbar_no_items_evaluate": "错误：无法为没有商品的订单进行评价",
+    "order_snackbar_operation_failed": "操作失败: {error}",
+    "@order_snackbar_operation_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_dialog_data_not_loaded": "数据未加载完成，请稍后再试",
+    "order_dialog_view_delivery_title": "查看交付",
+    "order_dialog_seller_delivery_content": "卖家交付内容：",
+    "order_dialog_buyer_materials": "买家提交的材料：",
+    "order_dialog_no_seller_delivery": "卖家暂未交付内容",
+    "order_dialog_no_buyer_materials": "暂无买家提交的材料",
+    "order_dialog_delivery_note": "交付说明: {content}",
+    "@order_dialog_delivery_note": {
+        "placeholders": {
+            "content": {
+                "type": "String"
+            }
+        }
+    },
+    "order_dialog_delivery_files": "交付文件:",
+    "order_intervention_title": "申请平台介入",
+    "order_intervention_desc": "遇到无法解决的争议？平台客服会在24小时内介入处理。",
+    "order_intervention_problem_type": "问题类型:",
+    "order_intervention_problem_desc": "问题描述:",
+    "order_intervention_problem_hint": "请详细描述遇到的问题...",
+    "order_intervention_validation_empty": "请输入问题描述",
+    "order_intervention_validation_min": "问题描述至少需要10个字符",
+    "order_intervention_tip": "提示：申请提交后无法撤销，每个订单最多可申请2次。",
+    "order_intervention_reason_communication": "沟通问题",
+    "order_intervention_reason_quality": "质量争议",
+    "order_intervention_reason_delivery": "交付问题",
+    "order_intervention_reason_refund": "退款纠纷",
+    "order_intervention_reason_service": "服务态度",
+    "order_intervention_reason_other": "其他问题",
+    "order_intervention_submitting": "正在提交申请...",
+    "order_intervention_failed": "申请失败：{error}",
+    "@order_intervention_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_demand_replenishment_title": "申请补充材料",
+    "order_demand_reform_title": "申请重做",
+    "order_demand_replenishment_desc": "如果需要卖家补充更多材料或说明，请详细描述您的需求。",
+    "order_demand_reform_desc": "如果对交付结果不满意，可以申请重做。请说明具体问题。",
+    "order_demand_detail_label": "详细说明:",
+    "order_demand_replenishment_hint": "请详细说明需要补充的材料或信息...",
+    "order_demand_reform_hint": "请详细说明需要重做的原因和要求...",
+    "order_demand_validation_empty": "请输入详细说明",
+    "order_demand_validation_min": "说明至少需要10个字符",
+    "order_demand_replenishment_tip": "提示：卖家会在收到申请后24小时内回复并补充相关材料。",
+    "order_demand_reform_tip": "提示：重做申请提交后，卖家会重新处理您的订单。",
+    "order_demand_reason_incomplete": "信息不完整",
+    "order_demand_reason_unclear": "要求不明确",
+    "order_demand_reason_additional": "需要补充说明",
+    "order_demand_reason_reference": "需要参考资料",
+    "order_demand_reason_other": "其他原因",
+    "order_demand_reason_quality": "质量不满意",
+    "order_demand_reason_requirement": "不符合要求",
+    "order_demand_reason_content_incomplete": "内容不完整",
+    "order_demand_reason_error": "存在错误",
+    "order_demand_submitting_replenishment": "正在提交补充材料申请...",
+    "order_demand_submitting_reform": "正在提交重做申请...",
+    "order_demand_failed": "申请失败：{error}",
+    "@order_demand_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_demand_edit_info_auto": "当前已交付 {current} 次，剩余 {remaining} 次免费修改机会（自动通过）",
+    "@order_demand_edit_info_auto": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "remaining": {
+                "type": "int"
+            }
+        }
+    },
+    "order_demand_edit_info_approval": "当前已交付 {current} 次，已用完免费修改机会，需要卖家审批",
+    "@order_demand_edit_info_approval": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            }
+        }
+    },
+    "order_info_title": "订单信息",
+    "order_info_order_number": "订单编号：",
+    "order_info_order_time": "下单时间：",
+    "order_info_pay_time": "付款时间：",
+    "order_info_complete_time": "完成时间：",
+    "order_info_remark": "订单备注：",
+    "order_items_title": "商品信息",
+    "order_items_empty": "暂无商品信息",
+    "order_items_count": "{count}件",
+    "@order_items_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_price_title": "价格明细",
+    "order_price_total": "商品总价",
+    "order_price_shipping": "运费",
+    "order_price_discount": "优惠金额",
+    "order_price_paid": "实付金额",
+    "order_price_total_amount": "商品总额",
+    "order_price_actual_paid": "实付款",
+    "order_requirement_title": "要求提交",
+    "order_requirement_service_selected": "您选择的服务：{skuName} - ¥{price}",
+    "@order_requirement_service_selected": {
+        "placeholders": {
+            "skuName": {
+                "type": "String"
+            },
+            "price": {
+                "type": "String"
+            }
+        }
+    },
+    "order_requirement_q1": "1. 请详细描述您的需求",
+    "order_requirement_q1_hint": "请尽可能详细地描述您的需求，包括具体要求、期望效果等",
+    "order_requirement_q1_helper": "如需提供参考资料，可在下方附件区域上传",
+    "order_requirement_q2": "2. 补充说明（选填）",
+    "order_requirement_q2_hint": "如有其他补充说明或特殊要求，请在此填写",
+    "order_requirement_warning": "请认真填写需求，提交后卖家将根据您的需求开始服务",
+    "order_requirement_attachment_title": "附件上传",
+    "order_requirement_attachment_limit": "最多{maxCount}个文件，单个文件不超过{maxSize}MB",
+    "@order_requirement_attachment_limit": {
+        "placeholders": {
+            "maxCount": {
+                "type": "int"
+            },
+            "maxSize": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_add": "添加",
+    "order_requirement_click_select_file": "点击此处选择文件",
+    "order_requirement_confirm_submit": "确认提交",
+    "order_requirement_wait_upload": "请等待文件上传完成",
+    "order_requirement_upload_failed_title": "文件上传失败",
+    "order_requirement_upload_failed_count": "有{count}个文件上传失败，是否重试？",
+    "@order_requirement_upload_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_remove_failed": "移除失败文件",
+    "order_requirement_retry_upload": "重试上传",
+    "order_requirement_error_product_id": "错误：无法获取商品 ID",
+    "order_requirement_load_draft_failed": "加载草稿失败",
+    "order_requirement_save_draft_failed": "保存草稿失败",
+    "order_requirement_max_files": "最多只能上传{count}个附件",
+    "@order_requirement_max_files": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_requirement_pick_failed": "选择文件失败: {error}",
+    "@order_requirement_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_requirement_default_service": "基础服务",
+    "order_evaluation_title": "评价商品",
+    "order_evaluation_hint": "分享您的使用体验吧～",
+    "order_evaluation_add_images": "添加图片 (最多9张)",
+    "order_evaluation_anonymous": "匿名评价",
+    "order_evaluation_submit": "提交评价",
+    "order_evaluation_error_no_item": "错误：无法找到要评价的商品项",
+    "order_evaluation_max_images": "最多只能上传9张图片",
+    "order_evaluation_success_count": "成功处理 {count} 张图片，平均压缩 {ratio}%",
+    "@order_evaluation_success_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "ratio": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_failed_count": "{count} 张图片处理失败",
+    "@order_evaluation_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_evaluation_pick_failed": "选择图片失败: {error}",
+    "@order_evaluation_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_processing": "处理中...",
+    "order_evaluation_page_title": "评价订单",
+    "order_delivery_not_satisfied": "对交付不满意？",
+    "order_delivery_communicate_tip": "当前交付次数不足时，请先与卖家沟通是否同意再次交付",
+    "order_delivery_supplement": "我要补充",
+    "order_delivery_remake": "我要重新制作",
+    "order_delivery_refund": "我要退款",
+    "order_delivery_unknown_file": "未知文件",
+    "order_item_delivery_days": "交付天数: {days}天",
+    "@order_item_delivery_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_item_edit_count": "可修改次数: {count}次",
+    "@order_item_edit_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_expired": "已超时",
+    "order_countdown_days_hours": "{days}天{hours}时",
+    "@order_countdown_days_hours": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_hours_minutes": "{hours}时{minutes}分",
+    "@order_countdown_hours_minutes": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_minutes": "{minutes}分",
+    "@order_countdown_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_seconds": "{seconds}秒",
+    "@order_countdown_seconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_days": "{days}天",
+    "@order_countdown_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_countdown_minutes_seconds": "{minutes}分{seconds}秒",
+    "@order_countdown_minutes_seconds": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "order_upload_progress": "上传中 {percent}%",
+    "@order_upload_progress": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "order_upload_retry": "重试上传",
+    "order_upload_failed": "上传失败: {error}",
+    "@order_upload_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_upload_size_limit": "文件大小超过限制（最大{size}）",
+    "@order_upload_size_limit": {
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "order_upload_max_retry": "已达到最大重试次数（{count}次）",
+    "@order_upload_max_retry": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_after_sale_processing": "售后处理中",
+    "order_after_sale_processing_msg": "您的售后申请正在处理中，卖家将在xx小时内处理，请耐心等待。",
+    "order_after_sale_mediation": "平台介入处理中",
+    "order_after_sale_mediation_msg": "平台客服已介入处理，将在xx工作日内给出处理结果，请留意通知。",
+    "order_after_sale_rejected": "售后申请已驳回",
+    "order_after_sale_rejected_msg": "抱歉，您的售后申请未通过审核。",
+    "order_after_sale_default_title": "售后状态",
+    "order_after_sale_default_msg": "当前订单处于售后流程中。",
+    "order_after_sale_contact_seller": "联系卖家",
+    "order_after_sale_cancel_apply": "取消申请",
+    "order_after_sale_contact_platform": "联系平台客服",
+    "order_after_sale_add_evidence": "补充凭证",
+    "order_after_sale_add_evidence_tip": "您可以补充凭证或耐心等待平台处理结果。",
+    "order_after_sale_apply_intervention": "申请平台介入",
+    "order_after_sale_refund_status": "退款状态:",
+    "order_after_sale_refund_amount": "退款金额:",
+    "order_after_sale_reject_reason": "驳回原因:",
+    "order_after_sale_reject_reason_detail": "原因：凭证不足或不符合退款条件。",
+    "order_platform_intervention_title": "平台介入",
+    "order_platform_intervention_desc": "如遇到争议无法协商解决，可申请平台客服介入处理",
+    "order_platform_intervention_apply": "申请平台介入",
+    "order_platform_intervention_in_progress": "平台介入中",
+    "order_platform_intervention_processing": "处理中",
+    "order_platform_intervention_processing_msg": "您的申请已提交，平台客服会在24小时内联系您处理",
+    "order_platform_intervention_step1": "申请已提交",
+    "order_platform_intervention_step1_desc": "等待平台客服处理",
+    "order_platform_intervention_step2": "客服介入",
+    "order_platform_intervention_step2_desc": "24小时内联系双方",
+    "order_platform_intervention_step3": "问题解决",
+    "order_platform_intervention_step3_desc": "根据平台判定处理",
+    "order_card_product_unknown": "商品名称未知",
+    "order_card_deleting": "正在删除订单...",
+    "order_card_deleted": "订单已删除",
+    "order_card_delete_failed": "删除失败：{error}",
+    "@order_card_delete_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_load_detail_failed": "加载订单详情失败：{error}",
+    "@order_card_load_detail_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_timeout_canceling": "已超时，即将取消",
+    "order_card_pay_in_time": "请在{time}内付款",
+    "@order_card_pay_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_timeout_submit": "已超时，请尽快提交",
+    "order_card_submit_in_time": "请在{time}内提交材料",
+    "@order_card_submit_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_seller_timeout": "卖家超时未接单",
+    "order_card_seller_accept_in_time": "卖家将在{time}内接单",
+    "@order_card_seller_accept_in_time": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_delivery_days": "交付时间：{days}天内",
+    "@order_card_delivery_days": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_auto_confirm_soon": "即将自动确认收货",
+    "order_card_auto_confirm_in": "{time}后自动确认",
+    "@order_card_auto_confirm_in": {
+        "placeholders": {
+            "time": {
+                "type": "String"
+            }
+        }
+    },
+    "order_card_evaluate_for_points": "待评价，评价后可获得积分",
+    "order_card_duration_days_hours": "{days}天{hours}小时",
+    "@order_card_duration_days_hours": {
+        "placeholders": {
+            "days": {
+                "type": "int"
+            },
+            "hours": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_hours_minutes": "{hours}小时{minutes}分钟",
+    "@order_card_duration_hours_minutes": {
+        "placeholders": {
+            "hours": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_minutes": "{minutes}分钟",
+    "@order_card_duration_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "order_card_duration_less_than_minute": "少于1分钟",
+    "order_detail_invalid_id": "无效的订单 ID",
+    "order_detail_error": "错误",
+    "order_detail_title": "订单详情",
+    "order_detail_title_with_id": "订单详情 (ID: {id})",
+    "@order_detail_title_with_id": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            }
+        }
+    },
+    "order_detail_load_failed": "加载失败: {error}",
+    "@order_detail_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_detail_reload": "重新加载",
+    "order_detail_unavailable": "订单数据不可用",
+    "order_list_title": "我的订单",
+    "order_list_search_hint": "搜索订单号或商品名称",
+    "order_list_empty": "暂无相关订单",
+    "order_list_load_error": "加载错误: {error}",
+    "@order_list_load_error": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_list_load_failed": "加载失败: {error}",
+    "@order_list_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_list_select_category": "请选择分类查看订单",
+    "order_list_tab_all": "全部",
+    "order_list_tab_awaiting_payment": "待付款",
+    "order_list_tab_awaiting_submission": "待提交",
+    "order_list_tab_awaiting_start": "待接单",
+    "order_list_tab_awaiting_delivery": "待交付",
+    "order_list_tab_awaiting_confirmation": "待收货",
+    "order_list_tab_awaiting_evaluation": "待评价",
+    "order_list_tab_after_sale": "售后中",
+    "order_route_error": "错误",
+    "order_route_invalid_item_id": "无效的商品ID: {id}",
+    "@order_route_invalid_item_id": {
+        "placeholders": {
+            "id": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_detail_title": "订单详情 (卖家) - #{id}",
+    "@order_seller_detail_title": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_load_failed": "加载订单 #{id} 失败: {error}",
+    "@order_seller_load_failed": {
+        "placeholders": {
+            "id": {
+                "type": "int"
+            },
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_preparing": "正在准备加载...",
+    "order_seller_order_number": "订单编号",
+    "order_seller_order_time": "下单时间",
+    "order_seller_pay_time": "付款时间",
+    "order_seller_complete_time": "完成时间",
+    "order_seller_cancel_time": "取消时间",
+    "order_seller_list_title": "我的订单 (卖家)",
+    "order_seller_tab_all": "全部",
+    "order_seller_tab_awaiting_start": "待接单",
+    "order_seller_tab_awaiting_delivery": "待发货",
+    "order_seller_tab_awaiting_confirmation": "待确认收货",
+    "order_seller_tab_awaiting_evaluation": "待评价",
+    "order_seller_tab_completed": "已完成",
+    "order_seller_tab_after_sale": "售后中",
+    "order_seller_tab_canceled": "已取消",
+    "order_seller_load_failed_msg": "加载失败: {error}",
+    "@order_seller_load_failed_msg": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_empty": "暂无此状态订单",
+    "order_seller_action_failed": "操作失败: {error}",
+    "@order_seller_action_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_pending_count": "您有{count}个订单待处理",
+    "@order_seller_pending_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_pending_awaiting_start": "{count}个待接单",
+    "@order_seller_pending_awaiting_start": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_pending_awaiting_delivery": "{count}个待发货",
+    "@order_seller_pending_awaiting_delivery": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "order_seller_reject_order": "拒绝接单",
+    "order_seller_confirm_order": "确认接单",
+    "order_seller_contact_buyer": "联系买家",
+    "order_seller_go_deliver": "去交付",
+    "order_seller_view_delivery_content": "查看交付内容",
+    "order_seller_remind_buyer": "提醒买家确认",
+    "order_seller_delete_record": "删除记录",
+    "order_seller_confirm_accept_title": "确认接单",
+    "order_seller_confirm_accept_content": "您确定要接受此订单吗？",
+    "order_seller_confirm_delete_title": "确认删除",
+    "order_seller_confirm_delete_content": "您确定要删除这条订单记录吗？此操作无法撤销。",
+    "order_seller_confirm_delete_canceled_content": "您确定要删除这条已取消的订单记录吗？此操作无法撤销。",
+    "order_seller_confirm_btn": "确认",
+    "order_seller_confirm_reject_title": "确认拒绝",
+    "order_seller_confirm_reject_content": "您确定要拒绝接受此订单吗？",
+    "order_seller_confirm_reject_btn": "确认拒绝",
+    "order_seller_reject_dialog_title": "拒绝订单",
+    "order_seller_reject_reason_label": "拒绝理由 *",
+    "order_seller_reject_reason_hint": "请输入拒绝理由",
+    "order_seller_reject_reason_empty": "拒绝理由不能为空",
+    "order_seller_reject_reason_required": "请输入拒绝理由",
+    "order_seller_remarks_label": "补充说明 (可选)",
+    "order_seller_remarks_hint": "选填",
+    "order_seller_delivery_dialog_title": "交付内容",
+    "order_seller_delivery_desc_label": "交付说明 *",
+    "order_seller_delivery_desc_hint": "请描述您的交付内容",
+    "order_seller_delivery_desc_empty": "交付说明不能为空",
+    "order_seller_delivery_desc_required": "请输入交付说明",
+    "order_seller_delivery_attachment": "附件",
+    "order_seller_delivery_select_file": "点击下方按钮选择文件",
+    "order_seller_delivery_add_attachment": "添加附件",
+    "order_seller_delivery_file_select_soon": "文件选择功能即将实现",
+    "order_seller_delivery_confirm": "确认交付",
+    "order_seller_delivery_chat_hint": "请选择关于商品\"{productName}\"的聊天",
+    "@order_seller_delivery_chat_hint": {
+        "placeholders": {
+            "productName": {
+                "type": "String"
+            }
+        }
+    },
+    "order_seller_dynamic_delivered": "服务已交付",
+    "order_seller_dynamic_delivered_msg": "您已完成服务交付，请等待买家确认。如有问题，买家可能会发起售后。",
+    "order_seller_dynamic_completed": "此订单已顺利完成。",
+    "order_seller_dynamic_canceled": "此订单已被取消。",
+    "order_seller_dynamic_refused": "已申请拒绝订单",
+    "order_seller_dynamic_refused_msg": "您的拒绝申请已提交，正在等待处理。",
+    "order_seller_buyer_materials": "买家提供的材料",
+    "order_seller_attachment_label": "附件:",
+    "order_seller_view_attachment": "查看附件功能待实现: {fileName}",
+    "@order_seller_view_attachment": {
+        "placeholders": {
+            "fileName": {
+                "type": "String"
+            }
+        }
+    },
+    "order_evaluation_product_info": "商品信息",
+    "order_list_retry": "重试",
+    "chat_get_user_info_failed": "获取用户信息失败: {error}",
+    "@chat_get_user_info_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "chat_user_refer_id_not_found": "用户referId未找到",
+    "chat_no_chat_records": "暂无聊天记录",
+    "chat_opponent_info_missing": "对方信息不存在",
+    "chat_product_default": "商品",
+    "chat_view_details": "查看详情",
+    "chat_product_info_incomplete": "商品信息不完整，无法查看详情",
+    "chat_uploading": "上传中...",
+    "chat_upload_failed": "上传失败",
+    "chat_retry": "重试",
+    "chat_image_loading": "加载中...",
+    "chat_image_load_failed": "加载失败",
+    "chat_revoke_time_missing": "消息时间信息缺失，无法撤回",
+    "chat_revoke_available": "可以撤回",
+    "chat_revoke_expired": "消息发送已超过2分钟，无法撤回（超出{seconds}秒）",
+    "@chat_revoke_expired": {
+        "placeholders": {
+            "seconds": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "chat_unknown_seller": "未知卖家",
+    "chat_product_conversation": "商品对话",
+    "chat_product_conversation_count": "{count}个商品对话",
+    "@chat_product_conversation_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "chat_unknown_product": "未知商品",
+    "chat_user_inquiry_count": "{count}个用户咨询",
+    "@chat_user_inquiry_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "chat_weekday_mon": "周一",
+    "chat_weekday_tue": "周二",
+    "chat_weekday_wed": "周三",
+    "chat_weekday_thu": "周四",
+    "chat_weekday_fri": "周五",
+    "chat_weekday_sat": "周六",
+    "chat_weekday_sun": "周日",
+    "chat_select_multiple_images": "选择多张图片",
+    "chat_image_compressed": "图片已压缩 {ratio}%",
+    "@chat_image_compressed": {
+        "placeholders": {
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "chat_image_process_failed": "图片处理失败: {error}",
+    "@chat_image_process_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "未知错误"
+            }
+        }
+    },
+    "chat_images_processed_success": "成功处理 {count} 张图片，平均压缩 {ratio}%",
+    "@chat_images_processed_success": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "chat_images_process_failed_count": "{count} 张图片处理失败",
+    "@chat_images_process_failed_count": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "chat_tap_to_view_product": "点击查看商品详情",
+    "chat_yesterday_time": "昨天 {time}",
+    "@chat_yesterday_time": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "14:30"
+            }
+        }
+    },
+    "chat_no_messages_brief": "暂无消息",
+    "chat_select_image_error": "选择图片出错: {error}",
+    "@chat_select_image_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "Permission denied"
+            }
+        }
+    },
+    "after_sales_reason_none": "无",
+    "seller_auth_status_title": "{type}认证",
+    "@seller_auth_status_title": {
+        "placeholders": {
+            "type": {
+                "type": "String",
+                "example": "身份"
+            }
+        }
+    },
+    "seller_auth_status_label": "认证状态：",
+    "seller_auth_status_name_label": "认证名称：",
+    "seller_auth_status_materials": "认证材料",
+    "seller_auth_status_no_materials": "暂无认证材料",
+    "seller_auth_status_info": "认证信息",
+    "seller_auth_status_history": "认证历史",
+    "seller_auth_status_no_history": "暂无历史记录",
+    "seller_auth_status_reapply": "重新认证",
+    "seller_auth_status_approved_hint": "认证已通过，无需重复提交",
+    "seller_auth_status_pending_hint": "认证审核中，请耐心等待",
+    "seller_auth_status_tag_approved": "已认证",
+    "seller_auth_status_tag_pending": "审核中",
+    "seller_auth_status_tag_rejected": "未通过",
+    "seller_auth_status_tag_not_submitted": "未提交",
+    "seller_auth_status_type_idcard": "身份",
+    "seller_auth_status_type_education": "学历",
+    "seller_auth_status_type_profession": "职业",
+    "seller_auth_status_type_company": "公司",
+    "seller_auth_status_type_other": "其他",
+    "seller_auth_status_field_auth_name": "认证名称",
+    "seller_auth_status_field_auth_type": "认证类型",
+    "seller_auth_status_field_company_name": "公司名称",
+    "seller_auth_status_field_name": "姓名",
+    "seller_auth_status_field_school_name": "学校名称",
+    "seller_auth_status_field_profession": "职业/职位",
+    "seller_auth_status_field_name_or_title": "姓名/名称",
+    "seller_auth_status_field_remarks": "备注",
+    "seller_auth_status_field_cert_number": "证书编号",
+    "seller_auth_status_field_work_experience": "工作经验",
+    "seller_auth_status_field_issuer": "发证机构",
+    "seller_auth_status_field_credit_code": "统一社会信用代码",
+    "seller_auth_status_field_legal_rep": "法人代表",
+    "seller_auth_status_field_registered_capital": "注册资本",
+    "seller_auth_status_field_establishment_date": "成立日期",
+    "seller_auth_status_field_degree": "学历",
+    "seller_auth_status_field_major": "专业",
+    "seller_auth_status_field_graduation_year": "毕业年份",
+    "seller_auth_status_field_id_number": "身份证号",
+    "seller_auth_status_field_valid_period": "有效期",
+    "seller_auth_status_field_submit_time": "提交时间",
+    "seller_auth_status_field_reject_reason": "拒绝原因",
+    "seller_auth_status_history_approved_title": "认证申请通过",
+    "seller_auth_status_history_approved_desc": "您的{type}认证申请已通过审核，现在您可以享受认证商家的所有权益。",
+    "@seller_auth_status_history_approved_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_submitted_title": "提交认证申请",
+    "seller_auth_status_history_submitted_desc": "您已成功提交{type}认证申请，我们将在1-3个工作日内完成审核。",
+    "@seller_auth_status_history_submitted_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_rejected_title": "认证申请未通过",
+    "seller_auth_status_history_rejected_desc": "您的{type}认证申请未通过审核。原因：{reason}",
+    "@seller_auth_status_history_rejected_desc": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            },
+            "reason": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_auth_status_history_rejected_default_reason": "资料不符合要求",
+    "seller_product_preview_title": "商品预览",
+    "seller_product_preview_back_to_edit": "返回编辑",
+    "seller_product_preview_loading": "正在加载商品信息...",
+    "seller_product_preview_load_failed": "加载商品信息失败",
+    "seller_product_preview_retry": "重试",
+    "seller_product_preview_fetching": "正在获取商品数据...",
+    "seller_product_preview_hint": "这是商品预览模式，买家将看到类似的界面",
+    "seller_product_edit_unsaved_changes_title": "检测到未保存的更改",
+    "seller_product_edit_unsaved_changes_message": "您有未保存的内容，是否要保存为草稿？",
+    "seller_product_edit_cancel": "取消",
+    "seller_product_edit_discard": "不保存",
+    "seller_product_edit_operation_failed": "操作失败",
+    "seller_product_edit_draft_saved": "草稿保存成功",
+    "seller_product_edit_publish_success": "服务发布成功！正在审核中，请在\"在售\"列表中查看",
+    "seller_product_edit_update_success": "服务更新成功",
+    "seller_product_edit_max_images": "最多只能上传9张图片，已选择前9张",
+    "seller_product_edit_price_required": "{tierName}价格必须大于0",
+    "@seller_product_edit_price_required": {
+        "placeholders": {
+            "tierName": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_form_incomplete": "表单数据不完整，请检查标红字段",
+    "seller_product_edit_add_attribute": "添加属性",
+    "seller_product_edit_attribute_max_chars": "属性名称最多{max}个字符",
+    "@seller_product_edit_attribute_max_chars": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_confirm": "确定",
+    "seller_product_edit_options_config": "选项配置",
+    "seller_product_edit_new_option": "新选项",
+    "seller_product_edit_option_hint": "输入选项内容",
+    "seller_product_edit_service_name_hint": "服务名称",
+    "seller_product_edit_description_hint": "描述一下您的服务的具体信息，如...",
+    "seller_product_edit_faq_title": "常见问题编辑",
+    "seller_product_edit_faq_count": "{count}个问题",
+    "@seller_product_edit_faq_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_add_question": "添加问题",
+    "seller_product_edit_question_label": "问题",
+    "seller_product_edit_question_hint": "输入买家可能问的问题",
+    "seller_product_edit_delete_question": "删除问题",
+    "seller_product_edit_answer_label": "答案",
+    "seller_product_edit_answer_hint": "输入对应的答案",
+    "seller_product_edit_buyer_info_title": "需要买家提供",
+    "seller_product_edit_buyer_info_count": "{count}项信息",
+    "@seller_product_edit_buyer_info_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_buyer_info_desc": "选择你需要买家提供的信息类型（该信息将展示在订单详情页）",
+    "seller_product_edit_selected_items": "已选择的信息项：",
+    "seller_product_edit_required": "必填",
+    "seller_product_edit_edit_tooltip": "编辑",
+    "seller_product_edit_delete_tooltip": "删除",
+    "seller_product_edit_add_info_title": "添加{type}信息",
+    "@seller_product_edit_add_info_title": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_info_label": "信息标签",
+    "seller_product_edit_info_label_hint": "例如：公司Logo设计需求",
+    "seller_product_edit_info_description": "详细说明",
+    "seller_product_edit_info_description_hint": "请详细说明需要买家提供的信息内容",
+    "seller_product_edit_required_field": "必填项",
+    "seller_product_edit_add": "添加",
+    "seller_product_edit_edit_info_title": "编辑{type}信息",
+    "@seller_product_edit_edit_info_title": {
+        "placeholders": {
+            "type": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_save": "保存",
+    "seller_product_edit_cases_count": "{count}个案例",
+    "@seller_product_edit_cases_count": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_add_case": "添加案例",
+    "seller_product_edit_image_load_failed": "图片加载失败",
+    "seller_product_edit_click_select_image": "点击选择图片",
+    "seller_product_edit_upload_failed": "上传失败",
+    "seller_product_edit_upload_retry": "重试",
+    "seller_product_edit_case_title_label": "案例标题",
+    "seller_product_edit_case_title_hint": "简短描述这个案例",
+    "seller_product_edit_case_desc_label": "案例描述",
+    "seller_product_edit_case_desc_hint": "详细描述案例的背景、执行过程或效果",
+    "seller_product_edit_select_image_and_title": "请选择图片并输入标题",
+    "seller_product_edit_cover_image": "服务封面图",
+    "seller_product_edit_upload_success": "上传成功",
+    "seller_product_edit_upload_error": "上传错误: {error}",
+    "@seller_product_edit_upload_error": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_image_format_hint": "支持jpg、png、jpeg格式，单张不超过5MB，最多可上传9张图片",
+    "seller_product_edit_main_image": "主图",
+    "seller_product_edit_tier_price_label": "{tierName}价格",
+    "@seller_product_edit_tier_price_label": {
+        "placeholders": {
+            "tierName": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_max_price": "最大值：{max}",
+    "@seller_product_edit_max_price": {
+        "placeholders": {
+            "max": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_price_exceed_max": "价格不能超过{max}",
+    "@seller_product_edit_price_exceed_max": {
+        "placeholders": {
+            "max": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_product_edit_price_min": "价格最小值为0.01",
+    "seller_product_edit_delivery_period": "交付期",
+    "seller_product_edit_delivery_days_suffix": "天",
+    "seller_product_edit_max_days": "最多{max}天",
+    "@seller_product_edit_max_days": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_times": "次数",
+    "seller_product_edit_times_suffix": "次",
+    "seller_product_edit_max_times": "最多{max}次",
+    "@seller_product_edit_max_times": {
+        "placeholders": {
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_edit_input": "输入",
+    "seller_product_edit_radio": "单选",
+    "seller_product_edit_draft_label": "草稿",
+    "seller_product_edit_draft_unsaved_label": "草稿*",
+    "seller_product_edit_publish": "发布",
+    "seller_product_edit_yes": "是",
+    "seller_product_edit_no": "否",
+    "seller_product_edit_add_selection_attribute": "添加单选属性",
+    "seller_product_edit_default_options_yes_no": "默认选项：是/否",
+    "seller_product_edit_attribute_name_label": "属性名称 *",
+    "seller_product_edit_attribute_name_example": "例如：颜色、型号、材质、适用年龄",
+    "seller_product_edit_attribute_type_label": "属性类型",
+    "seller_product_edit_required_item": "必填项",
+    "seller_product_card_sales": "销量: {count}",
+    "@seller_product_card_sales": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_product_card_view": "查看",
+    "seller_image_preview_main_image": "主图",
+    "seller_image_preview_set_main": "设为主图",
+    "seller_image_preview_load_failed": "图片加载失败",
+    "seller_image_preview_delete_title": "删除图片",
+    "seller_image_preview_delete_confirm": "确定要删除第 {index} 张图片吗？",
+    "@seller_image_preview_delete_confirm": {
+        "placeholders": {
+            "index": {
+                "type": "int"
+            }
+        }
+    },
+    "seller_image_preview_delete": "删除",
+    "seller_file_select": "选择文件",
+    "seller_file_selected": "已选择的文件:",
+    "seller_file_size": "大小: {size}",
+    "@seller_file_size": {
+        "placeholders": {
+            "size": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_file_size_unknown": "无法获取大小",
+    "seller_file_preview_unsupported": "无法预览该类型文件: {name}",
+    "@seller_file_preview_unsupported": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "seller_common_cancel": "取消",
+    "profile_user_name_default": "用户名",
+    "profile_buyer_mode": "买家模式",
+    "profile_my_orders": "我的订单",
+    "profile_my_dskk_section": "我的关看",
+    "profile_liked_stories": "点赞的故事",
+    "profile_logout": "退出登录",
+    "profile_avatar_updated_local": "头像已更新，但尚未保存到服务器",
+    "profile_image_pick_error": "选择图片时出错: {error}",
+    "@profile_image_pick_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "权限被拒绝"
+            }
+        }
+    },
+    "profile_feature_not_implemented": "{feature}功能尚未实现",
+    "@profile_feature_not_implemented": {
+        "placeholders": {
+            "feature": {
+                "type": "String",
+                "example": "收藏"
+            }
+        }
+    },
+    "profile_pending_payment_order": "待付款",
+    "profile_in_progress_order": "进行中",
+    "profile_completed_order": "已完成",
+    "profile_refund_after_sales": "退款/售后",
+    "profile_account_deletion": "账号注销",
+    "profile_bound_phone": "已绑定手机号",
+    "profile_not_bound": "未绑定",
+    "profile_nickname": "昵称",
+    "profile_confirm_logout": "确认退出",
+    "profile_confirm_logout_message": "确定要退出登录吗？",
+    "profile_confirm": "确定",
+    "profile_update_avatar": "更新头像",
+    "profile_update_avatar_confirm": "确定要更新头像吗？",
+    "profile_info_updated": "个人信息更新成功！",
+    "profile_avatar_upload_timeout": "头像上传超时，请检查网络连接后重试",
+    "profile_network_failed": "网络连接失败，请检查网络后重试",
+    "profile_avatar_optimized": "头像已优化处理，压缩 {ratio}%",
+    "@profile_avatar_optimized": {
+        "placeholders": {
+            "ratio": {
+                "type": "String",
+                "example": "50.0"
+            }
+        }
+    },
+    "profile_avatar_process_failed": "头像处理失败: {error}",
+    "@profile_avatar_process_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "文件过大"
+            }
+        }
+    },
+    "profile_logout_error": "退出登录时发生错误: {error}",
+    "@profile_logout_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_nickname_empty": "请输入昵称",
+    "profile_nickname_too_short": "昵称至少需要2个字符",
+    "profile_nickname_too_long": "昵称不能超过20个字符",
+    "profile_nickname_no_spaces": "昵称不能包含空格",
+    "profile_nickname_invalid_chars": "昵称只能包含中文、英文、数字和下划线",
+    "profile_nickname_only_underscores": "昵称不能只包含下划线",
+    "profile_nickname_unchanged": "昵称没有变化",
+    "profile_edit_nickname_title": "编辑昵称",
+    "profile_nickname_input_hint": "请输入昵称",
+    "profile_nickname_rules": "请设置2-20个字符，只能包含中文、英文、数字和下划线",
+    "profile_nickname_updated": "昵称修改成功！",
+    "profile_nickname_update_failed": "昵称修改失败: {error}",
+    "@profile_nickname_update_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_submit_changes": "提交修改",
+    "profile_avatar_uploaded": "头像上传成功",
+    "profile_updated": "个人资料更新成功",
+    "profile_reload": "重新加载",
+    "profile_account_balance": "账户余额",
+    "profile_pending_settlement": "待结算",
+    "profile_total_income": "总收入",
+    "profile_load_wallet": "点击加载钱包信息",
+    "profile_all_orders": "全部订单",
+    "profile_awaiting_payment": "待付款",
+    "profile_awaiting_shipment": "待发货",
+    "profile_awaiting_receipt": "待收货",
+    "profile_awaiting_review": "待评价",
+    "profile_shipping_address": "收货地址",
+    "profile_browsing_history": "浏览历史",
+    "profile_contact_support": "联系客服",
+    "profile_help_center": "帮助中心",
+    "profile_feedback": "意见反馈",
+    "profile_switch_to_seller_mode": "切换至卖家模式",
+    "profile_take_photo": "拍照",
+    "profile_choose_from_album": "从相册选择",
+    "profile_image_pick_failed": "选择图片失败: {error}",
+    "@profile_image_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "权限被拒绝"
+            }
+        }
+    },
+    "profile_edit_profile": "编辑个人资料",
+    "profile_online_status": "在线状态",
+    "profile_mission_title": "小帮手的使命",
+    "profile_mission_our_mission": "我们的使命",
+    "profile_mission_our_mission_content": "连接创意与需求，让每一个想法都能找到实现的可能。小帮手致力于为用户提供最贴心、最智能的服务体验，成为您生活和工作中最可靠的数字伙伴。",
+    "profile_mission_core_values": "核心价值",
+    "profile_mission_core_values_content": "• 用户至上：始终以用户需求为出发点\n• 创新驱动：持续探索新技术和新方法\n• 诚信服务：提供可靠、透明的服务体验\n• 共同成长：与用户和合作伙伴携手前行",
+    "profile_mission_service_promise": "服务承诺",
+    "profile_mission_service_promise_content": "我们承诺为每一位用户提供：\n\n✓ 7×24小时智能服务支持\n✓ 个性化的解决方案推荐\n✓ 安全可靠的数据保护\n✓ 持续优化的用户体验\n✓ 及时响应的客户服务",
+    "profile_mission_future_vision": "未来愿景",
+    "profile_mission_future_vision_content": "成为全球领先的智能服务平台，通过AI技术赋能，让每个人都能享受到个性化、高效率的数字化生活体验。我们相信，科技的力量应该让生活更美好，让创意更容易实现。",
+    "profile_mission_questions_suggestions": "有问题或建议？",
+    "profile_mission_listening": "我们随时倾听您的声音，期待与您一起创造更美好的未来。",
+    "profile_mission_contact_us": "联系我们",
+    "profile_mission_contact_coming_soon": "联系功能即将上线，敬请期待！",
+    "profile_wallet_title": "我的钱包",
+    "profile_wallet_error": "错误: {error}",
+    "@profile_wallet_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_wallet_occurred_error": "发生错误: {error}",
+    "@profile_wallet_occurred_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_wallet_retry": "重试",
+    "profile_wallet_filter_all": "全部",
+    "profile_wallet_filter_income": "收入",
+    "profile_wallet_filter_expense": "支出",
+    "profile_wallet_no_transactions": "暂无交易记录",
+    "profile_wallet_load_failed": "加载失败: {error}",
+    "@profile_wallet_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_wallet_load_more_failed": "加载更多失败: {error}",
+    "@profile_wallet_load_more_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "profile_wallet_account_balance": "账户余额",
+    "profile_wallet_pending_amount": "待结算金额",
+    "profile_wallet_total_income": "总收入",
+    "profile_wallet_withdraw": "提现",
+    "profile_wallet_status_completed": "已完成",
+    "profile_wallet_status_pending": "处理中",
+    "profile_wallet_status_failed": "失败",
+    "profile_wallet_status_unknown": "未知",
+    "profile_wallet_transaction_details": "交易详情",
+    "profile_wallet_transaction_id": "交易ID",
+    "profile_wallet_transaction_type": "类型",
+    "profile_wallet_transaction_type_income": "收入",
+    "profile_wallet_transaction_type_expense": "支出",
+    "profile_wallet_transaction_amount": "金额",
+    "profile_wallet_transaction_description": "说明",
+    "profile_wallet_transaction_date": "日期",
+    "profile_wallet_transaction_status": "状态",
+    "profile_wallet_close": "关闭",
+    "profile_wallet_available_balance": "可提现余额: {symbol}{amount}",
+    "@profile_wallet_available_balance": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "¥"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "profile_wallet_withdraw_amount": "提现金额",
+    "profile_wallet_withdraw_hint": "请输入提现金额",
+    "profile_wallet_withdraw_time": "提现到账时间：1-3个工作日",
+    "profile_wallet_invalid_amount": "请输入有效的提现金额",
+    "profile_wallet_exceed_balance": "提现金额不能超过可用余额",
+    "profile_wallet_confirm_withdraw": "确认提现",
+    "profile_wallet_withdraw_submitted": "提现申请已提交：{symbol}{amount}",
+    "@profile_wallet_withdraw_submitted": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "¥"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "profile_wallet_not_implemented": "该功能暂未实现",
+    "auth_verification_expired": "验证码已过期",
+    "auth_login_failed": "登录失败: {error}",
+    "@auth_login_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "auth_code_send_failed": "验证码发送失败: {error}",
+    "@auth_code_send_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "auth_login_success": "登录成功!",
+    "auth_login": "登录",
+    "auth_privacy_policy": "隐私政策",
+    "auth_and": "和",
+    "auth_user_agreement": "用户协议",
+    "auth_invalid_phone": "请输入有效的11位手机号",
+    "auth_get_code": "获取验证码",
+    "payment_creating_order": "创建订单中...",
+    "payment_processing": "支付中...",
+    "payment_credit_card": "信用卡支付",
+    "payment_confirm_order": "确认订单",
+    "payment_quantity_label": "数量:",
+    "payment_order_summary": "订单摘要",
+    "payment_product_amount": "商品金额",
+    "payment_quantity": "数量",
+    "payment_order_total": "订单总计",
+    "payment_method": "支付方式",
+    "payment_processing_ellipsis": "处理中...",
+    "payment_confirm_pay": "确认支付",
+    "payment_success": "支付成功",
+    "payment_failed": "支付失败",
+    "payment_view_order_detail": "查看订单详情",
+    "payment_back_to_orders": "返回订单列表",
+    "payment_success_tip": "感谢您的购买！您可以在订单中查看详情。",
+    "payment_failed_tip": "支付未成功，请重试或选择其他支付方式。",
+    "home_banner_image_load_failed": "图片加载失败",
+    "home_banner_placeholder": "轮播图 {index}",
+    "@home_banner_placeholder": {
+        "placeholders": {
+            "index": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "home_no_data": "暂无数据",
+    "product_detail_no_faq": "暂无常见问题",
+    "product_detail_buy_button": "一键购买 {price}",
+    "@product_detail_buy_button": {
+        "placeholders": {
+            "price": {
+                "type": "String",
+                "example": "¥99.00"
+            }
+        }
+    },
+    "product_detail_buyer_requirements": "需要买家提供",
+    "product_detail_no_buyer_requirements": "卖家暂未设置需要买家提供的信息",
+    "after_sales_apply": "申请售后",
+    "after_sales_apply_remake": "申请重新制作",
+    "after_sales_apply_supplement": "申请补充",
+    "after_sales_apply_refund": "申请退款",
+    "after_sales_max_images": "最多只能上传 {max} 张图片",
+    "@after_sales_max_images": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_images_processed": "成功处理 {count} 张图片，平均压缩 {ratio}%",
+    "@after_sales_images_processed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "50.0"
+            }
+        }
+    },
+    "after_sales_images_failed": "{count} 张图片处理失败",
+    "@after_sales_images_failed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_image_pick_failed": "选择图片失败: {error}",
+    "@after_sales_image_pick_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "权限被拒绝"
+            }
+        }
+    },
+    "after_sales_select_reason": "请选择售后原因",
+    "after_sales_reason_label": "售后原因",
+    "after_sales_reason_quality": "商品质量问题",
+    "after_sales_reason_mismatch": "商品与描述不符",
+    "after_sales_reason_wrong_item": "卖家发错货",
+    "after_sales_reason_unwanted": "不想要了",
+    "after_sales_reason_other": "其他",
+    "after_sales_description_label": "问题描述",
+    "after_sales_description_hint": "请详细描述您遇到的问题...",
+    "after_sales_refund_max_hint": "最多可退 {symbol}{amount}",
+    "@after_sales_refund_max_hint": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "¥"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_enter_refund_amount": "请输入退款金额",
+    "after_sales_invalid_amount": "请输入有效的金额数字",
+    "after_sales_amount_must_positive": "退款金额必须大于0",
+    "after_sales_amount_exceed": "退款金额不能超过 {symbol}{amount}",
+    "@after_sales_amount_exceed": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "¥"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_upload_proof": "上传凭证 (最多 {max} 张)",
+    "@after_sales_upload_proof": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_remove_image": "移除图片",
+    "after_sales_submit": "提交申请",
+    "after_sales_loading_failed": "加载失败: {error}",
+    "@after_sales_loading_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "after_sales_detail_retry": "重试",
+    "after_sales_initializing": "正在初始化...",
+    "after_sales_status_audit_reject": "售后申请已拒绝",
+    "after_sales_status_refund_success": "退款成功",
+    "after_sales_status_processing": "售后处理中",
+    "after_sales_subtitle_wait_audit": "卖家会在48小时内处理您的申请",
+    "after_sales_subtitle_audit_pass": "退款将在1-3个工作日内到账",
+    "after_sales_subtitle_audit_reject": "如有异议，可申请平台介入",
+    "after_sales_subtitle_refund_success": "退款已完成，请查收",
+    "after_sales_subtitle_canceled": "您已取消售后申请",
+    "after_sales_subtitle_default": "请耐心等待处理结果",
+    "after_sales_product_info": "商品信息",
+    "after_sales_product_unknown": "商品名称未知",
+    "after_sales_spec": "规格：{spec}",
+    "@after_sales_spec": {
+        "placeholders": {
+            "spec": {
+                "type": "String",
+                "example": "红色/大码"
+            }
+        }
+    },
+    "after_sales_quantity": "数量：{count}",
+    "@after_sales_quantity": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_info": "售后信息",
+    "after_sales_application_number": "申请单号",
+    "after_sales_application_time": "申请时间",
+    "after_sales_refund_amount_label": "退款金额",
+    "after_sales_application_reason": "申请原因",
+    "after_sales_detailed_description": "详细说明",
+    "after_sales_audit_remark": "审核备注",
+    "after_sales_revoke": "撤销申请",
+    "after_sales_modify": "修改申请",
+    "after_sales_platform_intervention": "平台介入",
+    "after_sales_list_title": "售后列表",
+    "after_sales_no_records": "暂无售后申请记录",
+    "after_sales_please_wait": "请稍候...",
+    "after_sales_unknown_product": "未知商品",
+    "after_sales_status_label": "状态: {status}",
+    "@after_sales_status_label": {
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "处理中"
+            }
+        }
+    },
+    "after_sales_select_type": "选择售后类型",
+    "after_sales_type_remake": "我要重新制作",
+    "after_sales_type_remake_desc": "对收到的制作不满意，可与作者协商重做",
+    "after_sales_type_supplement": "我要补充",
+    "after_sales_type_supplement_desc": "收到的制作不完善，可与作者协商补充",
+    "after_sales_type_refund": "我要退款",
+    "after_sales_type_refund_desc": "协商退款",
+    "after_sales_no_record_for_order": "该订单没有对应的售后记录",
+    "after_sales_unknown_error": "加载售后详情时发生未知错误: {error}",
+    "@after_sales_unknown_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "after_sales_server_error": "服务器错误",
+    "after_sales_cache_error": "缓存错误",
+    "after_sales_network_error": "网络连接错误",
+    "after_sales_general_unknown_error": "发生未知错误",
+    "favorites_title": "我的收藏",
+    "favorites_tab_services": "服务",
+    "favorites_tab_sellers": "卖家",
+    "favorites_close": "关闭",
+    "favorites_empty_services": "暂无收藏的服务",
+    "favorites_empty_sellers": "暂无关注的卖家",
+    "favorites_empty_services_hint": "您可以在浏览服务时点击收藏按钮",
+    "favorites_empty_sellers_hint": "您可以在浏览卖家时点击关注按钮",
+    "favorites_unfollow": "取消关注",
+    "favorites_remove": "取消收藏",
+    "favorites_seller_type_member": "个人卖家",
+    "favorites_seller_type_enterprise": "企业卖家",
+    "favorites_seller_type_platform": "平台卖家",
+    "favorites_seller_type_default": "卖家",
+    "favorites_status_active": "活跃",
+    "favorites_status_inactive": "不活跃",
+    "favorites_status_suspended": "已暂停",
+    "favorites_status_banned": "已封禁",
+    "ai_docs_chat_create_failed": "无法创建聊天会话: {error}",
+    "@ai_docs_chat_create_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "ai_docs_chat_room_empty": "聊天室ID为空，无法进入聊天",
+    "ai_docs_chat_enter_error": "进入聊天时发生错误: {error}",
+    "@ai_docs_chat_enter_error": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "ai_docs_rate_limit_details": "使用次数详情",
+    "ai_docs_rate_limit_remaining": "剩余 {count} 次",
+    "@ai_docs_rate_limit_remaining": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "ai_docs_rate_limit_reset_in": "{time}后重置",
+    "@ai_docs_rate_limit_reset_in": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "2小时"
+            }
+        }
+    },
+    "ai_docs_rate_limit_rules": "使用规则",
+    "ai_docs_rate_limit_burst": "突发限制",
+    "ai_docs_rate_limit_hourly": "小时限制",
+    "ai_docs_rate_limit_upgrade": "升级获取更多次数",
+    "ai_docs_rate_limit_upgrade_coming": "升级功能即将推出",
+    "ai_docs_rate_limit_time_hours": "{hours}小时",
+    "@ai_docs_rate_limit_time_hours": {
+        "placeholders": {
+            "hours": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "ai_docs_rate_limit_time_minutes": "{minutes}分钟",
+    "@ai_docs_rate_limit_time_minutes": {
+        "placeholders": {
+            "minutes": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "ai_docs_rate_limit_time_seconds": "{seconds}秒",
+    "@ai_docs_rate_limit_time_seconds": {
+        "placeholders": {
+            "seconds": {
+                "type": "int",
+                "example": "45"
+            }
+        }
+    },
+    "ai_docs_rate_limit_reset": "已重置",
+    "ai_docs_rate_limit_warning_title": "使用次数即将耗尽",
+    "ai_docs_rate_limit_today_remaining": "今日剩余次数",
+    "ai_docs_rate_limit_remaining_info": "还可使用 {count} 次，{time}后重置",
+    "@ai_docs_rate_limit_remaining_info": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "time": {
+                "type": "String",
+                "example": "2小时"
+            }
+        }
+    },
+    "ai_docs_rate_limit_today_usage": "今日使用情况",
+    "auth_verification_code_expired": "验证码已过期",
+    "auth_get_verification_code": "获取验证码",
+    "home_image_load_failed": "图片加载失败",
+    "home_reached_end": "已经到底了",
+    "home_reviews_title": "评论",
+    "home_reviews_load_failed": "加载失败: {error}",
+    "@home_reviews_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "home_reviews_no_reviews": "暂无评论",
+    "home_reviews_default_content": "不错，很有耐心",
+    "home_reviews_seller_reply": "卖家回复",
+    "home_reviews_years_ago": "{count}年前",
+    "@home_reviews_years_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "home_reviews_months_ago": "{count}月前",
+    "@home_reviews_months_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            }
+        }
+    },
+    "home_reviews_days_ago": "{count}天前",
+    "@home_reviews_days_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "5"
+            }
+        }
+    },
+    "home_reviews_hours_ago": "{count}小时前",
+    "@home_reviews_hours_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "2"
+            }
+        }
+    },
+    "home_reviews_minutes_ago": "{count}分钟前",
+    "@home_reviews_minutes_ago": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "10"
+            }
+        }
+    },
+    "home_reviews_just_now": "刚刚",
+    "after_sales_apply_title": "申请售后",
+    "after_sales_select_reason_hint": "请选择售后原因",
+    "after_sales_select_reason_validator": "请选择售后原因",
+    "after_sales_refund_amount_hint": "最多可退 {symbol}{amount}",
+    "@after_sales_refund_amount_hint": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "$"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_refund_amount_required": "请输入退款金额",
+    "after_sales_refund_amount_invalid": "请输入有效的金额数字",
+    "after_sales_refund_amount_positive": "退款金额必须大于0",
+    "after_sales_refund_amount_exceed": "退款金额不能超过 {symbol}{amount}",
+    "@after_sales_refund_amount_exceed": {
+        "placeholders": {
+            "symbol": {
+                "type": "String",
+                "example": "¥"
+            },
+            "amount": {
+                "type": "String",
+                "example": "100.00"
+            }
+        }
+    },
+    "after_sales_upload_evidence": "上传凭证 (最多 {max} 张)",
+    "@after_sales_upload_evidence": {
+        "placeholders": {
+            "max": {
+                "type": "int",
+                "example": "9"
+            }
+        }
+    },
+    "after_sales_image_process_success": "成功处理 {count} 张图片，平均压缩 {ratio}%",
+    "@after_sales_image_process_success": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "3"
+            },
+            "ratio": {
+                "type": "String",
+                "example": "45.2"
+            }
+        }
+    },
+    "after_sales_image_process_failed": "{count} 张图片处理失败",
+    "@after_sales_image_process_failed": {
+        "placeholders": {
+            "count": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "after_sales_detail_load_failed": "加载失败: {error}",
+    "@after_sales_detail_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "after_sales_detail_initializing": "正在初始化...",
+    "after_sales_info_title": "售后信息",
+    "after_sales_info_order_number": "申请单号",
+    "after_sales_info_apply_time": "申请时间",
+    "after_sales_info_refund_amount": "退款金额",
+    "after_sales_info_reason": "申请原因",
+    "after_sales_info_description": "详细说明",
+    "after_sales_info_audit_remark": "审核备注",
+    "after_sales_list_load_failed": "加载失败: {error}",
+    "@after_sales_list_load_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String",
+                "example": "网络错误"
+            }
+        }
+    },
+    "after_sales_list_empty": "暂无售后申请记录",
+    "after_sales_list_loading": "请稍候...",
+    "after_sales_list_unknown_product": "未知商品",
+    "after_sales_list_status": "状态: {status}",
+    "@after_sales_list_status": {
+        "placeholders": {
+            "status": {
+                "type": "String",
+                "example": "待审核"
+            }
+        }
+    },
+    "after_sales_list_apply_time": "申请时间: {time}",
+    "@after_sales_list_apply_time": {
+        "placeholders": {
+            "time": {
+                "type": "String",
+                "example": "2024-01-01"
+            }
+        }
+    },
+    "after_sales_select_type_title": "选择售后类型",
+    "after_sales_type_remake_title": "我要重新制作",
+    "after_sales_type_remake_subtitle": "对收到的制作不满意，可与作者协商重做",
+    "after_sales_type_supplement_title": "我要补充",
+    "after_sales_type_supplement_subtitle": "收到的制作不完善，可与作者协商补充",
+    "after_sales_type_refund_title": "我要退款",
+    "after_sales_type_refund_subtitle": "协商退款",
+    "favorites_seller_status_active": "活跃",
+    "favorites_seller_status_inactive": "不活跃",
+    "favorites_seller_status_suspended": "已暂停",
+    "favorites_seller_status_banned": "已封禁",
+    "app_store_settings": "店铺设置",
+    "app_wallet": "钱包",
+    "app_wallet_init_failed": "初始化钱包页面失败",
+    "app_error_label": "错误",
+    "app_go_back": "返回",
+    "app_page_not_found": "页面未找到",
+    "app_path_error": "路径错误",
+    "app_error_generic": "错误",
+    "app_dev_menu_title": "开发调试菜单",
+    "app_dev_common_entries": "常用入口",
+    "app_dev_dskk": "多少看看",
+    "app_dev_order_module_buyer": "订单模块 (买家)",
+    "app_dev_order_list": "订单列表",
+    "app_dev_order_detail_example": "订单详情 (示例)",
+    "app_dev_order_module_seller": "订单模块 (卖家)",
+    "app_dev_seller_order_list": "卖家订单列表",
+    "app_dev_seller_order_detail_example": "卖家订单详情 (示例)",
+    "app_dev_seller_module": "卖家模块 (Seller)",
+    "app_dev_seller_center": "卖家中心 (首页)",
+    "app_dev_ai_docs_module": "AI Docs 模块",
+    "app_dev_ai_chat": "AI 聊天",
+    "app_dev_test_other": "测试/其他",
+    "app_dev_current_credentials": "当前测试凭证 (硬编码): ",
+    "app_dev_temp_injection": "(临时注入，将在 Auth 模块合并后移除)",
+    "app_dev_navigation_failed": "跳转失败: {path} - {error}",
+    "@app_dev_navigation_failed": {
+        "placeholders": {
+            "path": {
+                "type": "String"
+            },
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "core_processing": "处理中...",
+    "core_yesterday": "昨天",
+    "payment_test_title": "支付功能测试",
+    "payment_check_availability": "检查支付方式可用性",
+    "payment_test_params": "测试参数",
+    "payment_order_number": "订单号",
+    "payment_amount_yuan": "金额 (元)",
+    "payment_product_name": "商品名称",
+    "payment_select_method": "选择支付方式",
+    "payment_test_button": "测试{method} ¥{amount}",
+    "@payment_test_button": {
+        "placeholders": {
+            "method": {
+                "type": "String"
+            },
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_usage_instructions": "使用说明",
+    "payment_instruction_1": "1. 修改上方测试参数",
+    "payment_instruction_2": "2. 选择要测试的支付方式",
+    "payment_instruction_3": "3. 点击测试按钮发起支付",
+    "payment_instruction_4": "4. 点击右上角信息按钮检查支付方式可用性",
+    "payment_test_warning": "注意：测试环境建议使用0.01元进行测试",
+    "payment_test_product": "测试商品",
+    "payment_initiated_success": "支付发起成功：{message}",
+    "@payment_initiated_success": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_failed_message": "支付失败：{message}",
+    "@payment_failed_message": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_exception": "支付异常: {error}",
+    "@payment_exception": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_availability_title": "支付方式可用性",
+    "payment_alipay": "支付宝",
+    "payment_wechat": "微信支付",
+    "payment_wallet_balance": "余额支付",
+    "payment_confirm": "确定",
+    "payment_check_failed": "检查失败: {error}",
+    "@payment_check_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_alipay_subtitle": "安全快捷支付",
+    "payment_wechat_subtitle": "微信安全支付",
+    "payment_amount_label": "支付金额：",
+    "payment_terms_agreement": "点击\"确认支付\"即表示您同意并接受相关服务条款",
+    "payment_create_order_failed": "创建支付订单失败",
+    "payment_method_test_title": "支付方式测试",
+    "payment_alipay_pay": "支付宝支付",
+    "payment_test_functions": "测试功能",
+    "payment_test_alipay": "测试支付宝支付",
+    "payment_test_wechat": "测试微信支付",
+    "payment_test_credit_card": "测试信用卡支付",
+    "payment_recent_test_result": "最近测试结果",
+    "payment_no_test_result": "暂无测试结果",
+    "payment_available": "可用",
+    "payment_unavailable": "不可用",
+    "payment_method_label": "支付方式：{name}",
+    "@payment_method_label": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_mock_mode": "Mock模式",
+    "payment_error_label": "错误: {error}",
+    "@payment_error_label": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "payment_nav_network_failed": "网络连接失败",
+    "payment_nav_network_error_message": "网络连接出错，请检查网络后重试",
+    "payment_nav_view_orders": "查看订单",
+    "payment_nav_retry_payment": "重试支付",
+    "payment_nav_result_unknown_title": "支付结果未知",
+    "payment_nav_result_unknown_message": "支付结果暂时无法确认，请稍后查看订单状态或联系客服",
+    "payment_nav_query_status": "查询状态",
+    "payment_nav_cancel_continue": "您已取消支付，可以继续完成订单支付",
+    "payment_nav_processing": "支付正在处理中，请稍后查看订单状态",
+    "payment_nav_success": "支付成功",
+    "payment_nav_failed": "支付失败",
+    "payment_nav_retrying": "正在重新发起支付...",
+    "payment_nav_retry_failed": "无法重试支付，订单信息丢失",
+    "payment_nav_querying": "正在查询支付状态...",
+    "payment_nav_query_failed": "无法查询状态，订单信息丢失",
+    "payment_test_description": "{subject} - 支付测试",
+    "@payment_test_description": {
+        "placeholders": {
+            "subject": {
+                "type": "String"
+            }
+        }
+    }
 }

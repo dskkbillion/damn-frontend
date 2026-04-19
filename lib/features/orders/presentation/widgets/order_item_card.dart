@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
@@ -16,6 +13,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 用于在订单列表中显示单个订单摘要信息的卡片 Widget。
 class OrderItemCard extends StatelessWidget {
@@ -24,147 +22,31 @@ class OrderItemCard extends StatelessWidget {
 
   const OrderItemCard({super.key, required this.order, this.onTap});
 
-  /// 显示取消订单确认对话框
-  Future<void> _showCancelConfirmationDialog(BuildContext context, Order order) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('取消订单'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('您确定要取消这个订单吗？'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('返回'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('确定取消'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-                _performCancelOrder(context, order);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  /// 执行取消订单操作
-  Future<void> _performCancelOrder(BuildContext context, Order order) async {
-    try {
-      final orderDetailBloc = getIt<OrderDetailBloc>();
-
-      AppLogger.d('[OrderItemCard] 准备取消订单: ${order.id}');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('正在取消订单...')),
-      );
-
-      late StreamSubscription streamSubscription;
-      bool orderLoaded = false;
-
-      streamSubscription = orderDetailBloc.stream.listen((state) {
-        AppLogger.d('[OrderItemCard] 取消订单 - 收到BLoC状态变化: ${state.runtimeType}');
-
-        if (state is OrderDetailLoaded && !orderLoaded) {
-          AppLogger.d('[OrderItemCard] 订单详情加载完成，执行取消操作');
-          orderLoaded = true;
-          orderDetailBloc.add(OrderActionRequested(
-            action: OrderAction.cancel,
-            orderId: order.id.toString(),
-          ));
-        } else if (state is OrderDetailActionSuccess) {
-          AppLogger.d('[OrderItemCard] 取消成功');
-          streamSubscription.cancel();
-
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('订单已取消'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-
-          // 刷新订单列表
-          if (context.mounted) {
-            final orderListBloc = context.read<OrderListBloc>();
-            orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
-          }
-        } else if (state is OrderDetailActionFailure) {
-          AppLogger.d('[OrderItemCard] 取消失败: ${state.message}');
-          streamSubscription.cancel();
-
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('取消失败：${state.message}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        } else if (state is OrderDetailError) {
-          AppLogger.d('[OrderItemCard] 加载订单详情失败: ${state.message}');
-          streamSubscription.cancel();
-
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('加载订单详情失败：${state.message}'),
-              backgroundColor: AppColors.error,
-            ),
-          );
-        }
-      });
-
-      // 先加载订单详情
-      AppLogger.d('[OrderItemCard] 先加载订单详情');
-      orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
-
-    } catch (e) {
-      AppLogger.d('[OrderItemCard] 取消操作异常: $e');
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('取消失败：$e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   /// 显示删除订单确认对话框
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context)!;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('删除订单'),
-          content: const SingleChildScrollView(
+          title: Text(l10n.order_confirm_delete_title),
+          content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('您确定要删除这个订单吗？删除后将无法恢复。'),
+                Text(l10n.order_confirm_delete_content),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('取消'),
+              child: Text(l10n.order_dialog_cancel),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
             ),
             TextButton(
-              child: const Text('确定'),
+              child: Text(l10n.order_dialog_confirm),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 _performDeleteOrder(context, order);
@@ -178,15 +60,16 @@ class OrderItemCard extends StatelessWidget {
 
   /// 执行删除订单操作
   Future<void> _performDeleteOrder(BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // 创建一个临时的 OrderDetailBloc 来处理删除操作
       final orderDetailBloc = getIt<OrderDetailBloc>();
-      
-      AppLogger.d('[OrderItemCard] 准备删除订单: ${order.id}, 当前状态: ${order.state}');
-      
+
+      print('[OrderItemCard] 准备删除订单: ${order.id}, 当前状态: ${order.state}');
+
       // 显示加载状态
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('正在删除订单...')),
+        SnackBar(content: Text(l10n.order_card_deleting)),
       );
 
       // 创建一个 StreamSubscription 来监听结果
@@ -194,30 +77,30 @@ class OrderItemCard extends StatelessWidget {
       bool orderLoaded = false;
       
       streamSubscription = orderDetailBloc.stream.listen((state) {
-        AppLogger.d('[OrderItemCard] 收到BLoC状态变化: ${state.runtimeType}');
+        print('[OrderItemCard] 收到BLoC状态变化: ${state.runtimeType}');
         
         if (state is OrderDetailLoaded && !orderLoaded) {
           // 订单详情加载完成，现在可以执行删除操作
-          AppLogger.d('[OrderItemCard] 订单详情加载完成，执行删除操作');
+          print('[OrderItemCard] 订单详情加载完成，执行删除操作');
           orderLoaded = true;
           orderDetailBloc.add(OrderActionRequested(
             action: OrderAction.delete,
             orderId: order.id.toString(),
           ));
         } else if (state is OrderDetailActionSuccess) {
-          AppLogger.d('[OrderItemCard] 删除成功');
+          print('[OrderItemCard] 删除成功');
           // 取消订阅
           streamSubscription.cancel();
           
           // 删除成功，隐藏加载提示并显示成功消息
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('订单已删除'),
-              backgroundColor: AppColors.success,
+            SnackBar(
+              content: Text(l10n.order_card_deleted),
+              backgroundColor: Colors.green,
             ),
           );
-
+          
           // 刷新订单列表，保持当前的筛选状态
           if (context.mounted) {
             final orderListBloc = context.read<OrderListBloc>();
@@ -225,20 +108,20 @@ class OrderItemCard extends StatelessWidget {
             context.read<OrderListBloc>().add(LoadOrders(status: orderListBloc.currentStatus));
           }
         } else if (state is OrderDetailActionFailure) {
-          AppLogger.d('[OrderItemCard] 删除失败: ${state.message}');
+          print('[OrderItemCard] 删除失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
-
+          
           // 删除失败
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('删除失败：${state.message}'),
-              backgroundColor: AppColors.error,
+              content: Text(l10n.order_card_delete_failed(state.message)),
+              backgroundColor: Colors.red,
             ),
           );
         } else if (state is OrderDetailError) {
-          AppLogger.d('[OrderItemCard] 加载订单详情失败: ${state.message}');
+          print('[OrderItemCard] 加载订单详情失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
 
@@ -246,24 +129,24 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('加载订单详情失败：${state.message}'),
-              backgroundColor: AppColors.error,
+              content: Text(l10n.order_card_load_detail_failed(state.message)),
+              backgroundColor: Colors.red,
             ),
           );
         }
       });
 
       // 先加载订单详情
-      AppLogger.d('[OrderItemCard] 先加载订单详情');
+      print('[OrderItemCard] 先加载订单详情');
       orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
-
+      
     } catch (e) {
-      AppLogger.d('[OrderItemCard] 删除操作异常: $e');
+      print('[OrderItemCard] 删除操作异常: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('删除失败：$e'),
-          backgroundColor: AppColors.error,
+          content: Text(l10n.order_card_delete_failed(e.toString())),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -275,28 +158,35 @@ class OrderItemCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     
     // 调试日志
-    AppLogger.d('[OrderItemCard] Building card for order ${order.id}');
-    AppLogger.d('[OrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}, shopName: ${order.tenant?.shopName}');
-    AppLogger.d('[OrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
+    print('[OrderItemCard] Building card for order ${order.id}');
+    print('[OrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}, shopName: ${order.tenant?.shopName}');
+    print('[OrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
 
+    // Define the callback for navigating to detail page (used by multiple buttons)
+    VoidCallback navigateToDetail = () {
+      if (onTap != null) {
+        onTap!(); // Use the main onTap callback passed from the list page
+      }
+    };
+
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
-      margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       elevation: 0, // 无阴影，更简洁
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(12.0),
         side: BorderSide(
-          color: colorScheme.outline.withValues(alpha: 0.3), // 淡边框
+          color: colorScheme.outline.withOpacity(0.3), // 淡边框
         ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(12.0),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -362,7 +252,6 @@ class OrderItemCard extends StatelessWidget {
                   EnhancedOrderStatusWidget(
                     status: order.state,
                     countdownEndTime: _getCountdownEndTime(order),
-                    order: order, // 传入order对象用于判断是否为轻咨询
                   ),
                 ],
               ),
@@ -384,22 +273,22 @@ class OrderItemCard extends StatelessWidget {
                            if (loadingProgress == null) return child;
                            return Container(
                              width: 80, height: 80,
-                             color: AppColors.backgroundSecondary,
+                             color: Colors.grey[200],
                              child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                            );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 80, height: 80,
-                          color: AppColors.backgroundSecondary,
-                          child: Icon(Icons.broken_image, color: AppColors.textTertiary),
+                          color: Colors.grey[200],
+                          child: Icon(Icons.broken_image, color: Colors.grey[400]),
                         ),
                       ),
                     )
                   else // 如果没有图片URL，显示占位符
                      Container(
                           width: 80, height: 80,
-                          color: AppColors.backgroundSecondary,
-                          child: Icon(Icons.image, color: AppColors.textTertiary),
+                          color: Colors.grey[200],
+                          child: Icon(Icons.image, color: Colors.grey[400]),
                         ),
                   const SizedBox(width: 12.0),
                   // 商品详情
@@ -408,7 +297,7 @@ class OrderItemCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          firstItem?.productName ?? '商品名称未知', // 商品标题
+                          firstItem?.productName ?? AppLocalizations.of(context)!.order_card_product_unknown, // 商品标题
                           style: textTheme.titleMedium,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -454,7 +343,7 @@ class OrderItemCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          _getInfoText(order),
+                          _getInfoText(order, l10n: AppLocalizations.of(context)!),
                           style: textTheme.bodySmall?.copyWith(
                             color: _getInfoColor(order, colorScheme),
                           ),
@@ -465,7 +354,7 @@ class OrderItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              Divider(height: 1, color: AppColors.borderPrimary), // 分隔线
+              Divider(height: 1, color: Colors.grey[200]), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
               Align(
@@ -473,7 +362,8 @@ class OrderItemCard extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(left: 0, bottom: 4.0), // Adjust padding as needed
                   child: Text(
-                    '${order.createdAt.year}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
+                    // TODO: 格式化时间
+                    order.createdAt.toString(),
                     style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
                   ),
                 ),
@@ -484,62 +374,33 @@ class OrderItemCard extends StatelessWidget {
                  // Use OrderItemCardActionButtons with callbacks
                  child: OrderItemCardActionButtons(
                    order: order,
-                   // 支付：直接导航到订单详情页
-                   onPay: () {
-                     AppLogger.d('[OrderItemCard] Pay order: ${order.id}');
-                     context.push('/orderDetail/${order.id}');
-                   },
-                   onViewLogistics: () {
-                     AppLogger.d('[OrderItemCard] View logistics: ${order.id}');
-                     context.push('/orderDetail/${order.id}');
-                   },
-                   onEvaluate: () async {
-                     // 导航到评价页面，并等待结果
-                     AppLogger.d('[OrderItemCard] Navigating to evaluation for order ${order.id}');
-                     final result = await context.push<bool>('/evaluation/${order.id}', extra: order);
-                     AppLogger.d('[OrderItemCard] Evaluation returned with result: $result, context.mounted: ${context.mounted}');
-                     // 如果评价成功，强制刷新订单列表（绕过缓存）
-                     if (result == true && context.mounted) {
-                       AppLogger.d('[OrderItemCard] Triggering force refresh...');
-                       final orderListBloc = context.read<OrderListBloc>();
-                       AppLogger.d('[OrderItemCard] Current status: ${orderListBloc.currentStatus}');
-                       orderListBloc.add(LoadOrders(status: orderListBloc.currentStatus, forceRefresh: true));
-                       AppLogger.d('[OrderItemCard] LoadOrders event sent with forceRefresh: true');
-                     } else {
-                       AppLogger.d('[OrderItemCard] Not refreshing. result=$result, mounted=${context.mounted}');
+                   // Navigation actions mostly point to detail for now
+                   onPay: navigateToDetail, // Go to detail, which might handle payment trigger
+                   onViewLogistics: navigateToDetail,
+                   onEvaluate: () {
+                     // 直接导航到评价页面
+                     if (order.items.isNotEmpty) {
+                       final firstItemId = order.items.first.id;
+                       context.push('/evaluation/$firstItemId', extra: order.items.first);
                      }
                    },
-                   onApplyAfterSale: () {
-                     AppLogger.d('[OrderItemCard] Apply after sale: ${order.id}');
-                     if (order.items.isEmpty) {
-                       ScaffoldMessenger.of(context).showSnackBar(
-                         const SnackBar(content: Text('错误：该订单没有可申请退款的商品')),
-                       );
-                       return;
-                     }
-                     final firstItem = order.items.first;
-                     context.push('/afterSalesApply?itemId=${firstItem.id}&type=REFUND', extra: firstItem);
-                   },
-                   onViewDetails: () {
-                     AppLogger.d('[OrderItemCard] View details: ${order.id}');
-                     context.push('/orderDetail/${order.id}');
-                   },
-                   // 取消订单：显示确认对话框
+                   onApplyAfterSale: navigateToDetail,
+                   onViewDetails: navigateToDetail,
+                   // Actions that modify state (might interact with OrderListBloc later)
                    onCancel: () {
-                     AppLogger.d('[OrderItemCard] Cancel order: ${order.id}');
-                     _showCancelConfirmationDialog(context, order);
+                     // TODO: Connect to OrderListBloc if needed for immediate UI update
+                     print('[OrderItemCard] Cancel order: ${order.id}');
                    },
-                   // 确认收货
                    onConfirmReceipt: () {
-                     AppLogger.d('[OrderItemCard] Confirm receipt: ${order.id}');
-                     context.push('/orderDetail/${order.id}');
+                     // TODO: Connect to OrderListBloc if needed
+                     print('[OrderItemCard] Confirm receipt: ${order.id}');
                    },
-                   onRemindDelivery: () {
+                    onRemindDelivery: () {
                      // Show a snackbar directly
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('已提醒卖家发货'), duration: Duration(seconds: 2)),
+                       SnackBar(content: Text(AppLocalizations.of(context)!.order_snackbar_reminded_delivery), duration: const Duration(seconds: 2)),
                      );
-                     AppLogger.d('[OrderItemCard] Remind delivery: ${order.id}');
+                     print('[OrderItemCard] Remind delivery: ${order.id}');
                    },
                    onDelete: () {
                      _showDeleteConfirmationDialog(context, order);
@@ -595,34 +456,34 @@ class OrderItemCard extends StatelessWidget {
   }
   
   /// 获取信息文本
-  String _getInfoText(Order order) {
+  String _getInfoText(Order order, {AppLocalizations? l10n}) {
     switch (order.state) {
       case OrderStatus.awaitingPayment:
         if (order.autoCancelTime != null) {
           final remaining = order.autoCancelTime!.difference(DateTime.now());
-          if (remaining.isNegative) return '已超时，即将取消';
-          return '请在${_formatDuration(remaining)}内付款';
+          if (remaining.isNegative) return l10n?.order_card_timeout_canceling ?? '';
+          return l10n?.order_card_pay_in_time(_formatDuration(remaining)) ?? '';
         }
         break;
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         if (order.autoMaterialTime != null) {
           final remaining = order.autoMaterialTime!.difference(DateTime.now());
-          if (remaining.isNegative) return '已超时，请尽快提交';
-          return '请在${_formatDuration(remaining)}内提交材料';
+          if (remaining.isNegative) return l10n?.order_card_timeout_submit ?? '';
+          return l10n?.order_card_submit_in_time(_formatDuration(remaining)) ?? '';
         }
         break;
       case OrderStatus.awaitingStart:
         if (order.autoOrderReceivinTime != null) {
           final remaining = order.autoOrderReceivinTime!.difference(DateTime.now());
-          if (remaining.isNegative) return '卖家超时未接单';
-          return '卖家将在${_formatDuration(remaining)}内接单';
+          if (remaining.isNegative) return l10n?.order_card_seller_timeout ?? '';
+          return l10n?.order_card_seller_accept_in_time(_formatDuration(remaining)) ?? '';
         }
         break;
       case OrderStatus.awaitingDelivery:
         final firstItem = order.items.isNotEmpty ? order.items.first : null;
         if (firstItem?.deliveryDay != null) {
-          return '咨询周期：${firstItem!.deliveryDay}天内';
+          return l10n?.order_card_delivery_days(firstItem!.deliveryDay!) ?? '';
         }
         break;
       case OrderStatus.awaitingConfirmation:
@@ -630,13 +491,13 @@ class OrderItemCard extends StatelessWidget {
           // 计算7天后自动确认
           final autoConfirmTime = order.deliveryTimestamp!.add(const Duration(days: 7));
           final remaining = autoConfirmTime.difference(DateTime.now());
-          if (remaining.isNegative) return '即将自动确认收货';
-          return '${_formatDuration(remaining)}后自动确认';
+          if (remaining.isNegative) return l10n?.order_card_auto_confirm_soon ?? '';
+          return l10n?.order_card_auto_confirm_in(_formatDuration(remaining)) ?? '';
         }
         break;
       case OrderStatus.awaitingEvaluation:
         if (order.evaluate == false) {
-          return '待评价，评价后可获得积分';
+          return l10n?.order_card_evaluate_for_points ?? '';
         }
         break;
       default:
@@ -688,14 +549,16 @@ class OrderItemCard extends StatelessWidget {
   
   /// 格式化时间间隔
   String _formatDuration(Duration duration) {
+    // Note: These are used as time strings passed into l10n placeholders,
+    // so we keep them as simple formatted strings without l10n wrapping here.
     if (duration.inDays > 0) {
-      return '${duration.inDays}天${duration.inHours % 24}小时';
+      return '${duration.inDays}d ${duration.inHours % 24}h';
     } else if (duration.inHours > 0) {
-      return '${duration.inHours}小时${duration.inMinutes % 60}分钟';
+      return '${duration.inHours}h ${duration.inMinutes % 60}m';
     } else if (duration.inMinutes > 0) {
-      return '${duration.inMinutes}分钟';
+      return '${duration.inMinutes}m';
     } else {
-      return '少于1分钟';
+      return '<1m';
     }
   }
   

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../../domain/entities/common_user.dart';
 import '../../domain/entities/favorite.dart';
@@ -14,7 +13,7 @@ import '../widgets/empty_favorites.dart';
 import '../widgets/favorite_seller_item.dart';
 import '../widgets/favorite_service_item.dart';
 import '../../../../app/navigation/app_router_config.dart';
-import '../../../../generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../../core/utils/haptic_utils.dart';
 
 /// 收藏页面
@@ -140,7 +139,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
@@ -149,30 +148,30 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(AppColors.textTertiary, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
         ),
         activeIcon: SvgPicture.asset(
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
         ),
-        label: appLocalizations.nav_ai_assistant,
+        label: s.nav_ai_assistant,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.home_outlined),
         activeIcon: const Icon(Icons.home),
-        label: appLocalizations.nav_home,
+        label: s.nav_home,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.chat_bubble_outline),
         activeIcon: const Icon(Icons.chat_bubble),
-        label: appLocalizations.nav_messages,
+        label: s.nav_messages,
       ),
       BottomNavigationBarItem(
         icon: const Icon(Icons.person_outline),
         activeIcon: const Icon(Icons.person),
-        label: appLocalizations.nav_profile,
+        label: s.nav_profile,
       ),
     ];
     
@@ -181,14 +180,14 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       items.add(BottomNavigationBarItem(
         icon: const Icon(Icons.developer_mode_outlined),
         activeIcon: const Icon(Icons.developer_mode),
-        label: appLocalizations.nav_dev,
+        label: s.nav_dev,
       ));
     }
 
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textTertiary,
+      selectedItemColor: const Color(0xFFD0903D),
+      unselectedItemColor: Colors.grey,
       showUnselectedLabels: true,
       items: items,
       currentIndex: 3, // 设置为个人中心tab，因为收藏功能属于个人中心
@@ -200,16 +199,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的收藏'),
+        title: Text(AppLocalizations.of(context)!.favorites_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _handleBack,
         ),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: '服务'),
-            Tab(text: '卖家'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.favorites_tab_services),
+            Tab(text: AppLocalizations.of(context)!.favorites_tab_sellers),
           ],
         ),
       ),
@@ -221,7 +220,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
               SnackBar(
                 content: Text(state.errorMessage!),
                 action: SnackBarAction(
-                  label: '关闭',
+                  label: AppLocalizations.of(context)!.favorites_close,
                   onPressed: () {
                     context.read<FavoritesBloc>().add(ClearErrorEvent());
                   },
@@ -254,18 +253,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.services.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: () async {
-          context.read<FavoritesBloc>().add(const LoadFavoriteServicesEvent(refresh: true));
-        },
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 160),
-            EmptyFavorites(tabIndex: 0),
-          ],
-        ),
-      );
+      return EmptyFavorites(tabIndex: 0);
     }
 
     return RefreshIndicator(
@@ -274,7 +262,6 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       },
       child: ListView.builder(
         controller: _servicesScrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.services.length + (state.isServicesLoading ? 1 : 0),
         itemBuilder: (context, index) {
@@ -291,7 +278,11 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           return FavoriteServiceItem(
             service: service,
             onTap: () {
-              context.push('/home/product/${service.id}');
+              // 跳转到服务详情页
+              // 这里需要通过导航服务实现
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   SnackBar(content: Text('查看服务详情: ${service.title}')),
+              // );
             },
             onRemove: () {
               // 使用正确的事件类型，通过服务ID删除收藏
@@ -315,18 +306,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.sellers.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: () async {
-          context.read<FavoritesBloc>().add(const LoadFavoriteSellersEvent(refresh: true));
-        },
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          children: const [
-            SizedBox(height: 160),
-            EmptyFavorites(tabIndex: 1),
-          ],
-        ),
-      );
+      return EmptyFavorites(tabIndex: 1);
     }
 
     return RefreshIndicator(
@@ -335,7 +315,6 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       },
       child: ListView.builder(
         controller: _sellersScrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.only(top: 8, bottom: 80), // 增加底部padding为底部导航栏留空间
         itemCount: state.sellers.length + (state.isSellersLoading ? 1 : 0),
         itemBuilder: (context, index) {

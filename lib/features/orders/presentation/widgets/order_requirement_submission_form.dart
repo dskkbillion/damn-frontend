@@ -1,5 +1,4 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
@@ -9,8 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import shared_pr
 import 'dart:convert'; // Import dart:convert for json handling
 import 'file_upload_item.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget for submitting order requirements (text and attachments).
 class OrderRequirementSubmissionForm extends StatefulWidget {
@@ -69,12 +67,12 @@ class _OrderRequirementSubmissionFormState
         // Update controllers
         _requirementController1.text = req1;
         _requirementController2.text = req2;
-
+        
         // 恢复文件列表
         if (draftData['fileItems'] != null) {
           final fileItemsList = (draftData['fileItems'] as List<dynamic>? ?? []);
           final restoredItems = <FileUploadItem>[];
-
+          
           for (final itemData in fileItemsList) {
             if (itemData is Map<String, dynamic>) {
               restoredItems.add(FileUploadItem(
@@ -89,7 +87,7 @@ class _OrderRequirementSubmissionFormState
               ));
             }
           }
-
+          
           setState(() {
             _fileUploadItems = restoredItems;
             _uploadedUrls = attachments;
@@ -98,25 +96,25 @@ class _OrderRequirementSubmissionFormState
           // 兼容旧版本的草稿
           _uploadedUrls = attachments;
         }
-
-        AppLogger.d('Draft loaded successfully for order ${widget.order.id}');
+        
+        print('Draft loaded successfully for order ${widget.order.id}');
       } else {
-        AppLogger.d('No draft found for order ${widget.order.id}');
+         print('No draft found for order ${widget.order.id}');
       }
     } catch (e) {
-      AppLogger.d('Error loading draft: $e');
+      print('Error loading draft: $e');
       // Optionally show an error message to the user
       if (mounted) { // Check if widget is still in the tree
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('加载草稿失败')), // Localize this
+          SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_load_draft_failed)),
         );
       }
     } finally {
       // Ensure loading indicator is turned off even if errors occur
       if (mounted) {
-        setState(() {
-          _isLoadingDraft = false;
-        });
+         setState(() {
+           _isLoadingDraft = false;
+         });
       }
     }
   }
@@ -138,7 +136,7 @@ class _OrderRequirementSubmissionFormState
         'uploadedUrl': item.uploadedUrl,
         'errorMessage': item.errorMessage,
       }).toList();
-
+      
       final draftData = {
         'requirement1': _requirementController1.text,
         'requirement2': _requirementController2.text,
@@ -148,27 +146,29 @@ class _OrderRequirementSubmissionFormState
 
       final String draftJson = jsonEncode(draftData);
       await prefs.setString(draftKey, draftJson);
-      AppLogger.d('Draft saved for order ${widget.order.id}');
+      print('Draft saved for order ${widget.order.id}');
     } catch (e) {
-      AppLogger.d('Error saving draft: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('保存草稿失败')), // Localize this
-        );
+      print('Error saving draft: $e');
+      // Optionally show an error message to the user
+      if (mounted) { // Check if widget is still in the tree
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_save_draft_failed)),
+         );
       }
     }
   }
 
   // --- Draft Clearing Logic (called externally, e.g., after successful submission) ---
   Future<void> _clearDraft() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final draftKey = _getDraftKey(widget.order.id.toString());
-      await prefs.remove(draftKey);
-      AppLogger.d('Draft cleared for order ${widget.order.id}');
-    } catch (e) {
-      AppLogger.d('Error clearing draft: $e');
-    }
+     try {
+       final prefs = await SharedPreferences.getInstance();
+       final draftKey = _getDraftKey(widget.order.id.toString());
+       await prefs.remove(draftKey);
+       print('Draft cleared for order ${widget.order.id}');
+     } catch (e) {
+        print('Error clearing draft: $e');
+        // Optionally inform the user
+     }
   }
 
   @override
@@ -199,157 +199,160 @@ class _OrderRequirementSubmissionFormState
         FocusScope.of(context).unfocus();
       },
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(16.0),
         child: Card(
           // 使用统一Card主题
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // --- Product Info ---
-                if (item != null)
-                  ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      child: Image.network(
-                        item.imageUrl,
-                        width: 50, height: 50, fit: BoxFit.cover,
-                        errorBuilder: (_,__,___) => const Icon(Icons.broken_image, size: 50),
-                      ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            // --- Product Info ---
+            // Use a simpler display than the full OrderDetailItemTile if needed
+            if (item != null)
+              ListTile(
+                 leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      item.imageUrl,
+                      width: 50, height: 50, fit: BoxFit.cover,
+                      errorBuilder: (_,__,___) => const Icon(Icons.broken_image, size: 50),
                     ),
-                    title: Text(item.productName, style: textTheme.titleSmall),
-                    subtitle: Text(item.skuName ?? '', style: textTheme.bodySmall),
-                    trailing: Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-                    contentPadding: EdgeInsets.zero,
                   ),
-                if (item != null) const Divider(height: 24),
+                  title: Text(item.productName, style: textTheme.titleSmall),
+                  subtitle: Text(item.skuName ?? '', style: textTheme.bodySmall),
+                   trailing: Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+                   contentPadding: EdgeInsets.zero,
+              ),
+            if (item != null) const Divider(height: 24),
 
-                // --- Requirements Section ---
-                Text('要求提交', style: textTheme.titleMedium),
-                const SizedBox(height: AppDimensions.spacingSm),
-                // 动态显示商品要求
-                _buildRequirementFields(context),
+            // --- Requirements Section ---
+            Text(AppLocalizations.of(context)!.order_requirement_title, style: textTheme.titleMedium),
+            const SizedBox(height: 8),
+            // 动态显示商品要求
+            _buildRequirementFields(context),
 
-                const SizedBox(height: AppDimensions.spacingXxl),
+            const SizedBox(height: 24),
 
-                // --- Attachments Section ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
+            // --- Attachments Section ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(AppLocalizations.of(context)!.order_requirement_attachment_title, style: textTheme.titleMedium),
+                      const SizedBox(height: 4),
+                      Text(
+                        AppLocalizations.of(context)!.order_requirement_attachment_limit(_maxFileCount, _maxFileSize ~/ (1024 * 1024)),
+                        style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (_fileUploadItems.length < _maxFileCount)
+                  TextButton.icon(
+                    onPressed: _pickFiles,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(AppLocalizations.of(context)!.order_requirement_add),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 文件上传列表
+            if (_fileUploadItems.isNotEmpty) ...[
+              ...List.generate(_fileUploadItems.length, (index) {
+                final item = _fileUploadItems[index];
+                return FileUploadItemWidget(
+                  key: ValueKey(item.id),
+                  item: item,
+                  maxFileSize: _maxFileSize,
+                  onRemove: () => _removeFile(index),
+                  onUploadSuccess: (url) => _onFileUploaded(index, url),
+                );
+              }),
+            ] else
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _pickFiles,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('附件上传', style: textTheme.titleMedium),
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          Icon(Icons.cloud_upload_outlined, size: 32, color: Colors.grey[400]),
+                          const SizedBox(height: 8),
                           Text(
-                            '最多${_maxFileCount}个文件，单个文件不超过${_maxFileSize ~/ (1024 * 1024)}MB',
-                            style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-                            overflow: TextOverflow.ellipsis,
+                            AppLocalizations.of(context)!.order_requirement_click_select_file,
+                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
                           ),
                         ],
                       ),
                     ),
-                    if (_fileUploadItems.length < _maxFileCount)
-                      TextButton.icon(
-                        onPressed: _pickFiles,
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text('添加'),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.spacingMd),
-                // 文件上传列表
-                if (_fileUploadItems.isNotEmpty) ...[
-                  ...List.generate(_fileUploadItems.length, (index) {
-                    final item = _fileUploadItems[index];
-                    return FileUploadItemWidget(
-                      key: ValueKey(item.id),
-                      item: item,
-                      maxFileSize: _maxFileSize,
-                      onRemove: () => _removeFile(index),
-                      onUploadSuccess: (url) => _onFileUploaded(index, url),
-                    );
-                  }),
-                ] else
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _pickFiles,
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      child: Container(
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppColors.backgroundSecondary,
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                          border: Border.all(color: AppColors.borderPrimary),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.cloud_upload_outlined, size: 32, color: AppColors.textTertiary),
-                              const SizedBox(height: AppDimensions.spacingSm),
-                              Text(
-                                '点击此处选择文件',
-                                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
-                const SizedBox(height: AppDimensions.spacingXxl),
+                ),
+              ),
+            const SizedBox(height: 24),
 
-                // --- Action Buttons for this Form ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // --- Submit Requirements Button ---
-                    BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
-                      selector: (state) => state is OrderDetailLoaded && state.isSubmittingRequirements,
-                      builder: (context, isSubmitting) {
-                        return ElevatedButton(
+            // --- Action Buttons for this Form ---
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                 // REMOVED: Save Draft Button and associated BlocSelector
+                 // const SizedBox(width: 16), // Keep spacing if needed
+                 // --- Submit Requirements Button ---
+                 BlocSelector<OrderDetailBloc, OrderDetailState, bool>(
+                    selector: (state) => state is OrderDetailLoaded && state.isSubmittingRequirements,
+                    builder: (context, isSubmitting) {
+                       return ElevatedButton(
                           onPressed: isSubmitting ? null : () async {
                             // 检查是否所有文件都已上传完成
                             final hasUploadingFiles = _fileUploadItems.any(
                               (item) => item.status == FileUploadStatus.uploading
                             );
-
+                            
                             if (hasUploadingFiles) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('请等待文件上传完成')),
+                                SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_wait_upload)),
                               );
                               return;
                             }
-
+                            
                             // 检查是否有上传失败的文件
                             final failedFiles = _fileUploadItems.where(
                               (item) => item.status == FileUploadStatus.failed
                             ).toList();
-
+                            
                             if (failedFiles.isNotEmpty) {
                               // 显示重试选项
                               final shouldRetry = await showDialog<bool>(
                                 context: context,
-                                builder: (context) => AlertDialog(
-                                  title: const Text('文件上传失败'),
-                                  content: Text('有${failedFiles.length}个文件上传失败，是否重试？'),
+                                builder: (ctx) => AlertDialog(
+                                  title: Text(AppLocalizations.of(context)!.order_requirement_upload_failed_title),
+                                  content: Text(AppLocalizations.of(context)!.order_requirement_upload_failed_count(failedFiles.length)),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.pop(context, false),
-                                      child: const Text('移除失败文件'),
+                                      onPressed: () => Navigator.pop(ctx, false),
+                                      child: Text(AppLocalizations.of(context)!.order_requirement_remove_failed),
                                     ),
                                     TextButton(
-                                      onPressed: () => Navigator.pop(context, true),
-                                      child: const Text('重试上传'),
+                                      onPressed: () => Navigator.pop(ctx, true),
+                                      child: Text(AppLocalizations.of(context)!.order_requirement_retry_upload),
                                     ),
                                   ],
                                 ),
                               );
-
+                              
                               if (shouldRetry == true) {
                                 // 重试上传失败的文件
                                 for (final item in failedFiles) {
@@ -370,8 +373,8 @@ class _OrderRequirementSubmissionFormState
                                 return; // 用户取消对话框
                               }
                             }
-
-                            // --- Construct feature data ---
+                            
+                            // --- Construct feature data --- 
                             final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
                             final featureData = [
                               {
@@ -383,16 +386,16 @@ class _OrderRequirementSubmissionFormState
                                 'answer': _requirementController2.text
                               },
                             ];
-                            // --- Get productId ---
+                            // --- Get productId --- 
                             final productId = item?.productId ?? -1;
                             if (productId == -1) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('错误：无法获取商品 ID')),
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_error_product_id)),
                               );
                               return;
                             }
 
-                            // --- Dispatch Event ---
+                            // --- Dispatch Event --- 
                             context.read<OrderDetailBloc>().add(
                                 SubmitRequirementsSubmitted(
                                   orderId: widget.order.id.toString(),
@@ -401,33 +404,33 @@ class _OrderRequirementSubmissionFormState
                                   attachmentPaths: _uploadedUrls, // 使用已上传的URL列表
                                 ),
                               );
-                            AppLogger.d('Confirm Submission Tapped');
-
+                            print('Confirm Submission Tapped');
+                            
                             // 成功提交后清除草稿
                             _clearDraft();
                           },
                           child: isSubmitting
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                            : const Text('确认提交'),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                             ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                             : Text(AppLocalizations.of(context)!.order_requirement_confirm_submit),
+                       );
+                    },
+                 ),
               ],
             ),
+            ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Helper for seller question text style
   Widget _buildSellerQuestion(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-      child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
-    );
+     return Padding(
+       padding: const EdgeInsets.only(bottom: 8.0),
+       child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+     );
   }
 
   // 动态构建要求字段
@@ -435,88 +438,98 @@ class _OrderRequirementSubmissionFormState
     // 获取商品信息
     final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
     if (item == null) {
-      return const Text('暂无商品信息');
+      return Text(AppLocalizations.of(context)!.order_items_empty);
     }
 
     // TODO: 需要实现以下功能：
     // 1. 调用后端API获取商品的ProductMaterials（商品材料问题列表）
+    //    - 后端需要实现: GET /api/project/productMaterials/list?productId={productId}
+    //    - 返回 List<ProductMaterials>，每个包含: id, productId, question, answer, type
     // 2. 根据ProductMaterials动态生成输入框
+    //    - type字段可能包含: TEXT, NUMBER, SELECT, FILE等
     // 3. 将用户填写的答案映射到feature字段的question-answer结构
-
+    // 
+    // 示例API响应：
+    // [
+    //   {"id": 1, "productId": 123, "question": "您的需求描述", "type": "TEXT"},
+    //   {"id": 2, "productId": 123, "question": "期望完成时间", "type": "DATE"},
+    //   {"id": 3, "productId": 123, "question": "预算范围", "type": "SELECT", "answer": "1000-3000,3000-5000,5000以上"}
+    // ]
+    
     // 临时解决方案：显示通用问题
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 显示选择的服务信息
         Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-            border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blue[200]!),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, size: 16, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: AppDimensions.spacingSm),
+              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '您选择的服务：${_getLocalizedSkuName(item.skuName)} - ¥${item.price.toStringAsFixed(2)}',
-                  style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.primary),
+                  AppLocalizations.of(context)!.order_requirement_service_selected(_getLocalizedSkuName(context, item.skuName), item.price.toStringAsFixed(2)),
+                  style: TextStyle(fontSize: 14, color: Colors.blue[700]),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
-
+        const SizedBox(height: 16),
+        
         // 问题1：需求描述
-        _buildSellerQuestion(context, '1. 请详细描述您的需求'),
+        _buildSellerQuestion(context, AppLocalizations.of(context)!.order_requirement_q1),
         TextField(
           controller: _requirementController1,
           decoration: InputDecoration(
-            hintText: '请尽可能详细地描述您的需求，包括具体要求、期望效果等',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+            hintText: AppLocalizations.of(context)!.order_requirement_q1_hint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
-            fillColor: AppColors.backgroundSecondary,
-            contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
-            helperText: '如需提供参考资料，可在下方附件区域上传',
-            helperStyle: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.all(12),
+            helperText: AppLocalizations.of(context)!.order_requirement_q1_helper,
+            helperStyle: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
           maxLines: 4,
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: 16),
 
         // 问题2：补充说明
-        _buildSellerQuestion(context, '2. 补充说明（选填）'),
+        _buildSellerQuestion(context, AppLocalizations.of(context)!.order_requirement_q2),
         TextField(
           controller: _requirementController2,
           decoration: InputDecoration(
-            hintText: '如有其他补充说明或特殊要求，请在此填写',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusSm)),
+            hintText: AppLocalizations.of(context)!.order_requirement_q2_hint,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
-            fillColor: AppColors.backgroundSecondary,
-            contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
+            fillColor: Colors.grey[100],
+            contentPadding: const EdgeInsets.all(12),
           ),
           maxLines: 3,
         ),
-
-        const SizedBox(height: AppDimensions.spacingMd),
+        
+        const SizedBox(height: 12),
         // 提示信息
         Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.warning.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+            color: Colors.orange[50],
+            borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
             children: [
-              Icon(Icons.warning_amber, size: 14, color: AppColors.warning),
-              const SizedBox(width: AppDimensions.spacingXs),
+              Icon(Icons.warning_amber, size: 14, color: Colors.orange[700]),
+              const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  '请认真填写需求，提交后卖家将根据您的需求开始服务',
-                  style: TextStyle(fontSize: 12, color: AppColors.warning),
+                  AppLocalizations.of(context)!.order_requirement_warning,
+                  style: TextStyle(fontSize: 12, color: Colors.orange[700]),
                 ),
               ),
             ],
@@ -525,28 +538,31 @@ class _OrderRequirementSubmissionFormState
       ],
     );
   }
-
+  
   // Helper method to get localized SKU name
-  String _getLocalizedSkuName(String? skuName) {
-    if (skuName == null) return "基础服务";
-
+  String _getLocalizedSkuName(BuildContext context, String? skuName) {
+    if (skuName == null) return AppLocalizations.of(context)!.order_requirement_default_service;
+    
     // TODO: 这里需要从商品的本地化数据中获取中文名称
+    // 临时映射常见的SKU名称
     final Map<String, String> skuNameMap = {
       'Basic Tier': '基础套餐',
-      'Standard Tier': '标准套餐',
+      'Standard Tier': '标准套餐', 
       'Premium Tier': '高级套餐',
       'Professional Tier': '专业套餐',
       'Enterprise Tier': '企业套餐',
+      // 添加更多映射...
     };
-
+    
     return skuNameMap[skuName] ?? skuName;
   }
 
-  // --- File Picking Logic ---
+
+  // --- File Picking Logic --- 
   Future<void> _pickFiles() async {
     if (_fileUploadItems.length >= _maxFileCount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('最多只能上传$_maxFileCount个附件')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_max_files(_maxFileCount))),
       );
       return;
     }
@@ -555,14 +571,14 @@ class _OrderRequirementSubmissionFormState
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         allowMultiple: true,
         type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'pdf', 'doc', 'docx',
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'pdf', 'doc', 'docx', 
                            'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', '7z', 'txt'],
       );
 
       if (result != null && result.files.isNotEmpty) {
         final remainingSlots = _maxFileCount - _fileUploadItems.length;
         final filesToAdd = result.files.take(remainingSlots);
-
+        
         for (final file in filesToAdd) {
           if (file.path != null && file.size != null) {
             final fileItem = FileUploadItem(
@@ -571,7 +587,7 @@ class _OrderRequirementSubmissionFormState
               fileName: file.name,
               fileSize: file.size!,
             );
-
+            
             setState(() {
               _fileUploadItems.add(fileItem);
             });
@@ -579,29 +595,29 @@ class _OrderRequirementSubmissionFormState
         }
       }
     } catch (e) {
-      AppLogger.d('Error picking files: $e');
+      print('Error picking files: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择文件失败: ${e.toString()}')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_pick_failed(e.toString()))),
       );
     }
   }
-
+  
   // 移除文件
   void _removeFile(int index) {
     if (index >= 0 && index < _fileUploadItems.length) {
       final item = _fileUploadItems[index];
-
+      
       // 如果文件已上传，从已上传列表中移除
       if (item.uploadedUrl != null) {
         _uploadedUrls.remove(item.uploadedUrl);
       }
-
+      
       setState(() {
         _fileUploadItems.removeAt(index);
       });
     }
   }
-
+  
   // 文件上传成功回调
   void _onFileUploaded(int index, String url) {
     if (index >= 0 && index < _fileUploadItems.length) {
@@ -612,22 +628,22 @@ class _OrderRequirementSubmissionFormState
       _saveDraft();
     }
   }
-
+  
   // 重试上传文件
   Future<void> _retryUpload(int index) async {
     if (index < 0 || index >= _fileUploadItems.length) return;
-
+    
     final item = _fileUploadItems[index];
     if (item.status != FileUploadStatus.failed) return;
-
+    
     _retryCount++;
     if (_retryCount > _maxRetryCount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已达到最大重试次数（$_maxRetryCount次）')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.order_upload_max_retry(_maxRetryCount))),
       );
       return;
     }
-
+    
     // 重置状态并重新创建上传组件
     setState(() {
       _fileUploadItems[index] = FileUploadItem(
@@ -638,20 +654,21 @@ class _OrderRequirementSubmissionFormState
         status: FileUploadStatus.waiting,
       );
     });
-
+    
     // 指数退避延迟
     final delay = Duration(seconds: _retryCount * 2);
     await Future.delayed(delay);
-
+    
     // 触发重新渲染以重新开始上传
     if (mounted) {
       setState(() {});
     }
   }
 
-  // --- Helper method to get file icon based on extension ---
+  // --- Helper method to get file icon based on extension (reuse/copy from DeliveryConfirmationArea or common utils) ---
   IconData _getFileIcon(String fileName) {
     final extension = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
+    // ... (Switch case logic remains the same as in DeliveryConfirmationArea)
     switch (extension) {
       case 'pdf': return Icons.picture_as_pdf_outlined;
       case 'doc': case 'docx': return Icons.description_outlined;
@@ -662,4 +679,4 @@ class _OrderRequirementSubmissionFormState
       default: return Icons.insert_drive_file_outlined;
     }
   }
-}
+} 

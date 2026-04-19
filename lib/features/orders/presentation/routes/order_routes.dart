@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import BlocProvider
-
-// Import smart router utils for buildSmartPage
-import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // Import the DI container instance
 import '../../../../app/di/injection_container.dart';
@@ -15,8 +12,7 @@ import '../bloc/order_detail_bloc.dart';
 import '../seller/bloc/seller_order_list_bloc.dart';
 // Import OrderStatus and potentially an extension for parsing
 import '../../domain/entities/order_status.dart';
-import '../../domain/entities/order_item.dart';
-import '../../domain/entities/order.dart'; 
+import '../../domain/entities/order_item.dart'; 
 
 // Import pages used in this module's routes
 import '../pages/order_list_page.dart';
@@ -41,10 +37,10 @@ class OrderRoutes {
       builder: (context, state) {
         // Extract the 'status' query parameter
         final statusString = state.uri.queryParameters['status']; 
-        AppLogger.d('[GoRoute /orders] Received raw status string from URL: $statusString'); 
+        print('[GoRoute /orders] Received raw status string from URL: $statusString'); 
         
         final parsedStatus = OrderStatusExtension.fromString(statusString);
-        AppLogger.d('[GoRoute /orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
+        print('[GoRoute /orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
         
         // Assuming OrderListBloc should be provided here
         return BlocProvider(
@@ -57,36 +53,33 @@ class OrderRoutes {
     GoRoute(
       path: '/orderDetail/:orderId',
       name: 'orderDetail',
-      pageBuilder: (BuildContext context, GoRouterState state) {
+      builder: (BuildContext context, GoRouterState state) {
         final String orderId = state.pathParameters['orderId'] ?? 'invalid';
         // Provide OrderDetailBloc for the page
-        return state.buildSmartPage(
-          BlocProvider(
-            create: (_) => getIt<OrderDetailBloc>(),
-            child: OrderDetailPage(orderId: orderId),
-          ),
-          name: 'orderDetail',
+        return BlocProvider(
+          create: (_) => getIt<OrderDetailBloc>(),
+          child: OrderDetailPage(orderId: orderId),
         );
       },
     ),
     GoRoute(
-      path: '/evaluation/:orderId',
+      path: '/evaluation/:itemId',
       name: 'evaluation',
       builder: (BuildContext context, GoRouterState state) {
-        final String orderIdStr = state.pathParameters['orderId'] ?? 'invalid';
-        final int? orderId = int.tryParse(orderIdStr);
-        if (orderId == null) {
-          AppLogger.d('Error: Invalid orderId parameter in route: $orderIdStr');
+        final String itemIdStr = state.pathParameters['itemId'] ?? 'invalid';
+        final int? itemId = int.tryParse(itemIdStr);
+        if (itemId == null) {
+          print('Error: Invalid itemId parameter in route: $itemIdStr');
           return Scaffold(
-            appBar: AppBar(title: const Text('错误')),
-            body: Center(child: Text('无效的订单ID: $orderIdStr')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.order_route_error)),
+            body: Center(child: Text(AppLocalizations.of(context)!.order_route_invalid_item_id(itemIdStr))),
           );
         }
-        // Get order from extra if available
-        final order = state.extra as Order?;
+        // Get orderItem from extra if available
+        final orderItem = state.extra as OrderItem?;
         return OrderEvaluationPage(
-          orderId: orderId,
-          order: order,
+          itemId: itemId,
+          orderItem: orderItem,
         );
       },
     ),
@@ -98,11 +91,11 @@ class OrderRoutes {
       builder: (context, state) {
         // 提取status查询参数
         final statusString = state.uri.queryParameters['status'];
-        AppLogger.d('[GoRoute /seller/orders] Received raw status string from URL: $statusString');
+        print('[GoRoute /seller/orders] Received raw status string from URL: $statusString');
         
         // 解析status为OrderStatus枚举
         final parsedStatus = OrderStatusExtension.fromString(statusString);
-        AppLogger.d('[GoRoute /seller/orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
+        print('[GoRoute /seller/orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
         
         return BlocProvider(
           create: (_) => getIt<SellerOrderListBloc>()
@@ -120,7 +113,7 @@ class OrderRoutes {
         final String orderIdStr = state.pathParameters['orderId'] ?? 'invalid';
         final int? orderId = int.tryParse(orderIdStr);
         if (orderId == null) {
-          AppLogger.d('Error: Invalid orderId parameter in route: $orderIdStr');
+          print('Error: Invalid orderId parameter in route: $orderIdStr');
           return Scaffold(
               appBar: AppBar(title: const Text('Error')),
               body: Center(child: Text('Invalid Order ID: $orderIdStr')));
@@ -142,7 +135,7 @@ extension OrderStatusExtension on OrderStatus {
         (e) => e.toString().split('.').last == statusString
       );
     } catch (e) {
-      AppLogger.d('Error parsing OrderStatus from string: $statusString - $e');
+      print('Error parsing OrderStatus from string: $statusString - $e');
       // Decide error handling: return null, a default, or throw
       return null; // Returning null for now, adjust as needed
     }

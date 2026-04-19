@@ -2,8 +2,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget displaying information related to the after-sale process.
 class AfterSaleInfoArea extends StatelessWidget {
@@ -16,6 +15,7 @@ class AfterSaleInfoArea extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
+    final l10n = AppLocalizations.of(context)!;
     String title;
     String message;
     IconData iconData = Icons.support_agent_outlined;
@@ -25,130 +25,130 @@ class AfterSaleInfoArea extends StatelessWidget {
     // --- Determine content based on state ---
     switch (order.state) {
       case OrderStatus.afterSale:
-        title = '售后处理中';
-        message = '您的售后申请正在处理中，卖家将在xx小时内处理，请耐心等待。';
+        title = l10n.order_after_sale_processing;
+        message = l10n.order_after_sale_processing_msg;
         iconData = Icons.hourglass_bottom_outlined;
         // Placeholder details for refund processing
-        detailsSection = _buildRefundDetailsPlaceholder(context, '处理中', '${RegionConfig.currencySymbol}50.00');
+        detailsSection = _buildRefundDetailsPlaceholder(context, l10n.order_platform_intervention_processing, '${RegionConfig.currencySymbol}50.00');
         // Placeholder actions
         actionButtons = [
-          TextButton(onPressed: () {}, child: const Text('联系卖家')),
-          TextButton(onPressed: () {}, child: const Text('取消申请')),
+          TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_contact_seller)),
+          TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_cancel_apply)),
         ];
         break;
       case OrderStatus.applyingForMediation:
-        title = '平台介入处理中';
-        message = '平台客服已介入处理，将在xx工作日内给出处理结果，请留意通知。';
+        title = l10n.order_after_sale_mediation;
+        message = l10n.order_after_sale_mediation_msg;
         iconData = Icons.gavel_outlined;
         // Placeholder details for mediation
         detailsSection = Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingLg),
-          child: Text('您可以补充凭证或耐心等待平台处理结果。', style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
+           padding: const EdgeInsets.only(top: 16.0),
+           child: Text(l10n.order_after_sale_add_evidence_tip, style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
         );
-        actionButtons = [
-          TextButton(onPressed: () {}, child: const Text('联系平台客服')),
-          TextButton(onPressed: () {}, child: const Text('补充凭证')),
+         actionButtons = [
+          TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_contact_platform)),
+          TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_add_evidence)),
         ];
         break;
       case OrderStatus.AfterSaleRejection:
-        title = '售后申请已驳回';
-        message = '抱歉，您的售后申请未通过审核。';
+        title = l10n.order_after_sale_rejected;
+        message = l10n.order_after_sale_rejected_msg;
         iconData = Icons.cancel_outlined;
         // Placeholder for rejection reason
-        detailsSection = _buildRejectionDetailsPlaceholder(context, '原因：凭证不足或不符合退款条件。');
+        detailsSection = _buildRejectionDetailsPlaceholder(context, l10n.order_after_sale_reject_reason_detail);
         actionButtons = [
-          TextButton(onPressed: () {}, child: const Text('联系卖家')),
-          TextButton(onPressed: () {}, child: const Text('申请平台介入')),
+          TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_contact_seller)),
+           TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_apply_intervention)),
         ];
         break;
       default:
-        title = '售后状态';
-        message = '当前订单处于售后流程中。';
+        title = l10n.order_after_sale_default_title;
+        message = l10n.order_after_sale_default_msg;
         iconData = Icons.help_outline;
     }
 
     return Card(
       // 使用统一Card主题
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(16.0), // 使用标准间距
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Header ---
-            Row(
-              children: [
-                Icon(iconData, size: 20, color: colorScheme.primary),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(title, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            Text(message, style: textTheme.bodyMedium),
+             // --- Header --- 
+             Row(
+               children: [
+                 Icon(iconData, size: 20, color: colorScheme.primary),
+                 const SizedBox(width: 8),
+                 Text(title, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+               ],
+             ),
+             const SizedBox(height: 12),
+             Text(message, style: textTheme.bodyMedium),
+             
+             // --- State Specific Details --- 
+             if (detailsSection != null) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                detailsSection,
+             ],
 
-            // --- State Specific Details ---
-            if (detailsSection != null) ...[
-              const SizedBox(height: AppDimensions.spacingLg),
-              const Divider(),
-              const SizedBox(height: AppDimensions.spacingLg),
-              detailsSection,
-            ],
-
-            // --- Action Buttons ---
-            if (actionButtons.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingLg),
-              const Divider(),
-              const SizedBox(height: AppDimensions.spacingSm),
-              Wrap(
-                spacing: AppDimensions.spacingSm,
-                children: actionButtons,
-              )
-            ]
+             // --- Action Buttons --- 
+             if (actionButtons.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                 Wrap(
+                   spacing: 8.0,
+                   children: actionButtons,
+                 )
+             ]
           ],
         ),
       ),
     );
   }
 
-  // --- Helper Widgets for Placeholder Details ---
+ // --- Helper Widgets for Placeholder Details --- 
 
-  Widget _buildRefundDetailsPlaceholder(BuildContext context, String status, String amount) {
+ Widget _buildRefundDetailsPlaceholder(BuildContext context, String status, String amount) {
+   final textTheme = Theme.of(context).textTheme;
+   return Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
+     children: [
+       _buildDetailRow(context, AppLocalizations.of(context)!.order_after_sale_refund_status, status, valueColor: Colors.orange[700]),
+       const SizedBox(height: 8),
+       _buildDetailRow(context, AppLocalizations.of(context)!.order_after_sale_refund_amount, amount, valueStyle: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+     ],
+   );
+ }
+
+ Widget _buildRejectionDetailsPlaceholder(BuildContext context, String reason) {
     final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDetailRow(context, '退款状态:', status, valueColor: AppColors.warning),
-        const SizedBox(height: AppDimensions.spacingSm),
-        _buildDetailRow(context, '退款金额:', amount, valueStyle: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
+   return Column(
+     crossAxisAlignment: CrossAxisAlignment.start,
+     children: [
+       Text(AppLocalizations.of(context)!.order_after_sale_reject_reason, style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
+       const SizedBox(height: 4),
+       Text(reason, style: textTheme.bodyMedium?.copyWith(color: Colors.red[700])), 
+     ],
+   );
+ }
 
-  Widget _buildRejectionDetailsPlaceholder(BuildContext context, String reason) {
-    final textTheme = Theme.of(context).textTheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('驳回原因:', style: textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
-        const SizedBox(height: AppDimensions.spacingXs),
-        Text(reason, style: textTheme.bodyMedium?.copyWith(color: AppColors.error)),
-      ],
-    );
-  }
-
-  // Helper for consistent detail row display
-  Widget _buildDetailRow(BuildContext context, String label, String value, {Color? valueColor, TextStyle? valueStyle}) {
+ // Helper for consistent detail row display
+ Widget _buildDetailRow(BuildContext context, String label, String value, {Color? valueColor, TextStyle? valueStyle}) {
     final textTheme = Theme.of(context).textTheme;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label ', style: textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
+        Text('$label ', style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
         Expanded(
           child: Text(
             value,
             style: valueStyle ?? textTheme.bodyMedium?.copyWith(color: valueColor),
-          ),
+         ),
         ),
       ],
     );
-  }
-}
+ }
+} 

@@ -4,9 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../bloc/profile_bloc.dart';
 
 class SimpleProfilePage extends StatefulWidget {
@@ -20,7 +19,7 @@ class SimpleProfilePage extends StatefulWidget {
 
 class _SimpleProfilePageState extends State<SimpleProfilePage> {
   // 模拟用户数据
-  String userName = '用户名';
+  String? userName;
   bool isOnline = false;
   String? avatarUrl;
   File? avatarFile;
@@ -48,43 +47,43 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             _buildProfileHeader(context),
             _buildProfileSection(
               context,
-              '我的订单',
+              AppLocalizations.of(context)!.profile_my_orders,
               _buildOrderStatusList(context)
             ),
             _buildProfileSection(
               context,
-              '我的关看',
+              AppLocalizations.of(context)!.profile_my_dskk_section,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.star_border,
-                  title: '收藏',
-                  onTap: () => context.push('/favorites'),
+                  title: AppLocalizations.of(context)!.profile_favorites,
+                  onTap: () => context.go('/favorites'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,
-                  title: '点赞的故事',
-                  onTap: () => _showFeatureNotImplemented('点赞的故事'),
+                  title: AppLocalizations.of(context)!.profile_liked_stories,
+                  onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_liked_stories),
                 ),
               ]),
             ),
             _buildProfileSection(
               context,
-              '我的钱包',
+              AppLocalizations.of(context)!.profile_my_wallet,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.account_balance_wallet,
-                  title: '钱包',
+                  title: AppLocalizations.of(context)!.profile_wallet,
                   onTap: () => _navigateToWallet(context),
                 ),
               ]),
             ),
             _buildProfileSection(
               context,
-              '设置',
+              AppLocalizations.of(context)!.profile_settings,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.security,
-                  title: '账号与安全',
+                  title: AppLocalizations.of(context)!.profile_account_security,
                   onTap: () => _navigateToAccountSecurity(context),
                 ),
               ]),
@@ -97,13 +96,13 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showFeatureNotImplemented('退出登录');
+                    _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_logout);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.red,
                     backgroundColor: Colors.red[50],
                   ),
-                  child: const Text('退出登录'),
+                  child: Text(AppLocalizations.of(context)!.profile_logout),
                 ),
               ),
             ),
@@ -140,9 +139,9 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: () => _showFeatureNotImplemented('编辑昵称'),
+                    onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_edit_nickname),
                     child: Text(
-                      userName,
+                      userName ?? AppLocalizations.of(context)!.profile_user_name_default,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -163,7 +162,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '在线',
+                        AppLocalizations.of(context)!.profile_online,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.8),
@@ -188,9 +187,9 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '买家模式',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.profile_buyer_mode,
+                  style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
                   ),
@@ -238,26 +237,27 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   }
 
   Widget _buildOrderStatusList(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
     final List<OrderStatusItem> items = [
       OrderStatusItem(
         icon: Icons.access_time,
-        label: '待付款',
-        onTap: () => _showFeatureNotImplemented('待付款订单'),
+        label: s.profile_pending_payment_order,
+        onTap: () => _showFeatureNotImplemented(s.profile_pending_payment_order),
       ),
       OrderStatusItem(
         icon: Icons.sync,
-        label: '进行中',
-        onTap: () => _showFeatureNotImplemented('进行中订单'),
+        label: s.profile_in_progress_order,
+        onTap: () => _showFeatureNotImplemented(s.profile_in_progress_order),
       ),
       OrderStatusItem(
         icon: Icons.check_circle,
-        label: '已完成',
-        onTap: () => _showFeatureNotImplemented('已完成订单'),
+        label: s.profile_completed_order,
+        onTap: () => _showFeatureNotImplemented(s.profile_completed_order),
       ),
       OrderStatusItem(
         icon: Icons.undo,
-        label: '退款/售后',
-        onTap: () => _showFeatureNotImplemented('退款/售后'),
+        label: s.profile_refund_after_sales,
+        onTap: () => _showFeatureNotImplemented(s.profile_refund_after_sales),
       ),
     ];
 
@@ -294,7 +294,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: AppColors.textSecondary,
+              color: Colors.grey[700],
             ),
           ),
         ],
@@ -353,25 +353,25 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
         // 显示提示
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('头像已更新，但尚未保存到服务器')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_updated_local)),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片时出错: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_error(e.toString()))),
       );
     }
   }
 
   void _showFeatureNotImplemented(String featureName) {
-    if (featureName == '我的钱包') {
+    if (featureName == AppLocalizations.of(context)!.profile_my_wallet) {
       // Navigate to wallet using GoRouter
       context.push('/profile/wallet');
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$featureName功能尚未实现')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.profile_feature_not_implemented(featureName))),
     );
   }
 

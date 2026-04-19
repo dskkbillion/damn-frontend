@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
+import 'dart:io'; // Import dart:io for File
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
-import 'package:go_router/go_router.dart';
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 售后申请表单页面
 class AfterSalesApplyPage extends StatefulWidget {
@@ -32,23 +31,28 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   final _formKey = GlobalKey<FormState>(); // Form key
   String? _selectedReason; // State for selected reason
   final _descriptionController = TextEditingController(); // Controller for description
+  final _amountController = TextEditingController(); // Controller for amount
   // Use ImageProcessResult for better image handling
   List<ImageProcessResult> _selectedImages = [];
   final int _maxImages = 9; // Define max images based on prototype hint
   bool _isProcessingImages = false;
 
-  // TODO: Define these reasons based on actual requirements/backend enum
-  final List<String> _afterSalesReasons = [
-    '商品质量问题',
-    '商品与描述不符',
-    '卖家发错货',
-    '不想要了',
-    '其他',
-  ];
+  // Reasons will be built in build() using l10n
+  List<String> _getAfterSalesReasons(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
+    return [
+      s.after_sales_reason_quality,
+      s.after_sales_reason_mismatch,
+      s.after_sales_reason_wrong_item,
+      s.after_sales_reason_unwanted,
+      s.after_sales_reason_other,
+    ];
+  }
 
   @override
   void dispose() {
     _descriptionController.dispose();
+    _amountController.dispose(); // Dispose amount controller
     super.dispose();
   }
 
@@ -58,7 +62,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
     final remainingSlots = _maxImages - _selectedImages.length;
     if (remainingSlots <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('最多只能上传 $_maxImages 张图片')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.after_sales_max_images(_maxImages))),
       );
       return;
     }
@@ -92,8 +96,8 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
-              backgroundColor: AppColors.success,
+              content: Text(AppLocalizations.of(context)!.after_sales_image_process_success(successCount, avgCompression.toStringAsFixed(1))),
+              backgroundColor: Colors.green,
             ),
           );
         }
@@ -101,16 +105,16 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
         if (errorCount > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$errorCount 张图片处理失败'),
+              content: Text(AppLocalizations.of(context)!.after_sales_image_process_failed(errorCount)),
               backgroundColor: Colors.orange,
             ),
           );
         }
       }
     } catch (e) {
-      AppLogger.d("Error picking images: $e");
+      print("Error picking images: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.after_sales_image_pick_failed(e.toString()))),
       );
     } finally {
       setState(() {
@@ -129,54 +133,40 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   @override
   Widget build(BuildContext context) {
     // Determine the AppBar title based on the type
-    String title = '申请售后';
+    final s = AppLocalizations.of(context)!;
+    String title = s.after_sales_apply_title;
     if (widget.afterSalesType == 'REMAKE') {
-      title = '申请重新制作';
+      title = s.after_sales_apply_remake;
     } else if (widget.afterSalesType == 'SUPPLEMENT') {
-      title = '申请补充';
+      title = s.after_sales_apply_supplement;
     } else if (widget.afterSalesType == 'REFUND') {
-      title = '申请退款';
+      title = s.after_sales_apply_refund;
     }
 
-    return BlocListener<AfterSalesBloc, AfterSalesState>(
-      listener: (context, state) {
-        if (state is AfterSalesActionSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.actionSuccessMessage ?? '售后申请提交成功')),
-          );
-          final newId = state.newId;
-          if (newId != null && newId.isNotEmpty) {
-            context.pushReplacement('/afterSalesDetail/$newId?mode=refund');
-          } else {
-            context.pop();
-          }
-        } else if (state is AfterSalesActionError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? '售后申请提交失败')),
-          );
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          // Wrap content in a Form
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildOrderItemInfo(context, widget.orderItem),
-                const SizedBox(height: 24.0),
+    // Determine max refundable amount (example: item price)
+    final maxRefundAmount = widget.orderItem.price;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        // Wrap content in a Form
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildOrderItemInfo(context, widget.orderItem),
+              const SizedBox(height: 24.0),
 
               // --- Reason Selection Dropdown ---
               DropdownButtonFormField<String>(
                 value: _selectedReason,
-                hint: const Text('请选择售后原因'),
+                hint: Text(s.after_sales_select_reason_hint),
                 isExpanded: true,
-                items: _afterSalesReasons.map((String reason) {
+                items: _getAfterSalesReasons(context).map((String reason) {
                   return DropdownMenuItem<String>(
                     value: reason,
                     child: Text(reason),
@@ -187,9 +177,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                     _selectedReason = newValue;
                   });
                 },
-                validator: (value) => value == null || value.isEmpty ? '请选择售后原因' : null,
-                decoration: const InputDecoration(
-                  labelText: '售后原因',
+                validator: (value) => value == null || value.isEmpty ? s.after_sales_select_reason_validator : null,
+                decoration: InputDecoration(
+                  labelText: s.after_sales_reason_label,
                   border: OutlineInputBorder(),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
                 ),
@@ -199,9 +189,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               // --- Description Text Field ---
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: '问题描述',
-                  hintText: '请详细描述您遇到的问题...',
+                decoration: InputDecoration(
+                  labelText: s.after_sales_description_label,
+                  hintText: s.after_sales_description_hint,
                   border: OutlineInputBorder(),
                   alignLabelWithHint: true, // Better alignment for multiline
                 ),
@@ -214,45 +204,77 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               ),
               const SizedBox(height: 16.0),
 
+              // --- Amount Text Field (Conditional) ---
+              if (widget.afterSalesType == 'REFUND')
+                 Padding(
+                   padding: const EdgeInsets.only(bottom: 16.0),
+                   child: TextFormField(
+                      controller: _amountController, // Use controller
+                      decoration: InputDecoration(
+                        labelText: s.after_sales_refund_amount_label,
+                        hintText: s.after_sales_refund_amount_hint(RegionConfig.currencySymbol, maxRefundAmount.toStringAsFixed(2)), // Show max amount
+                        prefixText: '${RegionConfig.currencySymbol} ',
+                        border: const OutlineInputBorder(),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) { // Add validation
+                        if (value == null || value.isEmpty) {
+                          return s.after_sales_refund_amount_required;
+                        }
+                        final amount = double.tryParse(value);
+                        if (amount == null) {
+                          return s.after_sales_refund_amount_invalid;
+                        }
+                        if (amount <= 0) {
+                          return s.after_sales_refund_amount_positive;
+                        }
+                        if (amount > maxRefundAmount) {
+                          return s.after_sales_refund_amount_exceed(RegionConfig.currencySymbol, maxRefundAmount.toStringAsFixed(2));
+                        }
+                        return null;
+                      },
+                   ),
+                 ),
 
               // --- Image Upload Section ---
-              Text('上传凭证 (最多 $_maxImages 张)', style: Theme.of(context).textTheme.titleSmall),
+              Text(s.after_sales_upload_evidence(_maxImages), style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               _buildImagePickerSection(),
               const SizedBox(height: 16.0),
               // --------------------------
 
               const SizedBox(height: 24),
-                BlocBuilder<AfterSalesBloc, AfterSalesState>(
-                  builder: (context, state) {
-                    final isSubmitting = state is AfterSalesActionLoading;
-                    return ElevatedButton(
-                      onPressed: isSubmitting
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                AppLogger.d('Form is valid. Submitting...');
+              ElevatedButton(
+                 onPressed: () {
+                   if (_formKey.currentState!.validate()) {
+                     // Form is valid
+                     print('Form is valid. Submitting...');
 
-                                final submitEvent = ApplyForAfterSalesSubmitted(
-                                  orderItemId: widget.orderItemId,
-                                  refundType: widget.afterSalesType,
-                                  refundReason: _selectedReason!,
-                                  refundExplain: _descriptionController.text,
-                                  imagePaths: _selectedImages
-                                      .map((result) => result.finalFile.path)
-                                      .toList(),
-                                  refundAmount: null,
-                                );
-                                AppLogger.d('Adding event: $submitEvent');
-                                context.read<AfterSalesBloc>().add(submitEvent);
-                              }
-                            },
-                      child: Text(isSubmitting ? '提交中...' : '提交申请'),
-                    );
-                  },
-                )
-              ],
-            ),
+                     // Collect amount if applicable
+                     double? refundAmount;
+                     if (widget.afterSalesType == 'REFUND') {
+                       refundAmount = double.tryParse(_amountController.text);
+                     }
+
+                     // Create and add the event
+                     final submitEvent = ApplyForAfterSalesSubmitted(
+                       orderItemId: widget.orderItemId,
+                       refundType: widget.afterSalesType, // Use the type passed to the page
+                       refundReason: _selectedReason!, // Not null due to validation
+                       refundExplain: _descriptionController.text,
+                       imagePaths: _selectedImages.map((result) => result.finalFile.path).toList(),
+                       refundAmount: refundAmount,
+                     );
+                     print('Adding event: $submitEvent with amount $refundAmount');
+                     context.read<AfterSalesBloc>().add(submitEvent);
+
+                     // TODO: Optionally show loading indicator or navigate back after submission
+                     // Consider listening to Bloc state for success/failure feedback
+                   }
+                 },
+                child: Text(s.after_sales_submit),
+              )
+            ],
           ),
         ),
       ),
@@ -292,7 +314,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                     icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    tooltip: '移除图片',
+                    tooltip: AppLocalizations.of(context)!.after_sales_remove_image,
                     onPressed: () => _removeImage(idx),
                     splashRadius: 15,
                   ),

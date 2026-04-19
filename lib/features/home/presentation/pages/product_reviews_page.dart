@@ -5,18 +5,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 
 // 导入国际化
-import '../../../../generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../domain/entities/product_review.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品评论详情页面
 class ProductReviewsPage extends StatelessWidget {
   final int productId;
-
+  
   const ProductReviewsPage({
     Key? key,
     required this.productId,
@@ -28,9 +26,9 @@ class ProductReviewsPage extends StatelessWidget {
       create: (_) => GetIt.I<ProductReviewsCubit>()..getProductReviews(productId),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('评论'),
+          title: Text(AppLocalizations.of(context)!.home_reviews_title),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () => context.pop(),
           ),
         ),
@@ -43,13 +41,13 @@ class ProductReviewsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('加载失败: ${state.message}'),
-                    const SizedBox(height: AppDimensions.spacingLg),
+                    Text(AppLocalizations.of(context)!.home_reviews_load_failed(state.message)),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductReviewsCubit>().getProductReviews(productId);
                       },
-                      child: const Text('重试'),
+                      child: Text(AppLocalizations.of(context)!.retry),
                     ),
                   ],
                 ),
@@ -57,7 +55,7 @@ class ProductReviewsPage extends StatelessWidget {
             } else if (state is ProductReviewsLoaded) {
               return _buildReviewsList(context, state);
             }
-            return const Center(child: Text('暂无评论'));
+            return Center(child: Text(AppLocalizations.of(context)!.home_reviews_no_reviews));
           },
         ),
       ),
@@ -66,11 +64,11 @@ class ProductReviewsPage extends StatelessWidget {
 
   Widget _buildReviewsList(BuildContext context, ProductReviewsLoaded state) {
     if (state.reviews.isEmpty) {
-      return const Center(child: Text('暂无评论'));
+      return Center(child: Text(AppLocalizations.of(context)!.home_reviews_no_reviews));
     }
-
+    
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(16),
       itemCount: state.reviews.length,
       separatorBuilder: (context, index) => const Divider(height: 32),
       itemBuilder: (context, index) {
@@ -99,7 +97,7 @@ class ProductReviewsPage extends StatelessWidget {
                       : '?')
                   : null,
             ),
-            const SizedBox(width: AppDimensions.spacingMd),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,19 +105,21 @@ class ProductReviewsPage extends StatelessWidget {
                   // 用户名
                   Text(
                     review.buyer.nickName,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
                   // 评分 + 套餐名
                   Row(
                     children: [
                       _buildRatingStars(review.score),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: 8),
                       Text(
                         review.skuName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
                         ),
                       ),
                     ],
@@ -130,37 +130,38 @@ class ProductReviewsPage extends StatelessWidget {
             // 评论时间
             Text(
               _formatDateTime(context, review.createTime),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
               ),
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: 12),
         // 显示评论内容
         Text(
-          review.content ?? '用户未填写评价内容',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          review.content ?? AppLocalizations.of(context)!.home_reviews_default_content,
+          style: const TextStyle(
+            fontSize: 14,
             height: 1.5,
-            color: review.content == null ? AppColors.textTertiary : null,
           ),
         ),
-
+        
         // 评论图片
         if (review.images != null && review.images!.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+            padding: const EdgeInsets.only(top: 8.0),
             child: _buildReviewImages(review.images!),
           ),
-
+        
         // 卖家回复
         if (review.sellerReply != null && review.sellerReply!.isNotEmpty)
           Container(
-            margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            margin: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.backgroundSecondary,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,32 +171,35 @@ class ProductReviewsPage extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        '卖家回复',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        AppLocalizations.of(context)!.home_reviews_seller_reply,
+                        style: const TextStyle(
                           color: Colors.white,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                     if (review.sellerReplyTime != null) ...[
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: 8),
                       Text(
                         _formatDateTime(context, review.sellerReplyTime!),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
                         ),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: 8),
                 Text(
                   review.sellerReply!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  style: const TextStyle(
+                    fontSize: 14,
                     height: 1.5,
                   ),
                 ),
@@ -227,13 +231,13 @@ class ProductReviewsPage extends StatelessWidget {
         itemCount: images.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
+            padding: const EdgeInsets.only(right: 8.0),
             child: GestureDetector(
               onTap: () {
                 // 点击查看大图
               },
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                borderRadius: BorderRadius.circular(4),
                 child: CachedNetworkImage(
                   imageUrl: images[index],
                   width: 80,
@@ -242,7 +246,7 @@ class ProductReviewsPage extends StatelessWidget {
                   placeholder: (context, url) => Container(
                     width: 80,
                     height: 80,
-                    color: AppColors.borderPrimary,
+                    color: Colors.grey[200],
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -250,7 +254,7 @@ class ProductReviewsPage extends StatelessWidget {
                   errorWidget: (context, url, error) => Container(
                     width: 80,
                     height: 80,
-                    color: AppColors.borderPrimary,
+                    color: Colors.grey[200],
                     child: const Icon(Icons.error),
                   ),
                 ),
@@ -264,25 +268,26 @@ class ProductReviewsPage extends StatelessWidget {
 
   String _formatDateTime(BuildContext context, String dateTimeStr) {
     try {
+      final s = AppLocalizations.of(context)!;
       final dateTime = DateTime.parse(dateTimeStr);
       final now = DateTime.now();
       final difference = now.difference(dateTime);
 
       if (difference.inDays > 365) {
-        return '${(difference.inDays / 365).floor()}年前';
+        return s.home_reviews_years_ago((difference.inDays / 365).floor());
       } else if (difference.inDays > 30) {
-        return '${(difference.inDays / 30).floor()}月前';
+        return s.home_reviews_months_ago((difference.inDays / 30).floor());
       } else if (difference.inDays > 0) {
-        return '${difference.inDays}天前';
+        return s.home_reviews_days_ago(difference.inDays);
       } else if (difference.inHours > 0) {
-        return '${difference.inHours}小时前';
+        return s.home_reviews_hours_ago(difference.inHours);
       } else if (difference.inMinutes > 0) {
-        return '${difference.inMinutes}分钟前';
+        return s.home_reviews_minutes_ago(difference.inMinutes);
       } else {
-        return '刚刚';
+        return s.home_reviews_just_now;
       }
     } catch (e) {
       return dateTimeStr;
     }
   }
-}
+} 

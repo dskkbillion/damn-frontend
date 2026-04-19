@@ -2177,4 +2177,3108 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get product_detail_show_original => 'Show original';
+
+  @override
+  String get order_status_awaiting_payment => 'Awaiting Payment';
+
+  @override
+  String get order_status_awaiting_submission => 'Awaiting Submission';
+
+  @override
+  String get order_status_buy_awaiting_submission => 'Resubmission Required';
+
+  @override
+  String get order_status_awaiting_start => 'Awaiting Acceptance';
+
+  @override
+  String get order_status_awaiting_delivery => 'Awaiting Delivery';
+
+  @override
+  String get order_status_awaiting_confirmation => 'Awaiting Confirmation';
+
+  @override
+  String get order_status_awaiting_evaluation => 'Awaiting Review';
+
+  @override
+  String get order_status_completed => 'Completed';
+
+  @override
+  String get order_status_canceled => 'Canceled';
+
+  @override
+  String get order_status_after_sale => 'After-Sales';
+
+  @override
+  String get order_status_unknown => 'Unknown Status';
+
+  @override
+  String get order_action_cancel => 'Cancel Order';
+
+  @override
+  String get order_action_go_pay => 'Pay Now';
+
+  @override
+  String get order_action_submit_materials => 'Submit Materials';
+
+  @override
+  String get order_action_contact_support => 'Contact Support';
+
+  @override
+  String get order_action_view_feedback => 'View Feedback';
+
+  @override
+  String get order_action_remind_delivery => 'Remind Delivery';
+
+  @override
+  String get order_action_platform_intervention => 'Platform Intervention';
+
+  @override
+  String get order_action_view_delivery => 'View Delivery';
+
+  @override
+  String get order_action_apply_after_sale => 'Apply After-Sales';
+
+  @override
+  String get order_action_confirm_receipt => 'Confirm Receipt';
+
+  @override
+  String get order_action_view_logistics => 'View Logistics';
+
+  @override
+  String get order_action_go_evaluate => 'Write Review';
+
+  @override
+  String get order_action_apply_rework => 'Request Rework';
+
+  @override
+  String get order_action_delete_order => 'Delete Order';
+
+  @override
+  String get order_action_view_order => 'View Order';
+
+  @override
+  String get order_action_view_details => 'View Details';
+
+  @override
+  String get order_action_processing => 'Processing...';
+
+  @override
+  String get order_confirm_cancel_title => 'Cancel Order';
+
+  @override
+  String get order_confirm_cancel_content =>
+      'Are you sure you want to cancel this order?';
+
+  @override
+  String get order_confirm_receipt_title => 'Confirm Receipt';
+
+  @override
+  String get order_confirm_receipt_content =>
+      'Are you sure you have received the goods and want to confirm receipt?';
+
+  @override
+  String get order_confirm_delete_title => 'Delete Order';
+
+  @override
+  String get order_confirm_delete_content =>
+      'Are you sure you want to delete this order? This action cannot be undone.';
+
+  @override
+  String get order_dialog_cancel => 'Cancel';
+
+  @override
+  String get order_dialog_confirm => 'Confirm';
+
+  @override
+  String get order_dialog_close => 'Close';
+
+  @override
+  String get order_dialog_submit => 'Submit';
+
+  @override
+  String get order_snackbar_connecting_support => 'Connecting to support...';
+
+  @override
+  String get order_snackbar_feedback_in_progress =>
+      'View seller feedback feature is under development';
+
+  @override
+  String get order_snackbar_reminded_delivery =>
+      'Seller has been reminded to deliver';
+
+  @override
+  String order_snackbar_nav_failed(String error) {
+    return 'Navigation failed: $error';
+  }
+
+  @override
+  String get order_snackbar_no_items_after_sale =>
+      'Error: Cannot apply after-sales for an order with no items';
+
+  @override
+  String get order_snackbar_no_items_evaluate =>
+      'Error: Cannot evaluate an order with no items';
+
+  @override
+  String order_snackbar_operation_failed(String error) {
+    return 'Operation failed: $error';
+  }
+
+  @override
+  String get order_dialog_data_not_loaded =>
+      'Data not loaded yet, please try again later';
+
+  @override
+  String get order_dialog_view_delivery_title => 'View Delivery';
+
+  @override
+  String get order_dialog_seller_delivery_content => 'Seller Delivery Content:';
+
+  @override
+  String get order_dialog_buyer_materials => 'Buyer Submitted Materials:';
+
+  @override
+  String get order_dialog_no_seller_delivery =>
+      'No delivery content from seller yet';
+
+  @override
+  String get order_dialog_no_buyer_materials =>
+      'No materials submitted by buyer';
+
+  @override
+  String order_dialog_delivery_note(String content) {
+    return 'Delivery Note: $content';
+  }
+
+  @override
+  String get order_dialog_delivery_files => 'Delivery Files:';
+
+  @override
+  String get order_intervention_title => 'Apply for Platform Intervention';
+
+  @override
+  String get order_intervention_desc =>
+      'Having unresolved disputes? Platform support will intervene within 24 hours.';
+
+  @override
+  String get order_intervention_problem_type => 'Problem Type:';
+
+  @override
+  String get order_intervention_problem_desc => 'Problem Description:';
+
+  @override
+  String get order_intervention_problem_hint =>
+      'Please describe the problem in detail...';
+
+  @override
+  String get order_intervention_validation_empty =>
+      'Please enter a problem description';
+
+  @override
+  String get order_intervention_validation_min =>
+      'Problem description must be at least 10 characters';
+
+  @override
+  String get order_intervention_tip =>
+      'Note: Once submitted, it cannot be revoked. Each order can apply up to 2 times.';
+
+  @override
+  String get order_intervention_reason_communication => 'Communication Issue';
+
+  @override
+  String get order_intervention_reason_quality => 'Quality Dispute';
+
+  @override
+  String get order_intervention_reason_delivery => 'Delivery Issue';
+
+  @override
+  String get order_intervention_reason_refund => 'Refund Dispute';
+
+  @override
+  String get order_intervention_reason_service => 'Service Attitude';
+
+  @override
+  String get order_intervention_reason_other => 'Other Issues';
+
+  @override
+  String get order_intervention_submitting => 'Submitting application...';
+
+  @override
+  String order_intervention_failed(String error) {
+    return 'Application failed: $error';
+  }
+
+  @override
+  String get order_demand_replenishment_title =>
+      'Request Supplementary Materials';
+
+  @override
+  String get order_demand_reform_title => 'Request Rework';
+
+  @override
+  String get order_demand_replenishment_desc =>
+      'If you need the seller to provide more materials or explanations, please describe your needs in detail.';
+
+  @override
+  String get order_demand_reform_desc =>
+      'If you are not satisfied with the delivery, you can request a rework. Please describe the specific issue.';
+
+  @override
+  String get order_demand_detail_label => 'Details:';
+
+  @override
+  String get order_demand_replenishment_hint =>
+      'Please describe the materials or information needed...';
+
+  @override
+  String get order_demand_reform_hint =>
+      'Please describe the reasons and requirements for rework...';
+
+  @override
+  String get order_demand_validation_empty => 'Please enter details';
+
+  @override
+  String get order_demand_validation_min =>
+      'Details must be at least 10 characters';
+
+  @override
+  String get order_demand_replenishment_tip =>
+      'Note: The seller will respond and provide supplementary materials within 24 hours.';
+
+  @override
+  String get order_demand_reform_tip =>
+      'Note: After the rework request is submitted, the seller will reprocess your order.';
+
+  @override
+  String get order_demand_reason_incomplete => 'Incomplete Information';
+
+  @override
+  String get order_demand_reason_unclear => 'Unclear Requirements';
+
+  @override
+  String get order_demand_reason_additional => 'Additional Explanation Needed';
+
+  @override
+  String get order_demand_reason_reference => 'Reference Materials Needed';
+
+  @override
+  String get order_demand_reason_other => 'Other Reasons';
+
+  @override
+  String get order_demand_reason_quality => 'Quality Not Satisfactory';
+
+  @override
+  String get order_demand_reason_requirement => 'Does Not Meet Requirements';
+
+  @override
+  String get order_demand_reason_content_incomplete => 'Incomplete Content';
+
+  @override
+  String get order_demand_reason_error => 'Contains Errors';
+
+  @override
+  String get order_demand_submitting_replenishment =>
+      'Submitting supplementary materials request...';
+
+  @override
+  String get order_demand_submitting_reform => 'Submitting rework request...';
+
+  @override
+  String order_demand_failed(String error) {
+    return 'Application failed: $error';
+  }
+
+  @override
+  String order_demand_edit_info_auto(int current, int remaining) {
+    return 'Delivered $current times, $remaining free revision(s) remaining (auto-approved)';
+  }
+
+  @override
+  String order_demand_edit_info_approval(int current) {
+    return 'Delivered $current times, free revisions used up, seller approval required';
+  }
+
+  @override
+  String get order_info_title => 'Order Info';
+
+  @override
+  String get order_info_order_number => 'Order No.: ';
+
+  @override
+  String get order_info_order_time => 'Order Time: ';
+
+  @override
+  String get order_info_pay_time => 'Payment Time: ';
+
+  @override
+  String get order_info_complete_time => 'Completion Time: ';
+
+  @override
+  String get order_info_remark => 'Order Remark: ';
+
+  @override
+  String get order_items_title => 'Product Info';
+
+  @override
+  String get order_items_empty => 'No product information';
+
+  @override
+  String order_items_count(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get order_price_title => 'Price Details';
+
+  @override
+  String get order_price_total => 'Product Total';
+
+  @override
+  String get order_price_shipping => 'Shipping';
+
+  @override
+  String get order_price_discount => 'Discount';
+
+  @override
+  String get order_price_paid => 'Amount Paid';
+
+  @override
+  String get order_price_total_amount => 'Product Total';
+
+  @override
+  String get order_price_actual_paid => 'Amount Paid';
+
+  @override
+  String get order_requirement_title => 'Submit Requirements';
+
+  @override
+  String order_requirement_service_selected(String skuName, String price) {
+    return 'Selected service: $skuName - ¥$price';
+  }
+
+  @override
+  String get order_requirement_q1 =>
+      '1. Please describe your requirements in detail';
+
+  @override
+  String get order_requirement_q1_hint =>
+      'Please describe your requirements in as much detail as possible, including specific needs and expected results';
+
+  @override
+  String get order_requirement_q1_helper =>
+      'If you need to provide reference materials, upload them in the attachment section below';
+
+  @override
+  String get order_requirement_q2 => '2. Additional notes (optional)';
+
+  @override
+  String get order_requirement_q2_hint =>
+      'If you have any other notes or special requirements, please fill in here';
+
+  @override
+  String get order_requirement_warning =>
+      'Please fill in your requirements carefully. After submission, the seller will start service based on your requirements';
+
+  @override
+  String get order_requirement_attachment_title => 'Attachments';
+
+  @override
+  String order_requirement_attachment_limit(int maxCount, int maxSize) {
+    return 'Max $maxCount files, each up to ${maxSize}MB';
+  }
+
+  @override
+  String get order_requirement_add => 'Add';
+
+  @override
+  String get order_requirement_click_select_file =>
+      'Click here to select files';
+
+  @override
+  String get order_requirement_confirm_submit => 'Confirm Submit';
+
+  @override
+  String get order_requirement_wait_upload =>
+      'Please wait for file upload to complete';
+
+  @override
+  String get order_requirement_upload_failed_title => 'File Upload Failed';
+
+  @override
+  String order_requirement_upload_failed_count(int count) {
+    return '$count file(s) failed to upload. Retry?';
+  }
+
+  @override
+  String get order_requirement_remove_failed => 'Remove Failed Files';
+
+  @override
+  String get order_requirement_retry_upload => 'Retry Upload';
+
+  @override
+  String get order_requirement_error_product_id =>
+      'Error: Cannot get product ID';
+
+  @override
+  String get order_requirement_load_draft_failed => 'Failed to load draft';
+
+  @override
+  String get order_requirement_save_draft_failed => 'Failed to save draft';
+
+  @override
+  String order_requirement_max_files(int count) {
+    return 'Maximum $count attachments allowed';
+  }
+
+  @override
+  String order_requirement_pick_failed(String error) {
+    return 'Failed to select file: $error';
+  }
+
+  @override
+  String get order_requirement_default_service => 'Basic Service';
+
+  @override
+  String get order_evaluation_title => 'Review Product';
+
+  @override
+  String get order_evaluation_hint => 'Share your experience~';
+
+  @override
+  String get order_evaluation_add_images => 'Add Images (max 9)';
+
+  @override
+  String get order_evaluation_anonymous => 'Anonymous Review';
+
+  @override
+  String get order_evaluation_submit => 'Submit Review';
+
+  @override
+  String get order_evaluation_error_no_item =>
+      'Error: Cannot find the product item to review';
+
+  @override
+  String get order_evaluation_max_images => 'Maximum 9 images allowed';
+
+  @override
+  String order_evaluation_success_count(int count, String ratio) {
+    return 'Successfully processed $count images, average compression $ratio%';
+  }
+
+  @override
+  String order_evaluation_failed_count(int count) {
+    return '$count image(s) failed to process';
+  }
+
+  @override
+  String order_evaluation_pick_failed(String error) {
+    return 'Failed to select image: $error';
+  }
+
+  @override
+  String get order_evaluation_processing => 'Processing...';
+
+  @override
+  String get order_evaluation_page_title => 'Write Review';
+
+  @override
+  String get order_delivery_not_satisfied => 'Not satisfied with delivery?';
+
+  @override
+  String get order_delivery_communicate_tip =>
+      'When delivery count is insufficient, please communicate with the seller about additional deliveries';
+
+  @override
+  String get order_delivery_supplement => 'Request Supplement';
+
+  @override
+  String get order_delivery_remake => 'Request Remake';
+
+  @override
+  String get order_delivery_refund => 'Request Refund';
+
+  @override
+  String get order_delivery_unknown_file => 'Unknown File';
+
+  @override
+  String order_item_delivery_days(int days) {
+    return 'Delivery: $days days';
+  }
+
+  @override
+  String order_item_edit_count(int count) {
+    return 'Revisions: $count times';
+  }
+
+  @override
+  String get order_countdown_expired => 'Expired';
+
+  @override
+  String order_countdown_days_hours(int days, int hours) {
+    return '${days}d ${hours}h';
+  }
+
+  @override
+  String order_countdown_hours_minutes(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
+  String order_countdown_minutes(int minutes) {
+    return '${minutes}m';
+  }
+
+  @override
+  String order_countdown_seconds(int seconds) {
+    return '${seconds}s';
+  }
+
+  @override
+  String order_countdown_days(int days) {
+    return '${days}d';
+  }
+
+  @override
+  String order_countdown_minutes_seconds(int minutes, int seconds) {
+    return '${minutes}m ${seconds}s';
+  }
+
+  @override
+  String order_upload_progress(int percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String get order_upload_retry => 'Retry Upload';
+
+  @override
+  String order_upload_failed(String error) {
+    return 'Upload failed: $error';
+  }
+
+  @override
+  String order_upload_size_limit(String size) {
+    return 'File size exceeds limit (max $size)';
+  }
+
+  @override
+  String order_upload_max_retry(int count) {
+    return 'Maximum retry count reached ($count times)';
+  }
+
+  @override
+  String get order_after_sale_processing => 'After-Sales Processing';
+
+  @override
+  String get order_after_sale_processing_msg =>
+      'Your after-sales request is being processed. The seller will handle it within xx hours. Please be patient.';
+
+  @override
+  String get order_after_sale_mediation => 'Platform Mediation in Progress';
+
+  @override
+  String get order_after_sale_mediation_msg =>
+      'Platform support has intervened. A resolution will be provided within xx business days. Please watch for notifications.';
+
+  @override
+  String get order_after_sale_rejected => 'After-Sales Request Rejected';
+
+  @override
+  String get order_after_sale_rejected_msg =>
+      'Sorry, your after-sales request was not approved.';
+
+  @override
+  String get order_after_sale_default_title => 'After-Sales Status';
+
+  @override
+  String get order_after_sale_default_msg =>
+      'This order is currently in the after-sales process.';
+
+  @override
+  String get order_after_sale_contact_seller => 'Contact Seller';
+
+  @override
+  String get order_after_sale_cancel_apply => 'Cancel Request';
+
+  @override
+  String get order_after_sale_contact_platform => 'Contact Platform Support';
+
+  @override
+  String get order_after_sale_add_evidence => 'Add Evidence';
+
+  @override
+  String get order_after_sale_add_evidence_tip =>
+      'You can add evidence or wait patiently for the platform\'s resolution.';
+
+  @override
+  String get order_after_sale_apply_intervention =>
+      'Apply for Platform Intervention';
+
+  @override
+  String get order_after_sale_refund_status => 'Refund Status:';
+
+  @override
+  String get order_after_sale_refund_amount => 'Refund Amount:';
+
+  @override
+  String get order_after_sale_reject_reason => 'Rejection Reason:';
+
+  @override
+  String get order_after_sale_reject_reason_detail =>
+      'Reason: Insufficient evidence or does not meet refund conditions.';
+
+  @override
+  String get order_platform_intervention_title => 'Platform Intervention';
+
+  @override
+  String get order_platform_intervention_desc =>
+      'If disputes cannot be resolved through negotiation, you can apply for platform support intervention';
+
+  @override
+  String get order_platform_intervention_apply =>
+      'Apply for Platform Intervention';
+
+  @override
+  String get order_platform_intervention_in_progress =>
+      'Platform Intervention in Progress';
+
+  @override
+  String get order_platform_intervention_processing => 'Processing';
+
+  @override
+  String get order_platform_intervention_processing_msg =>
+      'Your application has been submitted. Platform support will contact you within 24 hours';
+
+  @override
+  String get order_platform_intervention_step1 => 'Application Submitted';
+
+  @override
+  String get order_platform_intervention_step1_desc =>
+      'Waiting for platform support';
+
+  @override
+  String get order_platform_intervention_step2 => 'Support Intervention';
+
+  @override
+  String get order_platform_intervention_step2_desc =>
+      'Contact both parties within 24 hours';
+
+  @override
+  String get order_platform_intervention_step3 => 'Issue Resolved';
+
+  @override
+  String get order_platform_intervention_step3_desc =>
+      'Handled based on platform decision';
+
+  @override
+  String get order_card_product_unknown => 'Product name unknown';
+
+  @override
+  String get order_card_deleting => 'Deleting order...';
+
+  @override
+  String get order_card_deleted => 'Order deleted';
+
+  @override
+  String order_card_delete_failed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String order_card_load_detail_failed(String error) {
+    return 'Failed to load order details: $error';
+  }
+
+  @override
+  String get order_card_timeout_canceling => 'Timed out, will be canceled soon';
+
+  @override
+  String order_card_pay_in_time(String time) {
+    return 'Pay within $time';
+  }
+
+  @override
+  String get order_card_timeout_submit => 'Timed out, please submit soon';
+
+  @override
+  String order_card_submit_in_time(String time) {
+    return 'Submit materials within $time';
+  }
+
+  @override
+  String get order_card_seller_timeout => 'Seller timed out';
+
+  @override
+  String order_card_seller_accept_in_time(String time) {
+    return 'Seller will accept within $time';
+  }
+
+  @override
+  String order_card_delivery_days(int days) {
+    return 'Delivery: within $days days';
+  }
+
+  @override
+  String get order_card_auto_confirm_soon => 'Auto-confirmation soon';
+
+  @override
+  String order_card_auto_confirm_in(String time) {
+    return 'Auto-confirm in $time';
+  }
+
+  @override
+  String get order_card_evaluate_for_points =>
+      'Awaiting review, earn points after review';
+
+  @override
+  String order_card_duration_days_hours(int days, int hours) {
+    return '$days days $hours hours';
+  }
+
+  @override
+  String order_card_duration_hours_minutes(int hours, int minutes) {
+    return '$hours hours $minutes minutes';
+  }
+
+  @override
+  String order_card_duration_minutes(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get order_card_duration_less_than_minute => 'Less than 1 minute';
+
+  @override
+  String get order_detail_invalid_id => 'Invalid Order ID';
+
+  @override
+  String order_detail_error(Object error) {
+    return 'Error';
+  }
+
+  @override
+  String get order_detail_title => 'Order Details';
+
+  @override
+  String order_detail_title_with_id(int id) {
+    return 'Order Details (ID: $id)';
+  }
+
+  @override
+  String order_detail_load_failed(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get order_detail_reload => 'Reload';
+
+  @override
+  String get order_detail_unavailable => 'Order data unavailable';
+
+  @override
+  String get order_list_title => 'My Orders';
+
+  @override
+  String get order_list_search_hint => 'Search order number or product name';
+
+  @override
+  String get order_list_empty => 'No orders found';
+
+  @override
+  String order_list_load_error(String error) {
+    return 'Load error: $error';
+  }
+
+  @override
+  String order_list_load_failed(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get order_list_select_category => 'Select a category to view orders';
+
+  @override
+  String get order_list_tab_all => 'All';
+
+  @override
+  String get order_list_tab_awaiting_payment => 'Payment';
+
+  @override
+  String get order_list_tab_awaiting_submission => 'Submission';
+
+  @override
+  String get order_list_tab_awaiting_start => 'Acceptance';
+
+  @override
+  String get order_list_tab_awaiting_delivery => 'Delivery';
+
+  @override
+  String get order_list_tab_awaiting_confirmation => 'Receipt';
+
+  @override
+  String get order_list_tab_awaiting_evaluation => 'Review';
+
+  @override
+  String get order_list_tab_after_sale => 'After-Sales';
+
+  @override
+  String get order_route_error => 'Error';
+
+  @override
+  String order_route_invalid_item_id(String id) {
+    return 'Invalid product ID: $id';
+  }
+
+  @override
+  String order_seller_detail_title(int id) {
+    return 'Order Details (Seller) - #$id';
+  }
+
+  @override
+  String order_seller_load_failed(int id, String error) {
+    return 'Failed to load order #$id: $error';
+  }
+
+  @override
+  String get order_seller_preparing => 'Preparing to load...';
+
+  @override
+  String get order_seller_order_number => 'Order No.';
+
+  @override
+  String get order_seller_order_time => 'Order Time';
+
+  @override
+  String get order_seller_pay_time => 'Payment Time';
+
+  @override
+  String get order_seller_complete_time => 'Completion Time';
+
+  @override
+  String get order_seller_cancel_time => 'Cancellation Time';
+
+  @override
+  String get order_seller_list_title => 'My Orders (Seller)';
+
+  @override
+  String get order_seller_tab_all => 'All';
+
+  @override
+  String get order_seller_tab_awaiting_start => 'Pending';
+
+  @override
+  String get order_seller_tab_awaiting_delivery => 'To Deliver';
+
+  @override
+  String get order_seller_tab_awaiting_confirmation => 'Awaiting Receipt';
+
+  @override
+  String get order_seller_tab_awaiting_evaluation => 'Awaiting Review';
+
+  @override
+  String get order_seller_tab_completed => 'Completed';
+
+  @override
+  String get order_seller_tab_after_sale => 'After-Sales';
+
+  @override
+  String get order_seller_tab_canceled => 'Canceled';
+
+  @override
+  String order_seller_load_failed_msg(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get order_seller_empty => 'No orders in this status';
+
+  @override
+  String order_seller_action_failed(String error) {
+    return 'Action failed: $error';
+  }
+
+  @override
+  String order_seller_pending_count(int count) {
+    return 'You have $count orders to process';
+  }
+
+  @override
+  String order_seller_pending_awaiting_start(int count) {
+    return '$count pending acceptance';
+  }
+
+  @override
+  String order_seller_pending_awaiting_delivery(int count) {
+    return '$count to deliver';
+  }
+
+  @override
+  String get order_seller_reject_order => 'Reject Order';
+
+  @override
+  String get order_seller_confirm_order => 'Accept Order';
+
+  @override
+  String get order_seller_contact_buyer => 'Contact Buyer';
+
+  @override
+  String get order_seller_go_deliver => 'Deliver';
+
+  @override
+  String get order_seller_view_delivery_content => 'View Delivery';
+
+  @override
+  String get order_seller_remind_buyer => 'Remind Buyer';
+
+  @override
+  String get order_seller_delete_record => 'Delete Record';
+
+  @override
+  String get order_seller_confirm_accept_title => 'Confirm Acceptance';
+
+  @override
+  String get order_seller_confirm_accept_content =>
+      'Are you sure you want to accept this order?';
+
+  @override
+  String get order_seller_confirm_delete_title => 'Confirm Delete';
+
+  @override
+  String get order_seller_confirm_delete_content =>
+      'Are you sure you want to delete this order record? This action cannot be undone.';
+
+  @override
+  String get order_seller_confirm_delete_canceled_content =>
+      'Are you sure you want to delete this canceled order record? This action cannot be undone.';
+
+  @override
+  String get order_seller_confirm_btn => 'Confirm';
+
+  @override
+  String get order_seller_confirm_reject_title => 'Confirm Rejection';
+
+  @override
+  String get order_seller_confirm_reject_content =>
+      'Are you sure you want to reject this order?';
+
+  @override
+  String get order_seller_confirm_reject_btn => 'Confirm Rejection';
+
+  @override
+  String get order_seller_reject_dialog_title => 'Reject Order';
+
+  @override
+  String get order_seller_reject_reason_label => 'Rejection Reason *';
+
+  @override
+  String get order_seller_reject_reason_hint =>
+      'Please enter the rejection reason';
+
+  @override
+  String get order_seller_reject_reason_empty =>
+      'Rejection reason cannot be empty';
+
+  @override
+  String get order_seller_reject_reason_required =>
+      'Please enter the rejection reason';
+
+  @override
+  String get order_seller_remarks_label => 'Additional Notes (Optional)';
+
+  @override
+  String get order_seller_remarks_hint => 'Optional';
+
+  @override
+  String get order_seller_delivery_dialog_title => 'Delivery Content';
+
+  @override
+  String get order_seller_delivery_desc_label => 'Delivery Description *';
+
+  @override
+  String get order_seller_delivery_desc_hint =>
+      'Please describe your delivery content';
+
+  @override
+  String get order_seller_delivery_desc_empty =>
+      'Delivery description cannot be empty';
+
+  @override
+  String get order_seller_delivery_desc_required =>
+      'Please enter delivery description';
+
+  @override
+  String get order_seller_delivery_attachment => 'Attachments';
+
+  @override
+  String get order_seller_delivery_select_file =>
+      'Click the button below to select files';
+
+  @override
+  String get order_seller_delivery_add_attachment => 'Add Attachment';
+
+  @override
+  String get order_seller_delivery_file_select_soon =>
+      'File selection feature coming soon';
+
+  @override
+  String get order_seller_delivery_confirm => 'Confirm Delivery';
+
+  @override
+  String order_seller_delivery_chat_hint(String productName) {
+    return 'Please select the chat about product \"$productName\"';
+  }
+
+  @override
+  String get order_seller_dynamic_delivered => 'Service Delivered';
+
+  @override
+  String get order_seller_dynamic_delivered_msg =>
+      'You have completed the service delivery. Please wait for the buyer to confirm. If there are issues, the buyer may initiate after-sales.';
+
+  @override
+  String get order_seller_dynamic_completed =>
+      'This order has been completed successfully.';
+
+  @override
+  String get order_seller_dynamic_canceled => 'This order has been canceled.';
+
+  @override
+  String get order_seller_dynamic_refused => 'Order Rejection Submitted';
+
+  @override
+  String get order_seller_dynamic_refused_msg =>
+      'Your rejection request has been submitted and is awaiting processing.';
+
+  @override
+  String get order_seller_buyer_materials => 'Buyer Provided Materials';
+
+  @override
+  String get order_seller_attachment_label => 'Attachments:';
+
+  @override
+  String order_seller_view_attachment(String fileName) {
+    return 'View attachment coming soon: $fileName';
+  }
+
+  @override
+  String get order_evaluation_product_info => 'Product Information';
+
+  @override
+  String get order_list_retry => 'Retry';
+
+  @override
+  String chat_get_user_info_failed(String error) {
+    return 'Failed to get user info: $error';
+  }
+
+  @override
+  String get chat_user_refer_id_not_found => 'User referId not found';
+
+  @override
+  String get chat_no_chat_records => 'No chat records';
+
+  @override
+  String get chat_opponent_info_missing => 'Opponent info not available';
+
+  @override
+  String get chat_product_default => 'Product';
+
+  @override
+  String get chat_view_details => 'View Details';
+
+  @override
+  String get chat_product_info_incomplete =>
+      'Product info incomplete, cannot view details';
+
+  @override
+  String get chat_uploading => 'Uploading...';
+
+  @override
+  String get chat_upload_failed => 'Upload failed';
+
+  @override
+  String get chat_retry => 'Retry';
+
+  @override
+  String get chat_image_loading => 'Loading...';
+
+  @override
+  String get chat_image_load_failed => 'Load failed';
+
+  @override
+  String get chat_revoke_time_missing =>
+      'Message time info missing, cannot recall';
+
+  @override
+  String get chat_revoke_available => 'Can recall';
+
+  @override
+  String chat_revoke_expired(int seconds) {
+    return 'Message sent over 2 minutes ago, cannot recall (exceeded by ${seconds}s)';
+  }
+
+  @override
+  String get chat_unknown_seller => 'Unknown Seller';
+
+  @override
+  String get chat_product_conversation => 'Product conversation';
+
+  @override
+  String chat_product_conversation_count(int count) {
+    return '$count product conversations';
+  }
+
+  @override
+  String get chat_unknown_product => 'Unknown Product';
+
+  @override
+  String chat_user_inquiry_count(int count) {
+    return '$count user inquiries';
+  }
+
+  @override
+  String get chat_weekday_mon => 'Mon';
+
+  @override
+  String get chat_weekday_tue => 'Tue';
+
+  @override
+  String get chat_weekday_wed => 'Wed';
+
+  @override
+  String get chat_weekday_thu => 'Thu';
+
+  @override
+  String get chat_weekday_fri => 'Fri';
+
+  @override
+  String get chat_weekday_sat => 'Sat';
+
+  @override
+  String get chat_weekday_sun => 'Sun';
+
+  @override
+  String get chat_select_multiple_images => 'Select multiple images';
+
+  @override
+  String chat_image_compressed(String ratio) {
+    return 'Image compressed $ratio%';
+  }
+
+  @override
+  String chat_image_process_failed(String error) {
+    return 'Image processing failed: $error';
+  }
+
+  @override
+  String chat_images_processed_success(int count, String ratio) {
+    return 'Successfully processed $count images, avg compression $ratio%';
+  }
+
+  @override
+  String chat_images_process_failed_count(int count) {
+    return '$count images failed to process';
+  }
+
+  @override
+  String get chat_tap_to_view_product => 'Tap to view product details';
+
+  @override
+  String chat_yesterday_time(String time) {
+    return 'Yesterday $time';
+  }
+
+  @override
+  String get chat_no_messages_brief => 'No messages';
+
+  @override
+  String chat_select_image_error(String error) {
+    return 'Error selecting images: $error';
+  }
+
+  @override
+  String get after_sales_reason_none => 'None';
+
+  @override
+  String seller_auth_status_title(String type) {
+    return '$type Certification';
+  }
+
+  @override
+  String get seller_auth_status_label => 'Status: ';
+
+  @override
+  String get seller_auth_status_name_label => 'Name: ';
+
+  @override
+  String get seller_auth_status_materials => 'Certification Materials';
+
+  @override
+  String get seller_auth_status_no_materials => 'No certification materials';
+
+  @override
+  String get seller_auth_status_info => 'Certification Info';
+
+  @override
+  String get seller_auth_status_history => 'Certification History';
+
+  @override
+  String get seller_auth_status_no_history => 'No history records';
+
+  @override
+  String get seller_auth_status_reapply => 'Reapply';
+
+  @override
+  String get seller_auth_status_approved_hint =>
+      'Certification approved, no need to resubmit';
+
+  @override
+  String get seller_auth_status_pending_hint =>
+      'Certification under review, please wait';
+
+  @override
+  String get seller_auth_status_tag_approved => 'Certified';
+
+  @override
+  String get seller_auth_status_tag_pending => 'Under Review';
+
+  @override
+  String get seller_auth_status_tag_rejected => 'Rejected';
+
+  @override
+  String get seller_auth_status_tag_not_submitted => 'Not Submitted';
+
+  @override
+  String get seller_auth_status_type_idcard => 'Identity';
+
+  @override
+  String get seller_auth_status_type_education => 'Education';
+
+  @override
+  String get seller_auth_status_type_profession => 'Profession';
+
+  @override
+  String get seller_auth_status_type_company => 'Company';
+
+  @override
+  String get seller_auth_status_type_other => 'Other';
+
+  @override
+  String get seller_auth_status_field_auth_name => 'Certification Name';
+
+  @override
+  String get seller_auth_status_field_auth_type => 'Certification Type';
+
+  @override
+  String get seller_auth_status_field_company_name => 'Company Name';
+
+  @override
+  String get seller_auth_status_field_name => 'Name';
+
+  @override
+  String get seller_auth_status_field_school_name => 'School Name';
+
+  @override
+  String get seller_auth_status_field_profession => 'Profession/Position';
+
+  @override
+  String get seller_auth_status_field_name_or_title => 'Name/Title';
+
+  @override
+  String get seller_auth_status_field_remarks => 'Remarks';
+
+  @override
+  String get seller_auth_status_field_cert_number => 'Certificate Number';
+
+  @override
+  String get seller_auth_status_field_work_experience => 'Work Experience';
+
+  @override
+  String get seller_auth_status_field_issuer => 'Issuing Authority';
+
+  @override
+  String get seller_auth_status_field_credit_code =>
+      'Unified Social Credit Code';
+
+  @override
+  String get seller_auth_status_field_legal_rep => 'Legal Representative';
+
+  @override
+  String get seller_auth_status_field_registered_capital =>
+      'Registered Capital';
+
+  @override
+  String get seller_auth_status_field_establishment_date =>
+      'Establishment Date';
+
+  @override
+  String get seller_auth_status_field_degree => 'Degree';
+
+  @override
+  String get seller_auth_status_field_major => 'Major';
+
+  @override
+  String get seller_auth_status_field_graduation_year => 'Graduation Year';
+
+  @override
+  String get seller_auth_status_field_id_number => 'ID Number';
+
+  @override
+  String get seller_auth_status_field_valid_period => 'Valid Period';
+
+  @override
+  String get seller_auth_status_field_submit_time => 'Submission Time';
+
+  @override
+  String get seller_auth_status_field_reject_reason => 'Rejection Reason';
+
+  @override
+  String get seller_auth_status_history_approved_title =>
+      'Certification Approved';
+
+  @override
+  String seller_auth_status_history_approved_desc(String type) {
+    return 'Your $type certification has been approved. You can now enjoy all certified seller benefits.';
+  }
+
+  @override
+  String get seller_auth_status_history_submitted_title =>
+      'Certification Submitted';
+
+  @override
+  String seller_auth_status_history_submitted_desc(String type) {
+    return 'Your $type certification has been submitted. Review will be completed within 1-3 business days.';
+  }
+
+  @override
+  String get seller_auth_status_history_rejected_title =>
+      'Certification Rejected';
+
+  @override
+  String seller_auth_status_history_rejected_desc(String type, String reason) {
+    return 'Your $type certification was rejected. Reason: $reason';
+  }
+
+  @override
+  String get seller_auth_status_history_rejected_default_reason =>
+      'Materials do not meet requirements';
+
+  @override
+  String get seller_product_preview_title => 'Product Preview';
+
+  @override
+  String get seller_product_preview_back_to_edit => 'Back to Edit';
+
+  @override
+  String get seller_product_preview_loading => 'Loading product info...';
+
+  @override
+  String get seller_product_preview_load_failed =>
+      'Failed to load product info';
+
+  @override
+  String get seller_product_preview_retry => 'Retry';
+
+  @override
+  String get seller_product_preview_fetching => 'Fetching product data...';
+
+  @override
+  String get seller_product_preview_hint =>
+      'This is preview mode. Buyers will see a similar interface.';
+
+  @override
+  String get seller_product_edit_unsaved_changes_title =>
+      'Unsaved Changes Detected';
+
+  @override
+  String get seller_product_edit_unsaved_changes_message =>
+      'You have unsaved content. Save as draft?';
+
+  @override
+  String get seller_product_edit_cancel => 'Cancel';
+
+  @override
+  String get seller_product_edit_discard => 'Discard';
+
+  @override
+  String get seller_product_edit_operation_failed => 'Operation failed';
+
+  @override
+  String get seller_product_edit_draft_saved => 'Draft saved successfully';
+
+  @override
+  String get seller_product_edit_publish_success =>
+      'Service published! Under review. Check the \"On Sale\" list.';
+
+  @override
+  String get seller_product_edit_update_success =>
+      'Service updated successfully';
+
+  @override
+  String get seller_product_edit_max_images =>
+      'Maximum 9 images allowed. First 9 selected.';
+
+  @override
+  String seller_product_edit_price_required(String tierName) {
+    return '$tierName price must be greater than 0';
+  }
+
+  @override
+  String get seller_product_edit_form_incomplete =>
+      'Form data incomplete. Please check highlighted fields.';
+
+  @override
+  String get seller_product_edit_add_attribute => 'Add Attribute';
+
+  @override
+  String seller_product_edit_attribute_max_chars(int max) {
+    return 'Attribute name max $max characters';
+  }
+
+  @override
+  String get seller_product_edit_confirm => 'Confirm';
+
+  @override
+  String get seller_product_edit_options_config => 'Options Configuration';
+
+  @override
+  String get seller_product_edit_new_option => 'New Option';
+
+  @override
+  String get seller_product_edit_option_hint => 'Enter option content';
+
+  @override
+  String get seller_product_edit_service_name_hint => 'Service Name';
+
+  @override
+  String get seller_product_edit_description_hint =>
+      'Describe your service details, such as...';
+
+  @override
+  String get seller_product_edit_faq_title => 'FAQ Editor';
+
+  @override
+  String seller_product_edit_faq_count(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String get seller_product_edit_add_question => 'Add Question';
+
+  @override
+  String get seller_product_edit_question_label => 'Question';
+
+  @override
+  String get seller_product_edit_question_hint =>
+      'Enter a question buyers may ask';
+
+  @override
+  String get seller_product_edit_delete_question => 'Delete Question';
+
+  @override
+  String get seller_product_edit_answer_label => 'Answer';
+
+  @override
+  String get seller_product_edit_answer_hint => 'Enter the answer';
+
+  @override
+  String get seller_product_edit_buyer_info_title =>
+      'Buyer Information Required';
+
+  @override
+  String seller_product_edit_buyer_info_count(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get seller_product_edit_buyer_info_desc =>
+      'Select the information types buyers need to provide (shown on order details page)';
+
+  @override
+  String get seller_product_edit_selected_items => 'Selected items:';
+
+  @override
+  String get seller_product_edit_required => 'Required';
+
+  @override
+  String get seller_product_edit_edit_tooltip => 'Edit';
+
+  @override
+  String get seller_product_edit_delete_tooltip => 'Delete';
+
+  @override
+  String seller_product_edit_add_info_title(String type) {
+    return 'Add $type Info';
+  }
+
+  @override
+  String get seller_product_edit_info_label => 'Info Label';
+
+  @override
+  String get seller_product_edit_info_label_hint =>
+      'e.g., Company Logo Design Requirements';
+
+  @override
+  String get seller_product_edit_info_description => 'Detailed Description';
+
+  @override
+  String get seller_product_edit_info_description_hint =>
+      'Describe the information buyers need to provide';
+
+  @override
+  String get seller_product_edit_required_field => 'Required Field';
+
+  @override
+  String get seller_product_edit_add => 'Add';
+
+  @override
+  String seller_product_edit_edit_info_title(String type) {
+    return 'Edit $type Info';
+  }
+
+  @override
+  String get seller_product_edit_save => 'Save';
+
+  @override
+  String seller_product_edit_cases_count(int count) {
+    return '$count cases';
+  }
+
+  @override
+  String get seller_product_edit_add_case => 'Add Case';
+
+  @override
+  String get seller_product_edit_image_load_failed => 'Image load failed';
+
+  @override
+  String get seller_product_edit_click_select_image => 'Click to select image';
+
+  @override
+  String get seller_product_edit_upload_failed => 'Upload Failed';
+
+  @override
+  String get seller_product_edit_upload_retry => 'Retry';
+
+  @override
+  String get seller_product_edit_case_title_label => 'Case Title';
+
+  @override
+  String get seller_product_edit_case_title_hint =>
+      'Brief description of this case';
+
+  @override
+  String get seller_product_edit_case_desc_label => 'Case Description';
+
+  @override
+  String get seller_product_edit_case_desc_hint =>
+      'Describe the background, process, or results';
+
+  @override
+  String get seller_product_edit_select_image_and_title =>
+      'Please select an image and enter a title';
+
+  @override
+  String get seller_product_edit_cover_image => 'Service Cover Image';
+
+  @override
+  String get seller_product_edit_upload_success => 'Upload Successful';
+
+  @override
+  String seller_product_edit_upload_error(String error) {
+    return 'Upload error: $error';
+  }
+
+  @override
+  String get seller_product_edit_image_format_hint =>
+      'Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.';
+
+  @override
+  String get seller_product_edit_main_image => 'Main';
+
+  @override
+  String seller_product_edit_tier_price_label(String tierName) {
+    return '$tierName Price';
+  }
+
+  @override
+  String seller_product_edit_max_price(String max) {
+    return 'Maximum: $max';
+  }
+
+  @override
+  String seller_product_edit_price_exceed_max(String max) {
+    return 'Price cannot exceed $max';
+  }
+
+  @override
+  String get seller_product_edit_price_min => 'Minimum price is 0.01';
+
+  @override
+  String get seller_product_edit_delivery_period => 'Delivery Period';
+
+  @override
+  String get seller_product_edit_delivery_days_suffix => 'days';
+
+  @override
+  String seller_product_edit_max_days(int max) {
+    return 'Max $max days';
+  }
+
+  @override
+  String get seller_product_edit_times => 'Revisions';
+
+  @override
+  String get seller_product_edit_times_suffix => 'times';
+
+  @override
+  String seller_product_edit_max_times(int max) {
+    return 'Max $max times';
+  }
+
+  @override
+  String get seller_product_edit_input => 'Input';
+
+  @override
+  String get seller_product_edit_radio => 'Radio';
+
+  @override
+  String get seller_product_edit_draft_label => 'Draft';
+
+  @override
+  String get seller_product_edit_draft_unsaved_label => 'Draft*';
+
+  @override
+  String get seller_product_edit_publish => 'Publish';
+
+  @override
+  String get seller_product_edit_yes => 'Yes';
+
+  @override
+  String get seller_product_edit_no => 'No';
+
+  @override
+  String get seller_product_edit_add_selection_attribute =>
+      'Add Selection Attribute';
+
+  @override
+  String get seller_product_edit_default_options_yes_no =>
+      'Default options: Yes/No';
+
+  @override
+  String get seller_product_edit_attribute_name_label => 'Attribute Name *';
+
+  @override
+  String get seller_product_edit_attribute_name_example =>
+      'e.g.: Color, Model, Material, Suitable Age';
+
+  @override
+  String get seller_product_edit_attribute_type_label => 'Attribute Type';
+
+  @override
+  String get seller_product_edit_required_item => 'Required';
+
+  @override
+  String seller_product_card_sales(int count) {
+    return 'Sales: $count';
+  }
+
+  @override
+  String get seller_product_card_view => 'View';
+
+  @override
+  String get seller_image_preview_main_image => 'Main';
+
+  @override
+  String get seller_image_preview_set_main => 'Set as Main';
+
+  @override
+  String get seller_image_preview_load_failed => 'Image load failed';
+
+  @override
+  String get seller_image_preview_delete_title => 'Delete Image';
+
+  @override
+  String seller_image_preview_delete_confirm(int index) {
+    return 'Delete image $index?';
+  }
+
+  @override
+  String get seller_image_preview_delete => 'Delete';
+
+  @override
+  String get seller_file_select => 'Select File';
+
+  @override
+  String get seller_file_selected => 'Selected files:';
+
+  @override
+  String seller_file_size(String size) {
+    return 'Size: $size';
+  }
+
+  @override
+  String get seller_file_size_unknown => 'Unable to get size';
+
+  @override
+  String seller_file_preview_unsupported(String name) {
+    return 'Cannot preview this file type: $name';
+  }
+
+  @override
+  String get seller_common_cancel => 'Cancel';
+
+  @override
+  String get profile_user_name_default => 'Username';
+
+  @override
+  String get profile_buyer_mode => 'Buyer Mode';
+
+  @override
+  String get profile_my_orders => 'My Orders';
+
+  @override
+  String get profile_my_dskk_section => 'My DSKK';
+
+  @override
+  String get profile_liked_stories => 'Liked Stories';
+
+  @override
+  String get profile_logout => 'Log Out';
+
+  @override
+  String get profile_avatar_updated_local =>
+      'Avatar updated, but not saved to server yet';
+
+  @override
+  String profile_image_pick_error(String error) {
+    return 'Error selecting image: $error';
+  }
+
+  @override
+  String profile_feature_not_implemented(String feature) {
+    return '$feature feature is not yet available';
+  }
+
+  @override
+  String get profile_pending_payment_order => 'Pending Payment';
+
+  @override
+  String get profile_in_progress_order => 'In Progress';
+
+  @override
+  String get profile_completed_order => 'Completed';
+
+  @override
+  String get profile_refund_after_sales => 'Refund/After-sales';
+
+  @override
+  String get profile_account_deletion => 'Delete Account';
+
+  @override
+  String get profile_bound_phone => 'Bound Phone';
+
+  @override
+  String get profile_not_bound => 'Not Bound';
+
+  @override
+  String get profile_nickname => 'Nickname';
+
+  @override
+  String get profile_confirm_logout => 'Confirm Logout';
+
+  @override
+  String get profile_confirm_logout_message =>
+      'Are you sure you want to log out?';
+
+  @override
+  String get profile_confirm => 'Confirm';
+
+  @override
+  String get profile_update_avatar => 'Update Avatar';
+
+  @override
+  String get profile_update_avatar_confirm =>
+      'Are you sure you want to update your avatar?';
+
+  @override
+  String get profile_info_updated => 'Profile updated successfully!';
+
+  @override
+  String get profile_avatar_upload_timeout =>
+      'Avatar upload timed out, please check your network and try again';
+
+  @override
+  String get profile_network_failed =>
+      'Network connection failed, please check your network and try again';
+
+  @override
+  String profile_avatar_optimized(String ratio) {
+    return 'Avatar optimized, compressed $ratio%';
+  }
+
+  @override
+  String profile_avatar_process_failed(String error) {
+    return 'Avatar processing failed: $error';
+  }
+
+  @override
+  String profile_logout_error(String error) {
+    return 'Error logging out: $error';
+  }
+
+  @override
+  String get profile_nickname_empty => 'Please enter a nickname';
+
+  @override
+  String get profile_nickname_too_short =>
+      'Nickname must be at least 2 characters';
+
+  @override
+  String get profile_nickname_too_long =>
+      'Nickname cannot exceed 20 characters';
+
+  @override
+  String get profile_nickname_no_spaces => 'Nickname cannot contain spaces';
+
+  @override
+  String get profile_nickname_invalid_chars =>
+      'Nickname can only contain Chinese, English, numbers, and underscores';
+
+  @override
+  String get profile_nickname_only_underscores =>
+      'Nickname cannot contain only underscores';
+
+  @override
+  String get profile_nickname_unchanged => 'Nickname has not changed';
+
+  @override
+  String get profile_edit_nickname_title => 'Edit Nickname';
+
+  @override
+  String get profile_nickname_input_hint => 'Enter nickname';
+
+  @override
+  String get profile_nickname_rules =>
+      'Set 2-20 characters, only Chinese, English, numbers, and underscores allowed';
+
+  @override
+  String get profile_nickname_updated => 'Nickname updated successfully!';
+
+  @override
+  String profile_nickname_update_failed(String error) {
+    return 'Nickname update failed: $error';
+  }
+
+  @override
+  String get profile_submit_changes => 'Submit Changes';
+
+  @override
+  String get profile_avatar_uploaded => 'Avatar uploaded successfully';
+
+  @override
+  String get profile_updated => 'Profile updated successfully';
+
+  @override
+  String get profile_reload => 'Reload';
+
+  @override
+  String get profile_account_balance => 'Account Balance';
+
+  @override
+  String get profile_pending_settlement => 'Pending Settlement';
+
+  @override
+  String get profile_total_income => 'Total Income';
+
+  @override
+  String get profile_load_wallet => 'Tap to load wallet info';
+
+  @override
+  String get profile_all_orders => 'All Orders';
+
+  @override
+  String get profile_awaiting_payment => 'Pending Payment';
+
+  @override
+  String get profile_awaiting_shipment => 'Pending Shipment';
+
+  @override
+  String get profile_awaiting_receipt => 'Pending Receipt';
+
+  @override
+  String get profile_awaiting_review => 'Pending Review';
+
+  @override
+  String get profile_shipping_address => 'Shipping Address';
+
+  @override
+  String get profile_browsing_history => 'Browsing History';
+
+  @override
+  String get profile_contact_support => 'Contact Support';
+
+  @override
+  String get profile_help_center => 'Help Center';
+
+  @override
+  String get profile_feedback => 'Feedback';
+
+  @override
+  String get profile_switch_to_seller_mode => 'Switch to Seller Mode';
+
+  @override
+  String get profile_take_photo => 'Take Photo';
+
+  @override
+  String get profile_choose_from_album => 'Choose from Album';
+
+  @override
+  String profile_image_pick_failed(String error) {
+    return 'Failed to select image: $error';
+  }
+
+  @override
+  String get profile_edit_profile => 'Edit Profile';
+
+  @override
+  String get profile_online_status => 'Online Status';
+
+  @override
+  String get profile_mission_title => 'Assistant\'s Mission';
+
+  @override
+  String get profile_mission_our_mission => 'Our Mission';
+
+  @override
+  String get profile_mission_our_mission_content =>
+      'Connecting creativity with demand, making every idea possible. Our assistant is dedicated to providing the most thoughtful and intelligent service experience, becoming your most reliable digital partner in life and work.';
+
+  @override
+  String get profile_mission_core_values => 'Core Values';
+
+  @override
+  String get profile_mission_core_values_content =>
+      '• User First: Always starting from user needs\n• Innovation Driven: Continuously exploring new technologies and methods\n• Integrity Service: Providing reliable and transparent service experiences\n• Growing Together: Moving forward with users and partners';
+
+  @override
+  String get profile_mission_service_promise => 'Service Promise';
+
+  @override
+  String get profile_mission_service_promise_content =>
+      'We promise to provide every user with:\n\n✓ 24/7 intelligent service support\n✓ Personalized solution recommendations\n✓ Secure and reliable data protection\n✓ Continuously optimized user experience\n✓ Responsive customer service';
+
+  @override
+  String get profile_mission_future_vision => 'Future Vision';
+
+  @override
+  String get profile_mission_future_vision_content =>
+      'To become a globally leading intelligent service platform, empowered by AI technology, enabling everyone to enjoy personalized and efficient digital life experiences. We believe technology should make life better and creativity easier to realize.';
+
+  @override
+  String get profile_mission_questions_suggestions =>
+      'Questions or Suggestions?';
+
+  @override
+  String get profile_mission_listening =>
+      'We are always listening to your voice, looking forward to creating a better future together.';
+
+  @override
+  String get profile_mission_contact_us => 'Contact Us';
+
+  @override
+  String get profile_mission_contact_coming_soon =>
+      'Contact feature coming soon, stay tuned!';
+
+  @override
+  String get profile_wallet_title => 'My Wallet';
+
+  @override
+  String profile_wallet_error(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String profile_wallet_occurred_error(String error) {
+    return 'An error occurred: $error';
+  }
+
+  @override
+  String get profile_wallet_retry => 'Retry';
+
+  @override
+  String get profile_wallet_filter_all => 'All';
+
+  @override
+  String get profile_wallet_filter_income => 'Income';
+
+  @override
+  String get profile_wallet_filter_expense => 'Expense';
+
+  @override
+  String get profile_wallet_no_transactions => 'No transaction records';
+
+  @override
+  String profile_wallet_load_failed(String error) {
+    return 'Loading failed: $error';
+  }
+
+  @override
+  String profile_wallet_load_more_failed(String error) {
+    return 'Failed to load more: $error';
+  }
+
+  @override
+  String get profile_wallet_account_balance => 'Account Balance';
+
+  @override
+  String get profile_wallet_pending_amount => 'Pending Amount';
+
+  @override
+  String get profile_wallet_total_income => 'Total Income';
+
+  @override
+  String get profile_wallet_withdraw => 'Withdraw';
+
+  @override
+  String get profile_wallet_status_completed => 'Completed';
+
+  @override
+  String get profile_wallet_status_pending => 'Processing';
+
+  @override
+  String get profile_wallet_status_failed => 'Failed';
+
+  @override
+  String get profile_wallet_status_unknown => 'Unknown';
+
+  @override
+  String get profile_wallet_transaction_details => 'Transaction Details';
+
+  @override
+  String get profile_wallet_transaction_id => 'Transaction ID';
+
+  @override
+  String get profile_wallet_transaction_type => 'Type';
+
+  @override
+  String get profile_wallet_transaction_type_income => 'Income';
+
+  @override
+  String get profile_wallet_transaction_type_expense => 'Expense';
+
+  @override
+  String get profile_wallet_transaction_amount => 'Amount';
+
+  @override
+  String get profile_wallet_transaction_description => 'Description';
+
+  @override
+  String get profile_wallet_transaction_date => 'Date';
+
+  @override
+  String get profile_wallet_transaction_status => 'Status';
+
+  @override
+  String get profile_wallet_close => 'Close';
+
+  @override
+  String profile_wallet_available_balance(String symbol, String amount) {
+    return 'Available balance: $symbol$amount';
+  }
+
+  @override
+  String get profile_wallet_withdraw_amount => 'Withdrawal Amount';
+
+  @override
+  String get profile_wallet_withdraw_hint => 'Enter withdrawal amount';
+
+  @override
+  String get profile_wallet_withdraw_time =>
+      'Withdrawal arrival time: 1-3 business days';
+
+  @override
+  String get profile_wallet_invalid_amount =>
+      'Please enter a valid withdrawal amount';
+
+  @override
+  String get profile_wallet_exceed_balance =>
+      'Withdrawal amount cannot exceed available balance';
+
+  @override
+  String get profile_wallet_confirm_withdraw => 'Confirm Withdrawal';
+
+  @override
+  String profile_wallet_withdraw_submitted(String symbol, String amount) {
+    return 'Withdrawal request submitted: $symbol$amount';
+  }
+
+  @override
+  String get profile_wallet_not_implemented =>
+      'This feature is not yet available';
+
+  @override
+  String get auth_verification_expired => 'Verification code has expired';
+
+  @override
+  String auth_login_failed(String error) {
+    return 'Login failed: $error';
+  }
+
+  @override
+  String auth_code_send_failed(String error) {
+    return 'Failed to send verification code: $error';
+  }
+
+  @override
+  String get auth_login_success => 'Login successful!';
+
+  @override
+  String get auth_login => 'Login';
+
+  @override
+  String get auth_privacy_policy => 'Privacy Policy';
+
+  @override
+  String get auth_and => 'and';
+
+  @override
+  String get auth_user_agreement => 'User Agreement';
+
+  @override
+  String get auth_invalid_phone => 'Please enter a valid 11-digit phone number';
+
+  @override
+  String get auth_get_code => 'Get Code';
+
+  @override
+  String get payment_creating_order => 'Creating order...';
+
+  @override
+  String get payment_processing => 'Processing payment...';
+
+  @override
+  String get payment_credit_card => 'Credit Card Payment';
+
+  @override
+  String get payment_confirm_order => 'Confirm Order';
+
+  @override
+  String get payment_quantity_label => 'Quantity:';
+
+  @override
+  String get payment_order_summary => 'Order Summary';
+
+  @override
+  String get payment_product_amount => 'Product Amount';
+
+  @override
+  String get payment_quantity => 'Quantity';
+
+  @override
+  String get payment_order_total => 'Order Total';
+
+  @override
+  String get payment_method => 'Payment Method';
+
+  @override
+  String get payment_processing_ellipsis => 'Processing...';
+
+  @override
+  String get payment_confirm_pay => 'Confirm Payment';
+
+  @override
+  String get payment_success => 'Payment Successful';
+
+  @override
+  String get payment_failed => 'Payment Failed';
+
+  @override
+  String get payment_view_order_detail => 'View Order Details';
+
+  @override
+  String get payment_back_to_orders => 'Back to Orders';
+
+  @override
+  String get payment_success_tip =>
+      'Thank you for your purchase! You can view details in your orders.';
+
+  @override
+  String get payment_failed_tip =>
+      'Payment was not successful. Please try again or choose another payment method.';
+
+  @override
+  String get home_banner_image_load_failed => 'Image failed to load';
+
+  @override
+  String home_banner_placeholder(int index) {
+    return 'Banner $index';
+  }
+
+  @override
+  String get home_no_data => 'No data available';
+
+  @override
+  String get product_detail_no_faq => 'No FAQs available';
+
+  @override
+  String product_detail_buy_button(String price) {
+    return 'Buy Now $price';
+  }
+
+  @override
+  String get product_detail_buyer_requirements => 'Buyer Requirements';
+
+  @override
+  String get product_detail_no_buyer_requirements =>
+      'Seller has not set buyer requirements yet';
+
+  @override
+  String get after_sales_apply => 'Apply for After-sales';
+
+  @override
+  String get after_sales_apply_remake => 'Apply for Remake';
+
+  @override
+  String get after_sales_apply_supplement => 'Apply for Supplement';
+
+  @override
+  String get after_sales_apply_refund => 'Apply for Refund';
+
+  @override
+  String after_sales_max_images(int max) {
+    return 'Maximum $max images allowed';
+  }
+
+  @override
+  String after_sales_images_processed(int count, String ratio) {
+    return 'Successfully processed $count images, average compression $ratio%';
+  }
+
+  @override
+  String after_sales_images_failed(int count) {
+    return '$count images failed to process';
+  }
+
+  @override
+  String after_sales_image_pick_failed(String error) {
+    return 'Failed to select images: $error';
+  }
+
+  @override
+  String get after_sales_select_reason => 'Please select a reason';
+
+  @override
+  String get after_sales_reason_label => 'Reason';
+
+  @override
+  String get after_sales_reason_quality => 'Product quality issue';
+
+  @override
+  String get after_sales_reason_mismatch =>
+      'Product doesn\'t match description';
+
+  @override
+  String get after_sales_reason_wrong_item => 'Seller sent wrong item';
+
+  @override
+  String get after_sales_reason_unwanted => 'No longer wanted';
+
+  @override
+  String get after_sales_reason_other => 'Other';
+
+  @override
+  String get after_sales_description_label => 'Description';
+
+  @override
+  String get after_sales_description_hint =>
+      'Please describe the issue in detail...';
+
+  @override
+  String after_sales_refund_max_hint(String symbol, String amount) {
+    return 'Maximum refund $symbol$amount';
+  }
+
+  @override
+  String get after_sales_enter_refund_amount =>
+      'Please enter the refund amount';
+
+  @override
+  String get after_sales_invalid_amount => 'Please enter a valid amount';
+
+  @override
+  String get after_sales_amount_must_positive =>
+      'Refund amount must be greater than 0';
+
+  @override
+  String after_sales_amount_exceed(String symbol, String amount) {
+    return 'Refund amount cannot exceed $symbol$amount';
+  }
+
+  @override
+  String after_sales_upload_proof(int max) {
+    return 'Upload proof (max $max images)';
+  }
+
+  @override
+  String get after_sales_remove_image => 'Remove image';
+
+  @override
+  String get after_sales_submit => 'Submit Application';
+
+  @override
+  String after_sales_loading_failed(String error) {
+    return 'Loading failed: $error';
+  }
+
+  @override
+  String get after_sales_detail_retry => 'Retry';
+
+  @override
+  String get after_sales_initializing => 'Initializing...';
+
+  @override
+  String get after_sales_status_audit_reject =>
+      'After-Sales Application Rejected';
+
+  @override
+  String get after_sales_status_refund_success => 'Refund Successful';
+
+  @override
+  String get after_sales_status_processing => 'After-Sales Processing';
+
+  @override
+  String get after_sales_subtitle_wait_audit =>
+      'Seller will process your application within 48 hours';
+
+  @override
+  String get after_sales_subtitle_audit_pass =>
+      'Refund will arrive within 1-3 business days';
+
+  @override
+  String get after_sales_subtitle_audit_reject =>
+      'If you disagree, you can request platform intervention';
+
+  @override
+  String get after_sales_subtitle_refund_success =>
+      'Refund completed, please check your account';
+
+  @override
+  String get after_sales_subtitle_canceled =>
+      'You have canceled the after-sales application';
+
+  @override
+  String get after_sales_subtitle_default =>
+      'Please wait patiently for the result';
+
+  @override
+  String get after_sales_product_info => 'Product Information';
+
+  @override
+  String get after_sales_product_unknown => 'Unknown Product';
+
+  @override
+  String after_sales_spec(String spec) {
+    return 'Spec: $spec';
+  }
+
+  @override
+  String after_sales_quantity(int count) {
+    return 'Quantity: $count';
+  }
+
+  @override
+  String get after_sales_info => 'After-sales Information';
+
+  @override
+  String get after_sales_application_number => 'Application Number';
+
+  @override
+  String get after_sales_application_time => 'Application Time';
+
+  @override
+  String get after_sales_refund_amount_label => 'Refund Amount';
+
+  @override
+  String get after_sales_application_reason => 'Application Reason';
+
+  @override
+  String get after_sales_detailed_description => 'Detailed Description';
+
+  @override
+  String get after_sales_audit_remark => 'Audit Remark';
+
+  @override
+  String get after_sales_revoke => 'Revoke Application';
+
+  @override
+  String get after_sales_modify => 'Modify Application';
+
+  @override
+  String get after_sales_platform_intervention => 'Platform Intervention';
+
+  @override
+  String get after_sales_list_title => 'After-Sales List';
+
+  @override
+  String get after_sales_no_records => 'No after-sales records';
+
+  @override
+  String get after_sales_please_wait => 'Please wait...';
+
+  @override
+  String get after_sales_unknown_product => 'Unknown Product';
+
+  @override
+  String after_sales_status_label(String status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String get after_sales_select_type => 'Select After-sales Type';
+
+  @override
+  String get after_sales_type_remake => 'Request Remake';
+
+  @override
+  String get after_sales_type_remake_desc =>
+      'Not satisfied with the result? Negotiate a remake with the creator';
+
+  @override
+  String get after_sales_type_supplement => 'Request Supplement';
+
+  @override
+  String get after_sales_type_supplement_desc =>
+      'Result incomplete? Negotiate a supplement with the creator';
+
+  @override
+  String get after_sales_type_refund => 'Request Refund';
+
+  @override
+  String get after_sales_type_refund_desc => 'Negotiate a refund';
+
+  @override
+  String get after_sales_no_record_for_order =>
+      'No after-sales record found for this order';
+
+  @override
+  String after_sales_unknown_error(String error) {
+    return 'Unknown error loading after-sales details: $error';
+  }
+
+  @override
+  String get after_sales_server_error => 'Server error';
+
+  @override
+  String get after_sales_cache_error => 'Cache error';
+
+  @override
+  String get after_sales_network_error => 'Network connection error';
+
+  @override
+  String get after_sales_general_unknown_error => 'An unknown error occurred';
+
+  @override
+  String get favorites_title => 'My Favorites';
+
+  @override
+  String get favorites_tab_services => 'Services';
+
+  @override
+  String get favorites_tab_sellers => 'Sellers';
+
+  @override
+  String get favorites_close => 'Close';
+
+  @override
+  String get favorites_empty_services => 'No saved services yet';
+
+  @override
+  String get favorites_empty_sellers => 'No followed sellers yet';
+
+  @override
+  String get favorites_empty_services_hint =>
+      'Tap the favorite button when browsing services';
+
+  @override
+  String get favorites_empty_sellers_hint =>
+      'Tap the follow button when browsing sellers';
+
+  @override
+  String get favorites_unfollow => 'Unfollow';
+
+  @override
+  String get favorites_remove => 'Remove from favorites';
+
+  @override
+  String get favorites_seller_type_member => 'Individual Seller';
+
+  @override
+  String get favorites_seller_type_enterprise => 'Enterprise Seller';
+
+  @override
+  String get favorites_seller_type_platform => 'Platform Seller';
+
+  @override
+  String get favorites_seller_type_default => 'Seller';
+
+  @override
+  String get favorites_status_active => 'Active';
+
+  @override
+  String get favorites_status_inactive => 'Inactive';
+
+  @override
+  String get favorites_status_suspended => 'Suspended';
+
+  @override
+  String get favorites_status_banned => 'Banned';
+
+  @override
+  String ai_docs_chat_create_failed(String error) {
+    return 'Unable to create chat session: $error';
+  }
+
+  @override
+  String get ai_docs_chat_room_empty =>
+      'Chat room ID is empty, cannot enter chat';
+
+  @override
+  String ai_docs_chat_enter_error(String error) {
+    return 'Error entering chat: $error';
+  }
+
+  @override
+  String get ai_docs_rate_limit_details => 'Usage Details';
+
+  @override
+  String ai_docs_rate_limit_remaining(int count) {
+    return '$count remaining';
+  }
+
+  @override
+  String ai_docs_rate_limit_reset_in(String time) {
+    return 'Resets in $time';
+  }
+
+  @override
+  String get ai_docs_rate_limit_rules => 'Usage Rules';
+
+  @override
+  String get ai_docs_rate_limit_burst => 'Burst Limit';
+
+  @override
+  String get ai_docs_rate_limit_hourly => 'Hourly Limit';
+
+  @override
+  String get ai_docs_rate_limit_upgrade => 'Upgrade for More';
+
+  @override
+  String get ai_docs_rate_limit_upgrade_coming => 'Upgrade feature coming soon';
+
+  @override
+  String ai_docs_rate_limit_time_hours(int hours) {
+    return '$hours hours';
+  }
+
+  @override
+  String ai_docs_rate_limit_time_minutes(int minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String ai_docs_rate_limit_time_seconds(int seconds) {
+    return '$seconds seconds';
+  }
+
+  @override
+  String get ai_docs_rate_limit_reset => 'Reset';
+
+  @override
+  String get ai_docs_rate_limit_warning_title => 'Running Low on Usage';
+
+  @override
+  String get ai_docs_rate_limit_today_remaining => 'Today\'s Remaining';
+
+  @override
+  String ai_docs_rate_limit_remaining_info(int count, String time) {
+    return '$count uses remaining, resets in $time';
+  }
+
+  @override
+  String get ai_docs_rate_limit_today_usage => 'Today\'s Usage';
+
+  @override
+  String get auth_verification_code_expired => 'Verification code has expired';
+
+  @override
+  String get auth_get_verification_code => 'Get Code';
+
+  @override
+  String get home_image_load_failed => 'Image load failed';
+
+  @override
+  String get home_reached_end => 'You\'ve reached the end';
+
+  @override
+  String get home_reviews_title => 'Reviews';
+
+  @override
+  String home_reviews_load_failed(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get home_reviews_no_reviews => 'No reviews yet';
+
+  @override
+  String get home_reviews_default_content => 'Great, very patient';
+
+  @override
+  String get home_reviews_seller_reply => 'Seller Reply';
+
+  @override
+  String home_reviews_years_ago(int count) {
+    return '$count year(s) ago';
+  }
+
+  @override
+  String home_reviews_months_ago(int count) {
+    return '$count month(s) ago';
+  }
+
+  @override
+  String home_reviews_days_ago(int count) {
+    return '$count day(s) ago';
+  }
+
+  @override
+  String home_reviews_hours_ago(int count) {
+    return '$count hour(s) ago';
+  }
+
+  @override
+  String home_reviews_minutes_ago(int count) {
+    return '$count minute(s) ago';
+  }
+
+  @override
+  String get home_reviews_just_now => 'Just now';
+
+  @override
+  String get after_sales_apply_title => 'Apply for After-Sales';
+
+  @override
+  String get after_sales_select_reason_hint => 'Please select a reason';
+
+  @override
+  String get after_sales_select_reason_validator => 'Please select a reason';
+
+  @override
+  String after_sales_refund_amount_hint(String symbol, String amount) {
+    return 'Maximum refund $symbol$amount';
+  }
+
+  @override
+  String get after_sales_refund_amount_required => 'Please enter refund amount';
+
+  @override
+  String get after_sales_refund_amount_invalid => 'Please enter a valid amount';
+
+  @override
+  String get after_sales_refund_amount_positive =>
+      'Refund amount must be greater than 0';
+
+  @override
+  String after_sales_refund_amount_exceed(String symbol, String amount) {
+    return 'Refund amount cannot exceed $symbol$amount';
+  }
+
+  @override
+  String after_sales_upload_evidence(int max) {
+    return 'Upload evidence (max $max images)';
+  }
+
+  @override
+  String after_sales_image_process_success(int count, String ratio) {
+    return 'Successfully processed $count images, avg compression $ratio%';
+  }
+
+  @override
+  String after_sales_image_process_failed(int count) {
+    return '$count image(s) failed to process';
+  }
+
+  @override
+  String after_sales_detail_load_failed(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get after_sales_detail_initializing => 'Initializing...';
+
+  @override
+  String get after_sales_info_title => 'After-Sales Information';
+
+  @override
+  String get after_sales_info_order_number => 'Application No.';
+
+  @override
+  String get after_sales_info_apply_time => 'Application Time';
+
+  @override
+  String get after_sales_info_refund_amount => 'Refund Amount';
+
+  @override
+  String get after_sales_info_reason => 'Reason';
+
+  @override
+  String get after_sales_info_description => 'Description';
+
+  @override
+  String get after_sales_info_audit_remark => 'Review Remark';
+
+  @override
+  String after_sales_list_load_failed(String error) {
+    return 'Load failed: $error';
+  }
+
+  @override
+  String get after_sales_list_empty => 'No after-sales applications';
+
+  @override
+  String get after_sales_list_loading => 'Please wait...';
+
+  @override
+  String get after_sales_list_unknown_product => 'Unknown Product';
+
+  @override
+  String after_sales_list_status(String status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String after_sales_list_apply_time(String time) {
+    return 'Applied: $time';
+  }
+
+  @override
+  String get after_sales_select_type_title => 'Select After-Sales Type';
+
+  @override
+  String get after_sales_type_remake_title => 'I want a remake';
+
+  @override
+  String get after_sales_type_remake_subtitle =>
+      'Not satisfied with the result, negotiate a redo with the creator';
+
+  @override
+  String get after_sales_type_supplement_title => 'I want a supplement';
+
+  @override
+  String get after_sales_type_supplement_subtitle =>
+      'Result is incomplete, negotiate supplementation with the creator';
+
+  @override
+  String get after_sales_type_refund_title => 'I want a refund';
+
+  @override
+  String get after_sales_type_refund_subtitle => 'Negotiate refund';
+
+  @override
+  String get favorites_seller_status_active => 'Active';
+
+  @override
+  String get favorites_seller_status_inactive => 'Inactive';
+
+  @override
+  String get favorites_seller_status_suspended => 'Suspended';
+
+  @override
+  String get favorites_seller_status_banned => 'Banned';
+
+  @override
+  String get app_store_settings => 'Store Settings';
+
+  @override
+  String get app_wallet => 'Wallet';
+
+  @override
+  String get app_wallet_init_failed => 'Failed to initialize wallet page';
+
+  @override
+  String get app_error_label => 'Error';
+
+  @override
+  String get app_go_back => 'Go Back';
+
+  @override
+  String get app_page_not_found => 'Page Not Found';
+
+  @override
+  String get app_path_error => 'Path error';
+
+  @override
+  String get app_error_generic => 'Error';
+
+  @override
+  String get app_dev_menu_title => 'Developer Debug Menu';
+
+  @override
+  String get app_dev_common_entries => 'Common Entries';
+
+  @override
+  String get app_dev_dskk => 'DSKK';
+
+  @override
+  String get app_dev_order_module_buyer => 'Order Module (Buyer)';
+
+  @override
+  String get app_dev_order_list => 'Order List';
+
+  @override
+  String get app_dev_order_detail_example => 'Order Detail (Example)';
+
+  @override
+  String get app_dev_order_module_seller => 'Order Module (Seller)';
+
+  @override
+  String get app_dev_seller_order_list => 'Seller Order List';
+
+  @override
+  String get app_dev_seller_order_detail_example =>
+      'Seller Order Detail (Example)';
+
+  @override
+  String get app_dev_seller_module => 'Seller Module';
+
+  @override
+  String get app_dev_seller_center => 'Seller Center (Home)';
+
+  @override
+  String get app_dev_ai_docs_module => 'AI Docs Module';
+
+  @override
+  String get app_dev_ai_chat => 'AI Chat';
+
+  @override
+  String get app_dev_test_other => 'Test/Other';
+
+  @override
+  String get app_dev_current_credentials =>
+      'Current Test Credentials (Hardcoded): ';
+
+  @override
+  String get app_dev_temp_injection =>
+      '(Temporary injection, will be removed after Auth module merge)';
+
+  @override
+  String app_dev_navigation_failed(String path, String error) {
+    return 'Navigation failed: $path - $error';
+  }
+
+  @override
+  String get core_processing => 'Processing...';
+
+  @override
+  String get core_yesterday => 'Yesterday';
+
+  @override
+  String get payment_test_title => 'Payment Test';
+
+  @override
+  String get payment_check_availability => 'Check payment method availability';
+
+  @override
+  String get payment_test_params => 'Test Parameters';
+
+  @override
+  String get payment_order_number => 'Order Number';
+
+  @override
+  String get payment_amount_yuan => 'Amount';
+
+  @override
+  String get payment_product_name => 'Product Name';
+
+  @override
+  String get payment_select_method => 'Select Payment Method';
+
+  @override
+  String payment_test_button(String method, String amount) {
+    return 'Test $method ¥$amount';
+  }
+
+  @override
+  String get payment_usage_instructions => 'Instructions';
+
+  @override
+  String get payment_instruction_1 => '1. Modify test parameters above';
+
+  @override
+  String get payment_instruction_2 => '2. Select payment method to test';
+
+  @override
+  String get payment_instruction_3 =>
+      '3. Click test button to initiate payment';
+
+  @override
+  String get payment_instruction_4 =>
+      '4. Click info button to check payment method availability';
+
+  @override
+  String get payment_test_warning =>
+      'Note: Use 0.01 for testing in test environment';
+
+  @override
+  String get payment_test_product => 'Test Product';
+
+  @override
+  String payment_initiated_success(String message) {
+    return 'Payment initiated: $message';
+  }
+
+  @override
+  String payment_failed_message(String message) {
+    return 'Payment failed: $message';
+  }
+
+  @override
+  String payment_exception(String error) {
+    return 'Payment error: $error';
+  }
+
+  @override
+  String get payment_availability_title => 'Payment Method Availability';
+
+  @override
+  String get payment_alipay => 'Alipay';
+
+  @override
+  String get payment_wechat => 'WeChat Pay';
+
+  @override
+  String get payment_wallet_balance => 'Wallet Balance';
+
+  @override
+  String get payment_confirm => 'OK';
+
+  @override
+  String payment_check_failed(String error) {
+    return 'Check failed: $error';
+  }
+
+  @override
+  String get payment_alipay_subtitle => 'Fast & secure payment';
+
+  @override
+  String get payment_wechat_subtitle => 'WeChat secure payment';
+
+  @override
+  String get payment_amount_label => 'Amount: ';
+
+  @override
+  String get payment_terms_agreement =>
+      'By clicking \"Pay Now\" you agree to our terms of service';
+
+  @override
+  String get payment_create_order_failed => 'Failed to create payment order';
+
+  @override
+  String get payment_method_test_title => 'Payment Method Test';
+
+  @override
+  String get payment_alipay_pay => 'Alipay Payment';
+
+  @override
+  String get payment_test_functions => 'Test Functions';
+
+  @override
+  String get payment_test_alipay => 'Test Alipay Payment';
+
+  @override
+  String get payment_test_wechat => 'Test WeChat Payment';
+
+  @override
+  String get payment_test_credit_card => 'Test Credit Card Payment';
+
+  @override
+  String get payment_recent_test_result => 'Recent Test Results';
+
+  @override
+  String get payment_no_test_result => 'No test results yet';
+
+  @override
+  String get payment_available => 'Available';
+
+  @override
+  String get payment_unavailable => 'Unavailable';
+
+  @override
+  String payment_method_label(String name) {
+    return 'Payment method: $name';
+  }
+
+  @override
+  String get payment_mock_mode => 'Mock Mode';
+
+  @override
+  String payment_error_label(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get payment_nav_network_failed => 'Network Connection Failed';
+
+  @override
+  String get payment_nav_network_error_message =>
+      'Network error, please check your connection and try again';
+
+  @override
+  String get payment_nav_view_orders => 'View Orders';
+
+  @override
+  String get payment_nav_retry_payment => 'Retry Payment';
+
+  @override
+  String get payment_nav_result_unknown_title => 'Payment Result Unknown';
+
+  @override
+  String get payment_nav_result_unknown_message =>
+      'Payment result cannot be confirmed. Please check order status later or contact support';
+
+  @override
+  String get payment_nav_query_status => 'Check Status';
+
+  @override
+  String get payment_nav_cancel_continue =>
+      'Payment cancelled. You can continue to complete the payment';
+
+  @override
+  String get payment_nav_processing =>
+      'Payment is being processed. Please check order status later';
+
+  @override
+  String get payment_nav_success => 'Payment successful';
+
+  @override
+  String get payment_nav_failed => 'Payment failed';
+
+  @override
+  String get payment_nav_retrying => 'Retrying payment...';
+
+  @override
+  String get payment_nav_retry_failed =>
+      'Cannot retry payment, order information lost';
+
+  @override
+  String get payment_nav_querying => 'Checking payment status...';
+
+  @override
+  String get payment_nav_query_failed =>
+      'Cannot check status, order information lost';
+
+  @override
+  String payment_test_description(String subject) {
+    return '$subject - Payment Test';
+  }
 }

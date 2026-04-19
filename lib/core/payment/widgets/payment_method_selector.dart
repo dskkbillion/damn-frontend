@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../services/payment_service_factory.dart';
 import '../models/payment_models.dart' as models;
@@ -83,13 +84,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           PaymentNavigationService.handlePaymentResult(context, navResponse);
         }
       } else {
-        throw Exception(response.message ?? '创建支付订单失败');
+        throw Exception(response.message ?? AppLocalizations.of(context)!.payment_create_order_failed);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('支付失败: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.payment_failed_message(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -104,23 +105,24 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   Widget _buildPaymentMethodTile(models.PaymentMethod method) {
+    final l10n = AppLocalizations.of(context)!;
     IconData iconData;
     Color iconColor;
     Color bgColor;
     String subtitle;
-    
+
     switch (method) {
       case models.PaymentMethod.alipay:
         iconData = Icons.payment;
         iconColor = Colors.blue;
         bgColor = Colors.blue.shade50;
-        subtitle = '安全快捷支付';
+        subtitle = l10n.payment_alipay_subtitle;
         break;
       case models.PaymentMethod.wechat:
         iconData = Icons.wechat;
         iconColor = Colors.green;
         bgColor = Colors.green.shade50;
-        subtitle = '微信安全支付';
+        subtitle = l10n.payment_wechat_subtitle;
         break;
       case models.PaymentMethod.stripe:
         iconData = Icons.credit_card;
@@ -156,6 +158,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         // 支付金额显示
@@ -165,7 +168,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                RegionConfig.currentRegion == RegionType.domestic ? '支付金额：' : 'Amount: ',
+                l10n.payment_amount_label,
                 style: const TextStyle(fontSize: 16),
               ),
               Text(
@@ -179,16 +182,16 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ],
           ),
         ),
-        
+
         const Divider(),
-        
+
         // 支付方式选择
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              RegionConfig.currentRegion == RegionType.domestic ? '选择支付方式' : 'Payment Method',
+              l10n.payment_select_method,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -196,12 +199,12 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ),
           ),
         ),
-        
+
         // 动态生成支付方式选项
         ..._availablePaymentMethods.map((method) => _buildPaymentMethodTile(method)),
-        
+
         const SizedBox(height: 20),
-        
+
         // 支付按钮
         Padding(
           padding: const EdgeInsets.all(16.0),
@@ -219,7 +222,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
               child: _isProcessing
                   ? const CircularProgressIndicator(color: Colors.white)
                   : Text(
-                      RegionConfig.currentRegion == RegionType.domestic ? '确认支付' : 'Pay Now',
+                      l10n.payment_confirm_pay,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -229,16 +232,14 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 10),
-        
+
         // 支付说明
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
-            RegionConfig.currentRegion == RegionType.domestic 
-                ? '点击"确认支付"即表示您同意并接受相关服务条款'
-                : 'By clicking "Pay Now" you agree to our terms of service',
+            l10n.payment_terms_agreement,
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,

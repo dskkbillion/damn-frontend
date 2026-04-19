@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // Import OrderItem entity using the correct path
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -20,7 +20,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择售后类型'),
+        title: Text(AppLocalizations.of(context)!.after_sales_select_type_title),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -85,15 +85,16 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   Widget _buildTypeSelectionList(BuildContext context) {
     // Get item ID from the widget's orderItem property
     final currentItemId = orderItem.id;
+    final s = AppLocalizations.of(context)!;
     return Column(
       children: [
         _buildTypeTile(
           context,
           icon: Icons.refresh,
-          title: '我要重新制作',
-          subtitle: '对收到的制作不满意，可与作者协商重做',
+          title: s.after_sales_type_remake_title,
+          subtitle: s.after_sales_type_remake_subtitle,
           onTap: () {
-             AppLogger.d('Selected: 重新制作 for item $currentItemId');
+             print('Selected: REMAKE for item $currentItemId');
              // Pass orderItem as extra
              context.push('/afterSalesApply?itemId=$currentItemId&type=REMAKE', extra: orderItem);
           },
@@ -101,10 +102,10 @@ class SelectAfterSalesTypePage extends StatelessWidget {
          _buildTypeTile(
           context,
           icon: Icons.add_box_outlined,
-          title: '我要补充',
-          subtitle: '收到的制作不完善，可与作者协商补充',
+          title: s.after_sales_type_supplement_title,
+          subtitle: s.after_sales_type_supplement_subtitle,
            onTap: () {
-             AppLogger.d('Selected: 补充 for item $currentItemId');
+             print('Selected: SUPPLEMENT for item $currentItemId');
              // Pass orderItem as extra
              context.push('/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT', extra: orderItem);
           },
@@ -112,10 +113,10 @@ class SelectAfterSalesTypePage extends StatelessWidget {
         _buildTypeTile(
           context,
           icon: Icons.currency_exchange,
-          title: '我要退款',
-          subtitle: '协商退款',
+          title: s.after_sales_type_refund_title,
+          subtitle: s.after_sales_type_refund_subtitle,
            onTap: () {
-             AppLogger.d('Selected: 退款 for item $currentItemId');
+             print('Selected: REFUND for item $currentItemId');
              // Pass orderItem as extra
               context.push('/afterSalesApply?itemId=$currentItemId&type=REFUND', extra: orderItem);
           },

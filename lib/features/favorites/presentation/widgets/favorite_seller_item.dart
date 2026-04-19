@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../domain/entities/favorite_seller.dart';
 
@@ -29,19 +28,19 @@ class FavoriteSellerItem extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               // 卖家头像
               CircleAvatar(
                 radius: 30,
-                backgroundColor: AppColors.borderInput,
+                backgroundColor: Colors.grey[300],
                 backgroundImage: seller.avatar != null
                     ? NetworkImage(seller.avatar!)
                     : null,
@@ -49,7 +48,7 @@ class FavoriteSellerItem extends StatelessWidget {
                     ? Icon(
                         Icons.person,
                         size: 30,
-                        color: AppColors.textSecondary,
+                        color: Colors.grey[600],
                       )
                     : null,
               ),
@@ -76,7 +75,7 @@ class FavoriteSellerItem extends StatelessWidget {
                         seller.trueName!,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.grey[600],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -88,34 +87,34 @@ class FavoriteSellerItem extends StatelessWidget {
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingSm,
+                            horizontal: 8,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.info.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            _getSellerTypeText(seller.type),
-                            style: const TextStyle(
+                            _getSellerTypeText(context, seller.type),
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.info,
+                              color: Colors.blue[800],
                             ),
                           ),
                         ),
                         if (seller.status != null) ...[
-                          const SizedBox(width: AppDimensions.spacingSm),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingSm,
+                              horizontal: 8,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
                               color: _getStatusColor(seller.status!)[0],
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                              _getStatusText(seller.status!),
+                              _getStatusText(context, seller.status!),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: _getStatusColor(seller.status!)[1],
@@ -133,9 +132,9 @@ class FavoriteSellerItem extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onUnfollow,
                   icon: const Icon(Icons.person_remove),
-                  label: const Text('取消关注'),
+                  label: Text(AppLocalizations.of(context)!.favorites_unfollow),
                   style: TextButton.styleFrom(
-                    foregroundColor: AppColors.textSecondary,
+                    foregroundColor: Colors.grey[700],
                   ),
                 ),
             ],
@@ -146,30 +145,32 @@ class FavoriteSellerItem extends StatelessWidget {
   }
 
   /// 获取卖家类型文本
-  String _getSellerTypeText(String type) {
+  String _getSellerTypeText(BuildContext context, String type) {
+    final s = AppLocalizations.of(context)!;
     switch (type) {
       case 'MEMBER':
-        return '个人卖家';
+        return s.favorites_seller_type_member;
       case 'ENTERPRISE':
-        return '企业卖家';
+        return s.favorites_seller_type_enterprise;
       case 'PLATFORM':
-        return '平台卖家';
+        return s.favorites_seller_type_platform;
       default:
-        return '卖家';
+        return s.favorites_seller_type_default;
     }
   }
 
   /// 获取状态文本
-  String _getStatusText(String status) {
+  String _getStatusText(BuildContext context, String status) {
+    final s = AppLocalizations.of(context)!;
     switch (status) {
       case 'ACTIVE':
-        return '活跃';
+        return s.favorites_seller_status_active;
       case 'INACTIVE':
-        return '不活跃';
+        return s.favorites_seller_status_inactive;
       case 'SUSPENDED':
-        return '已暂停';
+        return s.favorites_seller_status_suspended;
       case 'BANNED':
-        return '已封禁';
+        return s.favorites_seller_status_banned;
       default:
         return status;
     }
@@ -179,15 +180,15 @@ class FavoriteSellerItem extends StatelessWidget {
   List<Color> _getStatusColor(String status) {
     switch (status) {
       case 'ACTIVE':
-        return [AppColors.success.withOpacity(0.15), AppColors.success];
+        return [Colors.green[100]!, Colors.green[800]!];
       case 'INACTIVE':
         return [Colors.orange[100]!, Colors.orange[800]!];
       case 'SUSPENDED':
-        return [AppColors.error.withOpacity(0.15), AppColors.error];
+        return [Colors.red[100]!, Colors.red[800]!];
       case 'BANNED':
-        return [AppColors.borderInput, AppColors.textPrimary];
+        return [Colors.grey[300]!, Colors.grey[800]!];
       default:
-        return [AppColors.borderInput, AppColors.textPrimary];
+        return [Colors.grey[300]!, Colors.grey[800]!];
     }
   }
 }

@@ -47,6 +47,9 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
       supportedLocales: const [
         Locale('zh'), // 中文
         Locale('en'), // 英文
+        Locale('ja'), // 日本語
+        Locale('ko'), // 한국어
+        Locale('vi'), // Tiếng Việt
       ],
       locale: locale, // 用户设置的语言
       localeResolutionCallback: (deviceLocale, supportedLocales) {

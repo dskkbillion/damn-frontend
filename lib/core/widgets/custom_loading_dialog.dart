@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 显示加载对话框
-void showLoadingDialog(BuildContext context, {String message = '处理中...'}) {
+void showLoadingDialog(BuildContext context, {String? message}) {
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -22,15 +23,16 @@ void dismissLoadingDialog(BuildContext context) {
 
 /// 自定义加载对话框
 class CustomLoadingDialog extends StatelessWidget {
-  final String message;
+  final String? message;
 
   const CustomLoadingDialog({
     Key? key,
-    this.message = '处理中...',
+    this.message,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final displayMessage = message ?? AppLocalizations.of(context)!.core_processing;
     return Dialog(
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -46,7 +48,7 @@ class CustomLoadingDialog extends StatelessWidget {
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
             Text(
-              message,
+              displayMessage,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,

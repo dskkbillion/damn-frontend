@@ -2,20 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../domain/entities/order_status.dart';
 import 'order_status_widget.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 增强版订单状态标签，支持倒计时显示
 class EnhancedOrderStatusWidget extends StatefulWidget {
   final OrderStatus status;
   final DateTime? countdownEndTime;
   final VoidCallback? onCountdownEnd;
-  final dynamic order; // 可选，用于判断是否为轻咨询订单
   
   const EnhancedOrderStatusWidget({
     super.key,
     required this.status,
     this.countdownEndTime,
     this.onCountdownEnd,
-    this.order,
   });
   
   @override
@@ -94,11 +93,8 @@ class _EnhancedOrderStatusWidgetState extends State<EnhancedOrderStatusWidget> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 保持现有状态标签样式，传入order对象
-        OrderStatusWidget(
-          status: widget.status,
-          order: widget.order,
-        ),
+        // 保持现有状态标签样式
+        OrderStatusWidget(status: widget.status),
         
         // 新增：倒计时显示（仅特定状态）
         if (widget.countdownEndTime != null && 
@@ -151,16 +147,17 @@ class _EnhancedOrderStatusWidgetState extends State<EnhancedOrderStatusWidget> {
   
   /// 格式化时间间隔
   String _formatDuration(Duration duration) {
-    if (duration.isNegative) return '已超时';
-    
+    final l10n = AppLocalizations.of(context)!;
+    if (duration.isNegative) return l10n.order_countdown_expired;
+
     if (duration.inDays > 0) {
-      return '${duration.inDays}天${duration.inHours % 24}时';
+      return l10n.order_countdown_days_hours(duration.inDays, duration.inHours % 24);
     } else if (duration.inHours > 0) {
-      return '${duration.inHours}时${duration.inMinutes % 60}分';
+      return l10n.order_countdown_hours_minutes(duration.inHours, duration.inMinutes % 60);
     } else if (duration.inMinutes > 0) {
-      return '${duration.inMinutes}分';
+      return l10n.order_countdown_minutes(duration.inMinutes);
     } else {
-      return '${duration.inSeconds}秒';
+      return l10n.order_countdown_seconds(duration.inSeconds);
     }
   }
 }
@@ -281,18 +278,19 @@ class _CountdownChipState extends State<CountdownChip> {
   }
   
   String _formatDuration(Duration duration) {
-    if (duration.isNegative) return '已超时';
-    
+    final l10n = AppLocalizations.of(context)!;
+    if (duration.isNegative) return l10n.order_countdown_expired;
+
     if (duration.inDays > 0) {
-      return '${duration.inDays}天';
+      return l10n.order_countdown_days(duration.inDays);
     } else if (duration.inHours > 0) {
-      return '${duration.inHours}时${duration.inMinutes % 60}分';
+      return l10n.order_countdown_hours_minutes(duration.inHours, duration.inMinutes % 60);
     } else if (duration.inMinutes > 5) {
-      return '${duration.inMinutes}分';
+      return l10n.order_countdown_minutes(duration.inMinutes);
     } else if (duration.inMinutes > 0) {
-      return '${duration.inMinutes}分${duration.inSeconds % 60}秒';
+      return l10n.order_countdown_minutes_seconds(duration.inMinutes, duration.inSeconds % 60);
     } else {
-      return '${duration.inSeconds}秒';
+      return l10n.order_countdown_seconds(duration.inSeconds);
     }
   }
 }

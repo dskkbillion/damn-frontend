@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Formats a DateTime into a relative time string (e.g., "昨天", "15:30").
 /// 
@@ -20,7 +21,7 @@ String formatRelativeTime(DateTime? dateTime, BuildContext context) {
     return DateFormat.Hm(Localizations.localeOf(context).languageCode).format(dateTime);
   } else if (messageDate == yesterday) {
     // Yesterday: Show "昨天"
-    return '昨天'; // TODO: Localize this string
+    return AppLocalizations.of(context)!.core_yesterday;
   } else if (now.difference(dateTime).inDays < 7) {
      // Within the last week: Show weekday name (e.g., "星期三")
      // Ensure intl provides localized weekday names or handle manually

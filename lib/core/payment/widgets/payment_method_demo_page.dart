@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../config/region_config.dart';
 import '../models/payment_models.dart';
@@ -46,15 +46,16 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         _infoLoaded = true;
       });
     } catch (e) {
-      AppLogger.d('加载支付信息失败: $e');
+      print('加载支付信息失败: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('支付方式测试'),
+        title: Text(l10n.payment_method_test_title),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
       ),
@@ -69,8 +70,9 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
   }
 
   Widget _buildContent() {
+    final l10n = AppLocalizations.of(context)!;
     final supportedMethods = RegionConfig.supportedPaymentMethods;
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -81,25 +83,25 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             IconData icon;
             Color color;
             String title;
-            
+
             switch (method) {
               case PaymentMethod.alipay:
                 icon = Icons.payment;
                 color = Colors.blue;
-                title = '支付宝支付';
+                title = l10n.payment_alipay_pay;
                 break;
               case PaymentMethod.wechat:
                 icon = Icons.wechat;
                 color = Colors.green;
-                title = '微信支付';
+                title = l10n.payment_wechat;
                 break;
               case PaymentMethod.stripe:
                 icon = Icons.credit_card;
                 color = Colors.purple;
-                title = '信用卡支付';
+                title = l10n.payment_credit_card;
                 break;
             }
-            
+
             return Column(
               children: [
                 _buildPaymentMethodCard(
@@ -112,46 +114,46 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
               ],
             );
           }),
-          
+
           const SizedBox(height: 8),
-          
+
           // 测试按钮区域
-          const Text(
-            '测试功能',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            l10n.payment_test_functions,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // 动态生成测试按钮
           ...supportedMethods.map((method) {
             IconData icon;
             Color color;
             String label;
-            
+
             switch (method) {
               case PaymentMethod.alipay:
                 icon = Icons.payment;
                 color = Colors.blue;
-                label = '测试支付宝支付';
+                label = l10n.payment_test_alipay;
                 break;
               case PaymentMethod.wechat:
                 icon = Icons.wechat;
                 color = Colors.green;
-                label = '测试微信支付';
+                label = l10n.payment_test_wechat;
                 break;
               case PaymentMethod.stripe:
                 icon = Icons.credit_card;
                 color = Colors.purple;
-                label = '测试信用卡支付';
+                label = l10n.payment_test_credit_card;
                 break;
             }
-            
+
             return Column(
               children: [
                 ElevatedButton.icon(
                   onPressed: _isLoading ? null : () => _testPayment(method.code),
                   icon: Icon(icon),
-                  label: Text(_isLoading ? '处理中...' : label),
+                  label: Text(_isLoading ? l10n.core_processing : label),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
                     foregroundColor: Colors.white,
@@ -162,16 +164,16 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
               ],
             );
           }),
-          
+
           const SizedBox(height: 24),
-          
+
           // 结果显示区域
-          const Text(
-            '最近测试结果',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            l10n.payment_recent_test_result,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          
+
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(12),
@@ -182,7 +184,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
               ),
               child: SingleChildScrollView(
                 child: Text(
-                  _lastResult.isEmpty ? '暂无测试结果' : _lastResult,
+                  _lastResult.isEmpty ? l10n.payment_no_test_result : _lastResult,
                   style: const TextStyle(
                     fontSize: 12,
                     fontFamily: 'monospace',
@@ -246,7 +248,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isAvailable ? '可用' : '不可用',
+                    isAvailable ? AppLocalizations.of(context)!.payment_available : AppLocalizations.of(context)!.payment_unavailable,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -258,7 +260,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              '支付方式：$displayName',
+              AppLocalizations.of(context)!.payment_method_label(displayName),
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade700,
@@ -273,7 +275,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'Mock模式',
+                  AppLocalizations.of(context)!.payment_mock_mode,
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.orange.shade700,
@@ -285,7 +287,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             if (methodInfo['error'] != null) ...[
               const SizedBox(height: 8),
               Text(
-                '错误: ${methodInfo['error']}',
+                AppLocalizations.of(context)!.payment_error_label(methodInfo['error'].toString()),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.red.shade600,
@@ -319,11 +321,12 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         (pm) => pm.code == method,
         orElse: () => PaymentMethod.alipay,
       );
+      final l10n = AppLocalizations.of(context)!;
       final request = PaymentRequest(
         orderId: 'test_${DateTime.now().millisecondsSinceEpoch}',
         amount: '0.01',
-        subject: '测试商品',
-        description: '${method}测试支付',
+        subject: l10n.payment_test_product,
+        description: l10n.payment_test_description(l10n.payment_test_product),
         method: paymentMethod,
         scene: PaymentScene.order,
       );

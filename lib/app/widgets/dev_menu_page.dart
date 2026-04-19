@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import getIt
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart'; // Import AI Docs routes
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // Change to StatefulWidget to read storage in initState
 class DevMenuPage extends StatefulWidget {
@@ -30,7 +30,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
       _userId = await storage.read(key: 'user_id');
       _token = await storage.read(key: 'user_token');
     } catch (e) {
-      AppLogger.d('[DevMenuPage] Error reading credentials: $e');
+      print('[DevMenuPage] Error reading credentials: $e');
       // Handle error, maybe set default values or show error message
       _userId = 'Error loading ID';
       _token = 'Error loading token';
@@ -44,9 +44,10 @@ class _DevMenuPageState extends State<DevMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('开发调试菜单'),
+        title: Text(l10n.app_dev_menu_title),
         backgroundColor: Colors.amber[100], // Give it a distinct color
       ),
       body: _isLoading
@@ -58,39 +59,39 @@ class _DevMenuPageState extends State<DevMenuPage> {
                 _buildInfoCard(),
                 const SizedBox(height: 16), // Add some spacing
 
-                _buildSectionTitle('常用入口'),
-                _buildNavButton(context, '主页', '/home'),
-                _buildNavButton(context, '多少看看', '/discover'),
-                _buildNavButton(context, '消息', '/chat'),
-                _buildNavButton(context, '我的', '/profile'),
+                _buildSectionTitle(l10n.app_dev_common_entries),
+                _buildNavButton(context, l10n.nav_home, '/home'),
+                _buildNavButton(context, l10n.app_dev_dskk, '/discover'),
+                _buildNavButton(context, l10n.nav_messages, '/chat'),
+                _buildNavButton(context, l10n.nav_profile, '/profile'),
                 const Divider(),
 
-                _buildSectionTitle('订单模块 (买家)'),
-                _buildNavButton(context, '订单列表', '/orders'),
-                _buildNavButton(context, '订单详情 (示例)', '/orderDetail/mock_order_1'),
+                _buildSectionTitle(l10n.app_dev_order_module_buyer),
+                _buildNavButton(context, l10n.app_dev_order_list, '/orders'),
+                _buildNavButton(context, l10n.app_dev_order_detail_example, '/orderDetail/mock_order_1'),
                 const Divider(),
 
-                _buildSectionTitle('订单模块 (卖家)'),
-                _buildNavButton(context, '卖家订单列表', '/seller/orders'),
-                 _buildNavButton(context, '卖家订单详情 (示例)', '/seller/orders/mock_seller_order_1'),
+                _buildSectionTitle(l10n.app_dev_order_module_seller),
+                _buildNavButton(context, l10n.app_dev_seller_order_list, '/seller/orders'),
+                 _buildNavButton(context, l10n.app_dev_seller_order_detail_example, '/seller/orders/mock_seller_order_1'),
                 // TODO: Add other seller order actions/views if needed
                 const Divider(),
 
                 // ---> ADDED: Seller Module Section <---
-                _buildSectionTitle('卖家模块 (Seller)'),
-                _buildNavButton(context, '卖家中心 (首页)', '/seller'), // Navigate to Seller Home
+                _buildSectionTitle(l10n.app_dev_seller_module),
+                _buildNavButton(context, l10n.app_dev_seller_center, '/seller'), // Navigate to Seller Home
                 // TODO: Add other seller entry points as needed (e.g., notifications, settings)
                 const Divider(),
                 // --------------------------------------
 
                 // Add entry points for AI Docs Module
-                _buildSectionTitle('AI Docs 模块'),
-                _buildNavButton(context, 'AI 聊天', '/ai_chat'), // Use string literal path
+                _buildSectionTitle(l10n.app_dev_ai_docs_module),
+                _buildNavButton(context, l10n.app_dev_ai_chat, '/ai_chat'), // Use string literal path
                 const Divider(),
 
                 // TODO: Add entry points for other modules as they are merged
 
-                _buildSectionTitle('测试/其他'),
+                _buildSectionTitle(l10n.app_dev_test_other),
                 // Add any other specific test routes here if needed
                 // _buildNavButton(context, '登录页 (如果存在)', '/login'),
               ],
@@ -99,6 +100,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
   }
 
   Widget _buildInfoCard() {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       color: Colors.blue[50],
       child: Padding(
@@ -106,13 +108,13 @@ class _DevMenuPageState extends State<DevMenuPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('当前测试凭证 (硬编码): ', style: Theme.of(context).textTheme.titleSmall),
+            Text(l10n.app_dev_current_credentials, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
             Text('User ID: ${_userId ?? "Not found"}'),
             const SizedBox(height: 4),
             Text('Token: ${_token ?? "Not found"}', maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 8),
-            Text('(临时注入，将在 Auth 模块合并后移除)', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+            Text(l10n.app_dev_temp_injection, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
           ],
         ),
       ),
@@ -127,8 +129,9 @@ class _DevMenuPageState extends State<DevMenuPage> {
           try {
             context.go(path);
           } catch (e) {
+            final l10n = AppLocalizations.of(context)!;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('跳转失败: $path - $e')),
+              SnackBar(content: Text(l10n.app_dev_navigation_failed(path, e.toString()))),
             );
           }
         },

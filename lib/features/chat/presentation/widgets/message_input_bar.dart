@@ -1,5 +1,4 @@
 import 'dart:io'; // Import File
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:async'; // Import async
 import 'package:flutter/foundation.dart'; // Import for kIsWeb
 
@@ -11,8 +10,6 @@ import 'package:permission_handler/permission_handler.dart'; // Import permissio
 import 'package:path_provider/path_provider.dart'; // Import path_provider
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
@@ -86,58 +83,60 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _startRecording() async {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
-
-    // --- Add Web Check ---
+    final s = AppLocalizations.of(context)!;
+    
+    // --- Add Web Check --- 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
+        SnackBar(content: Text(s.chat_web_recording_not_supported)),
       );
       return;
     }
-    // --- End Web Check ---
+    // --- End Web Check --- 
 
-    // ✅ 使用与AI Chat相同的权限检查方式，更可靠
-    // 先用 AudioRecorder 的原生方法检查权限
-    if (!await _audioRecorder.hasPermission()) {
-        AppLogger.d('[Permission Check] AudioRecorder.hasPermission() returned false, requesting permission...');
+    // Check and Request permission AT RUNTIME
+    var status = await Permission.microphone.status;
+    print('[Permission Check] Microphone status BEFORE request: $status');
 
-        // 使用 permission_handler 请求权限
-        final status = await Permission.microphone.request();
-        AppLogger.d('[Permission Check] Permission.microphone.request() result: $status');
-
-        if (!status.isGranted) {
-            // 检查是否永久拒绝
-            if (status.isPermanentlyDenied) {
-                AppLogger.d("[Permission Check] Permission permanently denied.");
-                showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                        title: Text(appLocalizations.chat_mic_permission_denied_title),
-                        content: Text(appLocalizations.chat_mic_permission_denied_message),
-                        actions: <Widget>[
-                            TextButton(
-                                child: Text(appLocalizations.chat_permission_denied_cancel),
-                                onPressed: () => Navigator.of(context).pop(),
-                            ),
-                            TextButton(
-                                child: Text(appLocalizations.chat_permission_denied_settings),
-                                onPressed: () {
-                                    Navigator.of(context).pop();
-                                    openAppSettings();
-                                },
-                            ),
-                        ],
+    if (status.isPermanentlyDenied) {
+        // FIX: Handle permanently denied status
+        print("[Permission Check] Permission permanently denied.");
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                title: Text(s.chat_mic_permission_denied_title),
+                content: Text(s.chat_mic_permission_denied_message),
+                actions: <Widget>[
+                    TextButton(
+                        child: Text(s.chat_permission_denied_cancel),
+                        onPressed: () => Navigator.of(context).pop(),
                     ),
-                );
-            } else {
-                // 普通拒绝
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
-                );
-            }
-            return;
-        }
+                    TextButton(
+                        child: Text(s.chat_permission_denied_settings),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                            openAppSettings(); // Open app settings
+                        },
+                    ),
+                ],
+            ),
+        );
+        return; // Stop execution
+    }
+
+    // Request if denied or restricted, but not permanently denied
+    if (!status.isGranted) {
+        status = await Permission.microphone.request();
+        print('[Permission Check] Microphone status AFTER request: $status');
+    }
+
+    // Check final status after potential request
+    if (!status.isGranted) {
+      // FIX: Provide slightly more context if denied after request
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.chat_mic_permission_denied)),
+      );
+      return;
     }
 
     // --- Permission Granted - Proceed with recording --- 
@@ -163,13 +162,13 @@ class _MessageInputBarState extends State<MessageInputBar> {
           _recordingDuration = 0;
         });
         _startRecordingTimer();
-        AppLogger.d('Recording started: $_recordingPath');
+        print('Recording started: $_recordingPath');
       }
 
     } catch (e) {
-      AppLogger.d('Error starting recording: $e');
+      print('Error starting recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_recording_error('$e'))),
+        SnackBar(content: Text(s.chat_recording_error('$e'))),
       );
       _resetRecordingState();
     }
@@ -188,28 +187,28 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _stopRecordingAndSend() async {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     _recordingTimer?.cancel();
     try {
       final path = await _audioRecorder.stop();
       if (path != null && mounted) {
-        AppLogger.d('Recording stopped: $path, Duration: $_recordingDuration s');
+        print('Recording stopped: $path, Duration: $_recordingDuration s');
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
           context.read<ChatMessagesBloc>().add(
             SendMessageRequested(type: 'audio', file: recordingFile),
           );
         } else {
-          AppLogger.d('Recording file invalid or too short.');
+          print('Recording file invalid or too short.');
         }
       } else {
-        AppLogger.d('Stopping recording failed or component unmounted.');
+        print('Stopping recording failed or component unmounted.');
       }
     } catch (e) {
-      AppLogger.d('Error stopping recording: $e');
+      print('Error stopping recording: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_stop_recording_error('$e'))),
+        SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
       );
     } finally {
       if(mounted) {
@@ -227,11 +226,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
         final file = File(_recordingPath!);
         if(await file.exists()) {
           await file.delete();
-          AppLogger.d("Recording cancelled and file deleted.");
+          print("Recording cancelled and file deleted.");
         }
       }
     } catch (e) {
-      AppLogger.d("Error cancelling recording: $e");
+      print("Error cancelling recording: $e");
     } finally {
       if(mounted) {
         _resetRecordingState();
@@ -249,7 +248,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   Future<void> _pickImage(ImageSource source) async {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     try {
       // Use ImageUploadHelper for consistent image processing
@@ -275,7 +274,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
             _fileUploadStates[processResult.finalFile.path] = const FileUploadState.uploading();
           });
 
-          AppLogger.d('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
+          print('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
           
           // 2. 发送消息（会触发上传）
           context.read<ChatMessagesBloc>().add(
@@ -289,7 +288,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           if (processResult.compressionRatio != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('图片已压缩 ${processResult.compressionRatio!.toStringAsFixed(1)}%'),
+                content: Text(s.chat_image_compressed(processResult.compressionRatio!.toStringAsFixed(1))),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -297,22 +296,23 @@ class _MessageInputBarState extends State<MessageInputBar> {
         } else {
           // 处理失败
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('图片处理失败: ${processResult.error ?? "未知错误"}')),
+            SnackBar(content: Text(s.chat_image_process_failed(processResult.error ?? ''))),
           );
         }
       } else {
-        AppLogger.d('No image selected.');
+        print('No image selected.');
       }
     } catch (e) {
-       AppLogger.d('Error picking image: $e');
+       print('Error picking image: $e');
        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(appLocalizations.chat_image_picking_error('$e'))), 
+          SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
       ); 
     }
   }
   
   // 支持多图片选择
   Future<void> _pickMultipleImages() async {
+    final s = AppLocalizations.of(context)!;
     try {
       // Use ImageUploadHelper for multiple image selection
       final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
@@ -354,25 +354,25 @@ class _MessageInputBarState extends State<MessageInputBar> {
           final avgCompression = totalCompression / successCount;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('成功处理 $successCount 张图片，平均压缩 ${avgCompression.toStringAsFixed(1)}%'),
-              backgroundColor: AppColors.success,
+              content: Text(s.chat_images_processed_success(successCount, avgCompression.toStringAsFixed(1))),
+              backgroundColor: Colors.green,
             ),
           );
         }
-        
+
         if (errorCount > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$errorCount 张图片处理失败'),
-              backgroundColor: AppColors.warning,
+              content: Text(s.chat_images_process_failed_count(errorCount)),
+              backgroundColor: Colors.orange,
             ),
           );
         }
       }
     } catch (e) {
-      AppLogger.d('Error picking multiple images: $e');
+      print('Error picking multiple images: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片出错: $e')),
+        SnackBar(content: Text(s.chat_select_image_error('$e'))),
       );
     }
   }
@@ -431,7 +431,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
                         color: uploadState.status == FileUploadStatus.uploading
                             ? Colors.black.withOpacity(0.5)
                             : uploadState.status == FileUploadStatus.failure
-                                ? AppColors.error.withOpacity(0.6)
+                                ? Colors.red.withOpacity(0.6)
                                 : Colors.transparent,
                       ),
                       child: Center(
@@ -486,7 +486,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       return Container(
         width: 64,
         height: 64,
-        color: AppColors.borderInput,
+        color: Colors.grey[300],
         child: const Icon(Icons.insert_drive_file, size: 32),
       );
     }
@@ -506,7 +506,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       case FileUploadStatus.success:
         return const Icon(
           Icons.check_circle,
-          color: AppColors.success,
+          color: Colors.green,
           size: 24,
         );
       case FileUploadStatus.failure:
@@ -532,34 +532,34 @@ class _MessageInputBarState extends State<MessageInputBar> {
     Navigator.of(context).pop();
     
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     // 使用国际化字符串构建Markdown示例
     final String markdownExample = """
-# ${appLocalizations.chat_markdown_example_title1}
-## ${appLocalizations.chat_markdown_example_title2}
+# ${s.chat_markdown_example_title1}
+## ${s.chat_markdown_example_title2}
 
-${appLocalizations.chat_markdown_example_bold_italic}
+${s.chat_markdown_example_bold_italic}
 
-- ${appLocalizations.chat_markdown_example_list1}
-- ${appLocalizations.chat_markdown_example_list2}
-  - ${appLocalizations.chat_markdown_example_list3}
+- ${s.chat_markdown_example_list1}
+- ${s.chat_markdown_example_list2}
+  - ${s.chat_markdown_example_list3}
 
-> ${appLocalizations.chat_markdown_example_quote}
-> ${appLocalizations.chat_markdown_example_quote}
+> ${s.chat_markdown_example_quote}
+> ${s.chat_markdown_example_quote}
 
 [This is a link](https://flutter.dev)
 
 ```dart
 void main() {
-  AppLogger.d('Hello, Markdown!');
+  print('Hello, Markdown!');
 }
 ```
 
-${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_markdown_example_table_col2} |
+${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 |-----|-----|
-| ${appLocalizations.chat_markdown_example_table_content1} | ${appLocalizations.chat_markdown_example_table_content2} |
-| ${appLocalizations.chat_markdown_example_table_content3} | ${appLocalizations.chat_markdown_example_table_content4} |
+| ${s.chat_markdown_example_table_content1} | ${s.chat_markdown_example_table_content2} |
+| ${s.chat_markdown_example_table_content3} | ${s.chat_markdown_example_table_content4} |
 """;
 
     // 发送Markdown消息
@@ -570,86 +570,55 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
 
   void _showAttachmentMenu(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
-
-    // 先隐藏键盘，避免键盘干扰 modal 的触摸事件
-    FocusScope.of(context).unfocus();
-
-    // 延迟300ms确保键盘完全关闭后再显示modal
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-
-      showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent, // 设置为透明
-          isDismissible: true, // 允许点击外部区域关闭
-          enableDrag: true, // 允许下滑关闭
-          isScrollControlled: false, // 不控制滚动，保持默认行为
-          builder: (BuildContext bc) {
-            return Container(
-            decoration: BoxDecoration(
-              color: AppColors.backgroundCard,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
-            ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const SizedBox(height: 8), // 顶部间距
-                  // 可选：添加一个拖动指示器
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.borderInput,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                      leading: const Icon(Icons.photo_library),
-                      title: Text(appLocalizations.chat_pick_from_gallery),
-                      onTap: () {
-                        Navigator.of(context).pop(); // Close bottom sheet
-                        _pickImage(ImageSource.gallery);
-                      }),
-                  ListTile(
-                    leading: const Icon(Icons.photo_camera),
-                    title: Text(appLocalizations.chat_take_photo),
+    final s = AppLocalizations.of(context)!;
+     
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return SafeArea(
+            child: Wrap(
+              children: <Widget>[
+                ListTile(
+                    leading: const Icon(Icons.photo_library),
+                    title: Text(s.chat_pick_from_gallery),
                     onTap: () {
-                       Navigator.of(context).pop(); // Close bottom sheet
-                      _pickImage(ImageSource.camera);
-                    },
-                  ),
-                  // 新增多图片选择
-                  ListTile(
-                    leading: const Icon(Icons.photo_library_outlined),
-                    title: const Text('选择多张图片'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      _pickMultipleImages();
-                    },
-                  ),
-                  // 添加Markdown消息示例按钮
-                  ListTile(
-                    leading: const Icon(Icons.text_format),
-                    title: Text(appLocalizations.chat_send_markdown),
-                    onTap: _sendMarkdownExample,
-                  ),
-                  const SizedBox(height: 8), // 底部间距
-                   // TODO: Add options for file selection etc. later
-                ],
-              ),
+                      Navigator.of(context).pop(); // Close bottom sheet
+                      _pickImage(ImageSource.gallery);
+                    }),
+                ListTile(
+                  leading: const Icon(Icons.photo_camera),
+                  title: Text(s.chat_take_photo),
+                  onTap: () {
+                     Navigator.of(context).pop(); // Close bottom sheet
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                // 新增多图片选择
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: Text(s.chat_select_multiple_images),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    _pickMultipleImages();
+                  },
+                ),
+                // 添加Markdown消息示例按钮
+                ListTile(
+                  leading: const Icon(Icons.text_format),
+                  title: Text(s.chat_send_markdown),
+                  onTap: _sendMarkdownExample,
+                ),
+                 // TODO: Add options for file selection etc. later
+              ],
             ),
           );
-          });
-    });
+        });
   }
 
   // Helper widget builders
   Widget _buildVoiceKeyboardButton() {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     return IconButton(
       icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
@@ -660,14 +629,14 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
         // Hide keyboard if switching to voice mode
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
-      tooltip: _isVoiceMode ? appLocalizations.chat_switch_to_text : appLocalizations.chat_switch_to_voice,
-      color: AppColors.textSecondary,
+      tooltip: _isVoiceMode ? s.chat_switch_to_text : s.chat_switch_to_voice,
+      color: Colors.grey[700],
     );
   }
 
   Widget _buildTextField() {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     return TextField(
       controller: _controller,
@@ -675,20 +644,20 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
       minLines: 1,
       textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
       decoration: InputDecoration(
-        hintText: appLocalizations.chat_enter_message,
+        hintText: s.chat_enter_message,
         filled: true,
-        fillColor: AppColors.backgroundSecondary,
+        fillColor: Colors.grey[100],
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+          borderRadius: BorderRadius.circular(25.0),
           borderSide: BorderSide.none, // No visible border
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+          borderRadius: BorderRadius.circular(25.0),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+          borderRadius: BorderRadius.circular(25.0),
           borderSide: BorderSide.none, // Or a subtle highlight
         ),
       ),
@@ -698,10 +667,10 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
 
   Widget _buildPressToTalkButton() {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
-    Color buttonColor = _isRecording ? AppColors.error : Theme.of(context).primaryColor;
-    String buttonText = _isRecording ? appLocalizations.chat_release_to_send(_recordingDuration) : appLocalizations.chat_press_to_talk;
+    Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
+    String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
 
     return GestureDetector(
       // Use LongPressDraggable or simple LongPress handlers based on complexity needed
@@ -718,7 +687,7 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
       onLongPressCancel: () { // This might not trigger easily, consider drag update
           if(_isRecording) {
               _cancelRecording();
-              AppLogger.d('Recording cancelled via onLongPressCancel');
+              print('Recording cancelled via onLongPressCancel');
           }
       },
       // Consider adding onLongPressMoveUpdate for cancel-by-dragging logic
@@ -742,26 +711,26 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
 
   Widget _buildAttachmentButton() {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
-      tooltip: appLocalizations.chat_attach,
-      color: AppColors.textSecondary,
+      tooltip: s.chat_attach,
+      color: Colors.grey[700],
     );
   }
 
   Widget _buildSendButton() {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     return Visibility(
       visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
       child: IconButton(
         icon: const Icon(Icons.send),
         onPressed: _sendMessage,
-        tooltip: appLocalizations.chat_send,
+        tooltip: s.chat_send,
         color: Theme.of(context).primaryColor, // Use theme color
       ),
     );
@@ -772,8 +741,8 @@ ${appLocalizations.chat_markdown_example_table_col1} | ${appLocalizations.chat_m
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
-        color: AppColors.backgroundSecondary,
-        border: Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)),
+        color: Colors.grey[50], // Lighter background for the bar
+        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 0.5)), // Top border
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(

@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
-import 'package:dskk_flutter_refactor/app/navigation/app_router.dart';
-
+import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
-import 'package:dio/dio.dart';
-import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
-import 'bind_contact_page.dart';
-import '../bloc/bind_contact_cubit.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({Key? key}) : super(key: key);
@@ -46,15 +39,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listenWhen: (previous, current) => current is ProfileLoggedOut,
             listener: (context, state) {
               if (state is ProfileLoggedOut) {
-                AppLogger.d('【退出登录】用户已成功登出，正在重定向到登录页面...');
-                // 使用 rootNavigatorKey 导航，完全脱离当前 BlocProvider context 树
-                // 避免 InheritedWidget '_dependents.isEmpty' 断言失败
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final navContext = rootNavigatorKey.currentContext;
-                  if (navContext != null) {
-                    GoRouter.of(navContext).go('/auth/login');
-                  }
-                });
+                // 登出成功后导航到登录页面，并清除导航栈
+                print('【退出登录】用户已成功登出，正在重定向到登录页面...');
+                context.go('/auth/login');
               }
             },
           ),
@@ -62,18 +49,19 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             listenWhen: (previous, current) => current is ProfileLoggingOut,
             listener: (context, state) {
               if (state is ProfileLoggingOut) {
-                AppLogger.d('【退出登录】正在处理登出请求...');
+                print('【退出登录】正在处理登出请求...');
               }
             },
           ),
           BlocListener<ProfileBloc, ProfileState>(
-            listenWhen: (previous, current) =>
-              current is ProfileError && previous is ProfileLoggingOut,
+            listenWhen: (previous, current) => 
+              current is ProfileError && 
+              (previous is ProfileLoggingOut || previous is LogoutEvent),
             listener: (context, state) {
               if (state is ProfileError) {
-                AppLogger.d('【退出登录】发生错误: ${state.message}');
+                print('【退出登录】发生错误: ${state.message}');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('退出登录时发生错误: ${state.message}')),
+                  SnackBar(content: Text(AppLocalizations.of(context)!.profile_logout_error(state.message))),
                 );
               }
             },
@@ -86,21 +74,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               current is ProfileAvatarUploadError,
             listener: (context, state) {
               if (state is ProfileAvatarUploaded) {
-                // 上传成功后，立即更新用户资料
-                AppLogger.d('[AccountSecurityPage] Avatar uploaded successfully, updating profile with URL: ${state.avatarUrl}');
+                // 上传成功，使用新的头像URL更新用户资料
                 _profileBloc.add(UpdateUserProfileEvent(avatar: state.avatarUrl));
-
+                
                 setState(() {
                   avatarResult = null; // 清除本地处理结果
                 });
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('头像上传成功，正在更新资料...'),
-                    backgroundColor: AppColors.success,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
               } else if (state is ProfileAvatarUploadError) {
                 setState(() {
                   avatarResult = null; // 清除本地处理结果
@@ -110,40 +89,36 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 final errorMessage = state.message.toString();
                 String userFriendlyMessage;
                 if (errorMessage.contains('timeout') || errorMessage.contains('超时')) {
-                  userFriendlyMessage = '头像上传超时，请检查网络连接后重试';
+                  userFriendlyMessage = AppLocalizations.of(context)!.profile_avatar_upload_timeout;
                 } else if (errorMessage.contains('network') || errorMessage.contains('网络')) {
-                  userFriendlyMessage = '网络连接失败，请检查网络后重试';
+                  userFriendlyMessage = AppLocalizations.of(context)!.profile_network_failed;
                 } else {
-                  userFriendlyMessage = '头像上传失败，请重试';
+                  userFriendlyMessage = AppLocalizations.of(context)!.profile_avatar_upload_failed;
                 }
                 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(userFriendlyMessage),
-                    backgroundColor: AppColors.error,
+                    backgroundColor: Colors.red,
                     duration: const Duration(seconds: 3),
                   ),
                 );
               }
             },
           ),
-          // 添加个人信息更新成功的状态监听
+          // 添加昵称修改成功的状态监听
           BlocListener<ProfileBloc, ProfileState>(
-            listenWhen: (previous, current) =>
-              current is ProfileUpdated &&
-              (previous is ProfileUpdating || previous is ProfileAvatarUploaded),
+            listenWhen: (previous, current) => 
+              current is ProfileUpdated && 
+              previous is ProfileUpdating,
             listener: (context, state) {
               if (state is ProfileUpdated) {
-                AppLogger.d('[AccountSecurityPage] Profile updated successfully');
-                // 不再显示重复的提示，因为头像更新已经有自己的提示
-                if (!(context.read<ProfileBloc>().state is ProfileAvatarUploaded)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('个人信息更新成功！'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.profile_info_updated),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               }
             },
           ),
@@ -156,8 +131,6 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               profile = state.profile;
             } else if (state is ProfileUpdated) {
               profile = state.profile;
-            } else if (state is ProfileUpdating) {
-              profile = state.profile;
             } else if (state is ProfileAvatarUploading) {
               profile = state.profile;
             } else if (state is ProfileAvatarUploaded) {
@@ -166,19 +139,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               profile = state.profile;
             }
             
-            AppLogger.d('[AccountSecurityPage] Current state: ${state.runtimeType}');
-            AppLogger.d('[AccountSecurityPage] Profile: ${profile?.nickName}');
-
-            // 登出过程中不渲染页面内容，避免全屏红色错误
-            if (state is ProfileLoggingOut || state is ProfileLoggedOut) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
-            }
-
+            print('[AccountSecurityPage] Current state: ${state.runtimeType}');
+            print('[AccountSecurityPage] Profile: ${profile?.nickName}');
+            
             return Scaffold(
               appBar: AppBar(
-                title: const Text('账号与安全'),
+                title: Text(AppLocalizations.of(context)!.profile_account_security),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_ios),
                   onPressed: () => context.pop(),
@@ -209,13 +175,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   Widget _buildProfileAvatar(UserProfile? profile) {
-    final String nickname = profile?.nickName ?? '用户';
+    final String nickname = profile?.nickName ?? AppLocalizations.of(context)!.profile_default_name;
     final String? avatarUrl = profile?.avatarUrl;
     final bool hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
     
     return Container(
       width: double.infinity,
-      color: AppColors.backgroundCard,
+      color: Colors.white,
       padding: const EdgeInsets.symmetric(vertical: 30),
       child: Column(
         children: [
@@ -225,7 +191,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               child: Container(
                 width: 100,
                 height: 100,
-                color: AppColors.borderInput,
+                color: Colors.grey.shade300,
                 child: avatarResult != null
                   ? Image.file(
                       avatarResult!.finalFile,
@@ -256,7 +222,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Color(0xFF333333),
             ),
           ),
         ],
@@ -284,7 +250,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           if (result.compressionRatio != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('头像已优化处理，压缩 ${result.compressionRatio!.toStringAsFixed(1)}%'),
+                content: Text(AppLocalizations.of(context)!.profile_avatar_optimized(result.compressionRatio!.toStringAsFixed(1))),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 2),
               ),
@@ -295,13 +261,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           _showAvatarConfirmDialog();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('头像处理失败: ${result.error}')),
+            SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_process_failed(result.error.toString()))),
           );
         }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片时出错: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_error(e.toString()))),
       );
     }
   }
@@ -310,7 +276,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('更新头像'),
+        title: Text(AppLocalizations.of(context)!.profile_update_avatar),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -324,7 +290,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 ),
               ),
             const SizedBox(height: 16),
-            const Text('确定要更新头像吗？'),
+            Text(AppLocalizations.of(context)!.profile_update_avatar_confirm),
           ],
         ),
         actions: [
@@ -335,14 +301,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               });
               Navigator.pop(context);
             },
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.profile_cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _uploadAvatar();
             },
-            child: const Text('确定'),
+            child: Text(AppLocalizations.of(context)!.profile_confirm),
           ),
         ],
       ),
@@ -357,93 +323,40 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   Widget _buildMenuItems(UserProfile? profile) {
-    final String nickname = profile?.nickName ?? '用户';
+    final String nickname = profile?.nickName ?? AppLocalizations.of(context)!.profile_default_name;
     final String phoneNumber = profile?.mobile ?? '';
-    final String emailAddress = profile?.email ?? '';
-
+    
     return Container(
-      color: AppColors.backgroundCard,
+      color: Colors.white,
       child: Column(
         children: [
           _buildMenuItem(
-            '昵称',
+            AppLocalizations.of(context)!.profile_nickname,
             trailing: Text(
               nickname,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Colors.grey.shade600,
               ),
             ),
             onTap: () => _navigateToEditNickname(profile),
           ),
-          const Divider(height: 1, color: AppColors.borderPrimary),
+          Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
-            '手机号',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : '未绑定',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (phoneNumber.isEmpty) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    '绑定',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ],
+            AppLocalizations.of(context)!.profile_bound_phone,
+            trailing: Text(
+              phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : AppLocalizations.of(context)!.profile_not_bound,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
             ),
-            onTap: phoneNumber.isEmpty
-                ? () => _navigateToBindContact(BindContactType.phone)
-                : () {
-                    final boundCount = (phoneNumber.isNotEmpty ? 1 : 0) + (emailAddress.isNotEmpty ? 1 : 0);
-                    _showBoundContactActions('phone', phoneNumber, boundCount: boundCount);
-                  },
+            onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_bound_phone),
           ),
-          const Divider(height: 1, color: AppColors.borderPrimary),
+          Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
-            '邮箱',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  emailAddress.isNotEmpty ? _maskEmail(emailAddress) : '未绑定',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                if (emailAddress.isEmpty) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    '绑定',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            onTap: emailAddress.isEmpty
-                ? () => _navigateToBindContact(BindContactType.email)
-                : () {
-                    final boundCount = (phoneNumber.isNotEmpty ? 1 : 0) + (emailAddress.isNotEmpty ? 1 : 0);
-                    _showBoundContactActions('email', emailAddress, boundCount: boundCount);
-                  },
-          ),
-          const Divider(height: 1, color: AppColors.borderPrimary),
-          _buildMenuItem(
-            '账号注销',
-            onTap: () => _showDeactivateAccountDialog(profile),
+            AppLocalizations.of(context)!.profile_account_deletion,
+            onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_account_deletion),
           ),
         ],
       ),
@@ -456,14 +369,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         title,
         style: const TextStyle(
           fontSize: 16,
-          color: AppColors.textPrimary,
+          color: Color(0xFF333333),
         ),
       ),
       trailing: trailing ??
-          const Icon(
+          Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: AppColors.textTertiary,
+            color: Colors.grey.shade400,
           ),
       onTap: onTap,
     );
@@ -481,14 +394,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             foregroundColor: Colors.red,
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
-          child: const Text('退出登录'),
+          child: Text(AppLocalizations.of(context)!.profile_logout),
         ),
       ),
     );
   }
 
   void _navigateToEditNickname(UserProfile? profile) async {
-    // TODO(Step1.4): 待路由注册后迁移到 GoRouter (EditNicknamePage 未在 ProfileRoutes 注册)
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -497,199 +409,17 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         ),
       ),
     );
-
+    
     // 如果编辑成功，刷新当前页面数据
     if (result == true) {
       _profileBloc.add(GetUserProfileEvent());
     }
   }
 
-  void _navigateToBindContact(BindContactType contactType) async {
-    // TODO(Step1.4): 待路由注册后迁移到 GoRouter (BindContactPage 需要 BlocProvider 注入，未在 ProfileRoutes 注册)
-    final dio = GetIt.instance<Dio>();
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BlocProvider(
-          create: (_) => BindContactCubit(dio: dio),
-          child: BindContactPage(contactType: contactType),
-        ),
-      ),
+  void _showFeatureNotImplemented(String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.profile_feature_not_implemented(feature))),
     );
-
-    // 绑定成功后刷新用户资料
-    if (result == true) {
-      _profileBloc.add(GetUserProfileEvent(skipCache: true));
-    }
-  }
-
-  void _showBoundContactActions(String contactType, String currentContact, {required int boundCount}) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (BuildContext sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.swap_horiz),
-                title: const Text('换绑'),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  _navigateToChangeContact(contactType, currentContact);
-                },
-              ),
-              if (boundCount > 1) ...[
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.link_off, color: Colors.red),
-                  title: const Text('解绑', style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    Navigator.pop(sheetContext);
-                    _navigateToUnbindContact(contactType, currentContact);
-                  },
-                ),
-              ],
-              const Divider(height: 1),
-              ListTile(
-                title: const Text('取消', textAlign: TextAlign.center),
-                onTap: () => Navigator.pop(sheetContext),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _navigateToChangeContact(String contactType, String currentContact) async {
-    final result = await context.push<bool>(
-      Uri(
-        path: '/profile/change-contact',
-        queryParameters: {
-          'contactType': contactType,
-          'currentContact': currentContact,
-        },
-      ).toString(),
-    );
-
-    if (result == true) {
-      _profileBloc.add(GetUserProfileEvent(skipCache: true));
-    }
-  }
-
-  void _navigateToUnbindContact(String contactType, String currentContact) async {
-    final result = await context.push<bool>(
-      Uri(
-        path: '/profile/unbind-contact',
-        queryParameters: {
-          'contactType': contactType,
-          'currentContact': currentContact,
-        },
-      ).toString(),
-    );
-
-    if (result == true) {
-      _profileBloc.add(GetUserProfileEvent(skipCache: true));
-    }
-  }
-
-  String _maskEmail(String email) {
-    final atIndex = email.indexOf('@');
-    if (atIndex <= 1) return email;
-    final prefix = email.substring(0, 1);
-    final domain = email.substring(atIndex);
-    return '$prefix****$domain';
-  }
-
-  void _showDeactivateAccountDialog(UserProfile? profile) {
-    const confirmText = '确认注销';
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            final confirmed = controller.text == confirmText;
-            return AlertDialog(
-              title: const Text('注销账号'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '注销后，您的账号将被禁用且无法登录。历史数据将被保留，但绑定的手机号和邮箱将被释放。',
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '请输入"$confirmText"以继续',
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: controller,
-                    onChanged: (_) => setDialogState(() {}),
-                    decoration: InputDecoration(
-                      hintText: confirmText,
-                      border: const OutlineInputBorder(),
-                      isDense: true,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    controller.dispose();
-                    Navigator.pop(dialogContext);
-                  },
-                  child: const Text('取消'),
-                ),
-                TextButton(
-                  onPressed: confirmed
-                      ? () async {
-                          controller.dispose();
-                          Navigator.pop(dialogContext);
-                          // 等 dialog 动画完全结束，避免 _dependents.isEmpty 断言错误
-                          await Future.delayed(const Duration(milliseconds: 300));
-                          _submitDeactivateAccount(profile);
-                        }
-                      : null,
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('确认注销'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _submitDeactivateAccount(UserProfile? profile) async {
-    final dio = GetIt.instance<Dio>();
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    // 在请求前就标记主动登出，因为后端处理 deactivate 时 token 立即失效，
-    // 并发请求会先收到 401，必须提前抑制
-    UnauthorizedLogoutHandler.isVoluntaryLogout = true;
-    try {
-      await dio.post('/api/member/deactivate');
-      if (mounted) {
-        _profileBloc.add(LogoutEvent());
-      }
-    } on DioException catch (e) {
-      // 请求失败，恢复标记
-      UnauthorizedLogoutHandler.isVoluntaryLogout = false;
-      if (mounted) {
-        scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('账号注销失败：${e.message}')),
-        );
-      }
-    }
   }
 
   void _showLogoutConfirmation(BuildContext context) {
@@ -697,22 +427,22 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('确认退出'),
-          content: const Text('确定要退出登录吗？'),
+          title: Text(AppLocalizations.of(context)!.profile_confirm_logout),
+          content: Text(AppLocalizations.of(context)!.profile_confirm_logout_message),
           actions: [
             TextButton(
               onPressed: () => context.pop(),
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)!.profile_cancel),
             ),
             TextButton(
               onPressed: () {
                 context.pop(); // 关闭对话框
-                
-                AppLogger.d('【退出登录】用户确认退出登录，即将发送LogoutEvent...');
+
+                print('【退出登录】用户确认退出登录，即将发送LogoutEvent...');
                 // 直接使用_profileBloc实例触发登出事件
                 _profileBloc.add(LogoutEvent());
               },
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)!.profile_confirm),
             ),
           ],
         );
@@ -721,17 +451,6 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   String _maskPhoneNumber(String phone) {
-    // 处理带区号的号码（如 +8613800000001）
-    if (phone.startsWith('+')) {
-      // 找到区号结束位置（1-3位数字在+后面）
-      final digits = phone.substring(1);
-      // 保留区号+前3位本地号码，中间隐藏，露出后4位
-      if (digits.length > 8) {
-        return '+${digits.substring(0, 4)}****${digits.substring(digits.length - 4)}';
-      }
-      return phone;
-    }
-    // 纯国内号码（如 13800000001）
     if (phone.length > 8) {
       return '${phone.substring(0, 3)}****${phone.substring(phone.length - 4)}';
     }
@@ -762,37 +481,38 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
   /// 返回null表示合法，返回字符串表示错误信息
   String? _validateNickname(String nickname) {
     final trimmed = nickname.trim();
-    
+    final s = AppLocalizations.of(context)!;
+
     // 检查长度
     if (trimmed.isEmpty) {
-      return '请输入昵称';
+      return s.profile_nickname_empty;
     }
-    
+
     if (trimmed.length < 2) {
-      return '昵称至少需要2个字符';
+      return s.profile_nickname_too_short;
     }
-    
+
     if (trimmed.length > 20) {
-      return '昵称不能超过20个字符';
+      return s.profile_nickname_too_long;
     }
-    
+
     // 检查是否包含空格
     if (trimmed.contains(' ')) {
-      return '昵称不能包含空格';
+      return s.profile_nickname_no_spaces;
     }
-    
+
     // 检查是否包含非法字符（只允许中文、英文、数字、下划线）
     final validPattern = RegExp(r'^[\u4e00-\u9fa5a-zA-Z0-9_]+$');
     if (!validPattern.hasMatch(trimmed)) {
-      return '昵称只能包含中文、英文、数字和下划线';
+      return s.profile_nickname_invalid_chars;
     }
-    
+
     // 检查是否只包含特殊字符
     final onlySpecialChars = RegExp(r'^[_]+$');
     if (onlySpecialChars.hasMatch(trimmed)) {
-      return '昵称不能只包含下划线';
+      return s.profile_nickname_only_underscores;
     }
-    
+
     return null; // 验证通过
   }
 
@@ -834,10 +554,10 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
       
       // 如果昵称格式正确，但与当前昵称相同，显示提示
       if (validationError == null && newNickname == currentNickname) {
-        validationError = '昵称没有变化';
+        validationError = AppLocalizations.of(context)!.profile_nickname_unchanged;
       }
     } else {
-      validationError = '请输入昵称';
+      validationError = AppLocalizations.of(context)!.profile_nickname_empty;
     }
     
     // 按钮可用条件：
@@ -846,12 +566,12 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
     final shouldEnable = !_isLoading && validationError == null;
     
     // 调试信息
-    AppLogger.d('[EditNickname] 输入文本: "$inputText"');
-    AppLogger.d('[EditNickname] 处理后昵称: "$newNickname"');
-    AppLogger.d('[EditNickname] 当前昵称: "$currentNickname"');
-    AppLogger.d('[EditNickname] 验证错误: $validationError');
-    AppLogger.d('[EditNickname] 按钮应该可用: $shouldEnable');
-    AppLogger.d('[EditNickname] 当前按钮状态: $_isButtonEnabled');
+    print('[EditNickname] 输入文本: "$inputText"');
+    print('[EditNickname] 处理后昵称: "$newNickname"');
+    print('[EditNickname] 当前昵称: "$currentNickname"');
+    print('[EditNickname] 验证错误: $validationError');
+    print('[EditNickname] 按钮应该可用: $shouldEnable');
+    print('[EditNickname] 当前按钮状态: $_isButtonEnabled');
     
     // 只有在状态发生变化时才更新UI
     if (shouldEnable != _isButtonEnabled || validationError != _validationError) {
@@ -859,7 +579,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
         _isButtonEnabled = shouldEnable;
         _validationError = validationError;
       });
-      AppLogger.d('[EditNickname] 状态已更新 - 按钮可用: $_isButtonEnabled');
+      print('[EditNickname] 状态已更新 - 按钮可用: $_isButtonEnabled');
     }
   }
 
@@ -882,7 +602,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
             _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('昵称修改成功！')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_updated)),
             );
             
             // 返回并刷新父页面
@@ -894,13 +614,13 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
             _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('昵称修改失败: ${state.message}')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_update_failed(state.message))),
             );
           }
         },
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('编辑昵称'),
+            title: Text(AppLocalizations.of(context)!.profile_edit_nickname_title),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () => Navigator.pop(context),
@@ -916,26 +636,26 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                   enabled: !_isLoading,
                   inputFormatters: [
                     LengthLimitingTextInputFormatter(20),
-                    // 不再使用 FilteringTextInputFormatter，因为它会干扰 iOS 拼音输入
-                    // 验证逻辑在 _validateNickname 中处理，用户输入非法字符时按钮变灰并显示错误提示
+                    // 只允许中文、英文、数字、下划线，禁止空格和其他特殊字符
+                    FilteringTextInputFormatter.allow(RegExp(r'[\u4e00-\u9fa5a-zA-Z0-9_]')),
                   ],
                   decoration: InputDecoration(
-                    hintText: '请输入昵称',
+                    hintText: AppLocalizations.of(context)!.profile_nickname_input_hint,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: const BorderSide(color: AppColors.borderInput),
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: BorderSide(color: Colors.grey.shade300),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
                     ),
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: const BorderSide(color: AppColors.error),
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: const BorderSide(color: Colors.red),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: const BorderSide(color: AppColors.error),
+                      borderRadius: BorderRadius.circular(4),
+                      borderSide: const BorderSide(color: Colors.red),
                     ),
                   ),
                   maxLength: 20,
@@ -943,10 +663,10 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    '请设置2-20个字符，只能包含中文、英文、数字和下划线',
-                    style: const TextStyle(
+                    AppLocalizations.of(context)!.profile_nickname_rules,
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: Colors.grey.shade600,
                     ),
                   ),
                 ),
@@ -957,18 +677,18 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.error_outline,
                           size: 16,
-                          color: AppColors.error,
+                          color: Colors.red.shade600,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             _validationError!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.error,
+                              color: Colors.red.shade600,
                             ),
                           ),
                         ),
@@ -982,19 +702,20 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                   child: ElevatedButton(
                     onPressed: _isButtonEnabled ? _submitNickname : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isButtonEnabled
-                          ? Theme.of(context).colorScheme.primary
-                          : AppColors.borderInput,
-                      foregroundColor: _isButtonEnabled
-                          ? Colors.white
-                          : AppColors.textTertiary,
+                      backgroundColor: _isButtonEnabled 
+                          ? const Color(0xFF1976D2) // 使用蓝色表示可用状态
+                          : Colors.grey.shade300,
+                      foregroundColor: _isButtonEnabled 
+                          ? Colors.white 
+                          : Colors.grey.shade500,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       elevation: _isButtonEnabled ? 2 : 0,
-                      disabledBackgroundColor: AppColors.borderInput,
-                      disabledForegroundColor: AppColors.textTertiary,
+                      // 确保按钮状态变化时能正确更新
+                      disabledBackgroundColor: Colors.grey.shade300,
+                      disabledForegroundColor: Colors.grey.shade500,
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -1005,8 +726,8 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Text(
-                            '提交修改',
+                        : Text(
+                            AppLocalizations.of(context)!.profile_submit_changes,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -1036,7 +757,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
     
     if (newNickname == widget.currentProfile?.nickName) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('昵称没有变化')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_unchanged)),
       );
       return;
     }

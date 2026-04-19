@@ -11,8 +11,7 @@ import '../../../seller/presentation/pages/seller_profile_page.dart';
   import '../../../../core/navigation/navigation_helper.dart';
   import '../../../../core/animations/page_transitions.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -39,11 +38,15 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             SnackBar(content: Text(state.message)),
           );
         } else if (state is ProfileAvatarUploaded) {
-          // 头像上传成功后，会自动触发 UpdateUserProfileEvent
-          // 不需要在这里处理
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_uploaded)),
+          );
+          // 更新上传头像后获取最新用户信息
+          context.read<ProfileBloc>().add(GetUserProfileEvent());
         } else if (state is ProfileUpdated) {
-          // 个人资料更新成功，状态已包含最新数据
-          // 不需要重新获取
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.profile_updated)),
+          );
         } else if (state is ProfileAuthStatusLoaded) {
           if (state.isAuthenticated) {
             // 如果已登录，获取用户信息
@@ -87,7 +90,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ..setEntry(3, 2, 0.001)
                           ..rotateY(rotationValue),
                         child: Container(
-                          color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色
+                          color: Theme.of(context).scaffoldBackgroundColor,
                         ),
                       );
                     }
@@ -128,7 +131,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ..setEntry(3, 2, 0.001)
                           ..rotateY(rotationValue),
                         child: Container(
-                          color: const Color(0xFFFDF9F5), // 使用项目橙色系主题背景色
+                          color: Theme.of(context).scaffoldBackgroundColor,
                         ),
                       );
                     }
@@ -143,7 +146,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       builder: (context, state) {
         if (state is ProfileLoading || state is ProfileInitial) {
           return Scaffold(
-            appBar: AppBar(title: const Text('个人中心')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.profile_personal_center)),
             body: const Center(child: CircularProgressIndicator()),
           );
         } else if (state is ProfileLoaded || state is ProfileUpdated || state is ProfileAvatarUploaded) {
@@ -158,13 +161,13 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
         } else {
           // 默认内容
           return Scaffold(
-            appBar: AppBar(title: const Text('个人中心')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.profile_personal_center)),
             body: Center(
               child: ElevatedButton(
                 onPressed: () {
                   context.read<ProfileBloc>().add(GetUserProfileEvent());
                 },
-                child: const Text('重新加载'),
+                child: Text(AppLocalizations.of(context)!.profile_reload),
               ),
             ),
           );
@@ -176,7 +179,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   Widget _buildUserProfilePage(BuildContext context, UserProfile profile) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('个人中心'),
+        title: Text(AppLocalizations.of(context)!.profile_personal_center),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -235,9 +238,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        '我的钱包',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.profile_my_wallet,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -270,7 +273,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text('账户余额'),
+                        Text(AppLocalizations.of(context)!.profile_account_balance),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -278,7 +281,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('待结算'),
+                                Text(AppLocalizations.of(context)!.profile_pending_settlement),
                                 const SizedBox(height: 4),
                                 Text('${RegionConfig.currencySymbol} ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
@@ -286,7 +289,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('总收入'),
+                                Text(AppLocalizations.of(context)!.profile_total_income),
                                 const SizedBox(height: 4),
                                 Text('${RegionConfig.currencySymbol} ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
@@ -300,7 +303,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     Center(
                       child: TextButton(
                         onPressed: () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
-                        child: const Text('点击加载钱包信息'),
+                        child: Text(AppLocalizations.of(context)!.profile_load_wallet),
                       ),
                     ),
                 ],
@@ -334,9 +337,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '我的订单',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.profile_my_orders,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -346,9 +349,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     // 导航到全部订单页面
                     // Navigator.pushNamed(context, '/orders');
                   },
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Text('全部订单', style: TextStyle(color: Colors.grey)),
+                      Text(AppLocalizations.of(context)!.profile_all_orders, style: const TextStyle(color: Colors.grey)),
                       Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
                     ],
                   ),
@@ -356,17 +359,17 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
               ],
             ),
           ),
-          Divider(height: 1, color: Colors.grey[200]),
+          const Divider(height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildOrderStatusItem(icon: Icons.payment, label: '待付款', badge: 2),
-                _buildOrderStatusItem(icon: Icons.local_shipping, label: '待发货'),
-                _buildOrderStatusItem(icon: Icons.inventory, label: '待收货', badge: 1),
-                _buildOrderStatusItem(icon: Icons.star_border, label: '待评价'),
-                _buildOrderStatusItem(icon: Icons.undo, label: '退款/售后'),
+                _buildOrderStatusItem(icon: Icons.payment, label: AppLocalizations.of(context)!.profile_awaiting_payment, badge: 2),
+                _buildOrderStatusItem(icon: Icons.local_shipping, label: AppLocalizations.of(context)!.profile_awaiting_shipment),
+                _buildOrderStatusItem(icon: Icons.inventory, label: AppLocalizations.of(context)!.profile_awaiting_receipt, badge: 1),
+                _buildOrderStatusItem(icon: Icons.star_border, label: AppLocalizations.of(context)!.profile_awaiting_review),
+                _buildOrderStatusItem(icon: Icons.undo, label: AppLocalizations.of(context)!.profile_refund_after_sales),
               ],
             ),
           ),
@@ -426,13 +429,14 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   }
 
   Widget _buildMenuSection(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
     final List<Map<String, dynamic>> menuItems = [
-      {'icon': Icons.location_on, 'title': '收货地址', 'route': '/address'},
-      {'icon': Icons.favorite, 'title': '我的收藏', 'route': '/favorites'},
-      {'icon': Icons.history, 'title': '浏览历史', 'route': '/history'},
-      {'icon': Icons.headset_mic, 'title': '联系客服', 'route': '/customer-service'},
-      {'icon': Icons.help, 'title': '帮助中心', 'route': '/help'},
-      {'icon': Icons.feedback, 'title': '意见反馈', 'route': '/feedback'},
+      {'icon': Icons.location_on, 'title': s.profile_shipping_address, 'route': '/address'},
+      {'icon': Icons.favorite, 'title': s.profile_favorites, 'route': '/favorites'},
+      {'icon': Icons.history, 'title': s.profile_browsing_history, 'route': '/history'},
+      {'icon': Icons.headset_mic, 'title': s.profile_contact_support, 'route': '/customer-service'},
+      {'icon': Icons.help, 'title': s.profile_help_center, 'route': '/help'},
+      {'icon': Icons.feedback, 'title': s.profile_feedback, 'route': '/feedback'},
     ];
 
     return Container(
@@ -496,7 +500,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             Icon(Icons.storefront, color: Theme.of(context).primaryColor),
             const SizedBox(width: 8),
             Text(
-              '切换至卖家模式',
+              AppLocalizations.of(context)!.profile_switch_to_seller_mode,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
@@ -517,7 +521,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: const Text('拍照'),
+              title: Text(AppLocalizations.of(context)!.profile_take_photo),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -525,7 +529,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('从相册选择'),
+              title: Text(AppLocalizations.of(context)!.profile_choose_from_album),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -552,7 +556,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('选择图片失败: $e')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_failed(e.toString()))),
       );
     }
   }
@@ -564,20 +568,20 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('编辑个人资料'),
+        title: Text(AppLocalizations.of(context)!.profile_edit_profile),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nickNameController,
-              decoration: const InputDecoration(
-                labelText: '昵称',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.profile_nickname,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                const Text('在线状态'),
+                Text(AppLocalizations.of(context)!.profile_online_status),
                 const Spacer(),
                 Switch(
                   value: onlineFlag,
@@ -592,7 +596,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.profile_cancel),
           ),
           TextButton(
             onPressed: () {
@@ -604,7 +608,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     ),
                   );
             },
-            child: const Text('保存'),
+            child: Text(AppLocalizations.of(context)!.profile_save),
           ),
         ],
       ),

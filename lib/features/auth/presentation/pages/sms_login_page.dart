@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -35,10 +32,10 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     _selectedCountry = CountryCodes.getDefaultCountryCode(locale.languageCode);
     
     // 调试：打印当前语言环境
-    AppLogger.d('Current locale: ${locale.languageCode}');
-    AppLogger.d('S available: ${AppLocalizations.of(context)! != null}');
-    if (AppLocalizations.of(context)! != null) {
-      AppLogger.d('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
+    print('Current locale: ${locale.languageCode}');
+    print('AppLocalizations available: ${AppLocalizations.of(context) != null}');
+    if (AppLocalizations.of(context) != null) {
+      print('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
     }
   }
 
@@ -52,9 +49,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
   @override
   Widget build(BuildContext context) {
     // Define Theme Colors
-    final Color primaryColor = AppColors.primary;
-    final Color buttonBackgroundColor = AppColors.primaryVariant;
-    final Color linkColor = AppColors.textSecondary;
+    const Color primaryColor = Color(0xFFB66D0E);
+    const Color buttonBackgroundColor = Color(0xFFC58C4A);
+    final Color linkColor = Colors.grey[600]!;
 
     // TODO: 使用 BlocProvider 提供 SmsLoginCubit 实例
     // final cubit = BlocProvider.of<SmsLoginCubit>(context);
@@ -92,20 +89,29 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
           listener: (context, state) {
             // 处理副作用，如显示 SnackBar, 导航等
             if (state is SmsLoginFailure) {
-              final errorMessage = '登录失败: ${state.failure.message}';
+              // 检查是否是验证码相关的错误
+              final s = AppLocalizations.of(context)!;
+              String errorMessage = state.failure.message;
+              if (errorMessage.contains('验证码') ||
+                  errorMessage.contains('code') ||
+                  errorMessage.contains('Code')) {
+                errorMessage = s.auth_verification_code_expired;
+              } else {
+                errorMessage = s.auth_login_failed(errorMessage);
+              }
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(errorMessage)),
               );
             } else if (state is SmsLoginCodeSendFailure) {
                ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('验证码发送失败: ${state.failure.message}')),
+                SnackBar(content: Text(AppLocalizations.of(context)!.auth_code_send_failed(state.failure.message))),
               );
             } else if (state is SmsLoginSuccess) {
               // 导航将由全局 AuthStatus 监听器处理
               // Navigator.of(context).pushReplacementNamed('/home');
-              AppLogger.d('Login Success! User ID: ${state.user.id}');
+              print('Login Success! User ID: ${state.user.id}');
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('登录成功!')),
+                SnackBar(content: Text(AppLocalizations.of(context)!.auth_login_success)),
               );
             }
           },
@@ -147,7 +153,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             onSendCode: (phone) async {
                                // 发送验证码时包含区号
                                final fullPhone = '${_selectedCountry.dialCode}$phone';
-                               AppLogger.d('Requesting code for $fullPhone');
+                               print('Requesting code for $fullPhone');
                                context.read<SmsLoginCubit>().sendCode(fullPhone);
                             },
                             codeSentState: state is SmsLoginCodeSentSuccess ? CodeButtonState.counting : CodeButtonState.idle,
@@ -166,7 +172,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           shape: RoundedRectangleBorder( // Optional: Add rounded corners
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           // Style for disabled state (loading)
                           disabledBackgroundColor: buttonBackgroundColor.withOpacity(0.7),
@@ -177,7 +183,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                                if (_formKey.currentState!.validate()) {
                                  // 登录时包含区号
                                  final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
-                                 AppLogger.d('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
+                                 print('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
                                  context.read<SmsLoginCubit>().login(
                                    fullPhone,
                                    _codeController.text,
@@ -193,7 +199,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                                   strokeWidth: 2.0,
                                 ),
                               )
-                            : const Text('登录'),
+                            : Text(AppLocalizations.of(context)!.auth_login),
                       ),
                       const SizedBox(height: 24),
 
@@ -209,17 +215,17 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to Privacy Policy
-                              AppLogger.d("Navigate to Privacy Policy");
+                              print("Navigate to Privacy Policy");
                             },
                             child: Text(
-                              '隐私政策',
+                              AppLocalizations.of(context)!.auth_privacy_policy,
                               style: TextStyle(fontSize: 12), // Style is now handled by foregroundColor
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: Text(
-                              '和',
+                              AppLocalizations.of(context)!.auth_and,
                               style: TextStyle(fontSize: 12, color: linkColor), // Use defined link color
                             ),
                           ),
@@ -231,10 +237,10 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to User Agreement
-                              AppLogger.d("Navigate to User Agreement");
+                              print("Navigate to User Agreement");
                             },
                             child: Text(
-                              '用户协议',
+                              AppLocalizations.of(context)!.auth_user_agreement,
                               style: TextStyle(fontSize: 12), // Style is now handled by foregroundColor
                             ),
                           ),
@@ -251,3 +257,4 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     );
   }
 }
+

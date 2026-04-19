@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 认证状态详情页面
 class AuthStatusPage extends StatelessWidget {
@@ -21,7 +19,7 @@ class AuthStatusPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${_getAuthenticationTypeName(authInfo.type)}认证'),
+        title: Text(AppLocalizations.of(context)?.seller_auth_status_title(_getAuthenticationTypeName(context, authInfo.type)) ?? '${_getAuthenticationTypeName(context, authInfo.type)} Certification'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -63,11 +61,11 @@ class AuthStatusPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: AppColors.borderSecondary,
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -78,9 +76,9 @@ class AuthStatusPage extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
-                '认证状态：',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)?.seller_auth_status_label ?? 'Status: ',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -92,9 +90,9 @@ class AuthStatusPage extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Text(
-                '认证名称：',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)?.seller_auth_status_name_label ?? 'Name: ',
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -121,7 +119,7 @@ class AuthStatusPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '认证材料',
+          AppLocalizations.of(context)?.seller_auth_status_materials ?? 'Certification Materials',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -132,14 +130,14 @@ class AuthStatusPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.backgroundSecondary,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              border: Border.all(color: AppColors.borderInput),
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey[300]!),
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                '暂无认证材料',
-                style: TextStyle(color: AppColors.textTertiary),
+                AppLocalizations.of(context)?.seller_auth_status_no_materials ?? 'No certification materials',
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           )
@@ -158,18 +156,18 @@ class AuthStatusPage extends StatelessWidget {
                     margin: const EdgeInsets.only(right: 12),
                     width: 100,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      border: Border.all(color: AppColors.borderInput),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.borderPrimary,
+                        color: Colors.grey[200],
                         child: const Icon(
                           Icons.broken_image,
-                          color: AppColors.textTertiary,
+                          color: Colors.grey,
                           size: 40,
                         ),
                       ),
@@ -185,13 +183,13 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构建认证信息部分
   Widget _buildInfoSection(BuildContext context) {
-    final Map<String, String> fields = _getAuthFields();
+    final Map<String, String> fields = _getAuthFields(context);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '认证信息',
+          AppLocalizations.of(context)?.seller_auth_status_info ?? 'Certification Info',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -200,11 +198,11 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: AppColors.borderSecondary,
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -221,9 +219,9 @@ class AuthStatusPage extends StatelessWidget {
                       width: 100,
                       child: Text(
                         '${entry.key}：',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.grey[700],
                         ),
                       ),
                     ),
@@ -245,13 +243,13 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构建认证历史部分
   Widget _buildHistorySection(BuildContext context) {
-    final List<Map<String, String>> history = _getAuthHistory();
+    final List<Map<String, String>> history = _getAuthHistory(context);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '认证历史',
+          AppLocalizations.of(context)?.seller_auth_status_history ?? 'Certification History',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -260,21 +258,21 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: AppColors.borderSecondary,
+                color: Colors.black.withOpacity(0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: history.isEmpty 
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text('暂无历史记录'),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(AppLocalizations.of(context)?.seller_auth_status_no_history ?? 'No history records'),
                   ),
                 )
               : Column(
@@ -299,9 +297,9 @@ class AuthStatusPage extends StatelessWidget {
                               children: [
                                 Text(
                                   item['time'] ?? '',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: Colors.grey[600],
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -345,26 +343,26 @@ class AuthStatusPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Text('重新认证', style: TextStyle(fontSize: 16)),
+              child: Text(AppLocalizations.of(context)?.seller_auth_status_reapply ?? 'Reapply', style: const TextStyle(fontSize: 16)),
             ),
           ),
         ] else if (authInfo.status == AuthenticationStatus.approved) ...[
           // 已认证通过，显示状态提示
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green[200]!),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.check_circle, color: AppColors.success),
-                SizedBox(width: 8),
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '认证已通过，无需重复提交',
-                    style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w500),
+                    AppLocalizations.of(context)?.seller_auth_status_approved_hint ?? 'Certification approved, no need to resubmit',
+                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -373,20 +371,20 @@ class AuthStatusPage extends StatelessWidget {
         ] else if (authInfo.status == AuthenticationStatus.pending) ...[
           // 审核中，显示等待提示
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.orange[200]!),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.hourglass_top, color: AppColors.warning),
-                SizedBox(width: 8),
+                const Icon(Icons.hourglass_top, color: Colors.orange),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '认证审核中，请耐心等待',
-                    style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w500),
+                    AppLocalizations.of(context)?.seller_auth_status_pending_hint ?? 'Certification under review, please wait',
+                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -399,6 +397,7 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构建状态标签
   Widget _buildStatusTag(AuthenticationStatus status) {
+    final l10n = AppLocalizations.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -406,27 +405,27 @@ class AuthStatusPage extends StatelessWidget {
 
     switch (status) {
       case AuthenticationStatus.approved:
-        backgroundColor = AppColors.success.withValues(alpha: 0.1);
-        textColor = AppColors.success;
-        text = '已认证';
+        backgroundColor = Colors.green[50]!;
+        textColor = Colors.green[800]!;
+        text = l10n?.seller_auth_status_tag_approved ?? 'Certified';
         icon = Icons.check_circle;
         break;
       case AuthenticationStatus.pending:
-        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
-        textColor = AppColors.warning;
-        text = '审核中';
+        backgroundColor = Colors.orange[50]!;
+        textColor = Colors.orange[800]!;
+        text = l10n?.seller_auth_status_tag_pending ?? 'Under Review';
         icon = Icons.hourglass_top;
         break;
       case AuthenticationStatus.rejected:
-        backgroundColor = AppColors.error.withValues(alpha: 0.1);
-        textColor = AppColors.error;
-        text = '未通过';
+        backgroundColor = Colors.red[50]!;
+        textColor = Colors.red[800]!;
+        text = l10n?.seller_auth_status_tag_rejected ?? 'Rejected';
         icon = Icons.cancel;
         break;
       default:
-        backgroundColor = AppColors.backgroundSecondary;
-        textColor = AppColors.textSecondary;
-        text = '未提交';
+        backgroundColor = Colors.grey[50]!;
+        textColor = Colors.grey[800]!;
+        text = l10n?.seller_auth_status_tag_not_submitted ?? 'Not Submitted';
         icon = Icons.circle_outlined;
     }
 
@@ -434,7 +433,7 @@ class AuthStatusPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -472,7 +471,7 @@ class AuthStatusPage extends StatelessWidget {
                 errorBuilder: (_, __, ___) => const Center(
                   child: Icon(
                     Icons.broken_image,
-                    color: AppColors.textTertiary,
+                    color: Colors.grey,
                     size: 80,
                   ),
                 ),
@@ -502,117 +501,119 @@ class AuthStatusPage extends StatelessWidget {
   }
   
   /// 获取认证类型名称
-  String _getAuthenticationTypeName(AuthenticationType type) {
+  String _getAuthenticationTypeName(BuildContext context, AuthenticationType type) {
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case AuthenticationType.idCard:
-        return '身份';
+        return l10n?.seller_auth_status_type_idcard ?? 'Identity';
       case AuthenticationType.education:
-        return '学历';
+        return l10n?.seller_auth_status_type_education ?? 'Education';
       case AuthenticationType.profession:
-        return '职业';
+        return l10n?.seller_auth_status_type_profession ?? 'Profession';
       case AuthenticationType.company:
-        return '公司';
+        return l10n?.seller_auth_status_type_company ?? 'Company';
       default:
-        return '其他';
+        return l10n?.seller_auth_status_type_other ?? 'Other';
     }
   }
   
   /// 获取认证字段
-  Map<String, String> _getAuthFields() {
+  Map<String, String> _getAuthFields(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final Map<String, String> fields = {};
-    
+
     // 基本信息
-    fields['认证名称'] = authInfo.name;
-    fields['认证类型'] = authInfo.type.displayName;
-    
+    fields[l10n?.seller_auth_status_field_auth_name ?? 'Certification Name'] = authInfo.name;
+    fields[l10n?.seller_auth_status_field_auth_type ?? 'Certification Type'] = authInfo.type.displayName;
+
     // 从实际数据中获取字段
     if (authInfo.fields != null) {
       final authFields = authInfo.fields!;
-      
+
       // 获取提交的姓名/公司名称
       if (authFields.containsKey('name')) {
         switch (authInfo.type) {
           case AuthenticationType.company:
-            fields['公司名称'] = authFields['name'].toString();
+            fields[l10n?.seller_auth_status_field_company_name ?? 'Company Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.idCard:
-            fields['姓名'] = authFields['name'].toString();
+            fields[l10n?.seller_auth_status_field_name ?? 'Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.education:
-            fields['学校名称'] = authFields['name'].toString();
+            fields[l10n?.seller_auth_status_field_school_name ?? 'School Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.profession:
-            fields['职业/职位'] = authFields['name'].toString();
+            fields[l10n?.seller_auth_status_field_profession ?? 'Profession/Position'] = authFields['name'].toString();
             break;
           default:
-            fields['姓名/名称'] = authFields['name'].toString();
+            fields[l10n?.seller_auth_status_field_name_or_title ?? 'Name/Title'] = authFields['name'].toString();
         }
       }
-      
+
       // 获取备注信息
       if (authFields.containsKey('remarks') && authFields['remarks'].toString().isNotEmpty) {
-        fields['备注'] = authFields['remarks'].toString();
+        fields[l10n?.seller_auth_status_field_remarks ?? 'Remarks'] = authFields['remarks'].toString();
       }
-      
+
       // 根据认证类型显示特定字段
       if (authFields.containsKey('feature') && authFields['feature'] is Map<String, dynamic>) {
         final feature = authFields['feature'] as Map<String, dynamic>;
-        
+
         switch (authInfo.type) {
           case AuthenticationType.profession:
             if (feature.containsKey('certificateNumber')) {
-              fields['证书编号'] = feature['certificateNumber'].toString();
+              fields[l10n?.seller_auth_status_field_cert_number ?? 'Certificate Number'] = feature['certificateNumber'].toString();
             }
             if (feature.containsKey('workExperience')) {
-              fields['工作经验'] = feature['workExperience'].toString();
+              fields[l10n?.seller_auth_status_field_work_experience ?? 'Work Experience'] = feature['workExperience'].toString();
             }
             if (feature.containsKey('issuer')) {
-              fields['发证机构'] = feature['issuer'].toString();
+              fields[l10n?.seller_auth_status_field_issuer ?? 'Issuing Authority'] = feature['issuer'].toString();
             }
             break;
-            
+
           case AuthenticationType.company:
             if (feature.containsKey('creditCode')) {
-              fields['统一社会信用代码'] = feature['creditCode'].toString();
+              fields[l10n?.seller_auth_status_field_credit_code ?? 'Unified Social Credit Code'] = feature['creditCode'].toString();
             }
             if (feature.containsKey('legalRepresentative')) {
-              fields['法人代表'] = feature['legalRepresentative'].toString();
+              fields[l10n?.seller_auth_status_field_legal_rep ?? 'Legal Representative'] = feature['legalRepresentative'].toString();
             }
             if (feature.containsKey('registeredCapital')) {
-              fields['注册资本'] = feature['registeredCapital'].toString();
+              fields[l10n?.seller_auth_status_field_registered_capital ?? 'Registered Capital'] = feature['registeredCapital'].toString();
             }
             if (feature.containsKey('establishmentDate')) {
-              fields['成立日期'] = feature['establishmentDate'].toString();
+              fields[l10n?.seller_auth_status_field_establishment_date ?? 'Establishment Date'] = feature['establishmentDate'].toString();
             }
             break;
-            
+
           case AuthenticationType.education:
             if (feature.containsKey('degree')) {
-              fields['学历'] = feature['degree'].toString();
+              fields[l10n?.seller_auth_status_field_degree ?? 'Degree'] = feature['degree'].toString();
             }
             if (feature.containsKey('major')) {
-              fields['专业'] = feature['major'].toString();
+              fields[l10n?.seller_auth_status_field_major ?? 'Major'] = feature['major'].toString();
             }
             if (feature.containsKey('graduationYear')) {
-              fields['毕业年份'] = feature['graduationYear'].toString();
+              fields[l10n?.seller_auth_status_field_graduation_year ?? 'Graduation Year'] = feature['graduationYear'].toString();
             }
             break;
-            
+
           case AuthenticationType.idCard:
             if (feature.containsKey('idNumber')) {
               // 身份证号部分隐藏
               final idNumber = feature['idNumber'].toString();
               if (idNumber.length > 10) {
-                fields['身份证号'] = '${idNumber.substring(0, 6)}****${idNumber.substring(idNumber.length - 4)}';
+                fields[l10n?.seller_auth_status_field_id_number ?? 'ID Number'] = '${idNumber.substring(0, 6)}****${idNumber.substring(idNumber.length - 4)}';
               } else {
-                fields['身份证号'] = idNumber;
+                fields[l10n?.seller_auth_status_field_id_number ?? 'ID Number'] = idNumber;
               }
             }
             if (feature.containsKey('validPeriod')) {
-              fields['有效期'] = feature['validPeriod'].toString();
+              fields[l10n?.seller_auth_status_field_valid_period ?? 'Valid Period'] = feature['validPeriod'].toString();
             }
             break;
-            
+
           default:
             // 对于其他类型，显示所有feature字段
             feature.forEach((key, value) {
@@ -623,90 +624,93 @@ class AuthStatusPage extends StatelessWidget {
         }
       }
     }
-    
+
     // 添加时间信息
     if (authInfo.submittedAt != null) {
-      fields['提交时间'] = _formatDateTime(authInfo.submittedAt!);
+      fields[l10n?.seller_auth_status_field_submit_time ?? 'Submission Time'] = _formatDateTime(authInfo.submittedAt!);
     }
-    
+
     // 如果是被拒绝的认证，显示拒绝原因
-    if (authInfo.status == AuthenticationStatus.rejected && 
-        authInfo.rejectionReason != null && 
+    if (authInfo.status == AuthenticationStatus.rejected &&
+        authInfo.rejectionReason != null &&
         authInfo.rejectionReason!.isNotEmpty) {
-      fields['拒绝原因'] = authInfo.rejectionReason!;
+      fields[l10n?.seller_auth_status_field_reject_reason ?? 'Rejection Reason'] = authInfo.rejectionReason!;
     }
-    
+
     return fields;
   }
   
   /// 获取认证历史
-  List<Map<String, String>> _getAuthHistory() {
+  List<Map<String, String>> _getAuthHistory(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // 这里应该根据实际数据构建历史记录
     // 示例数据
     final List<Map<String, String>> history = [];
-    
+    final typeName = authInfo.type.displayName;
+
     // 认证状态相关历史
     switch (authInfo.status) {
       case AuthenticationStatus.approved:
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 3))),
-          'title': '认证申请通过',
-          'description': '您的${authInfo.type.displayName}认证申请已通过审核，现在您可以享受认证商家的所有权益。',
+          'title': l10n?.seller_auth_status_history_approved_title ?? 'Certification Approved',
+          'description': l10n?.seller_auth_status_history_approved_desc(typeName) ?? 'Your $typeName certification has been approved.',
         });
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 5))),
-          'title': '提交认证申请',
-          'description': '您已成功提交${authInfo.type.displayName}认证申请，我们将在1-3个工作日内完成审核。',
+          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
-        
+
       case AuthenticationStatus.pending:
         history.add({
           'time': _formatDateTime(authInfo.submittedAt ?? DateTime.now().subtract(const Duration(days: 1))),
-          'title': '提交认证申请',
-          'description': '您已成功提交${authInfo.type.displayName}认证申请，我们将在1-3个工作日内完成审核。',
+          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
-        
+
       case AuthenticationStatus.rejected:
+        final reason = authInfo.rejectionReason ?? (l10n?.seller_auth_status_history_rejected_default_reason ?? 'Materials do not meet requirements');
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 2))),
-          'title': '认证申请未通过',
-          'description': '您的${authInfo.type.displayName}认证申请未通过审核。原因：${authInfo.rejectionReason ?? "资料不符合要求"}',
+          'title': l10n?.seller_auth_status_history_rejected_title ?? 'Certification Rejected',
+          'description': l10n?.seller_auth_status_history_rejected_desc(typeName, reason) ?? 'Your $typeName certification was rejected. Reason: $reason',
         });
         history.add({
           'time': _formatDateTime(authInfo.submittedAt ?? DateTime.now().subtract(const Duration(days: 5))),
-          'title': '提交认证申请',
-          'description': '您已成功提交${authInfo.type.displayName}认证申请，我们将在1-3个工作日内完成审核。',
+          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
-        
+
       default:
         // 未提交状态不显示历史
         break;
     }
-    
+
     return history;
   }
   
   /// 获取认证相关图片
   List<String> _getAuthImages() {
     // 修复：添加调试信息并增强图片获取逻辑
-    AppLogger.d('获取认证图片 - 认证名称: ${authInfo.name}');
-    AppLogger.d('认证字段数据: ${authInfo.fields}');
+    print('获取认证图片 - 认证名称: ${authInfo.name}');
+    print('认证字段数据: ${authInfo.fields}');
     
     // 修复：从实际认证数据中获取图片
     if (authInfo.fields != null && authInfo.fields!.containsKey('images')) {
       final images = authInfo.fields!['images'];
-      AppLogger.d('找到图片数据: $images (类型: ${images.runtimeType})');
+      print('找到图片数据: $images (类型: ${images.runtimeType})');
       
       if (images is List) {
         final imageUrls = images.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
-        AppLogger.d('解析图片列表: $imageUrls');
+        print('解析图片列表: $imageUrls');
         return imageUrls;
       } else if (images is String && images.isNotEmpty) {
         final imageUrls = images.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
-        AppLogger.d('解析图片字符串: $imageUrls');
+        print('解析图片字符串: $imageUrls');
         return imageUrls;
       }
     }
@@ -717,18 +721,18 @@ class AuthStatusPage extends StatelessWidget {
       for (final key in ['imageUrls', 'attachments', 'documents', 'files']) {
         if (authInfo.fields!.containsKey(key)) {
           final value = authInfo.fields![key];
-          AppLogger.d('尝试从 $key 字段获取图片: $value');
+          print('尝试从 $key 字段获取图片: $value');
           
           if (value is List && value.isNotEmpty) {
             final imageUrls = value.map((img) => img.toString()).where((url) => url.isNotEmpty).toList();
             if (imageUrls.isNotEmpty) {
-              AppLogger.d('从 $key 字段找到图片: $imageUrls');
+              print('从 $key 字段找到图片: $imageUrls');
               return imageUrls;
             }
           } else if (value is String && value.isNotEmpty) {
             final imageUrls = value.split(',').where((img) => img.trim().isNotEmpty).map((img) => img.trim()).toList();
             if (imageUrls.isNotEmpty) {
-              AppLogger.d('从 $key 字段解析图片: $imageUrls');
+              print('从 $key 字段解析图片: $imageUrls');
               return imageUrls;
             }
           }
@@ -736,7 +740,7 @@ class AuthStatusPage extends StatelessWidget {
       }
     }
     
-    AppLogger.d('没有找到图片数据');
+    print('没有找到图片数据');
     return [];
   }
   

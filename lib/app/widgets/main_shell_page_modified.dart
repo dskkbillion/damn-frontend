@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 修改后的主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
@@ -21,37 +21,38 @@ class MainShellPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
-    
+    final l10n = AppLocalizations.of(context)!;
+
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.auto_awesome_outlined),
-        activeIcon: Icon(Icons.auto_awesome),
-        label: 'AI助手',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.auto_awesome_outlined),
+        activeIcon: const Icon(Icons.auto_awesome),
+        label: l10n.nav_ai_assistant,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.home_outlined),
-        activeIcon: Icon(Icons.home),
-        label: '主页',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.home_outlined),
+        activeIcon: const Icon(Icons.home),
+        label: l10n.nav_home,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.chat_bubble_outline),
-        activeIcon: Icon(Icons.chat_bubble),
-        label: '消息',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.chat_bubble_outline),
+        activeIcon: const Icon(Icons.chat_bubble),
+        label: l10n.nav_messages,
       ),
-      const BottomNavigationBarItem(
-        icon: Icon(Icons.person_outline),
-        activeIcon: Icon(Icons.person),
-        label: '我的',
+      BottomNavigationBarItem(
+        icon: const Icon(Icons.person_outline),
+        activeIcon: const Icon(Icons.person),
+        label: l10n.nav_profile,
       ),
     ];
-    
+
     // 仅在配置为显示开发tab时添加
     if (showDevTab) {
-      items.add(const BottomNavigationBarItem(
-        icon: Icon(Icons.developer_mode_outlined),
-        activeIcon: Icon(Icons.developer_mode),
-        label: '开发',
+      items.add(BottomNavigationBarItem(
+        icon: const Icon(Icons.developer_mode_outlined),
+        activeIcon: const Icon(Icons.developer_mode),
+        label: l10n.nav_dev,
       ));
     }
 
@@ -59,8 +60,8 @@ class MainShellPage extends ConsumerWidget {
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textTertiary,
+        selectedItemColor: const Color(0xFFD0903D),
+        unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         items: items,
         currentIndex: navigationShell.currentIndex,

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Displays dynamic content based on the order's status in the SellerOrderDetailPage.
 class SellerDynamicContentArea extends StatelessWidget {
@@ -13,7 +11,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.d('[SellerDynamicContentArea] Building for state: ${order.state}');
+    print('[SellerDynamicContentArea] Building for state: ${order.state}');
     // Use a switch statement to return different content widgets based on the state
     switch (order.state) {
       case OrderStatus.awaitingStart:
@@ -29,7 +27,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
       // Add case for orderCompleted
       case OrderStatus.orderCompleted:
-        AppLogger.d('[SellerDynamicContentArea] Matched orderCompleted state.');
+        print('[SellerDynamicContentArea] Matched orderCompleted state.');
         return _buildOrderCompletedContent(context);
 
       // Add case for canceled
@@ -40,11 +38,9 @@ class SellerDynamicContentArea extends StatelessWidget {
       case OrderStatus.applyForRefuse:
          return _buildApplyForRefuseContent(context);
 
-      case OrderStatus.afterSale:
-      case OrderStatus.AfterSaleRejection:
-      case OrderStatus.applyingForMediation:
-      case OrderStatus.sellerSupplementaryMaterials:
-        return _buildAfterSaleContent(context);
+      // TODO: Implement cases for other relevant seller states
+      // case OrderStatus.afterSale: // Or more specific after-sales states
+      //   return _buildAfterSaleContent(context);
 
       default:
         // Default case, return empty if no specific content for the state
@@ -72,7 +68,7 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
        ),
        child: Padding(
          padding: const EdgeInsets.all(16.0),
@@ -83,12 +79,12 @@ class SellerDynamicContentArea extends StatelessWidget {
                 children: [
                   Icon(Icons.task_alt_outlined, size: 20, color: colorScheme.primary),
                   const SizedBox(width: 8),
-                  Text('服务已交付', style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context)!.order_seller_dynamic_delivered, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 12),
                Text(
-                 '您已完成服务交付，请等待买家确认。如有问题，买家可能会发起售后。' ,
+                 AppLocalizations.of(context)!.order_seller_dynamic_delivered_msg,
                  style: textTheme.bodyMedium,
                ),
               // TODO: 后续版本可以添加交付内容的详情显示
@@ -100,7 +96,7 @@ class SellerDynamicContentArea extends StatelessWidget {
 
   /// Builds content for the 'Order Completed' state.
   Widget _buildOrderCompletedContent(BuildContext context) {
-    AppLogger.d('[SellerDynamicContentArea] Executing _buildOrderCompletedContent.');
+    print('[SellerDynamicContentArea] Executing _buildOrderCompletedContent.');
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -110,17 +106,17 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
        ),
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
             children: [
-              Icon(Icons.verified_outlined, size: 20, color: AppColors.success), // Use a verified icon
+              Icon(Icons.verified_outlined, size: 20, color: Colors.green[700]), // Use a verified icon
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '此订单已顺利完成。', 
+                  AppLocalizations.of(context)!.order_seller_dynamic_completed,
                   style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)
                 ),
               ),
@@ -143,9 +139,9 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
        ),
-       color: colorScheme.errorContainer.withValues(alpha: 0.3), // Use error color hint
+       color: colorScheme.errorContainer.withOpacity(0.3), // Use error color hint
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
@@ -154,7 +150,7 @@ class SellerDynamicContentArea extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '此订单已被取消。', 
+                  AppLocalizations.of(context)!.order_seller_dynamic_canceled,
                   style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onErrorContainer)
                 ),
               ),
@@ -177,9 +173,9 @@ class SellerDynamicContentArea extends StatelessWidget {
        elevation: 0,
        shape: RoundedRectangleBorder(
          borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3))
+         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
        ),
-       color: colorScheme.surfaceVariant.withValues(alpha: 0.3), // Neutral background
+       color: colorScheme.surfaceVariant.withOpacity(0.3), // Neutral background
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
@@ -190,10 +186,10 @@ class SellerDynamicContentArea extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text('已申请拒绝订单', style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                     Text(AppLocalizations.of(context)!.order_seller_dynamic_refused, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                      const SizedBox(height: 4),
                      Text(
-                      '您的拒绝申请已提交，正在等待处理。', 
+                      AppLocalizations.of(context)!.order_seller_dynamic_refused_msg,
                       style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)
                     ),
                     // TODO: If API/Order entity provides refusal reason/remarks, display here.
@@ -206,60 +202,7 @@ class SellerDynamicContentArea extends StatelessWidget {
     );
   }
 
-  Widget _buildAfterSaleContent(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final bool mediation = order.state == OrderStatus.applyingForMediation;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
-      ),
-      color: mediation
-          ? colorScheme.primaryContainer.withValues(alpha: 0.28)
-          : colorScheme.surfaceVariant.withValues(alpha: 0.35),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(
-              mediation ? Icons.gavel_outlined : Icons.support_agent_outlined,
-              size: 20,
-              color: mediation ? colorScheme.primary : colorScheme.secondary,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    mediation ? '平台介入中' : '售后处理中',
-                    style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    mediation
-                        ? '平台已介入当前售后流程。请继续在聊天室与买家沟通补充说明，平台会结合聊天记录继续处理。'
-                        : '当前订单已进入售后流程。请在聊天室继续与买家沟通，订单详情页仅保留流程状态与操作入口。',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // TODO: Implement builder methods for other states
   // Widget _buildAfterSaleContent(BuildContext context) { ... }
 }
+

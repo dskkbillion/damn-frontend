@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_deli
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_requirement_submission_form.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 订单操作相关的对话框集合
 class OrderActionDialogs {
@@ -35,7 +36,7 @@ class OrderActionDialogs {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)!.order_dialog_cancel),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -43,7 +44,7 @@ class OrderActionDialogs {
               },
             ),
             TextButton(
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)!.order_dialog_confirm),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -64,7 +65,7 @@ class OrderActionDialogs {
     if (state is! OrderDetailLoaded) {
       // Show error if state is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('数据未加载完成，请稍后再试')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.order_dialog_data_not_loaded)),
       );
       return;
     }
@@ -76,7 +77,7 @@ class OrderActionDialogs {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('查看交付'),
+          title: Text(AppLocalizations.of(context)!.order_dialog_view_delivery_title),
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
@@ -84,20 +85,20 @@ class OrderActionDialogs {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('卖家交付内容：'),
+                  Text(AppLocalizations.of(context)!.order_dialog_seller_delivery_content),
                   const SizedBox(height: 16),
-                  _buildDeliveryDialogContent(deliveries),
+                  _buildDeliveryDialogContent(context, deliveries),
                   const SizedBox(height: 16),
-                  const Text('买家提交的材料：'),
+                  Text(AppLocalizations.of(context)!.order_dialog_buyer_materials),
                   const SizedBox(height: 8),
-                  _buildMaterialsDialogContent(materials),
+                  _buildMaterialsDialogContent(context, materials),
                 ],
               ),
             ),
           ),
           actions: [
             TextButton(
-              child: const Text('关闭'),
+              child: Text(AppLocalizations.of(context)!.order_dialog_close),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -116,13 +117,14 @@ class OrderActionDialogs {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     String selectedReasonType = 'communication';
     
+    final l10n = AppLocalizations.of(context)!;
     final Map<String, String> reasonTypes = {
-      'communication': '沟通问题',
-      'quality': '质量争议', 
-      'delivery': '交付问题',
-      'refund': '退款纠纷',
-      'service': '服务态度',
-      'other': '其他问题',
+      'communication': l10n.order_intervention_reason_communication,
+      'quality': l10n.order_intervention_reason_quality,
+      'delivery': l10n.order_intervention_reason_delivery,
+      'refund': l10n.order_intervention_reason_refund,
+      'service': l10n.order_intervention_reason_service,
+      'other': l10n.order_intervention_reason_other,
     };
 
     return showDialog<void>(
@@ -132,7 +134,7 @@ class OrderActionDialogs {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('申请平台介入'),
+              title: Text(l10n.order_intervention_title),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -140,9 +142,9 @@ class OrderActionDialogs {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('遇到无法解决的争议？平台客服会在24小时内介入处理。'),
+                      Text(l10n.order_intervention_desc),
                       const SizedBox(height: 16),
-                      const Text('问题类型:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(l10n.order_intervention_problem_type, style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         value: selectedReasonType,
@@ -163,23 +165,23 @@ class OrderActionDialogs {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text('问题描述:', style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(l10n.order_intervention_problem_desc, style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: reasonController,
                         maxLines: 3,
                         maxLength: 300,
-                        decoration: const InputDecoration(
-                          hintText: '请详细描述遇到的问题...',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: l10n.order_intervention_problem_hint,
+                          border: const OutlineInputBorder(),
                           isDense: true,
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return '请输入问题描述';
+                            return l10n.order_intervention_validation_empty;
                           }
                           if (value.trim().length < 10) {
-                            return '问题描述至少需要10个字符';
+                            return l10n.order_intervention_validation_min;
                           }
                           return null;
                         },
@@ -193,7 +195,7 @@ class OrderActionDialogs {
                           border: Border.all(color: Colors.orange[200]!),
                         ),
                         child: Text(
-                          '提示：申请提交后无法撤销，每个订单最多可申请2次。',
+                          l10n.order_intervention_tip,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.warning),
                         ),
                       ),
@@ -203,11 +205,11 @@ class OrderActionDialogs {
               ),
               actions: [
                 TextButton(
-                  child: const Text('取消'),
+                  child: Text(l10n.order_dialog_cancel),
                   onPressed: () => Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null,
                 ),
                 ElevatedButton(
-                  child: const Text('提交申请'),
+                  child: Text(l10n.order_dialog_submit),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
                       Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null;
@@ -233,25 +235,26 @@ class OrderActionDialogs {
     final TextEditingController reasonController = TextEditingController();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     String selectedReasonValue = '';
-    
+
     // Save the outer context reference
     final outerContext = context;
-    
+    final l10n = AppLocalizations.of(context)!;
+
     // Define reasons based on demand type
     final Map<String, Map<String, String>> demandReasons = {
       'replenishment': {
-        'incomplete': '信息不完整',
-        'unclear': '要求不明确',
-        'additional': '需要补充说明',
-        'reference': '需要参考资料',
-        'other': '其他原因',
+        'incomplete': l10n.order_demand_reason_incomplete,
+        'unclear': l10n.order_demand_reason_unclear,
+        'additional': l10n.order_demand_reason_additional,
+        'reference': l10n.order_demand_reason_reference,
+        'other': l10n.order_demand_reason_other,
       },
       'reform': {
-        'quality': '质量不满意',
-        'requirement': '不符合要求',
-        'incomplete': '内容不完整',
-        'error': '存在错误',
-        'other': '其他原因',
+        'quality': l10n.order_demand_reason_quality,
+        'requirement': l10n.order_demand_reason_requirement,
+        'incomplete': l10n.order_demand_reason_content_incomplete,
+        'error': l10n.order_demand_reason_error,
+        'other': l10n.order_demand_reason_other,
       },
     };
 
@@ -270,7 +273,7 @@ class OrderActionDialogs {
                 FocusScope.of(context).unfocus();
               },
               child: AlertDialog(
-                title: Text(demandType == 'replenishment' ? '申请补充材料' : '申请重做'),
+                title: Text(demandType == 'replenishment' ? l10n.order_demand_replenishment_title : l10n.order_demand_reform_title),
                 content: GestureDetector(
                   onTap: () {
                     // Dismiss keyboard when tapping on content area
@@ -283,11 +286,11 @@ class OrderActionDialogs {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(demandType == 'replenishment' 
-                              ? '如果需要卖家补充更多材料或说明，请详细描述您的需求。'
-                              : '如果对交付结果不满意，可以申请重做。请说明具体问题。'),
+                          Text(demandType == 'replenishment'
+                              ? l10n.order_demand_replenishment_desc
+                              : l10n.order_demand_reform_desc),
                           const SizedBox(height: 16),
-                          const Text('问题类型:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(l10n.order_intervention_problem_type, style: const TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
                             value: selectedReasonValue,
@@ -308,25 +311,25 @@ class OrderActionDialogs {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text('详细说明:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(l10n.order_demand_detail_label, style: const TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           TextFormField(
                             controller: reasonController,
                             maxLines: 3,
                             maxLength: 300,
                             decoration: InputDecoration(
-                              hintText: demandType == 'replenishment' 
-                                  ? '请详细说明需要补充的材料或信息...'
-                                  : '请详细说明需要重做的原因和要求...',
+                              hintText: demandType == 'replenishment'
+                                  ? l10n.order_demand_replenishment_hint
+                                  : l10n.order_demand_reform_hint,
                               border: const OutlineInputBorder(),
                               isDense: true,
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return '请输入详细说明';
+                                return l10n.order_demand_validation_empty;
                               }
                               if (value.trim().length < 10) {
-                                return '说明至少需要10个字符';
+                                return l10n.order_demand_validation_min;
                               }
                               return null;
                             },
@@ -343,9 +346,9 @@ class OrderActionDialogs {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  demandType == 'replenishment' 
-                                      ? '提示：卖家会在收到申请后24小时内回复并补充相关材料。'
-                                      : '提示：重做申请提交后，卖家会重新处理您的订单。',
+                                  demandType == 'replenishment'
+                                      ? l10n.order_demand_replenishment_tip
+                                      : l10n.order_demand_reform_tip,
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.primary),
                                 ),
                                 if (demandType == 'reform' && order.items.isNotEmpty) ...[
@@ -362,11 +365,11 @@ class OrderActionDialogs {
                 ),
                 actions: [
                   TextButton(
-                    child: const Text('取消'),
+                    child: Text(l10n.order_dialog_cancel),
                     onPressed: () => Navigator.of(dialogContext).canPop() ? Navigator.of(dialogContext).pop() : null,
                   ),
                   ElevatedButton(
-                    child: const Text('提交申请'),
+                    child: Text(l10n.order_dialog_submit),
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
                         // First dismiss the dialog
@@ -432,10 +435,10 @@ class OrderActionDialogs {
                       icon: const Icon(Icons.close),
                       onPressed: () => Navigator.of(bottomSheetContext).canPop() ? Navigator.of(bottomSheetContext).pop() : null,
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        '提交材料',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.order_action_submit_materials,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -446,7 +449,7 @@ class OrderActionDialogs {
                   ],
                 ),
               ),
-              Divider(height: 1, color: Colors.grey[200]),
+              const Divider(height: 1),
               // 表单内容
               Expanded(
                 child: BlocProvider.value(
@@ -463,7 +466,8 @@ class OrderActionDialogs {
 
   // Private helper methods
 
-  Widget _buildDeliveryDialogContent(List<OrderDelivery>? deliveries) {
+  Widget _buildDeliveryDialogContent(BuildContext context, List<OrderDelivery>? deliveries) {
+    final l10n = AppLocalizations.of(context)!;
     if (deliveries == null || deliveries.isEmpty) {
       return Container(
         width: double.infinity,
@@ -473,13 +477,13 @@ class OrderActionDialogs {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!),
         ),
-        child: const Text(
-          '卖家暂未交付内容',
-          style: TextStyle(color: Colors.grey),
+        child: Text(
+          l10n.order_dialog_no_seller_delivery,
+          style: const TextStyle(color: Colors.grey),
         ),
       );
     }
-    
+
     return Column(
       children: deliveries.map((delivery) => Container(
         width: double.infinity,
@@ -493,10 +497,10 @@ class OrderActionDialogs {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('交付说明: ${delivery.content}'),
+            Text(l10n.order_dialog_delivery_note(delivery.content)),
             if (delivery.files.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text('交付文件:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.order_dialog_delivery_files, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               ...delivery.files.map((fileUrl) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
@@ -515,7 +519,8 @@ class OrderActionDialogs {
     );
   }
   
-  Widget _buildMaterialsDialogContent(List<OrderMaterials>? materials) {
+  Widget _buildMaterialsDialogContent(BuildContext context, List<OrderMaterials>? materials) {
+    final l10n = AppLocalizations.of(context)!;
     if (materials == null || materials.isEmpty) {
       return Container(
         width: double.infinity,
@@ -525,13 +530,13 @@ class OrderActionDialogs {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[300]!),
         ),
-        child: const Text(
-          '暂无买家提交的材料',
-          style: TextStyle(color: Colors.grey),
+        child: Text(
+          l10n.order_dialog_no_buyer_materials,
+          style: const TextStyle(color: Colors.grey),
         ),
       );
     }
-    
+
     return Column(
       children: materials.map((material) => Container(
         width: double.infinity,
@@ -553,7 +558,7 @@ class OrderActionDialogs {
             ],
             if (material.files.isNotEmpty) ...[
               const SizedBox(height: 8),
-              const Text('附件:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.order_dialog_delivery_files, style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
               ...material.files.map((fileUrl) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
@@ -591,18 +596,19 @@ class OrderActionDialogs {
     final editNum = firstItem.editNum ?? 0;
     final currentDeliveryCount = state.deliveries?.length ?? 0;
     
+    final l10n = AppLocalizations.of(context)!;
     String infoText = '';
     IconData iconData = Icons.info_outline;
     Color iconColor = AppColors.primary;
-    
+
     if (currentDeliveryCount < editNum) {
       // Can be auto-approved
-      infoText = '当前已交付 $currentDeliveryCount 次，剩余 ${editNum - currentDeliveryCount} 次免费修改机会（自动通过）';
+      infoText = l10n.order_demand_edit_info_auto(currentDeliveryCount, editNum - currentDeliveryCount);
       iconData = Icons.check_circle_outline;
       iconColor = Colors.green;
     } else {
       // Needs seller approval
-      infoText = '当前已交付 $currentDeliveryCount 次，已用完免费修改机会，需要卖家审批';
+      infoText = l10n.order_demand_edit_info_approval(currentDeliveryCount);
       iconData = Icons.access_time;
       iconColor = Colors.orange;
     }
@@ -629,10 +635,11 @@ class OrderActionDialogs {
     String reasonLabel,
     String description,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('正在提交申请...')),
+        SnackBar(content: Text(l10n.order_intervention_submitting)),
       );
 
       // 调用BLoC处理平台介入
@@ -644,12 +651,12 @@ class OrderActionDialogs {
           description: description,
         ),
       );
-      
+
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('申请失败：$e'),
+          content: Text(l10n.order_intervention_failed(e.toString())),
           backgroundColor: Colors.red,
         ),
       );
@@ -663,10 +670,11 @@ class OrderActionDialogs {
     String reasonLabel,
     String description,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('正在提交${type == 'replenishment' ? '补充材料' : '重做'}申请...')),
+        SnackBar(content: Text(type == 'replenishment' ? l10n.order_demand_submitting_replenishment : l10n.order_demand_submitting_reform)),
       );
 
       // 调用BLoC处理订单需求
@@ -679,12 +687,12 @@ class OrderActionDialogs {
           description: description,
         ),
       );
-      
+
     } catch (e) {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('申请失败：$e'),
+          content: Text(l10n.order_demand_failed(e.toString())),
           backgroundColor: Colors.red,
         ),
       );

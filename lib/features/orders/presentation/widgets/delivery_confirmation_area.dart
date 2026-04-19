@@ -1,8 +1,6 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget displaying the delivered content and actions for awaiting confirmation state.
 class DeliveryConfirmationArea extends StatelessWidget {
@@ -53,7 +51,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(delivery['title'], style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-                        Text(delivery['timestamp'], style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
+                        Text(delivery['timestamp'], style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -69,7 +67,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                          padding: const EdgeInsets.all(12.0),
                          decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm)
+                            borderRadius: BorderRadius.circular(8)
                          ),
                          child: Builder( // Use Builder to access context if needed inside calculation
                            builder: (context) {
@@ -108,17 +106,17 @@ class DeliveryConfirmationArea extends StatelessWidget {
           child: OutlinedButton(
             onPressed: () {
               // TODO: Show bottom sheet with options: 我要补充, 我要重新制作, 我要退款
-              AppLogger.d('Show delivery issue options');
+              print('Show delivery issue options');
                _showDeliveryIssueOptions(context);
             },
-            child: const Text('对交付不满意？'),
+            child: Text(AppLocalizations.of(context)!.order_delivery_not_satisfied),
           ),
         ),
          const SizedBox(height: 8),
         Center(
           child: Text(
-            '当前交付次数不足时，请先与卖家沟通是否同意再次交付', // From prototype
-             style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            AppLocalizations.of(context)!.order_delivery_communicate_tip, // From prototype
+             style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
              textAlign: TextAlign.center,
           ),
         ),
@@ -131,7 +129,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
   Widget _buildFileRow(BuildContext context, Map<String, dynamic> fileData) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final fileName = fileData['name'] as String? ?? '未知文件';
+    final fileName = fileData['name'] as String? ?? AppLocalizations.of(context)!.order_delivery_unknown_file;
     final fileSize = fileData['size'] as String?;
 
     return Padding(
@@ -146,14 +144,14 @@ class DeliveryConfirmationArea extends StatelessWidget {
               children: [
                 Text(fileName, style: textTheme.bodyMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
                 if (fileSize != null)
-                  Text(fileSize, style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
+                  Text(fileSize, style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
               ],
             ),
           ),
           const SizedBox(width: 12),
           // TODO: Implement download/preview action
           InkWell(
-            onTap: () => AppLogger.d('Download/Preview $fileName'),
+            onTap: () => print('Download/Preview $fileName'),
             child: Icon(Icons.download_outlined, size: 20, color: colorScheme.primary),
           ),
         ],
@@ -205,28 +203,28 @@ class DeliveryConfirmationArea extends StatelessWidget {
                  runSpacing: 16,
                 children: <Widget>[
                   ElevatedButton(
-                    child: const Text('我要补充'),
+                    child: Text(AppLocalizations.of(context)!.order_delivery_supplement),
                     onPressed: () {
                        // TODO: Navigate or trigger 'request revision' flow
                        Navigator.pop(context);
-                       AppLogger.d('Request Revision');
+                       print('Request Revision');
                     }
                   ),
                    ElevatedButton(
-                    child: const Text('我要重新制作'),
+                    child: Text(AppLocalizations.of(context)!.order_delivery_remake),
                      onPressed: () {
                        // TODO: Navigate or trigger 'request remake' flow
                         Navigator.pop(context);
-                        AppLogger.d('Request Remake');
+                        print('Request Remake');
                     }
                   ),
                    ElevatedButton(
-                    child: const Text('我要退款'),
+                    child: Text(AppLocalizations.of(context)!.order_delivery_refund),
                     style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer),
                      onPressed: () {
                         // TODO: Navigate to AfterSale application or trigger refund flow
                          Navigator.pop(context);
-                         AppLogger.d('Request Refund');
+                         print('Request Refund');
                     }
                   ),
                 ],

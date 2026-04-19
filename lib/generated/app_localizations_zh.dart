@@ -2083,4 +2083,2968 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get product_detail_show_original => '显示原文';
+
+  @override
+  String get order_status_awaiting_payment => '待付款';
+
+  @override
+  String get order_status_awaiting_submission => '待提交';
+
+  @override
+  String get order_status_buy_awaiting_submission => '待重传';
+
+  @override
+  String get order_status_awaiting_start => '待接单';
+
+  @override
+  String get order_status_awaiting_delivery => '待发货';
+
+  @override
+  String get order_status_awaiting_confirmation => '待收货';
+
+  @override
+  String get order_status_awaiting_evaluation => '待评价';
+
+  @override
+  String get order_status_completed => '已完成';
+
+  @override
+  String get order_status_canceled => '已取消';
+
+  @override
+  String get order_status_after_sale => '售后中';
+
+  @override
+  String get order_status_unknown => '未知状态';
+
+  @override
+  String get order_action_cancel => '取消订单';
+
+  @override
+  String get order_action_go_pay => '去支付';
+
+  @override
+  String get order_action_submit_materials => '提交材料';
+
+  @override
+  String get order_action_contact_support => '联系客服';
+
+  @override
+  String get order_action_view_feedback => '查看反馈';
+
+  @override
+  String get order_action_remind_delivery => '提醒发货';
+
+  @override
+  String get order_action_platform_intervention => '平台介入';
+
+  @override
+  String get order_action_view_delivery => '查看交付';
+
+  @override
+  String get order_action_apply_after_sale => '申请售后';
+
+  @override
+  String get order_action_confirm_receipt => '确认收货';
+
+  @override
+  String get order_action_view_logistics => '查看物流';
+
+  @override
+  String get order_action_go_evaluate => '去评价';
+
+  @override
+  String get order_action_apply_rework => '申请重做';
+
+  @override
+  String get order_action_delete_order => '删除订单';
+
+  @override
+  String get order_action_view_order => '查看订单';
+
+  @override
+  String get order_action_view_details => '查看详情';
+
+  @override
+  String get order_action_processing => '处理中...';
+
+  @override
+  String get order_confirm_cancel_title => '取消订单';
+
+  @override
+  String get order_confirm_cancel_content => '您确定要取消这个订单吗？';
+
+  @override
+  String get order_confirm_receipt_title => '确认收货';
+
+  @override
+  String get order_confirm_receipt_content => '您确定已经收到货品，并确认收货吗？';
+
+  @override
+  String get order_confirm_delete_title => '删除订单';
+
+  @override
+  String get order_confirm_delete_content => '您确定要删除这个订单吗？删除后将无法恢复。';
+
+  @override
+  String get order_dialog_cancel => '取消';
+
+  @override
+  String get order_dialog_confirm => '确定';
+
+  @override
+  String get order_dialog_close => '关闭';
+
+  @override
+  String get order_dialog_submit => '提交申请';
+
+  @override
+  String get order_snackbar_connecting_support => '正在连接客服...';
+
+  @override
+  String get order_snackbar_feedback_in_progress => '查看卖家反馈功能开发中';
+
+  @override
+  String get order_snackbar_reminded_delivery => '已提醒卖家发货';
+
+  @override
+  String order_snackbar_nav_failed(String error) {
+    return '导航失败: $error';
+  }
+
+  @override
+  String get order_snackbar_no_items_after_sale => '错误：无法为没有商品的订单申请售后';
+
+  @override
+  String get order_snackbar_no_items_evaluate => '错误：无法为没有商品的订单进行评价';
+
+  @override
+  String order_snackbar_operation_failed(String error) {
+    return '操作失败: $error';
+  }
+
+  @override
+  String get order_dialog_data_not_loaded => '数据未加载完成，请稍后再试';
+
+  @override
+  String get order_dialog_view_delivery_title => '查看交付';
+
+  @override
+  String get order_dialog_seller_delivery_content => '卖家交付内容：';
+
+  @override
+  String get order_dialog_buyer_materials => '买家提交的材料：';
+
+  @override
+  String get order_dialog_no_seller_delivery => '卖家暂未交付内容';
+
+  @override
+  String get order_dialog_no_buyer_materials => '暂无买家提交的材料';
+
+  @override
+  String order_dialog_delivery_note(String content) {
+    return '交付说明: $content';
+  }
+
+  @override
+  String get order_dialog_delivery_files => '交付文件:';
+
+  @override
+  String get order_intervention_title => '申请平台介入';
+
+  @override
+  String get order_intervention_desc => '遇到无法解决的争议？平台客服会在24小时内介入处理。';
+
+  @override
+  String get order_intervention_problem_type => '问题类型:';
+
+  @override
+  String get order_intervention_problem_desc => '问题描述:';
+
+  @override
+  String get order_intervention_problem_hint => '请详细描述遇到的问题...';
+
+  @override
+  String get order_intervention_validation_empty => '请输入问题描述';
+
+  @override
+  String get order_intervention_validation_min => '问题描述至少需要10个字符';
+
+  @override
+  String get order_intervention_tip => '提示：申请提交后无法撤销，每个订单最多可申请2次。';
+
+  @override
+  String get order_intervention_reason_communication => '沟通问题';
+
+  @override
+  String get order_intervention_reason_quality => '质量争议';
+
+  @override
+  String get order_intervention_reason_delivery => '交付问题';
+
+  @override
+  String get order_intervention_reason_refund => '退款纠纷';
+
+  @override
+  String get order_intervention_reason_service => '服务态度';
+
+  @override
+  String get order_intervention_reason_other => '其他问题';
+
+  @override
+  String get order_intervention_submitting => '正在提交申请...';
+
+  @override
+  String order_intervention_failed(String error) {
+    return '申请失败：$error';
+  }
+
+  @override
+  String get order_demand_replenishment_title => '申请补充材料';
+
+  @override
+  String get order_demand_reform_title => '申请重做';
+
+  @override
+  String get order_demand_replenishment_desc => '如果需要卖家补充更多材料或说明，请详细描述您的需求。';
+
+  @override
+  String get order_demand_reform_desc => '如果对交付结果不满意，可以申请重做。请说明具体问题。';
+
+  @override
+  String get order_demand_detail_label => '详细说明:';
+
+  @override
+  String get order_demand_replenishment_hint => '请详细说明需要补充的材料或信息...';
+
+  @override
+  String get order_demand_reform_hint => '请详细说明需要重做的原因和要求...';
+
+  @override
+  String get order_demand_validation_empty => '请输入详细说明';
+
+  @override
+  String get order_demand_validation_min => '说明至少需要10个字符';
+
+  @override
+  String get order_demand_replenishment_tip => '提示：卖家会在收到申请后24小时内回复并补充相关材料。';
+
+  @override
+  String get order_demand_reform_tip => '提示：重做申请提交后，卖家会重新处理您的订单。';
+
+  @override
+  String get order_demand_reason_incomplete => '信息不完整';
+
+  @override
+  String get order_demand_reason_unclear => '要求不明确';
+
+  @override
+  String get order_demand_reason_additional => '需要补充说明';
+
+  @override
+  String get order_demand_reason_reference => '需要参考资料';
+
+  @override
+  String get order_demand_reason_other => '其他原因';
+
+  @override
+  String get order_demand_reason_quality => '质量不满意';
+
+  @override
+  String get order_demand_reason_requirement => '不符合要求';
+
+  @override
+  String get order_demand_reason_content_incomplete => '内容不完整';
+
+  @override
+  String get order_demand_reason_error => '存在错误';
+
+  @override
+  String get order_demand_submitting_replenishment => '正在提交补充材料申请...';
+
+  @override
+  String get order_demand_submitting_reform => '正在提交重做申请...';
+
+  @override
+  String order_demand_failed(String error) {
+    return '申请失败：$error';
+  }
+
+  @override
+  String order_demand_edit_info_auto(int current, int remaining) {
+    return '当前已交付 $current 次，剩余 $remaining 次免费修改机会（自动通过）';
+  }
+
+  @override
+  String order_demand_edit_info_approval(int current) {
+    return '当前已交付 $current 次，已用完免费修改机会，需要卖家审批';
+  }
+
+  @override
+  String get order_info_title => '订单信息';
+
+  @override
+  String get order_info_order_number => '订单编号：';
+
+  @override
+  String get order_info_order_time => '下单时间：';
+
+  @override
+  String get order_info_pay_time => '付款时间：';
+
+  @override
+  String get order_info_complete_time => '完成时间：';
+
+  @override
+  String get order_info_remark => '订单备注：';
+
+  @override
+  String get order_items_title => '商品信息';
+
+  @override
+  String get order_items_empty => '暂无商品信息';
+
+  @override
+  String order_items_count(int count) {
+    return '$count件';
+  }
+
+  @override
+  String get order_price_title => '价格明细';
+
+  @override
+  String get order_price_total => '商品总价';
+
+  @override
+  String get order_price_shipping => '运费';
+
+  @override
+  String get order_price_discount => '优惠金额';
+
+  @override
+  String get order_price_paid => '实付金额';
+
+  @override
+  String get order_price_total_amount => '商品总额';
+
+  @override
+  String get order_price_actual_paid => '实付款';
+
+  @override
+  String get order_requirement_title => '要求提交';
+
+  @override
+  String order_requirement_service_selected(String skuName, String price) {
+    return '您选择的服务：$skuName - ¥$price';
+  }
+
+  @override
+  String get order_requirement_q1 => '1. 请详细描述您的需求';
+
+  @override
+  String get order_requirement_q1_hint => '请尽可能详细地描述您的需求，包括具体要求、期望效果等';
+
+  @override
+  String get order_requirement_q1_helper => '如需提供参考资料，可在下方附件区域上传';
+
+  @override
+  String get order_requirement_q2 => '2. 补充说明（选填）';
+
+  @override
+  String get order_requirement_q2_hint => '如有其他补充说明或特殊要求，请在此填写';
+
+  @override
+  String get order_requirement_warning => '请认真填写需求，提交后卖家将根据您的需求开始服务';
+
+  @override
+  String get order_requirement_attachment_title => '附件上传';
+
+  @override
+  String order_requirement_attachment_limit(int maxCount, int maxSize) {
+    return '最多$maxCount个文件，单个文件不超过${maxSize}MB';
+  }
+
+  @override
+  String get order_requirement_add => '添加';
+
+  @override
+  String get order_requirement_click_select_file => '点击此处选择文件';
+
+  @override
+  String get order_requirement_confirm_submit => '确认提交';
+
+  @override
+  String get order_requirement_wait_upload => '请等待文件上传完成';
+
+  @override
+  String get order_requirement_upload_failed_title => '文件上传失败';
+
+  @override
+  String order_requirement_upload_failed_count(int count) {
+    return '有$count个文件上传失败，是否重试？';
+  }
+
+  @override
+  String get order_requirement_remove_failed => '移除失败文件';
+
+  @override
+  String get order_requirement_retry_upload => '重试上传';
+
+  @override
+  String get order_requirement_error_product_id => '错误：无法获取商品 ID';
+
+  @override
+  String get order_requirement_load_draft_failed => '加载草稿失败';
+
+  @override
+  String get order_requirement_save_draft_failed => '保存草稿失败';
+
+  @override
+  String order_requirement_max_files(int count) {
+    return '最多只能上传$count个附件';
+  }
+
+  @override
+  String order_requirement_pick_failed(String error) {
+    return '选择文件失败: $error';
+  }
+
+  @override
+  String get order_requirement_default_service => '基础服务';
+
+  @override
+  String get order_evaluation_title => '评价商品';
+
+  @override
+  String get order_evaluation_hint => '分享您的使用体验吧～';
+
+  @override
+  String get order_evaluation_add_images => '添加图片 (最多9张)';
+
+  @override
+  String get order_evaluation_anonymous => '匿名评价';
+
+  @override
+  String get order_evaluation_submit => '提交评价';
+
+  @override
+  String get order_evaluation_error_no_item => '错误：无法找到要评价的商品项';
+
+  @override
+  String get order_evaluation_max_images => '最多只能上传9张图片';
+
+  @override
+  String order_evaluation_success_count(int count, String ratio) {
+    return '成功处理 $count 张图片，平均压缩 $ratio%';
+  }
+
+  @override
+  String order_evaluation_failed_count(int count) {
+    return '$count 张图片处理失败';
+  }
+
+  @override
+  String order_evaluation_pick_failed(String error) {
+    return '选择图片失败: $error';
+  }
+
+  @override
+  String get order_evaluation_processing => '处理中...';
+
+  @override
+  String get order_evaluation_page_title => '评价订单';
+
+  @override
+  String get order_delivery_not_satisfied => '对交付不满意？';
+
+  @override
+  String get order_delivery_communicate_tip => '当前交付次数不足时，请先与卖家沟通是否同意再次交付';
+
+  @override
+  String get order_delivery_supplement => '我要补充';
+
+  @override
+  String get order_delivery_remake => '我要重新制作';
+
+  @override
+  String get order_delivery_refund => '我要退款';
+
+  @override
+  String get order_delivery_unknown_file => '未知文件';
+
+  @override
+  String order_item_delivery_days(int days) {
+    return '交付天数: $days天';
+  }
+
+  @override
+  String order_item_edit_count(int count) {
+    return '可修改次数: $count次';
+  }
+
+  @override
+  String get order_countdown_expired => '已超时';
+
+  @override
+  String order_countdown_days_hours(int days, int hours) {
+    return '$days天$hours时';
+  }
+
+  @override
+  String order_countdown_hours_minutes(int hours, int minutes) {
+    return '$hours时$minutes分';
+  }
+
+  @override
+  String order_countdown_minutes(int minutes) {
+    return '$minutes分';
+  }
+
+  @override
+  String order_countdown_seconds(int seconds) {
+    return '$seconds秒';
+  }
+
+  @override
+  String order_countdown_days(int days) {
+    return '$days天';
+  }
+
+  @override
+  String order_countdown_minutes_seconds(int minutes, int seconds) {
+    return '$minutes分$seconds秒';
+  }
+
+  @override
+  String order_upload_progress(int percent) {
+    return '上传中 $percent%';
+  }
+
+  @override
+  String get order_upload_retry => '重试上传';
+
+  @override
+  String order_upload_failed(String error) {
+    return '上传失败: $error';
+  }
+
+  @override
+  String order_upload_size_limit(String size) {
+    return '文件大小超过限制（最大$size）';
+  }
+
+  @override
+  String order_upload_max_retry(int count) {
+    return '已达到最大重试次数（$count次）';
+  }
+
+  @override
+  String get order_after_sale_processing => '售后处理中';
+
+  @override
+  String get order_after_sale_processing_msg =>
+      '您的售后申请正在处理中，卖家将在xx小时内处理，请耐心等待。';
+
+  @override
+  String get order_after_sale_mediation => '平台介入处理中';
+
+  @override
+  String get order_after_sale_mediation_msg =>
+      '平台客服已介入处理，将在xx工作日内给出处理结果，请留意通知。';
+
+  @override
+  String get order_after_sale_rejected => '售后申请已驳回';
+
+  @override
+  String get order_after_sale_rejected_msg => '抱歉，您的售后申请未通过审核。';
+
+  @override
+  String get order_after_sale_default_title => '售后状态';
+
+  @override
+  String get order_after_sale_default_msg => '当前订单处于售后流程中。';
+
+  @override
+  String get order_after_sale_contact_seller => '联系卖家';
+
+  @override
+  String get order_after_sale_cancel_apply => '取消申请';
+
+  @override
+  String get order_after_sale_contact_platform => '联系平台客服';
+
+  @override
+  String get order_after_sale_add_evidence => '补充凭证';
+
+  @override
+  String get order_after_sale_add_evidence_tip => '您可以补充凭证或耐心等待平台处理结果。';
+
+  @override
+  String get order_after_sale_apply_intervention => '申请平台介入';
+
+  @override
+  String get order_after_sale_refund_status => '退款状态:';
+
+  @override
+  String get order_after_sale_refund_amount => '退款金额:';
+
+  @override
+  String get order_after_sale_reject_reason => '驳回原因:';
+
+  @override
+  String get order_after_sale_reject_reason_detail => '原因：凭证不足或不符合退款条件。';
+
+  @override
+  String get order_platform_intervention_title => '平台介入';
+
+  @override
+  String get order_platform_intervention_desc => '如遇到争议无法协商解决，可申请平台客服介入处理';
+
+  @override
+  String get order_platform_intervention_apply => '申请平台介入';
+
+  @override
+  String get order_platform_intervention_in_progress => '平台介入中';
+
+  @override
+  String get order_platform_intervention_processing => '处理中';
+
+  @override
+  String get order_platform_intervention_processing_msg =>
+      '您的申请已提交，平台客服会在24小时内联系您处理';
+
+  @override
+  String get order_platform_intervention_step1 => '申请已提交';
+
+  @override
+  String get order_platform_intervention_step1_desc => '等待平台客服处理';
+
+  @override
+  String get order_platform_intervention_step2 => '客服介入';
+
+  @override
+  String get order_platform_intervention_step2_desc => '24小时内联系双方';
+
+  @override
+  String get order_platform_intervention_step3 => '问题解决';
+
+  @override
+  String get order_platform_intervention_step3_desc => '根据平台判定处理';
+
+  @override
+  String get order_card_product_unknown => '商品名称未知';
+
+  @override
+  String get order_card_deleting => '正在删除订单...';
+
+  @override
+  String get order_card_deleted => '订单已删除';
+
+  @override
+  String order_card_delete_failed(String error) {
+    return '删除失败：$error';
+  }
+
+  @override
+  String order_card_load_detail_failed(String error) {
+    return '加载订单详情失败：$error';
+  }
+
+  @override
+  String get order_card_timeout_canceling => '已超时，即将取消';
+
+  @override
+  String order_card_pay_in_time(String time) {
+    return '请在$time内付款';
+  }
+
+  @override
+  String get order_card_timeout_submit => '已超时，请尽快提交';
+
+  @override
+  String order_card_submit_in_time(String time) {
+    return '请在$time内提交材料';
+  }
+
+  @override
+  String get order_card_seller_timeout => '卖家超时未接单';
+
+  @override
+  String order_card_seller_accept_in_time(String time) {
+    return '卖家将在$time内接单';
+  }
+
+  @override
+  String order_card_delivery_days(int days) {
+    return '交付时间：$days天内';
+  }
+
+  @override
+  String get order_card_auto_confirm_soon => '即将自动确认收货';
+
+  @override
+  String order_card_auto_confirm_in(String time) {
+    return '$time后自动确认';
+  }
+
+  @override
+  String get order_card_evaluate_for_points => '待评价，评价后可获得积分';
+
+  @override
+  String order_card_duration_days_hours(int days, int hours) {
+    return '$days天$hours小时';
+  }
+
+  @override
+  String order_card_duration_hours_minutes(int hours, int minutes) {
+    return '$hours小时$minutes分钟';
+  }
+
+  @override
+  String order_card_duration_minutes(int minutes) {
+    return '$minutes分钟';
+  }
+
+  @override
+  String get order_card_duration_less_than_minute => '少于1分钟';
+
+  @override
+  String get order_detail_invalid_id => '无效的订单 ID';
+
+  @override
+  String order_detail_error(Object error) {
+    return '错误';
+  }
+
+  @override
+  String get order_detail_title => '订单详情';
+
+  @override
+  String order_detail_title_with_id(int id) {
+    return '订单详情 (ID: $id)';
+  }
+
+  @override
+  String order_detail_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get order_detail_reload => '重新加载';
+
+  @override
+  String get order_detail_unavailable => '订单数据不可用';
+
+  @override
+  String get order_list_title => '我的订单';
+
+  @override
+  String get order_list_search_hint => '搜索订单号或商品名称';
+
+  @override
+  String get order_list_empty => '暂无相关订单';
+
+  @override
+  String order_list_load_error(String error) {
+    return '加载错误: $error';
+  }
+
+  @override
+  String order_list_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get order_list_select_category => '请选择分类查看订单';
+
+  @override
+  String get order_list_tab_all => '全部';
+
+  @override
+  String get order_list_tab_awaiting_payment => '待付款';
+
+  @override
+  String get order_list_tab_awaiting_submission => '待提交';
+
+  @override
+  String get order_list_tab_awaiting_start => '待接单';
+
+  @override
+  String get order_list_tab_awaiting_delivery => '待交付';
+
+  @override
+  String get order_list_tab_awaiting_confirmation => '待收货';
+
+  @override
+  String get order_list_tab_awaiting_evaluation => '待评价';
+
+  @override
+  String get order_list_tab_after_sale => '售后中';
+
+  @override
+  String get order_route_error => '错误';
+
+  @override
+  String order_route_invalid_item_id(String id) {
+    return '无效的商品ID: $id';
+  }
+
+  @override
+  String order_seller_detail_title(int id) {
+    return '订单详情 (卖家) - #$id';
+  }
+
+  @override
+  String order_seller_load_failed(int id, String error) {
+    return '加载订单 #$id 失败: $error';
+  }
+
+  @override
+  String get order_seller_preparing => '正在准备加载...';
+
+  @override
+  String get order_seller_order_number => '订单编号';
+
+  @override
+  String get order_seller_order_time => '下单时间';
+
+  @override
+  String get order_seller_pay_time => '付款时间';
+
+  @override
+  String get order_seller_complete_time => '完成时间';
+
+  @override
+  String get order_seller_cancel_time => '取消时间';
+
+  @override
+  String get order_seller_list_title => '我的订单 (卖家)';
+
+  @override
+  String get order_seller_tab_all => '全部';
+
+  @override
+  String get order_seller_tab_awaiting_start => '待接单';
+
+  @override
+  String get order_seller_tab_awaiting_delivery => '待发货';
+
+  @override
+  String get order_seller_tab_awaiting_confirmation => '待确认收货';
+
+  @override
+  String get order_seller_tab_awaiting_evaluation => '待评价';
+
+  @override
+  String get order_seller_tab_completed => '已完成';
+
+  @override
+  String get order_seller_tab_after_sale => '售后中';
+
+  @override
+  String get order_seller_tab_canceled => '已取消';
+
+  @override
+  String order_seller_load_failed_msg(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get order_seller_empty => '暂无此状态订单';
+
+  @override
+  String order_seller_action_failed(String error) {
+    return '操作失败: $error';
+  }
+
+  @override
+  String order_seller_pending_count(int count) {
+    return '您有$count个订单待处理';
+  }
+
+  @override
+  String order_seller_pending_awaiting_start(int count) {
+    return '$count个待接单';
+  }
+
+  @override
+  String order_seller_pending_awaiting_delivery(int count) {
+    return '$count个待发货';
+  }
+
+  @override
+  String get order_seller_reject_order => '拒绝接单';
+
+  @override
+  String get order_seller_confirm_order => '确认接单';
+
+  @override
+  String get order_seller_contact_buyer => '联系买家';
+
+  @override
+  String get order_seller_go_deliver => '去交付';
+
+  @override
+  String get order_seller_view_delivery_content => '查看交付内容';
+
+  @override
+  String get order_seller_remind_buyer => '提醒买家确认';
+
+  @override
+  String get order_seller_delete_record => '删除记录';
+
+  @override
+  String get order_seller_confirm_accept_title => '确认接单';
+
+  @override
+  String get order_seller_confirm_accept_content => '您确定要接受此订单吗？';
+
+  @override
+  String get order_seller_confirm_delete_title => '确认删除';
+
+  @override
+  String get order_seller_confirm_delete_content => '您确定要删除这条订单记录吗？此操作无法撤销。';
+
+  @override
+  String get order_seller_confirm_delete_canceled_content =>
+      '您确定要删除这条已取消的订单记录吗？此操作无法撤销。';
+
+  @override
+  String get order_seller_confirm_btn => '确认';
+
+  @override
+  String get order_seller_confirm_reject_title => '确认拒绝';
+
+  @override
+  String get order_seller_confirm_reject_content => '您确定要拒绝接受此订单吗？';
+
+  @override
+  String get order_seller_confirm_reject_btn => '确认拒绝';
+
+  @override
+  String get order_seller_reject_dialog_title => '拒绝订单';
+
+  @override
+  String get order_seller_reject_reason_label => '拒绝理由 *';
+
+  @override
+  String get order_seller_reject_reason_hint => '请输入拒绝理由';
+
+  @override
+  String get order_seller_reject_reason_empty => '拒绝理由不能为空';
+
+  @override
+  String get order_seller_reject_reason_required => '请输入拒绝理由';
+
+  @override
+  String get order_seller_remarks_label => '补充说明 (可选)';
+
+  @override
+  String get order_seller_remarks_hint => '选填';
+
+  @override
+  String get order_seller_delivery_dialog_title => '交付内容';
+
+  @override
+  String get order_seller_delivery_desc_label => '交付说明 *';
+
+  @override
+  String get order_seller_delivery_desc_hint => '请描述您的交付内容';
+
+  @override
+  String get order_seller_delivery_desc_empty => '交付说明不能为空';
+
+  @override
+  String get order_seller_delivery_desc_required => '请输入交付说明';
+
+  @override
+  String get order_seller_delivery_attachment => '附件';
+
+  @override
+  String get order_seller_delivery_select_file => '点击下方按钮选择文件';
+
+  @override
+  String get order_seller_delivery_add_attachment => '添加附件';
+
+  @override
+  String get order_seller_delivery_file_select_soon => '文件选择功能即将实现';
+
+  @override
+  String get order_seller_delivery_confirm => '确认交付';
+
+  @override
+  String order_seller_delivery_chat_hint(String productName) {
+    return '请选择关于商品\"$productName\"的聊天';
+  }
+
+  @override
+  String get order_seller_dynamic_delivered => '服务已交付';
+
+  @override
+  String get order_seller_dynamic_delivered_msg =>
+      '您已完成服务交付，请等待买家确认。如有问题，买家可能会发起售后。';
+
+  @override
+  String get order_seller_dynamic_completed => '此订单已顺利完成。';
+
+  @override
+  String get order_seller_dynamic_canceled => '此订单已被取消。';
+
+  @override
+  String get order_seller_dynamic_refused => '已申请拒绝订单';
+
+  @override
+  String get order_seller_dynamic_refused_msg => '您的拒绝申请已提交，正在等待处理。';
+
+  @override
+  String get order_seller_buyer_materials => '买家提供的材料';
+
+  @override
+  String get order_seller_attachment_label => '附件:';
+
+  @override
+  String order_seller_view_attachment(String fileName) {
+    return '查看附件功能待实现: $fileName';
+  }
+
+  @override
+  String get order_evaluation_product_info => '商品信息';
+
+  @override
+  String get order_list_retry => '重试';
+
+  @override
+  String chat_get_user_info_failed(String error) {
+    return '获取用户信息失败: $error';
+  }
+
+  @override
+  String get chat_user_refer_id_not_found => '用户referId未找到';
+
+  @override
+  String get chat_no_chat_records => '暂无聊天记录';
+
+  @override
+  String get chat_opponent_info_missing => '对方信息不存在';
+
+  @override
+  String get chat_product_default => '商品';
+
+  @override
+  String get chat_view_details => '查看详情';
+
+  @override
+  String get chat_product_info_incomplete => '商品信息不完整，无法查看详情';
+
+  @override
+  String get chat_uploading => '上传中...';
+
+  @override
+  String get chat_upload_failed => '上传失败';
+
+  @override
+  String get chat_retry => '重试';
+
+  @override
+  String get chat_image_loading => '加载中...';
+
+  @override
+  String get chat_image_load_failed => '加载失败';
+
+  @override
+  String get chat_revoke_time_missing => '消息时间信息缺失，无法撤回';
+
+  @override
+  String get chat_revoke_available => '可以撤回';
+
+  @override
+  String chat_revoke_expired(int seconds) {
+    return '消息发送已超过2分钟，无法撤回（超出$seconds秒）';
+  }
+
+  @override
+  String get chat_unknown_seller => '未知卖家';
+
+  @override
+  String get chat_product_conversation => '商品对话';
+
+  @override
+  String chat_product_conversation_count(int count) {
+    return '$count个商品对话';
+  }
+
+  @override
+  String get chat_unknown_product => '未知商品';
+
+  @override
+  String chat_user_inquiry_count(int count) {
+    return '$count个用户咨询';
+  }
+
+  @override
+  String get chat_weekday_mon => '周一';
+
+  @override
+  String get chat_weekday_tue => '周二';
+
+  @override
+  String get chat_weekday_wed => '周三';
+
+  @override
+  String get chat_weekday_thu => '周四';
+
+  @override
+  String get chat_weekday_fri => '周五';
+
+  @override
+  String get chat_weekday_sat => '周六';
+
+  @override
+  String get chat_weekday_sun => '周日';
+
+  @override
+  String get chat_select_multiple_images => '选择多张图片';
+
+  @override
+  String chat_image_compressed(String ratio) {
+    return '图片已压缩 $ratio%';
+  }
+
+  @override
+  String chat_image_process_failed(String error) {
+    return '图片处理失败: $error';
+  }
+
+  @override
+  String chat_images_processed_success(int count, String ratio) {
+    return '成功处理 $count 张图片，平均压缩 $ratio%';
+  }
+
+  @override
+  String chat_images_process_failed_count(int count) {
+    return '$count 张图片处理失败';
+  }
+
+  @override
+  String get chat_tap_to_view_product => '点击查看商品详情';
+
+  @override
+  String chat_yesterday_time(String time) {
+    return '昨天 $time';
+  }
+
+  @override
+  String get chat_no_messages_brief => '暂无消息';
+
+  @override
+  String chat_select_image_error(String error) {
+    return '选择图片出错: $error';
+  }
+
+  @override
+  String get after_sales_reason_none => '无';
+
+  @override
+  String seller_auth_status_title(String type) {
+    return '$type认证';
+  }
+
+  @override
+  String get seller_auth_status_label => '认证状态：';
+
+  @override
+  String get seller_auth_status_name_label => '认证名称：';
+
+  @override
+  String get seller_auth_status_materials => '认证材料';
+
+  @override
+  String get seller_auth_status_no_materials => '暂无认证材料';
+
+  @override
+  String get seller_auth_status_info => '认证信息';
+
+  @override
+  String get seller_auth_status_history => '认证历史';
+
+  @override
+  String get seller_auth_status_no_history => '暂无历史记录';
+
+  @override
+  String get seller_auth_status_reapply => '重新认证';
+
+  @override
+  String get seller_auth_status_approved_hint => '认证已通过，无需重复提交';
+
+  @override
+  String get seller_auth_status_pending_hint => '认证审核中，请耐心等待';
+
+  @override
+  String get seller_auth_status_tag_approved => '已认证';
+
+  @override
+  String get seller_auth_status_tag_pending => '审核中';
+
+  @override
+  String get seller_auth_status_tag_rejected => '未通过';
+
+  @override
+  String get seller_auth_status_tag_not_submitted => '未提交';
+
+  @override
+  String get seller_auth_status_type_idcard => '身份';
+
+  @override
+  String get seller_auth_status_type_education => '学历';
+
+  @override
+  String get seller_auth_status_type_profession => '职业';
+
+  @override
+  String get seller_auth_status_type_company => '公司';
+
+  @override
+  String get seller_auth_status_type_other => '其他';
+
+  @override
+  String get seller_auth_status_field_auth_name => '认证名称';
+
+  @override
+  String get seller_auth_status_field_auth_type => '认证类型';
+
+  @override
+  String get seller_auth_status_field_company_name => '公司名称';
+
+  @override
+  String get seller_auth_status_field_name => '姓名';
+
+  @override
+  String get seller_auth_status_field_school_name => '学校名称';
+
+  @override
+  String get seller_auth_status_field_profession => '职业/职位';
+
+  @override
+  String get seller_auth_status_field_name_or_title => '姓名/名称';
+
+  @override
+  String get seller_auth_status_field_remarks => '备注';
+
+  @override
+  String get seller_auth_status_field_cert_number => '证书编号';
+
+  @override
+  String get seller_auth_status_field_work_experience => '工作经验';
+
+  @override
+  String get seller_auth_status_field_issuer => '发证机构';
+
+  @override
+  String get seller_auth_status_field_credit_code => '统一社会信用代码';
+
+  @override
+  String get seller_auth_status_field_legal_rep => '法人代表';
+
+  @override
+  String get seller_auth_status_field_registered_capital => '注册资本';
+
+  @override
+  String get seller_auth_status_field_establishment_date => '成立日期';
+
+  @override
+  String get seller_auth_status_field_degree => '学历';
+
+  @override
+  String get seller_auth_status_field_major => '专业';
+
+  @override
+  String get seller_auth_status_field_graduation_year => '毕业年份';
+
+  @override
+  String get seller_auth_status_field_id_number => '身份证号';
+
+  @override
+  String get seller_auth_status_field_valid_period => '有效期';
+
+  @override
+  String get seller_auth_status_field_submit_time => '提交时间';
+
+  @override
+  String get seller_auth_status_field_reject_reason => '拒绝原因';
+
+  @override
+  String get seller_auth_status_history_approved_title => '认证申请通过';
+
+  @override
+  String seller_auth_status_history_approved_desc(String type) {
+    return '您的$type认证申请已通过审核，现在您可以享受认证商家的所有权益。';
+  }
+
+  @override
+  String get seller_auth_status_history_submitted_title => '提交认证申请';
+
+  @override
+  String seller_auth_status_history_submitted_desc(String type) {
+    return '您已成功提交$type认证申请，我们将在1-3个工作日内完成审核。';
+  }
+
+  @override
+  String get seller_auth_status_history_rejected_title => '认证申请未通过';
+
+  @override
+  String seller_auth_status_history_rejected_desc(String type, String reason) {
+    return '您的$type认证申请未通过审核。原因：$reason';
+  }
+
+  @override
+  String get seller_auth_status_history_rejected_default_reason => '资料不符合要求';
+
+  @override
+  String get seller_product_preview_title => '商品预览';
+
+  @override
+  String get seller_product_preview_back_to_edit => '返回编辑';
+
+  @override
+  String get seller_product_preview_loading => '正在加载商品信息...';
+
+  @override
+  String get seller_product_preview_load_failed => '加载商品信息失败';
+
+  @override
+  String get seller_product_preview_retry => '重试';
+
+  @override
+  String get seller_product_preview_fetching => '正在获取商品数据...';
+
+  @override
+  String get seller_product_preview_hint => '这是商品预览模式，买家将看到类似的界面';
+
+  @override
+  String get seller_product_edit_unsaved_changes_title => '检测到未保存的更改';
+
+  @override
+  String get seller_product_edit_unsaved_changes_message =>
+      '您有未保存的内容，是否要保存为草稿？';
+
+  @override
+  String get seller_product_edit_cancel => '取消';
+
+  @override
+  String get seller_product_edit_discard => '不保存';
+
+  @override
+  String get seller_product_edit_operation_failed => '操作失败';
+
+  @override
+  String get seller_product_edit_draft_saved => '草稿保存成功';
+
+  @override
+  String get seller_product_edit_publish_success =>
+      '服务发布成功！正在审核中，请在\"在售\"列表中查看';
+
+  @override
+  String get seller_product_edit_update_success => '服务更新成功';
+
+  @override
+  String get seller_product_edit_max_images => '最多只能上传9张图片，已选择前9张';
+
+  @override
+  String seller_product_edit_price_required(String tierName) {
+    return '$tierName价格必须大于0';
+  }
+
+  @override
+  String get seller_product_edit_form_incomplete => '表单数据不完整，请检查标红字段';
+
+  @override
+  String get seller_product_edit_add_attribute => '添加属性';
+
+  @override
+  String seller_product_edit_attribute_max_chars(int max) {
+    return '属性名称最多$max个字符';
+  }
+
+  @override
+  String get seller_product_edit_confirm => '确定';
+
+  @override
+  String get seller_product_edit_options_config => '选项配置';
+
+  @override
+  String get seller_product_edit_new_option => '新选项';
+
+  @override
+  String get seller_product_edit_option_hint => '输入选项内容';
+
+  @override
+  String get seller_product_edit_service_name_hint => '服务名称';
+
+  @override
+  String get seller_product_edit_description_hint => '描述一下您的服务的具体信息，如...';
+
+  @override
+  String get seller_product_edit_faq_title => '常见问题编辑';
+
+  @override
+  String seller_product_edit_faq_count(int count) {
+    return '$count个问题';
+  }
+
+  @override
+  String get seller_product_edit_add_question => '添加问题';
+
+  @override
+  String get seller_product_edit_question_label => '问题';
+
+  @override
+  String get seller_product_edit_question_hint => '输入买家可能问的问题';
+
+  @override
+  String get seller_product_edit_delete_question => '删除问题';
+
+  @override
+  String get seller_product_edit_answer_label => '答案';
+
+  @override
+  String get seller_product_edit_answer_hint => '输入对应的答案';
+
+  @override
+  String get seller_product_edit_buyer_info_title => '需要买家提供';
+
+  @override
+  String seller_product_edit_buyer_info_count(int count) {
+    return '$count项信息';
+  }
+
+  @override
+  String get seller_product_edit_buyer_info_desc =>
+      '选择你需要买家提供的信息类型（该信息将展示在订单详情页）';
+
+  @override
+  String get seller_product_edit_selected_items => '已选择的信息项：';
+
+  @override
+  String get seller_product_edit_required => '必填';
+
+  @override
+  String get seller_product_edit_edit_tooltip => '编辑';
+
+  @override
+  String get seller_product_edit_delete_tooltip => '删除';
+
+  @override
+  String seller_product_edit_add_info_title(String type) {
+    return '添加$type信息';
+  }
+
+  @override
+  String get seller_product_edit_info_label => '信息标签';
+
+  @override
+  String get seller_product_edit_info_label_hint => '例如：公司Logo设计需求';
+
+  @override
+  String get seller_product_edit_info_description => '详细说明';
+
+  @override
+  String get seller_product_edit_info_description_hint => '请详细说明需要买家提供的信息内容';
+
+  @override
+  String get seller_product_edit_required_field => '必填项';
+
+  @override
+  String get seller_product_edit_add => '添加';
+
+  @override
+  String seller_product_edit_edit_info_title(String type) {
+    return '编辑$type信息';
+  }
+
+  @override
+  String get seller_product_edit_save => '保存';
+
+  @override
+  String seller_product_edit_cases_count(int count) {
+    return '$count个案例';
+  }
+
+  @override
+  String get seller_product_edit_add_case => '添加案例';
+
+  @override
+  String get seller_product_edit_image_load_failed => '图片加载失败';
+
+  @override
+  String get seller_product_edit_click_select_image => '点击选择图片';
+
+  @override
+  String get seller_product_edit_upload_failed => '上传失败';
+
+  @override
+  String get seller_product_edit_upload_retry => '重试';
+
+  @override
+  String get seller_product_edit_case_title_label => '案例标题';
+
+  @override
+  String get seller_product_edit_case_title_hint => '简短描述这个案例';
+
+  @override
+  String get seller_product_edit_case_desc_label => '案例描述';
+
+  @override
+  String get seller_product_edit_case_desc_hint => '详细描述案例的背景、执行过程或效果';
+
+  @override
+  String get seller_product_edit_select_image_and_title => '请选择图片并输入标题';
+
+  @override
+  String get seller_product_edit_cover_image => '服务封面图';
+
+  @override
+  String get seller_product_edit_upload_success => '上传成功';
+
+  @override
+  String seller_product_edit_upload_error(String error) {
+    return '上传错误: $error';
+  }
+
+  @override
+  String get seller_product_edit_image_format_hint =>
+      '支持jpg、png、jpeg格式，单张不超过5MB，最多可上传9张图片';
+
+  @override
+  String get seller_product_edit_main_image => '主图';
+
+  @override
+  String seller_product_edit_tier_price_label(String tierName) {
+    return '$tierName价格';
+  }
+
+  @override
+  String seller_product_edit_max_price(String max) {
+    return '最大值：$max';
+  }
+
+  @override
+  String seller_product_edit_price_exceed_max(String max) {
+    return '价格不能超过$max';
+  }
+
+  @override
+  String get seller_product_edit_price_min => '价格最小值为0.01';
+
+  @override
+  String get seller_product_edit_delivery_period => '交付期';
+
+  @override
+  String get seller_product_edit_delivery_days_suffix => '天';
+
+  @override
+  String seller_product_edit_max_days(int max) {
+    return '最多$max天';
+  }
+
+  @override
+  String get seller_product_edit_times => '次数';
+
+  @override
+  String get seller_product_edit_times_suffix => '次';
+
+  @override
+  String seller_product_edit_max_times(int max) {
+    return '最多$max次';
+  }
+
+  @override
+  String get seller_product_edit_input => '输入';
+
+  @override
+  String get seller_product_edit_radio => '单选';
+
+  @override
+  String get seller_product_edit_draft_label => '草稿';
+
+  @override
+  String get seller_product_edit_draft_unsaved_label => '草稿*';
+
+  @override
+  String get seller_product_edit_publish => '发布';
+
+  @override
+  String get seller_product_edit_yes => '是';
+
+  @override
+  String get seller_product_edit_no => '否';
+
+  @override
+  String get seller_product_edit_add_selection_attribute => '添加单选属性';
+
+  @override
+  String get seller_product_edit_default_options_yes_no => '默认选项：是/否';
+
+  @override
+  String get seller_product_edit_attribute_name_label => '属性名称 *';
+
+  @override
+  String get seller_product_edit_attribute_name_example => '例如：颜色、型号、材质、适用年龄';
+
+  @override
+  String get seller_product_edit_attribute_type_label => '属性类型';
+
+  @override
+  String get seller_product_edit_required_item => '必填项';
+
+  @override
+  String seller_product_card_sales(int count) {
+    return '销量: $count';
+  }
+
+  @override
+  String get seller_product_card_view => '查看';
+
+  @override
+  String get seller_image_preview_main_image => '主图';
+
+  @override
+  String get seller_image_preview_set_main => '设为主图';
+
+  @override
+  String get seller_image_preview_load_failed => '图片加载失败';
+
+  @override
+  String get seller_image_preview_delete_title => '删除图片';
+
+  @override
+  String seller_image_preview_delete_confirm(int index) {
+    return '确定要删除第 $index 张图片吗？';
+  }
+
+  @override
+  String get seller_image_preview_delete => '删除';
+
+  @override
+  String get seller_file_select => '选择文件';
+
+  @override
+  String get seller_file_selected => '已选择的文件:';
+
+  @override
+  String seller_file_size(String size) {
+    return '大小: $size';
+  }
+
+  @override
+  String get seller_file_size_unknown => '无法获取大小';
+
+  @override
+  String seller_file_preview_unsupported(String name) {
+    return '无法预览该类型文件: $name';
+  }
+
+  @override
+  String get seller_common_cancel => '取消';
+
+  @override
+  String get profile_user_name_default => '用户名';
+
+  @override
+  String get profile_buyer_mode => '买家模式';
+
+  @override
+  String get profile_my_orders => '我的订单';
+
+  @override
+  String get profile_my_dskk_section => '我的关看';
+
+  @override
+  String get profile_liked_stories => '点赞的故事';
+
+  @override
+  String get profile_logout => '退出登录';
+
+  @override
+  String get profile_avatar_updated_local => '头像已更新，但尚未保存到服务器';
+
+  @override
+  String profile_image_pick_error(String error) {
+    return '选择图片时出错: $error';
+  }
+
+  @override
+  String profile_feature_not_implemented(String feature) {
+    return '$feature功能尚未实现';
+  }
+
+  @override
+  String get profile_pending_payment_order => '待付款';
+
+  @override
+  String get profile_in_progress_order => '进行中';
+
+  @override
+  String get profile_completed_order => '已完成';
+
+  @override
+  String get profile_refund_after_sales => '退款/售后';
+
+  @override
+  String get profile_account_deletion => '账号注销';
+
+  @override
+  String get profile_bound_phone => '已绑定手机号';
+
+  @override
+  String get profile_not_bound => '未绑定';
+
+  @override
+  String get profile_nickname => '昵称';
+
+  @override
+  String get profile_confirm_logout => '确认退出';
+
+  @override
+  String get profile_confirm_logout_message => '确定要退出登录吗？';
+
+  @override
+  String get profile_confirm => '确定';
+
+  @override
+  String get profile_update_avatar => '更新头像';
+
+  @override
+  String get profile_update_avatar_confirm => '确定要更新头像吗？';
+
+  @override
+  String get profile_info_updated => '个人信息更新成功！';
+
+  @override
+  String get profile_avatar_upload_timeout => '头像上传超时，请检查网络连接后重试';
+
+  @override
+  String get profile_network_failed => '网络连接失败，请检查网络后重试';
+
+  @override
+  String profile_avatar_optimized(String ratio) {
+    return '头像已优化处理，压缩 $ratio%';
+  }
+
+  @override
+  String profile_avatar_process_failed(String error) {
+    return '头像处理失败: $error';
+  }
+
+  @override
+  String profile_logout_error(String error) {
+    return '退出登录时发生错误: $error';
+  }
+
+  @override
+  String get profile_nickname_empty => '请输入昵称';
+
+  @override
+  String get profile_nickname_too_short => '昵称至少需要2个字符';
+
+  @override
+  String get profile_nickname_too_long => '昵称不能超过20个字符';
+
+  @override
+  String get profile_nickname_no_spaces => '昵称不能包含空格';
+
+  @override
+  String get profile_nickname_invalid_chars => '昵称只能包含中文、英文、数字和下划线';
+
+  @override
+  String get profile_nickname_only_underscores => '昵称不能只包含下划线';
+
+  @override
+  String get profile_nickname_unchanged => '昵称没有变化';
+
+  @override
+  String get profile_edit_nickname_title => '编辑昵称';
+
+  @override
+  String get profile_nickname_input_hint => '请输入昵称';
+
+  @override
+  String get profile_nickname_rules => '请设置2-20个字符，只能包含中文、英文、数字和下划线';
+
+  @override
+  String get profile_nickname_updated => '昵称修改成功！';
+
+  @override
+  String profile_nickname_update_failed(String error) {
+    return '昵称修改失败: $error';
+  }
+
+  @override
+  String get profile_submit_changes => '提交修改';
+
+  @override
+  String get profile_avatar_uploaded => '头像上传成功';
+
+  @override
+  String get profile_updated => '个人资料更新成功';
+
+  @override
+  String get profile_reload => '重新加载';
+
+  @override
+  String get profile_account_balance => '账户余额';
+
+  @override
+  String get profile_pending_settlement => '待结算';
+
+  @override
+  String get profile_total_income => '总收入';
+
+  @override
+  String get profile_load_wallet => '点击加载钱包信息';
+
+  @override
+  String get profile_all_orders => '全部订单';
+
+  @override
+  String get profile_awaiting_payment => '待付款';
+
+  @override
+  String get profile_awaiting_shipment => '待发货';
+
+  @override
+  String get profile_awaiting_receipt => '待收货';
+
+  @override
+  String get profile_awaiting_review => '待评价';
+
+  @override
+  String get profile_shipping_address => '收货地址';
+
+  @override
+  String get profile_browsing_history => '浏览历史';
+
+  @override
+  String get profile_contact_support => '联系客服';
+
+  @override
+  String get profile_help_center => '帮助中心';
+
+  @override
+  String get profile_feedback => '意见反馈';
+
+  @override
+  String get profile_switch_to_seller_mode => '切换至卖家模式';
+
+  @override
+  String get profile_take_photo => '拍照';
+
+  @override
+  String get profile_choose_from_album => '从相册选择';
+
+  @override
+  String profile_image_pick_failed(String error) {
+    return '选择图片失败: $error';
+  }
+
+  @override
+  String get profile_edit_profile => '编辑个人资料';
+
+  @override
+  String get profile_online_status => '在线状态';
+
+  @override
+  String get profile_mission_title => '小帮手的使命';
+
+  @override
+  String get profile_mission_our_mission => '我们的使命';
+
+  @override
+  String get profile_mission_our_mission_content =>
+      '连接创意与需求，让每一个想法都能找到实现的可能。小帮手致力于为用户提供最贴心、最智能的服务体验，成为您生活和工作中最可靠的数字伙伴。';
+
+  @override
+  String get profile_mission_core_values => '核心价值';
+
+  @override
+  String get profile_mission_core_values_content =>
+      '• 用户至上：始终以用户需求为出发点\n• 创新驱动：持续探索新技术和新方法\n• 诚信服务：提供可靠、透明的服务体验\n• 共同成长：与用户和合作伙伴携手前行';
+
+  @override
+  String get profile_mission_service_promise => '服务承诺';
+
+  @override
+  String get profile_mission_service_promise_content =>
+      '我们承诺为每一位用户提供：\n\n✓ 7×24小时智能服务支持\n✓ 个性化的解决方案推荐\n✓ 安全可靠的数据保护\n✓ 持续优化的用户体验\n✓ 及时响应的客户服务';
+
+  @override
+  String get profile_mission_future_vision => '未来愿景';
+
+  @override
+  String get profile_mission_future_vision_content =>
+      '成为全球领先的智能服务平台，通过AI技术赋能，让每个人都能享受到个性化、高效率的数字化生活体验。我们相信，科技的力量应该让生活更美好，让创意更容易实现。';
+
+  @override
+  String get profile_mission_questions_suggestions => '有问题或建议？';
+
+  @override
+  String get profile_mission_listening => '我们随时倾听您的声音，期待与您一起创造更美好的未来。';
+
+  @override
+  String get profile_mission_contact_us => '联系我们';
+
+  @override
+  String get profile_mission_contact_coming_soon => '联系功能即将上线，敬请期待！';
+
+  @override
+  String get profile_wallet_title => '我的钱包';
+
+  @override
+  String profile_wallet_error(String error) {
+    return '错误: $error';
+  }
+
+  @override
+  String profile_wallet_occurred_error(String error) {
+    return '发生错误: $error';
+  }
+
+  @override
+  String get profile_wallet_retry => '重试';
+
+  @override
+  String get profile_wallet_filter_all => '全部';
+
+  @override
+  String get profile_wallet_filter_income => '收入';
+
+  @override
+  String get profile_wallet_filter_expense => '支出';
+
+  @override
+  String get profile_wallet_no_transactions => '暂无交易记录';
+
+  @override
+  String profile_wallet_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String profile_wallet_load_more_failed(String error) {
+    return '加载更多失败: $error';
+  }
+
+  @override
+  String get profile_wallet_account_balance => '账户余额';
+
+  @override
+  String get profile_wallet_pending_amount => '待结算金额';
+
+  @override
+  String get profile_wallet_total_income => '总收入';
+
+  @override
+  String get profile_wallet_withdraw => '提现';
+
+  @override
+  String get profile_wallet_status_completed => '已完成';
+
+  @override
+  String get profile_wallet_status_pending => '处理中';
+
+  @override
+  String get profile_wallet_status_failed => '失败';
+
+  @override
+  String get profile_wallet_status_unknown => '未知';
+
+  @override
+  String get profile_wallet_transaction_details => '交易详情';
+
+  @override
+  String get profile_wallet_transaction_id => '交易ID';
+
+  @override
+  String get profile_wallet_transaction_type => '类型';
+
+  @override
+  String get profile_wallet_transaction_type_income => '收入';
+
+  @override
+  String get profile_wallet_transaction_type_expense => '支出';
+
+  @override
+  String get profile_wallet_transaction_amount => '金额';
+
+  @override
+  String get profile_wallet_transaction_description => '说明';
+
+  @override
+  String get profile_wallet_transaction_date => '日期';
+
+  @override
+  String get profile_wallet_transaction_status => '状态';
+
+  @override
+  String get profile_wallet_close => '关闭';
+
+  @override
+  String profile_wallet_available_balance(String symbol, String amount) {
+    return '可提现余额: $symbol$amount';
+  }
+
+  @override
+  String get profile_wallet_withdraw_amount => '提现金额';
+
+  @override
+  String get profile_wallet_withdraw_hint => '请输入提现金额';
+
+  @override
+  String get profile_wallet_withdraw_time => '提现到账时间：1-3个工作日';
+
+  @override
+  String get profile_wallet_invalid_amount => '请输入有效的提现金额';
+
+  @override
+  String get profile_wallet_exceed_balance => '提现金额不能超过可用余额';
+
+  @override
+  String get profile_wallet_confirm_withdraw => '确认提现';
+
+  @override
+  String profile_wallet_withdraw_submitted(String symbol, String amount) {
+    return '提现申请已提交：$symbol$amount';
+  }
+
+  @override
+  String get profile_wallet_not_implemented => '该功能暂未实现';
+
+  @override
+  String get auth_verification_expired => '验证码已过期';
+
+  @override
+  String auth_login_failed(String error) {
+    return '登录失败: $error';
+  }
+
+  @override
+  String auth_code_send_failed(String error) {
+    return '验证码发送失败: $error';
+  }
+
+  @override
+  String get auth_login_success => '登录成功!';
+
+  @override
+  String get auth_login => '登录';
+
+  @override
+  String get auth_privacy_policy => '隐私政策';
+
+  @override
+  String get auth_and => '和';
+
+  @override
+  String get auth_user_agreement => '用户协议';
+
+  @override
+  String get auth_invalid_phone => '请输入有效的11位手机号';
+
+  @override
+  String get auth_get_code => '获取验证码';
+
+  @override
+  String get payment_creating_order => '创建订单中...';
+
+  @override
+  String get payment_processing => '支付中...';
+
+  @override
+  String get payment_credit_card => '信用卡支付';
+
+  @override
+  String get payment_confirm_order => '确认订单';
+
+  @override
+  String get payment_quantity_label => '数量:';
+
+  @override
+  String get payment_order_summary => '订单摘要';
+
+  @override
+  String get payment_product_amount => '商品金额';
+
+  @override
+  String get payment_quantity => '数量';
+
+  @override
+  String get payment_order_total => '订单总计';
+
+  @override
+  String get payment_method => '支付方式';
+
+  @override
+  String get payment_processing_ellipsis => '处理中...';
+
+  @override
+  String get payment_confirm_pay => '确认支付';
+
+  @override
+  String get payment_success => '支付成功';
+
+  @override
+  String get payment_failed => '支付失败';
+
+  @override
+  String get payment_view_order_detail => '查看订单详情';
+
+  @override
+  String get payment_back_to_orders => '返回订单列表';
+
+  @override
+  String get payment_success_tip => '感谢您的购买！您可以在订单中查看详情。';
+
+  @override
+  String get payment_failed_tip => '支付未成功，请重试或选择其他支付方式。';
+
+  @override
+  String get home_banner_image_load_failed => '图片加载失败';
+
+  @override
+  String home_banner_placeholder(int index) {
+    return '轮播图 $index';
+  }
+
+  @override
+  String get home_no_data => '暂无数据';
+
+  @override
+  String get product_detail_no_faq => '暂无常见问题';
+
+  @override
+  String product_detail_buy_button(String price) {
+    return '一键购买 $price';
+  }
+
+  @override
+  String get product_detail_buyer_requirements => '需要买家提供';
+
+  @override
+  String get product_detail_no_buyer_requirements => '卖家暂未设置需要买家提供的信息';
+
+  @override
+  String get after_sales_apply => '申请售后';
+
+  @override
+  String get after_sales_apply_remake => '申请重新制作';
+
+  @override
+  String get after_sales_apply_supplement => '申请补充';
+
+  @override
+  String get after_sales_apply_refund => '申请退款';
+
+  @override
+  String after_sales_max_images(int max) {
+    return '最多只能上传 $max 张图片';
+  }
+
+  @override
+  String after_sales_images_processed(int count, String ratio) {
+    return '成功处理 $count 张图片，平均压缩 $ratio%';
+  }
+
+  @override
+  String after_sales_images_failed(int count) {
+    return '$count 张图片处理失败';
+  }
+
+  @override
+  String after_sales_image_pick_failed(String error) {
+    return '选择图片失败: $error';
+  }
+
+  @override
+  String get after_sales_select_reason => '请选择售后原因';
+
+  @override
+  String get after_sales_reason_label => '售后原因';
+
+  @override
+  String get after_sales_reason_quality => '商品质量问题';
+
+  @override
+  String get after_sales_reason_mismatch => '商品与描述不符';
+
+  @override
+  String get after_sales_reason_wrong_item => '卖家发错货';
+
+  @override
+  String get after_sales_reason_unwanted => '不想要了';
+
+  @override
+  String get after_sales_reason_other => '其他';
+
+  @override
+  String get after_sales_description_label => '问题描述';
+
+  @override
+  String get after_sales_description_hint => '请详细描述您遇到的问题...';
+
+  @override
+  String after_sales_refund_max_hint(String symbol, String amount) {
+    return '最多可退 $symbol$amount';
+  }
+
+  @override
+  String get after_sales_enter_refund_amount => '请输入退款金额';
+
+  @override
+  String get after_sales_invalid_amount => '请输入有效的金额数字';
+
+  @override
+  String get after_sales_amount_must_positive => '退款金额必须大于0';
+
+  @override
+  String after_sales_amount_exceed(String symbol, String amount) {
+    return '退款金额不能超过 $symbol$amount';
+  }
+
+  @override
+  String after_sales_upload_proof(int max) {
+    return '上传凭证 (最多 $max 张)';
+  }
+
+  @override
+  String get after_sales_remove_image => '移除图片';
+
+  @override
+  String get after_sales_submit => '提交申请';
+
+  @override
+  String after_sales_loading_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get after_sales_detail_retry => '重试';
+
+  @override
+  String get after_sales_initializing => '正在初始化...';
+
+  @override
+  String get after_sales_status_audit_reject => '售后申请已拒绝';
+
+  @override
+  String get after_sales_status_refund_success => '退款成功';
+
+  @override
+  String get after_sales_status_processing => '售后处理中';
+
+  @override
+  String get after_sales_subtitle_wait_audit => '卖家会在48小时内处理您的申请';
+
+  @override
+  String get after_sales_subtitle_audit_pass => '退款将在1-3个工作日内到账';
+
+  @override
+  String get after_sales_subtitle_audit_reject => '如有异议，可申请平台介入';
+
+  @override
+  String get after_sales_subtitle_refund_success => '退款已完成，请查收';
+
+  @override
+  String get after_sales_subtitle_canceled => '您已取消售后申请';
+
+  @override
+  String get after_sales_subtitle_default => '请耐心等待处理结果';
+
+  @override
+  String get after_sales_product_info => '商品信息';
+
+  @override
+  String get after_sales_product_unknown => '商品名称未知';
+
+  @override
+  String after_sales_spec(String spec) {
+    return '规格：$spec';
+  }
+
+  @override
+  String after_sales_quantity(int count) {
+    return '数量：$count';
+  }
+
+  @override
+  String get after_sales_info => '售后信息';
+
+  @override
+  String get after_sales_application_number => '申请单号';
+
+  @override
+  String get after_sales_application_time => '申请时间';
+
+  @override
+  String get after_sales_refund_amount_label => '退款金额';
+
+  @override
+  String get after_sales_application_reason => '申请原因';
+
+  @override
+  String get after_sales_detailed_description => '详细说明';
+
+  @override
+  String get after_sales_audit_remark => '审核备注';
+
+  @override
+  String get after_sales_revoke => '撤销申请';
+
+  @override
+  String get after_sales_modify => '修改申请';
+
+  @override
+  String get after_sales_platform_intervention => '平台介入';
+
+  @override
+  String get after_sales_list_title => '售后列表';
+
+  @override
+  String get after_sales_no_records => '暂无售后申请记录';
+
+  @override
+  String get after_sales_please_wait => '请稍候...';
+
+  @override
+  String get after_sales_unknown_product => '未知商品';
+
+  @override
+  String after_sales_status_label(String status) {
+    return '状态: $status';
+  }
+
+  @override
+  String get after_sales_select_type => '选择售后类型';
+
+  @override
+  String get after_sales_type_remake => '我要重新制作';
+
+  @override
+  String get after_sales_type_remake_desc => '对收到的制作不满意，可与作者协商重做';
+
+  @override
+  String get after_sales_type_supplement => '我要补充';
+
+  @override
+  String get after_sales_type_supplement_desc => '收到的制作不完善，可与作者协商补充';
+
+  @override
+  String get after_sales_type_refund => '我要退款';
+
+  @override
+  String get after_sales_type_refund_desc => '协商退款';
+
+  @override
+  String get after_sales_no_record_for_order => '该订单没有对应的售后记录';
+
+  @override
+  String after_sales_unknown_error(String error) {
+    return '加载售后详情时发生未知错误: $error';
+  }
+
+  @override
+  String get after_sales_server_error => '服务器错误';
+
+  @override
+  String get after_sales_cache_error => '缓存错误';
+
+  @override
+  String get after_sales_network_error => '网络连接错误';
+
+  @override
+  String get after_sales_general_unknown_error => '发生未知错误';
+
+  @override
+  String get favorites_title => '我的收藏';
+
+  @override
+  String get favorites_tab_services => '服务';
+
+  @override
+  String get favorites_tab_sellers => '卖家';
+
+  @override
+  String get favorites_close => '关闭';
+
+  @override
+  String get favorites_empty_services => '暂无收藏的服务';
+
+  @override
+  String get favorites_empty_sellers => '暂无关注的卖家';
+
+  @override
+  String get favorites_empty_services_hint => '您可以在浏览服务时点击收藏按钮';
+
+  @override
+  String get favorites_empty_sellers_hint => '您可以在浏览卖家时点击关注按钮';
+
+  @override
+  String get favorites_unfollow => '取消关注';
+
+  @override
+  String get favorites_remove => '取消收藏';
+
+  @override
+  String get favorites_seller_type_member => '个人卖家';
+
+  @override
+  String get favorites_seller_type_enterprise => '企业卖家';
+
+  @override
+  String get favorites_seller_type_platform => '平台卖家';
+
+  @override
+  String get favorites_seller_type_default => '卖家';
+
+  @override
+  String get favorites_status_active => '活跃';
+
+  @override
+  String get favorites_status_inactive => '不活跃';
+
+  @override
+  String get favorites_status_suspended => '已暂停';
+
+  @override
+  String get favorites_status_banned => '已封禁';
+
+  @override
+  String ai_docs_chat_create_failed(String error) {
+    return '无法创建聊天会话: $error';
+  }
+
+  @override
+  String get ai_docs_chat_room_empty => '聊天室ID为空，无法进入聊天';
+
+  @override
+  String ai_docs_chat_enter_error(String error) {
+    return '进入聊天时发生错误: $error';
+  }
+
+  @override
+  String get ai_docs_rate_limit_details => '使用次数详情';
+
+  @override
+  String ai_docs_rate_limit_remaining(int count) {
+    return '剩余 $count 次';
+  }
+
+  @override
+  String ai_docs_rate_limit_reset_in(String time) {
+    return '$time后重置';
+  }
+
+  @override
+  String get ai_docs_rate_limit_rules => '使用规则';
+
+  @override
+  String get ai_docs_rate_limit_burst => '突发限制';
+
+  @override
+  String get ai_docs_rate_limit_hourly => '小时限制';
+
+  @override
+  String get ai_docs_rate_limit_upgrade => '升级获取更多次数';
+
+  @override
+  String get ai_docs_rate_limit_upgrade_coming => '升级功能即将推出';
+
+  @override
+  String ai_docs_rate_limit_time_hours(int hours) {
+    return '$hours小时';
+  }
+
+  @override
+  String ai_docs_rate_limit_time_minutes(int minutes) {
+    return '$minutes分钟';
+  }
+
+  @override
+  String ai_docs_rate_limit_time_seconds(int seconds) {
+    return '$seconds秒';
+  }
+
+  @override
+  String get ai_docs_rate_limit_reset => '已重置';
+
+  @override
+  String get ai_docs_rate_limit_warning_title => '使用次数即将耗尽';
+
+  @override
+  String get ai_docs_rate_limit_today_remaining => '今日剩余次数';
+
+  @override
+  String ai_docs_rate_limit_remaining_info(int count, String time) {
+    return '还可使用 $count 次，$time后重置';
+  }
+
+  @override
+  String get ai_docs_rate_limit_today_usage => '今日使用情况';
+
+  @override
+  String get auth_verification_code_expired => '验证码已过期';
+
+  @override
+  String get auth_get_verification_code => '获取验证码';
+
+  @override
+  String get home_image_load_failed => '图片加载失败';
+
+  @override
+  String get home_reached_end => '已经到底了';
+
+  @override
+  String get home_reviews_title => '评论';
+
+  @override
+  String home_reviews_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get home_reviews_no_reviews => '暂无评论';
+
+  @override
+  String get home_reviews_default_content => '不错，很有耐心';
+
+  @override
+  String get home_reviews_seller_reply => '卖家回复';
+
+  @override
+  String home_reviews_years_ago(int count) {
+    return '$count年前';
+  }
+
+  @override
+  String home_reviews_months_ago(int count) {
+    return '$count月前';
+  }
+
+  @override
+  String home_reviews_days_ago(int count) {
+    return '$count天前';
+  }
+
+  @override
+  String home_reviews_hours_ago(int count) {
+    return '$count小时前';
+  }
+
+  @override
+  String home_reviews_minutes_ago(int count) {
+    return '$count分钟前';
+  }
+
+  @override
+  String get home_reviews_just_now => '刚刚';
+
+  @override
+  String get after_sales_apply_title => '申请售后';
+
+  @override
+  String get after_sales_select_reason_hint => '请选择售后原因';
+
+  @override
+  String get after_sales_select_reason_validator => '请选择售后原因';
+
+  @override
+  String after_sales_refund_amount_hint(String symbol, String amount) {
+    return '最多可退 $symbol$amount';
+  }
+
+  @override
+  String get after_sales_refund_amount_required => '请输入退款金额';
+
+  @override
+  String get after_sales_refund_amount_invalid => '请输入有效的金额数字';
+
+  @override
+  String get after_sales_refund_amount_positive => '退款金额必须大于0';
+
+  @override
+  String after_sales_refund_amount_exceed(String symbol, String amount) {
+    return '退款金额不能超过 $symbol$amount';
+  }
+
+  @override
+  String after_sales_upload_evidence(int max) {
+    return '上传凭证 (最多 $max 张)';
+  }
+
+  @override
+  String after_sales_image_process_success(int count, String ratio) {
+    return '成功处理 $count 张图片，平均压缩 $ratio%';
+  }
+
+  @override
+  String after_sales_image_process_failed(int count) {
+    return '$count 张图片处理失败';
+  }
+
+  @override
+  String after_sales_detail_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get after_sales_detail_initializing => '正在初始化...';
+
+  @override
+  String get after_sales_info_title => '售后信息';
+
+  @override
+  String get after_sales_info_order_number => '申请单号';
+
+  @override
+  String get after_sales_info_apply_time => '申请时间';
+
+  @override
+  String get after_sales_info_refund_amount => '退款金额';
+
+  @override
+  String get after_sales_info_reason => '申请原因';
+
+  @override
+  String get after_sales_info_description => '详细说明';
+
+  @override
+  String get after_sales_info_audit_remark => '审核备注';
+
+  @override
+  String after_sales_list_load_failed(String error) {
+    return '加载失败: $error';
+  }
+
+  @override
+  String get after_sales_list_empty => '暂无售后申请记录';
+
+  @override
+  String get after_sales_list_loading => '请稍候...';
+
+  @override
+  String get after_sales_list_unknown_product => '未知商品';
+
+  @override
+  String after_sales_list_status(String status) {
+    return '状态: $status';
+  }
+
+  @override
+  String after_sales_list_apply_time(String time) {
+    return '申请时间: $time';
+  }
+
+  @override
+  String get after_sales_select_type_title => '选择售后类型';
+
+  @override
+  String get after_sales_type_remake_title => '我要重新制作';
+
+  @override
+  String get after_sales_type_remake_subtitle => '对收到的制作不满意，可与作者协商重做';
+
+  @override
+  String get after_sales_type_supplement_title => '我要补充';
+
+  @override
+  String get after_sales_type_supplement_subtitle => '收到的制作不完善，可与作者协商补充';
+
+  @override
+  String get after_sales_type_refund_title => '我要退款';
+
+  @override
+  String get after_sales_type_refund_subtitle => '协商退款';
+
+  @override
+  String get favorites_seller_status_active => '活跃';
+
+  @override
+  String get favorites_seller_status_inactive => '不活跃';
+
+  @override
+  String get favorites_seller_status_suspended => '已暂停';
+
+  @override
+  String get favorites_seller_status_banned => '已封禁';
+
+  @override
+  String get app_store_settings => '店铺设置';
+
+  @override
+  String get app_wallet => '钱包';
+
+  @override
+  String get app_wallet_init_failed => '初始化钱包页面失败';
+
+  @override
+  String get app_error_label => '错误';
+
+  @override
+  String get app_go_back => '返回';
+
+  @override
+  String get app_page_not_found => '页面未找到';
+
+  @override
+  String get app_path_error => '路径错误';
+
+  @override
+  String get app_error_generic => '错误';
+
+  @override
+  String get app_dev_menu_title => '开发调试菜单';
+
+  @override
+  String get app_dev_common_entries => '常用入口';
+
+  @override
+  String get app_dev_dskk => '多少看看';
+
+  @override
+  String get app_dev_order_module_buyer => '订单模块 (买家)';
+
+  @override
+  String get app_dev_order_list => '订单列表';
+
+  @override
+  String get app_dev_order_detail_example => '订单详情 (示例)';
+
+  @override
+  String get app_dev_order_module_seller => '订单模块 (卖家)';
+
+  @override
+  String get app_dev_seller_order_list => '卖家订单列表';
+
+  @override
+  String get app_dev_seller_order_detail_example => '卖家订单详情 (示例)';
+
+  @override
+  String get app_dev_seller_module => '卖家模块 (Seller)';
+
+  @override
+  String get app_dev_seller_center => '卖家中心 (首页)';
+
+  @override
+  String get app_dev_ai_docs_module => 'AI Docs 模块';
+
+  @override
+  String get app_dev_ai_chat => 'AI 聊天';
+
+  @override
+  String get app_dev_test_other => '测试/其他';
+
+  @override
+  String get app_dev_current_credentials => '当前测试凭证 (硬编码): ';
+
+  @override
+  String get app_dev_temp_injection => '(临时注入，将在 Auth 模块合并后移除)';
+
+  @override
+  String app_dev_navigation_failed(String path, String error) {
+    return '跳转失败: $path - $error';
+  }
+
+  @override
+  String get core_processing => '处理中...';
+
+  @override
+  String get core_yesterday => '昨天';
+
+  @override
+  String get payment_test_title => '支付功能测试';
+
+  @override
+  String get payment_check_availability => '检查支付方式可用性';
+
+  @override
+  String get payment_test_params => '测试参数';
+
+  @override
+  String get payment_order_number => '订单号';
+
+  @override
+  String get payment_amount_yuan => '金额 (元)';
+
+  @override
+  String get payment_product_name => '商品名称';
+
+  @override
+  String get payment_select_method => '选择支付方式';
+
+  @override
+  String payment_test_button(String method, String amount) {
+    return '测试$method ¥$amount';
+  }
+
+  @override
+  String get payment_usage_instructions => '使用说明';
+
+  @override
+  String get payment_instruction_1 => '1. 修改上方测试参数';
+
+  @override
+  String get payment_instruction_2 => '2. 选择要测试的支付方式';
+
+  @override
+  String get payment_instruction_3 => '3. 点击测试按钮发起支付';
+
+  @override
+  String get payment_instruction_4 => '4. 点击右上角信息按钮检查支付方式可用性';
+
+  @override
+  String get payment_test_warning => '注意：测试环境建议使用0.01元进行测试';
+
+  @override
+  String get payment_test_product => '测试商品';
+
+  @override
+  String payment_initiated_success(String message) {
+    return '支付发起成功：$message';
+  }
+
+  @override
+  String payment_failed_message(String message) {
+    return '支付失败：$message';
+  }
+
+  @override
+  String payment_exception(String error) {
+    return '支付异常: $error';
+  }
+
+  @override
+  String get payment_availability_title => '支付方式可用性';
+
+  @override
+  String get payment_alipay => '支付宝';
+
+  @override
+  String get payment_wechat => '微信支付';
+
+  @override
+  String get payment_wallet_balance => '余额支付';
+
+  @override
+  String get payment_confirm => '确定';
+
+  @override
+  String payment_check_failed(String error) {
+    return '检查失败: $error';
+  }
+
+  @override
+  String get payment_alipay_subtitle => '安全快捷支付';
+
+  @override
+  String get payment_wechat_subtitle => '微信安全支付';
+
+  @override
+  String get payment_amount_label => '支付金额：';
+
+  @override
+  String get payment_terms_agreement => '点击\"确认支付\"即表示您同意并接受相关服务条款';
+
+  @override
+  String get payment_create_order_failed => '创建支付订单失败';
+
+  @override
+  String get payment_method_test_title => '支付方式测试';
+
+  @override
+  String get payment_alipay_pay => '支付宝支付';
+
+  @override
+  String get payment_test_functions => '测试功能';
+
+  @override
+  String get payment_test_alipay => '测试支付宝支付';
+
+  @override
+  String get payment_test_wechat => '测试微信支付';
+
+  @override
+  String get payment_test_credit_card => '测试信用卡支付';
+
+  @override
+  String get payment_recent_test_result => '最近测试结果';
+
+  @override
+  String get payment_no_test_result => '暂无测试结果';
+
+  @override
+  String get payment_available => '可用';
+
+  @override
+  String get payment_unavailable => '不可用';
+
+  @override
+  String payment_method_label(String name) {
+    return '支付方式：$name';
+  }
+
+  @override
+  String get payment_mock_mode => 'Mock模式';
+
+  @override
+  String payment_error_label(String error) {
+    return '错误: $error';
+  }
+
+  @override
+  String get payment_nav_network_failed => '网络连接失败';
+
+  @override
+  String get payment_nav_network_error_message => '网络连接出错，请检查网络后重试';
+
+  @override
+  String get payment_nav_view_orders => '查看订单';
+
+  @override
+  String get payment_nav_retry_payment => '重试支付';
+
+  @override
+  String get payment_nav_result_unknown_title => '支付结果未知';
+
+  @override
+  String get payment_nav_result_unknown_message => '支付结果暂时无法确认，请稍后查看订单状态或联系客服';
+
+  @override
+  String get payment_nav_query_status => '查询状态';
+
+  @override
+  String get payment_nav_cancel_continue => '您已取消支付，可以继续完成订单支付';
+
+  @override
+  String get payment_nav_processing => '支付正在处理中，请稍后查看订单状态';
+
+  @override
+  String get payment_nav_success => '支付成功';
+
+  @override
+  String get payment_nav_failed => '支付失败';
+
+  @override
+  String get payment_nav_retrying => '正在重新发起支付...';
+
+  @override
+  String get payment_nav_retry_failed => '无法重试支付，订单信息丢失';
+
+  @override
+  String get payment_nav_querying => '正在查询支付状态...';
+
+  @override
+  String get payment_nav_query_failed => '无法查询状态，订单信息丢失';
+
+  @override
+  String payment_test_description(String subject) {
+    return '$subject - 支付测试';
+  }
 }

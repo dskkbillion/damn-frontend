@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Assuming you use GetIt for DI
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter for context.pop()
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../bloc/seller_order_detail_bloc.dart';
 // Import Order entity to use in builder
 import '../../../domain/entities/order.dart';
 // Import the timeline header widget
 import '../../widgets/order_status_timeline_header.dart';
+// Import the status widget
+import '../../widgets/order_status_widget.dart';
 // Import the item tile widget
 import '../../widgets/order_detail_item_tile.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
@@ -22,7 +24,6 @@ import '../widgets/seller_order_materials_section.dart';
 // Import entities
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/utils/order_status_mapper.dart';
 
 class SellerOrderDetailPage extends StatelessWidget {
   final int orderId;
@@ -34,7 +35,7 @@ class SellerOrderDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppLogger.d('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
+    print('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
     
     return BlocProvider(
       create: (context) => GetIt.instance<SellerOrderDetailBloc>()
@@ -45,7 +46,7 @@ class SellerOrderDetailPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
-          title: Text('订单详情 (卖家) - #$orderId'),
+          title: Text(AppLocalizations.of(context)!.order_seller_detail_title(orderId)),
         ),
         body: BlocListener<SellerOrderDetailBloc, SellerOrderDetailState>(
           listener: (context, state) {
@@ -85,11 +86,11 @@ class SellerOrderDetailPage extends StatelessWidget {
               // Failure state
               else if (state is SellerOrderDetailLoadFailure && state.failedOrderId == orderId) {
                  // Show error message on load failure
-                return Center(child: Text('加载订单 #${state.failedOrderId} 失败: ${state.message}'));
+                return Center(child: Text(AppLocalizations.of(context)!.order_seller_load_failed(state.failedOrderId, state.message)));
               } 
               // Initial state or fallback
               else {
-                return const Center(child: Text('正在准备加载...'));
+                return Center(child: Text(AppLocalizations.of(context)!.order_seller_preparing));
               }
             },
           ), // End BlocBuilder
@@ -221,13 +222,13 @@ class SellerOrderDetailPage extends StatelessWidget {
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        _buildPriceRow(context, '商品总额', order.priceSummary.totalPrice),
+                        _buildPriceRow(context, AppLocalizations.of(context)!.order_price_total_amount, order.priceSummary.totalPrice),
                         if (order.priceSummary.deliveryPrice > 0)
-                          _buildPriceRow(context, '运费', order.priceSummary.deliveryPrice),
+                          _buildPriceRow(context, AppLocalizations.of(context)!.order_price_shipping, order.priceSummary.deliveryPrice),
                         if (order.priceSummary.discountPrice > 0)
-                          _buildPriceRow(context, '优惠金额', -order.priceSummary.discountPrice, isDiscount: true),
+                          _buildPriceRow(context, AppLocalizations.of(context)!.order_price_discount, -order.priceSummary.discountPrice, isDiscount: true),
                         const Divider(height: 16, thickness: 0.5),
-                        _buildPriceRow(context, '实付款', order.priceSummary.payPrice, isTotal: true),
+                        _buildPriceRow(context, AppLocalizations.of(context)!.order_price_actual_paid, order.priceSummary.payPrice, isTotal: true),
                       ],
                     ),
                   ),
@@ -246,29 +247,31 @@ class SellerOrderDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow(context, '订单编号', order.orderSn ?? 'N/A'),
-                        _buildTimeRow(context, '下单时间', order.createdAt),
+                        _buildInfoRow(context, AppLocalizations.of(context)!.order_seller_order_number, order.orderSn ?? 'N/A'),
+                        _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_order_time, order.createdAt),
                         if (order.paymentInfo?.payTime != null)
-                            _buildTimeRow(context, '付款时间', order.paymentInfo!.payTime),
+                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_pay_time, order.paymentInfo!.payTime),
                         if (order.completeTime != null)
-                            _buildTimeRow(context, '完成时间', order.completeTime),
+                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_complete_time, order.completeTime),
                         if (order.cancelTime != null)
-                            _buildTimeRow(context, '取消时间', order.cancelTime),
+                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_cancel_time, order.cancelTime),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16), // Spacing after time card
                 
-              SellerDynamicContentArea(order: order),
+              // 6. Buyer Materials Section (显示买家提供的材料)
+              SellerOrderMaterialsSection(
+                order: order,
+                materials: materials,
+                deliveries: deliveries,
+              ),
 
-              if (!OrderStatusMapper.isLightConsultationOrder(order)) ...[
-                SellerOrderMaterialsSection(
-                  order: order,
-                  materials: materials,
-                  deliveries: deliveries,
-                ),
-              ],
+              // 7. Dynamic Content Area (based on order state)
+              SellerDynamicContentArea(order: order),
+              // Spacer before bottom padding (which is for the action bar)
+              // const SizedBox(height: 16),
 
               const SizedBox(height: 80), // Add padding at the bottom for the action bar
             ],

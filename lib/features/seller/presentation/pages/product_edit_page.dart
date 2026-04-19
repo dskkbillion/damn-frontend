@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -23,13 +22,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
-import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
-import '../widgets/product_edit/product_success_cases_section.dart';
-import '../widgets/product_edit/product_image_upload_section.dart';
-import '../widgets/product_edit/product_buyer_info_section.dart';
-import '../widgets/product_edit/product_qa_section.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -123,7 +116,7 @@ class ProductEditPage extends StatefulWidget {
   State<ProductEditPage> createState() => _ProductEditPageState();
 }
 
-class _ProductEditPageState extends State<ProductEditPage> with TickerProviderStateMixin {
+class _ProductEditPageState extends State<ProductEditPage> {
   /// BLoC实例
   late final ProductEditBloc _bloc;
   
@@ -139,36 +132,16 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 属性输入控制器映射
   final Map<String, TextEditingController> _attributeControllers = {};
   
+  /// QA控制器管理（key: qaIndex_type, value: controller）
+  final Map<String, TextEditingController> _qaControllers = {};
+
+  
   /// 服务档位管理
   late ProductServiceTiers _serviceTiers;
   
   /// 当前选中的服务档位
   ServiceTier _selectedTier = ServiceTier.basic;
-
-  /// 闪烁动画控制器
-  late AnimationController _flashAnimationController;
-
-  /// 闪烁动画
-  late Animation<double> _flashAnimation;
-
-  /// 档位切换动画控制器
-  late AnimationController _tierSwitchAnimationController;
-
-  /// 档位缩放动画
-  late Animation<double> _tierScaleAnimation;
-
-  /// 档位淡入淡出动画
-  late Animation<double> _tierFadeAnimation;
-
-  /// 档位滑动动画
-  late Animation<Offset> _tierSlideAnimation;
-
-  /// 属性列表切换动画控制器
-  late AnimationController _attributeListAnimationController;
-
-  /// 属性列表淡入淡出动画
-  late Animation<double> _attributeFadeAnimation;
-
+  
   /// 滚动控制器
   final ScrollController _scrollController = ScrollController();
   
@@ -178,9 +151,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   
   /// QA相关状态
   final List<QAPair> _qaList = [];
-
+  bool _isQAExpanded = false;
+  
   /// 买家信息相关状态
   final List<BuyerInfoItem> _buyerInfoItems = [];
+  bool _isBuyerInfoExpanded = false;
   
   /// 数据同步标志位
   bool _isInitialDataLoad = true;
@@ -198,20 +173,20 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 统一的输入框边框样式
   InputDecoration get _lightBorderDecoration => InputDecoration(
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-      borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-      borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-      borderSide: const BorderSide(color: AppColors.borderInputFocus, width: 1.5),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     filled: true,
-    fillColor: AppColors.backgroundCard,
+    fillColor: Colors.white,
   );
 
   /// 添加表单验证错误状态变量
@@ -227,81 +202,20 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   void initState() {
     super.initState();
     
-    AppLogger.d('[ProductEditPage] initState called with productId: ${widget.productId}, isPreviewMode: ${widget.isPreviewMode}');
+    print('[ProductEditPage] initState called with productId: ${widget.productId}, isPreviewMode: ${widget.isPreviewMode}');
     
     // 从DI容器获取BLoC实例
     _bloc = getIt<ProductEditBloc>();
     
     // 初始化服务档位
     _serviceTiers = ProductServiceTiers();
-
-    // 初始化闪烁动画
-    _flashAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _flashAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _flashAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    // 初始化档位切换动画控制器
-    _tierSwitchAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    _tierScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _tierSwitchAnimationController,
-      curve: Curves.easeOutBack,
-    ));
-
-    _tierFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _tierSwitchAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _tierSlideAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 0.02),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _tierSwitchAnimationController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    // 初始化属性列表动画控制器
-    _attributeListAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _attributeFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _attributeListAnimationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _tierSwitchAnimationController.forward();
-    _attributeListAnimationController.forward();
-
+    
     // 解析商品ID
     final productIdInt = widget.productId != null ? int.tryParse(widget.productId!) : null;
-    AppLogger.d('[ProductEditPage] Parsed productId as int: $productIdInt');
+    print('[ProductEditPage] Parsed productId as int: $productIdInt');
     
     // 初始化页面
-    AppLogger.d('[ProductEditPage] Initializing ProductEdit with productId: $productIdInt, isPreviewMode: ${widget.isPreviewMode}');
+    print('[ProductEditPage] Initializing ProductEdit with productId: $productIdInt, isPreviewMode: ${widget.isPreviewMode}');
     _bloc.add(InitializeProductEdit(
       productId: productIdInt,
     ));
@@ -314,22 +228,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     
     // 监听状态变化，更新控制器（预览模式和编辑模式都需要）
     _bloc.stream.listen((state) {
-      AppLogger.d('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
+      print('[ProductEditPage] State changed - isLoading: ${state.isLoading}, hasProduct: ${state.product != null}, isPreviewMode: ${widget.isPreviewMode}');
       if (!state.isLoading && state.product != null) {
-        // 只在初始加载或者非用户输入触发的状态变化时同步数据
-        // 避免在用户输入时触发同步导致光标跳转
-        if (_isInitialDataLoad) {
-          AppLogger.d('[ProductEditPage] Initial data load - syncing data from state');
-          _syncDataFromState(state.formData);
-          _isInitialDataLoad = false;
-        } else if (state.formData.name != _nameController.text ||
-                   state.formData.description != _descriptionController.text) {
-          // 只有当BLoC状态与当前控制器值不同时才同步（说明不是由用户输入触发的）
-          // 但要小心处理，避免覆盖用户正在编辑的内容
-          AppLogger.d('[ProductEditPage] External state change detected - syncing carefully');
-          _syncDataFromState(state.formData);
-        }
-
+        print('[ProductEditPage] Syncing data from state - productName: ${state.formData.name}');
+        _syncDataFromState(state.formData);
         // 设置初始数据用于变更检测（仅在编辑模式下）
         if (state.initialFormData == null && !widget.isPreviewMode) {
           _bloc.add(SetInitialFormData(initialData: state.formData));
@@ -339,6 +241,32 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   }
 
 
+
+  /// 添加QA对
+  void _addQAPair() {
+    setState(() {
+      _qaList.add(QAPair(question: '', answer: ''));
+    });
+  }
+  
+  /// 删除QA对
+  void _removeQAPair(int index) {
+    setState(() {
+      _qaList.removeAt(index);
+      // 清理未使用的QA控制器
+      _cleanupUnusedQAControllers();
+    });
+  }
+  
+  /// 更新QA对
+  void _updateQAPair(int index, String question, String answer) {
+    setState(() {
+      _qaList[index].question = question;
+      _qaList[index].answer = answer;
+    });
+    // 触发变更检测
+    _onFormFieldChanged();
+  }
 
   /// 添加买家信息项
   void _addBuyerInfoItem(BuyerInfoType type, String label, String description, bool isRequired) {
@@ -420,7 +348,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     
     // 如果产品ID发生变化，重新初始化页面
     if (oldWidget.productId != widget.productId) {
-      AppLogger.d('[ProductEditPage] Product ID changed from ${oldWidget.productId} to ${widget.productId}, reinitializing...');
+      print('[ProductEditPage] Product ID changed from ${oldWidget.productId} to ${widget.productId}, reinitializing...');
       
       // 重置数据同步标志位
       _isInitialDataLoad = true;
@@ -449,13 +377,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     _nameController.dispose();
     _descriptionController.dispose();
     _scrollController.dispose(); // 释放滚动控制器
-
+    
     // 释放防抖计时器
     _debounceTimer?.cancel();
-
-    // 释放动画控制器
-    _tierSwitchAnimationController.dispose();
-    _attributeListAnimationController.dispose();
     
     // 释放所有属性控制器
     for (var controller in _attributeControllers.values) {
@@ -469,22 +393,21 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     }
     _systemControllers.clear();
     
+    // 释放所有QA控制器
+    for (var controller in _qaControllers.values) {
+      controller.dispose();
+    }
+    _qaControllers.clear();
+    
     // 释放所有服务档位控制器
     _serviceTiers.dispose();
-
-    // 释放动画控制器
-    _flashAnimationController.dispose();
-
+    
     super.dispose();
   }
 
   /// 表单字段变化时检查变更
   void _onFormFieldChanged() {
-    // 取消之前的防抖计时器
-    _debounceTimer?.cancel();
-
-    // 设置新的防抖计时器，延迟500ms执行
-    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
         // 同步新功能状态到表单数据
         _syncAdditionalFormData();
@@ -542,21 +465,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           value: _serviceTiers.basic.price
         ));
         
-        // 轻咨询模式：直接发布商品，不保存草稿
-        _bloc.add(const SubmitProductForm());
+        // 保存草稿
+        _bloc.add(const SaveProductDraft());
         
-        // 原草稿功能代码（暂时保留，后续可能会用）
-        // _bloc.add(const SaveProductDraft());
-        
-        // 等待提交完成
+        // 等待保存完成
         await _bloc.stream
-            .firstWhere((state) => !state.isSubmitting)
+            .firstWhere((state) => !state.isSavingDraft)
             .timeout(const Duration(seconds: 10));
-        
-        // 原草稿等待代码
-        // await _bloc.stream
-        //     .firstWhere((state) => !state.isSavingDraft)
-        //     .timeout(const Duration(seconds: 10));
         
         if (mounted) {
           Navigator.of(context).pop();
@@ -572,35 +487,29 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     }
   }
 
-  /// 显示保存对话框
+  /// 显示保存草稿对话框
   Future<bool?> _showSaveDraftDialog() async {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('检测到未保存的更改'),
-        // 轻咨询模式：直接发布
-        content: const Text('您有未保存的内容，是否要保存并发布？'),
-        // 原草稿提示文案
-        // content: const Text('您有未保存的内容，是否要保存为草稿？'),
+        title: Text(AppLocalizations.of(context)?.seller_product_edit_unsaved_changes_title ?? 'Unsaved Changes Detected'),
+        content: Text(AppLocalizations.of(context)?.seller_product_edit_unsaved_changes_message ?? 'You have unsaved content. Save as draft?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('不保存'),
+            child: Text(AppLocalizations.of(context)?.seller_product_edit_discard ?? 'Discard'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: const Color(0xFFBF7D2A),
               foregroundColor: Colors.white,
             ),
-            // 轻咨询模式：直接发布
-            child: const Text('保存并发布'),
-            // 原草稿按钮文案
-            // child: Text(AppLocalizations.of(context)!?.product_edit_save_draft ?? 'Save Draft'),
+            child: Text(AppLocalizations.of(context)?.product_edit_save_draft ?? 'Save Draft'),
           ),
         ],
       ),
@@ -609,48 +518,35 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
 
   /// 从BLoC状态同步数据到页面组件
   void _syncDataFromState(ProductFormData formData) {
-    AppLogger.d('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
-    AppLogger.d('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
-    AppLogger.d('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
-
-    // 更新基本文本字段 - 只在值真正改变时更新，避免光标跳转
+    print('[ProductEditPage] _syncDataFromState called with name: "${formData.name}", description: "${formData.description}", variants count: ${formData.variants.length}');
+    print('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
+    print('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
+    
+    // 更新基本文本字段
     if (mounted) {
-      // 保存当前光标位置
-      final nameSelection = _nameController.selection;
-      final descriptionSelection = _descriptionController.selection;
-
-      // 只在内容真正改变时才更新控制器
-      if (_nameController.text != formData.name) {
-        setState(() {
-          _nameController.text = formData.name;
-        });
-        AppLogger.d('[ProductEditPage] Updated name controller - "${_nameController.text}"');
-      }
-
-      if (_descriptionController.text != formData.description) {
-        setState(() {
-          _descriptionController.text = formData.description;
-        });
-        AppLogger.d('[ProductEditPage] Updated description controller - "${_descriptionController.text}"');
-      }
+      setState(() {
+        _nameController.text = formData.name;
+        _descriptionController.text = formData.description;
+      });
+      print('[ProductEditPage] Updated text controllers - name: "${_nameController.text}", description: "${_descriptionController.text}"');
     }
     
     // 如果有变体数据，更新到本地服务档位（编辑模式和预览模式都需要）
     if (formData.variants.isNotEmpty && (!_bloc.state.isCreateMode || widget.isPreviewMode)) {
-      AppLogger.d('[ProductEditPage] Updating service tiers from ${formData.variants.length} variants');
+      print('[ProductEditPage] Updating service tiers from ${formData.variants.length} variants');
       for (int i = 0; i < formData.variants.length; i++) {
         final variant = formData.variants[i];
-        AppLogger.d('[ProductEditPage] Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
+        print('[ProductEditPage] Variant $i: name="${variant.name}", price=${variant.price}, sellingPrice=${variant.sellingPrice}');
       }
       
       if (mounted) {
         setState(() {
           _serviceTiers = ProductServiceTiers.fromProductOptionValues(formData.variants);
         });
-        AppLogger.d('[ProductEditPage] Updated service tiers from variants:');
-        AppLogger.d('[ProductEditPage] - Basic: price=${_serviceTiers.basic.price}, delivery=${_serviceTiers.basic.deliveryDay}');
-        AppLogger.d('[ProductEditPage] - Standard: price=${_serviceTiers.standard.price}, delivery=${_serviceTiers.standard.deliveryDay}'); 
-        AppLogger.d('[ProductEditPage] - Premium: price=${_serviceTiers.premium.price}, delivery=${_serviceTiers.premium.deliveryDay}');
+        print('[ProductEditPage] Updated service tiers from variants:');
+        print('[ProductEditPage] - Basic: price=${_serviceTiers.basic.price}, delivery=${_serviceTiers.basic.deliveryDay}');
+        print('[ProductEditPage] - Standard: price=${_serviceTiers.standard.price}, delivery=${_serviceTiers.standard.deliveryDay}'); 
+        print('[ProductEditPage] - Premium: price=${_serviceTiers.premium.price}, delivery=${_serviceTiers.premium.deliveryDay}');
       }
     }
     
@@ -670,24 +566,26 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 'answer': qaMap['answer'] ?? '',
               };
               _qaList.add(QAPair.fromJson(qaData));
-              AppLogger.d('[ProductEditPage] Added QA item: question="${qaMap['question']}", answer="${qaMap['answer']}"');
+              print('[ProductEditPage] Added QA item: question="${qaMap['question']}", answer="${qaMap['answer']}"');
             } catch (e) {
-              AppLogger.d('[ProductEditPage] Error parsing QA data: $e, qaMap: $qaMap');
+              print('[ProductEditPage] Error parsing QA data: $e, qaMap: $qaMap');
             }
           }
-          AppLogger.d('[ProductEditPage] Synced ${_qaList.length} QA items from formData');
+          // 清理未使用的QA控制器
+          _cleanupUnusedQAControllers();
+          print('[ProductEditPage] Synced ${_qaList.length} QA items from formData');
           
           // 同步买家信息列表
           _buyerInfoItems.clear();
           for (final buyerInfoMap in formData.buyerInfoItems) {
             try {
               _buyerInfoItems.add(BuyerInfoItem.fromJson(buyerInfoMap));
-              AppLogger.d('[ProductEditPage] Added buyer info item: type="${buyerInfoMap['type']}", label="${buyerInfoMap['label']}"');
+              print('[ProductEditPage] Added buyer info item: type="${buyerInfoMap['type']}", label="${buyerInfoMap['label']}"');
             } catch (e) {
-              AppLogger.d('[ProductEditPage] Error parsing buyer info data: $e, buyerInfoMap: $buyerInfoMap');
+              print('[ProductEditPage] Error parsing buyer info data: $e, buyerInfoMap: $buyerInfoMap');
             }
           }
-          AppLogger.d('[ProductEditPage] Synced ${_buyerInfoItems.length} buyer info items from formData');
+          print('[ProductEditPage] Synced ${_buyerInfoItems.length} buyer info items from formData');
           
           // 标记初始数据已加载
           _isInitialDataLoad = false;
@@ -698,81 +596,29 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // Success cases are now managed in BLoC state
     // No need to sync here
     
-    AppLogger.d('[ProductEditPage] Synced data from state:');
-    AppLogger.d('  - QA items: ${_qaList.length}');
-    AppLogger.d('  - Buyer info items: ${_buyerInfoItems.length}');
-    AppLogger.d('  - Success cases: managed in BLoC');
-    AppLogger.d('  - Variants: ${formData.variants.length}');
+    print('[ProductEditPage] Synced data from state:');
+    print('  - QA items: ${_qaList.length}');
+    print('  - Buyer info items: ${_buyerInfoItems.length}');
+    print('  - Success cases: managed in BLoC');
+    print('  - Variants: ${formData.variants.length}');
   }
 
   /// 将页面组件的本地数据同步到BLoC状态
   void _syncLocalDataToBLoC() {
-    AppLogger.d('[ProductEditPage] Syncing local data to BLoC:');
-    AppLogger.d('  - QA items: ${_qaList.length}');
-    AppLogger.d('  - Buyer info items: ${_buyerInfoItems.length}');
-    AppLogger.d('  - Success cases: managed in BLoC');
+    print('[ProductEditPage] Syncing local data to BLoC:');
+    print('  - QA items: ${_qaList.length}');
+    print('  - Buyer info items: ${_buyerInfoItems.length}');
+    print('  - Success cases: managed in BLoC');
     
     // 直接调用现有的同步方法
     _syncAdditionalFormData();
   }
 
-  /// 获取档位主题色
-  Color _getTierThemeColor() {
-    switch (_selectedTier) {
-      case ServiceTier.basic:
-        return AppColors.info;
-      case ServiceTier.standard:
-        return Colors.purple.shade600;
-      case ServiceTier.premium:
-        return AppColors.warning;
-    }
-  }
-
-  /// 获取档位图标
-  IconData _getTierIcon() {
-    switch (_selectedTier) {
-      case ServiceTier.basic:
-        return Icons.flash_on;
-      case ServiceTier.standard:
-        return Icons.star;
-      case ServiceTier.premium:
-        return Icons.diamond;
-    }
-  }
-
-  /// 获取档位提示文字
-  String _getTierHintText() {
-    switch (_selectedTier) {
-      case ServiceTier.basic:
-        return '快速响应，即时解答';
-      case ServiceTier.standard:
-        return '深入分析，专业建议';
-      case ServiceTier.premium:
-        return '全方位服务，持续优化';
-    }
-  }
-
   /// 选择服务档位
   void _selectServiceTier(ServiceTier tier) {
-    if (_selectedTier != tier) {
-      // 触发档位切换动画
-      _tierSwitchAnimationController.reverse().then((_) {
-        setState(() {
-          _selectedTier = tier;
-        });
-        _tierSwitchAnimationController.forward();
-      });
-
-      // 触发属性列表切换动画
-      _attributeListAnimationController.reverse().then((_) {
-        _attributeListAnimationController.forward();
-      });
-
-      // 触发闪烁动画
-      _flashAnimationController.forward().then((_) {
-        _flashAnimationController.reverse();
-      });
-    }
+    setState(() {
+      _selectedTier = tier;
+    });
   }
 
 
@@ -794,9 +640,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         // 确保不超过9张图片的限制
         if (combinedPaths.length > 9) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('最多只能上传9张图片，已选择前9张'),
-              backgroundColor: AppColors.warning,
+            SnackBar(
+              content: Text(AppLocalizations.of(context)?.seller_product_edit_max_images ?? 'Maximum 9 images allowed'),
+              backgroundColor: Colors.orange,
             ),
           );
           _bloc.add(SelectProductImages(imagePaths: combinedPaths.sublist(0, 9)));
@@ -823,7 +669,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // 验证商品名称
     if (_nameController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['name'] = AppLocalizations.of(context)!?.product_edit_validation_name_required ?? 'Please enter service name';
+        _formErrors['name'] = AppLocalizations.of(context)?.product_edit_validation_name_required ?? 'Please enter service name';
       });
       isValid = false;
     }
@@ -831,21 +677,17 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     // 验证商品描述
     if (_descriptionController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['description'] = AppLocalizations.of(context)!?.product_edit_validation_description_required ?? 'Please enter service description';
+        _formErrors['description'] = AppLocalizations.of(context)?.product_edit_validation_description_required ?? 'Please enter service description';
       });
       isValid = false;
     }
     
     // 验证商品图片
-    bool hasImages = _bloc.state.selectedImagePaths.isNotEmpty || 
-                     _bloc.state.uploadedImageUrls.isNotEmpty ||
-                     (_bloc.state.product?.images.isNotEmpty ?? false);
-    
-    if (!hasImages) {
+    if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
-          backgroundColor: AppColors.error,
+          content: Text(AppLocalizations.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
+          backgroundColor: Colors.red,
         ),
       );
       isValid = false;
@@ -857,7 +699,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       final tier = tiers[i];
       if (tier.price <= 0) {
         setState(() {
-          _formErrors['price_${tier.tier.name}'] = '${tier.tier.displayName}价格必须大于0';
+          _formErrors['price_${tier.tier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_required(tier.tier.displayName) ?? '${tier.tier.displayName} price must be greater than 0';
         });
         isValid = false;
       }
@@ -866,9 +708,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!isValid) {
       // 滚动到第一个错误字段
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('表单数据不完整，请检查标红字段'),
-          backgroundColor: AppColors.error,
+        SnackBar(
+          content: Text(AppLocalizations.of(context)?.seller_product_edit_form_incomplete ?? 'Form data incomplete. Please check highlighted fields.'),
+          backgroundColor: Colors.red,
         ),
       );
       return;
@@ -883,10 +725,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
     
     // 设置基础价格为基础档的价格
-    _bloc.add(UpdateFormField(
-      fieldName: 'price', 
+      _bloc.add(UpdateFormField(
+        fieldName: 'price', 
       value: _serviceTiers.basic.price
-    ));
+      ));
     
     // 提交表单
     _bloc.add(const SubmitProductForm());
@@ -901,13 +743,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('添加属性'),
+          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_attribute ?? 'Add Attribute'),
           content: TextField(
             controller: nameController,
             maxLength: ValidationConstants.maxAttributeNameLength,
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-              helperText: AppLocalizations.of(context)!?.product_edit_max_characters != null 
+              hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+              helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
                   ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
                   : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
               errorText: errorText,
@@ -918,7 +760,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             onChanged: (value) {
               setDialogState(() {
                 if (value.length > ValidationConstants.maxAttributeNameLength) {
-                  errorText = '属性名称最多${ValidationConstants.maxAttributeNameLength}个字符';
+                  errorText = AppLocalizations.of(context)?.seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
                 } else {
                   errorText = null;
                 }
@@ -928,7 +770,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -942,7 +784,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   Navigator.pop(context);
                 }
               },
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_confirm ?? 'Confirm'),
             ),
           ],
         ),
@@ -957,9 +799,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '选项配置',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context)?.seller_product_edit_options_config ?? 'Options Configuration',
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -974,14 +816,14 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             margin: const EdgeInsets.only(bottom: 4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderInput),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               children: [
                 Expanded(child: Text(option)),
                 IconButton(
-                  icon: const Icon(Icons.remove_circle, color: AppColors.error, size: 20),
+                  icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
                   onPressed: () {
                     setState(() {
                       options.removeAt(index);
@@ -1001,8 +843,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               child: TextField(
                 controller: optionController,
                 decoration: _lightBorderDecoration.copyWith(
-                  labelText: '新选项',
-                  hintText: '输入选项内容',
+                  labelText: AppLocalizations.of(context)?.seller_product_edit_new_option ?? 'New Option',
+                  hintText: AppLocalizations.of(context)?.seller_product_edit_option_hint ?? 'Enter option content',
                 ),
                 onSubmitted: (value) {
                   if (value.isNotEmpty && !options.contains(value)) {
@@ -1016,7 +858,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
+              icon: const Icon(Icons.add_circle, color: Color(0xFFBF7D2A)),
               onPressed: () {
                 final value = optionController.text.trim();
                 if (value.isNotEmpty && !options.contains(value)) {
@@ -1044,8 +886,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isPreviewMode 
-            ? AppLocalizations.of(context)!?.product_edit_preview_product ?? 'Preview Product' 
-            : (widget.productId == null ? AppLocalizations.of(context)!?.product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context)!?.product_edit_title_edit ?? 'Edit Product')),
+            ? AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview Product' 
+            : (widget.productId == null ? AppLocalizations.of(context)?.product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context)?.product_edit_title_edit ?? 'Edit Product')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -1071,9 +913,9 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 );
               },
               icon: const Icon(Icons.edit),
-              label: Text(AppLocalizations.of(context)!?.product_management_action_edit ?? 'Edit'),
+              label: Text(AppLocalizations.of(context)?.product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -1097,49 +939,51 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                       IconButton(
                         onPressed: () => _previewProduct(),
                         icon: const Icon(Icons.preview),
-                        tooltip: AppLocalizations.of(context)!?.product_edit_preview_product ?? 'Preview',
+                        tooltip: AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview',
                       ),
                       const SizedBox(width: 8),
                     ],
                     
-                    // 保存草稿按钮 - 暂时注释掉，直接发布商品
-                    // TextButton.icon(
-                    //   onPressed: state.isSavingDraft ? null : () {
-                    //     // 同步本地数据到BLoC
-                    //     _syncLocalDataToBLoC();
-                    //     
-                    //     // 构建并同步服务档位数据
-                    //     List<ProductOptionValue> variants = _serviceTiers.toProductOptionValues();
-                    //     _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
-                    //     
-                    //     // 设置基础价格为基础档的价格
-                    //     _bloc.add(UpdateFormField(
-                    //       fieldName: 'price', 
-                    //       value: _serviceTiers.basic.price
-                    //     ));
-                    //     
-                    //     // 添加调试日志
-                    //     AppLogger.d('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
-                    //     AppLogger.d('[ProductEditPage] Variants count: ${variants.length}');
-                    //     for (var i = 0; i < variants.length; i++) {
-                    //       AppLogger.d('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
-                    //     }
-                    //     
-                    //     // 保存草稿
-                    //     _bloc.add(const SaveProductDraft());
-                    //   },
-                    //   icon: state.isSavingDraft
-                    //       ? const SizedBox(
-                    //           width: 16,
-                    //           height: 16,
-                    //           child: CircularProgressIndicator(strokeWidth: 2),
-                    //         )
-                    //       : const Icon(Icons.save_alt),
-                    //   label: Text(state.hasUnsavedChanges ? '草稿*' : '草稿'),
-                    //   style: TextButton.styleFrom(
-                    //     foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
-                    //   ),
-                    // ),
+                    // 保存草稿按钮
+                    TextButton.icon(
+                      onPressed: state.isSavingDraft ? null : () {
+                        // 同步本地数据到BLoC
+                        _syncLocalDataToBLoC();
+                        
+                        // 构建并同步服务档位数据
+                        List<ProductOptionValue> variants = _serviceTiers.toProductOptionValues();
+                        _bloc.add(UpdateFormField(fieldName: 'variants', value: variants));
+                        
+                        // 设置基础价格为基础档的价格
+                        _bloc.add(UpdateFormField(
+                          fieldName: 'price', 
+                          value: _serviceTiers.basic.price
+                        ));
+                        
+                        // 添加调试日志
+                        print('[ProductEditPage] Saving draft with price: ${_serviceTiers.basic.price}');
+                        print('[ProductEditPage] Variants count: ${variants.length}');
+                        for (var i = 0; i < variants.length; i++) {
+                          print('[ProductEditPage] Variant $i: ${variants[i].name} - price: ${variants[i].sellingPrice}');
+                        }
+                        
+                        // 保存草稿
+                        _bloc.add(const SaveProductDraft());
+                      },
+                      icon: state.isSavingDraft
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_alt),
+                      label: Text(state.hasUnsavedChanges
+                          ? (AppLocalizations.of(context)?.seller_product_edit_draft_unsaved_label ?? 'Draft*')
+                          : (AppLocalizations.of(context)?.seller_product_edit_draft_label ?? 'Draft')),
+                      style: TextButton.styleFrom(
+                        foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
+                      ),
+                    ),
                   ],
                 );
               },
@@ -1148,11 +992,11 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             TextButton(
               onPressed: _submitForm,
               style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              child: const Text('发布'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_publish ?? 'Publish'),
             ),
             const SizedBox(width: 16),
           ],
@@ -1160,68 +1004,42 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         body: BlocProvider<ProductEditBloc>(
           create: (context) => _bloc,
           child: BlocConsumer<ProductEditBloc, ProductEditState>(
-            buildWhen: (previous, current) {
-              // 只在真正影响UI渲染的字段变化时才rebuild
-              if (previous.isLoading != current.isLoading) return true;
-              if (previous.product != current.product) return true;
-              if (previous.selectedImagePaths != current.selectedImagePaths) return true;
-              if (previous.selectedDetailImagePaths != current.selectedDetailImagePaths) return true;
-              if (previous.uploadedImageUrls != current.uploadedImageUrls) return true;
-              if (previous.uploadedDetailImageUrls != current.uploadedDetailImageUrls) return true;
-              if (previous.uploadStatus != current.uploadStatus) return true;
-              if (previous.uploadedCount != current.uploadedCount) return true;
-              if (previous.totalUploadCount != current.totalUploadCount) return true;
-              if (previous.formData.name != current.formData.name) return true;
-              if (previous.formData.description != current.formData.description) return true;
-              if (previous.formData.categoryId != current.formData.categoryId) return true;
-              if (previous.formData.price != current.formData.price) return true;
-              if (previous.categories != current.categories) return true;
-              if (previous.successCases != current.successCases) return true;
-              if (previous.hasError != current.hasError) return true;
-              if (previous.errorMessage != current.errorMessage) return true;
-              // hasUnsavedChanges / isSavingDraft / isDraftSaveSuccess / isSubmitting / isSubmitSuccess
-              // / initialFormData / lastAutoSaveTime / formData.qaList / formData.buyerInfoItems
-              // 变化不需要rebuild表单主体
-              return false;
-            },
             listener: (context, state) {
               if (state.hasError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.errorMessage ?? '操作失败'),
-                    backgroundColor: AppColors.error,
+                    content: Text(state.errorMessage ?? (AppLocalizations.of(context)?.seller_product_edit_operation_failed ?? 'Operation failed')),
+                    backgroundColor: Colors.red,
                   ),
                 );
-              // 原草稿保存成功处理（暂时注释，后续可能会用）
-              // else if (state.isDraftSaveSuccess && !_isReturning) {
-              //   // 先检查是否已经mounted，避免在dispose后执行
-              //   if (!mounted) return;
-              //   
-              //   // 设置标志，防止重复返回
-              //   _isReturning = true;
-              //   
-              //   ScaffoldMessenger.of(context).showSnackBar(
-              //     const SnackBar(
-              //       content: Text('草稿保存成功'),
-              //       backgroundColor: Colors.green,
-              //     ),
-              //   );
-              //   // 通知父页面刷新草稿列表
-              //   widget.onDraftSaved?.call();
-              //   // 立即返回，不再延迟
-              //   // 返回true表示需要刷新列表
-              //   Navigator.of(context).pop(true);
-              // }
+              } else if (state.isDraftSaveSuccess && !_isReturning) {
+                // 先检查是否已经mounted，避免在dispose后执行
+                if (!mounted) return;
+                
+                // 设置标志，防止重复返回
+                _isReturning = true;
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)?.seller_product_edit_draft_saved ?? 'Draft saved successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                // 通知父页面刷新草稿列表
+                widget.onDraftSaved?.call();
+                // 立即返回，不再延迟
+                // 返回true表示需要刷新列表
+                Navigator.of(context).pop(true);
               } else if (state.isSubmitSuccess) {
                 // 先检查是否已经mounted，避免在dispose后执行
                 if (!mounted) return;
                 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.isCreateMode 
-                      ? '服务发布成功！请在"在售"列表中查看' 
-                      : '服务更新成功'),
-                    backgroundColor: AppColors.success,
+                    content: Text(state.isCreateMode
+                      ? (AppLocalizations.of(context)?.seller_product_edit_publish_success ?? 'Service published successfully!')
+                      : (AppLocalizations.of(context)?.seller_product_edit_update_success ?? 'Service updated successfully')),
+                    backgroundColor: Colors.green,
                     duration: const Duration(seconds: 2), // 缩短显示时间
                   ),
                 );
@@ -1269,43 +1087,16 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             _buildServiceTiersSection(),
             
             // 买家需要提供的信息
-            ProductBuyerInfoSection(
-              items: _buyerInfoItems,
-              isPreviewMode: widget.isPreviewMode,
-              onAdd: _addBuyerInfoItem,
-              onUpdate: _updateBuyerInfoItem,
-              onRemove: _removeBuyerInfoItem,
-            ),
+            _buildBuyerInfoSection(state),
             
             // 常见问题编辑
-            ProductQASection(
-              initialItems: _qaList,
-              isPreviewMode: widget.isPreviewMode,
-              onChanged: (items) {
-                _qaList
-                  ..clear()
-                  ..addAll(items);
-                _onFormFieldChanged();
-              },
-            ),
+            _buildCommonQuestionsSection(state),
             
             // 成功案例
-            ProductSuccessCasesSection(
-              state: state,
-              onAdd: _addSuccessCase,
-              onEdit: _updateSuccessCase,
-              onRemove: _removeSuccessCase,
-              onRetryUpload: (caseId) => _bloc.add(RetrySuccessCaseUpload(caseId: caseId)),
-            ),
+            _buildSuccessCasesSection(state),
             
             // 商品图片上传
-            ProductImageUploadSection(
-              state: state,
-              onPickImages: ({bool replaceExisting = false}) =>
-                  _pickImages(replaceExisting: replaceExisting),
-              onRemoveImage: _removeImage,
-              onSetMainImage: _setMainImage,
-            ),
+            _buildImageUploadSection(state),
             
             const SizedBox(height: 32),
           ],
@@ -1317,8 +1108,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建基本信息表单
   Widget _buildBasicInfoForm(ProductEditState state) {
     return Container(
-      color: AppColors.backgroundCard,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      color: Colors.white,
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1332,22 +1123,24 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               controller: _nameController,
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
-                hintText: '服务名称',
-                hintStyle: const TextStyle(color: AppColors.textTertiary),
+                hintText: AppLocalizations.of(context)?.seller_product_edit_service_name_hint ?? 'Service Name',
+                hintStyle: const TextStyle(color: Colors.grey),
                     errorText: _formErrors['name'],
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: const BorderSide(color: AppColors.error, width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: const BorderSide(color: Colors.red, width: 1.5),
                     ),
               ),
               onChanged: (value) {
-                    // 输入时清除该字段的错误（不使用setState避免输入法问题）
+                    // 输入时清除该字段的错误
                     if (_formErrors.containsKey('name')) {
-                      _formErrors.remove('name');
+                      setState(() {
+                        _formErrors.remove('name');
+                      });
                     }
                 _bloc.add(UpdateFormField(fieldName: 'name', value: value));
               },
@@ -1363,23 +1156,25 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               controller: _descriptionController,
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
-                hintText: '描述一下您的服务的具体信息，如...',
-                hintStyle: const TextStyle(color: AppColors.textTertiary),
+                hintText: AppLocalizations.of(context)?.seller_product_edit_description_hint ?? 'Describe your service details...',
+                hintStyle: const TextStyle(color: Colors.grey),
                 errorText: _formErrors['description'],
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.error, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.red, width: 1),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
                 ),
               ),
               maxLines: 3,
               onChanged: (value) {
-                // 输入时清除该字段的错误（不使用setState避免输入法问题）
+                // 输入时清除该字段的错误
                 if (_formErrors.containsKey('description')) {
-                  _formErrors.remove('description');
+                  setState(() {
+                    _formErrors.remove('description');
+                  });
                 }
                 _bloc.add(UpdateFormField(fieldName: 'description', value: value));
               },
@@ -1393,8 +1188,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建服务档位设置区域
   Widget _buildServiceTiersSection() {
     return Container(
-      color: AppColors.backgroundCard,
-      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
           // 标题
@@ -1403,7 +1198,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                AppLocalizations.of(context)!?.product_edit_service_tiers ?? 'Service Tier Settings',
+                AppLocalizations.of(context)?.product_edit_service_tiers ?? 'Service Tier Settings',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1440,8 +1235,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderInput),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              border: Border.all(color: Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: _buildTierAttributesList(),
           ),
@@ -1458,6 +1253,1537 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   
 
   
+  /// 构建常见问题部分
+  Widget _buildCommonQuestionsSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题栏 - 整个区域可点击
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isQAExpanded = !_isQAExpanded;
+              });
+            },
+      child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)?.seller_product_edit_faq_title ?? 'FAQ Editor',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  // QA数量指示器
+                  if (_qaList.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)?.seller_product_edit_faq_count(_qaList.length) ?? '${_qaList.length} questions',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFBF7D2A),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                      // 展开/折叠图标
+                      Icon(
+                        _isQAExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey[600],
+                  ),
+                ],
+              ),
+            ],
+              ),
+            ),
+          ),
+          
+          // 展开的内容
+          if (_isQAExpanded) ...[
+            const SizedBox(height: 16),
+            
+            // QA列表
+            if (_qaList.isNotEmpty)
+              ...List.generate(_qaList.length, (index) => _buildQAItem(index)),
+            
+            // 添加QA按钮 - 预览模式下隐藏
+            if (!widget.isPreviewMode) Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 16),
+              child: OutlinedButton.icon(
+                onPressed: _addQAPair,
+                icon: const Icon(Icons.add),
+                label: Text(AppLocalizations.of(context)?.seller_product_edit_add_question ?? 'Add Question'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFFBF7D2A),
+                  side: const BorderSide(color: Color(0xFFBF7D2A)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  /// 构建单个QA项
+  Widget _buildQAItem(int index) {
+    final qa = _qaList[index];
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 问题输入
+          Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    readOnly: widget.isPreviewMode,
+                    decoration: _lightBorderDecoration.copyWith(
+                    labelText: AppLocalizations.of(context)?.seller_product_edit_question_label ?? 'Question',
+                    hintText: AppLocalizations.of(context)?.seller_product_edit_question_hint ?? 'Enter a question buyers may ask',
+                    ),
+                    controller: _getQAController(index, 'question', qa.question),
+                    onChanged: widget.isPreviewMode ? null : (value) {
+                    _updateQAPair(index, value, qa.answer);
+                    },
+                    // 优化中文输入法体验
+                    enableIMEPersonalizedLearning: true,
+                    keyboardType: TextInputType.text,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              // 删除按钮 - 预览模式下隐藏
+              if (!widget.isPreviewMode) IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: () => _removeQAPair(index),
+                tooltip: AppLocalizations.of(context)?.seller_product_edit_delete_question ?? 'Delete Question',
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // 答案输入
+          TextField(
+            readOnly: widget.isPreviewMode,
+                  decoration: _lightBorderDecoration.copyWith(
+              labelText: AppLocalizations.of(context)?.seller_product_edit_answer_label ?? 'Answer',
+              hintText: AppLocalizations.of(context)?.seller_product_edit_answer_hint ?? 'Enter the answer',
+                  ),
+            controller: _getQAController(index, 'answer', qa.answer),
+            maxLines: 3,
+                  onChanged: widget.isPreviewMode ? null : (value) {
+              _updateQAPair(index, qa.question, value);
+            },
+            // 优化中文输入法体验
+            enableIMEPersonalizedLearning: true,
+            keyboardType: TextInputType.text,
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 构建买家需要提供的信息部分
+  Widget _buildBuyerInfoSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题栏 - 整个区域可点击
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isBuyerInfoExpanded = !_isBuyerInfoExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+                AppLocalizations.of(context)?.seller_product_edit_buyer_info_title ?? 'Buyer Information Required',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+              Row(
+                children: [
+                  // 信息项数量指示器
+                  if (_buyerInfoItems.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context)?.seller_product_edit_buyer_info_count(_buyerInfoItems.length) ?? '${_buyerInfoItems.length} items',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFBF7D2A),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                      // 展开/折叠图标
+                      Icon(
+                        _isBuyerInfoExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: Colors.grey[600],
+                  ),
+                ],
+              ),
+            ],
+              ),
+            ),
+          ),
+          
+          // 说明文字
+          if (!_isBuyerInfoExpanded)
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                AppLocalizations.of(context)?.seller_product_edit_buyer_info_desc ?? 'Select the information types buyers need to provide',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+                ),
+            ),
+          ),
+          
+          // 展开的内容
+          if (_isBuyerInfoExpanded) ...[
+          const SizedBox(height: 16),
+          
+            // 信息类型选择网格
+            _buildBuyerInfoTypeGrid(),
+            
+            // 已选择的信息项列表
+            if (_buyerInfoItems.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)?.seller_product_edit_selected_items ?? 'Selected items:',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 8),
+              ..._buyerInfoItems.asMap().entries.map((entry) => 
+                _buildBuyerInfoItem(entry.key, entry.value)
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 构建信息类型选择网格
+  Widget _buildBuyerInfoTypeGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 3,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: BuyerInfoType.values.length,
+      itemBuilder: (context, index) {
+        final type = BuyerInfoType.values[index];
+        return _buildInfoTypeCard(type);
+      },
+    );
+  }
+
+  /// 构建信息类型卡片
+  Widget _buildInfoTypeCard(BuyerInfoType type) {
+    return InkWell(
+      onTap: () => _showAddBuyerInfoDialog(type),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFBF7D2A)),
+                borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+        ),
+        child: Row(
+          children: [
+            Icon(_getIconForInfoType(type), color: const Color(0xFFBF7D2A)),
+            const SizedBox(width: 8),
+            Expanded(
+                child: Text(
+                type.displayName,
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 获取信息类型对应的图标
+  IconData _getIconForInfoType(BuyerInfoType type) {
+    switch (type) {
+      case BuyerInfoType.text:
+        return Icons.text_fields;
+      case BuyerInfoType.image:
+        return Icons.image;
+      case BuyerInfoType.file:
+        return Icons.attach_file;
+      case BuyerInfoType.contact:
+        return Icons.contact_phone;
+      case BuyerInfoType.requirement:
+        return Icons.description;
+      case BuyerInfoType.reference:
+        return Icons.link;
+    }
+  }
+
+  /// 构建买家信息项
+  Widget _buildBuyerInfoItem(int index, BuyerInfoItem item) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+              ),
+      child: Row(
+                      children: [
+          Icon(_getIconForInfoType(item.type), size: 20, color: const Color(0xFFBF7D2A)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      item.label,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    if (item.isRequired)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                          color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                          AppLocalizations.of(context)?.seller_product_edit_required ?? 'Required',
+                          style: const TextStyle(fontSize: 10, color: Colors.red),
+                            ),
+                          ),
+                      ],
+                    ),
+                if (item.description.isNotEmpty)
+                  Text(
+                    item.description,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A)),
+                onPressed: () => _showEditBuyerInfoDialog(index, item),
+                tooltip: AppLocalizations.of(context)?.seller_product_edit_edit_tooltip ?? 'Edit',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                onPressed: () => _removeBuyerInfoItem(index),
+                tooltip: AppLocalizations.of(context)?.seller_product_edit_delete_tooltip ?? 'Delete',
+              ),
+            ],
+          ),
+                      ],
+                    ),
+                  );
+  }
+
+  /// 显示添加买家信息对话框
+  void _showAddBuyerInfoDialog(BuyerInfoType type) {
+    final labelController = TextEditingController();
+    final descriptionController = TextEditingController();
+    bool isRequired = false;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_info_title(type.displayName) ?? 'Add ${type.displayName} Info'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.5, // 限制最大高度
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: labelController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_label ?? 'Info Label',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_description ?? 'Detailed Description',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CheckboxListTile(
+                    title: Text(AppLocalizations.of(context)?.seller_product_edit_required_field ?? 'Required Field'),
+                    value: isRequired,
+                    onChanged: (value) {
+                      setState(() {
+                        isRequired = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (labelController.text.isNotEmpty) {
+                  _addBuyerInfoItem(
+                    type,
+                    labelController.text,
+                    descriptionController.text,
+                    isRequired,
+                  );
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                ),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_add ?? 'Add'),
+          ),
+        ],
+        ),
+      ),
+    );
+  }
+
+  /// 显示编辑买家信息对话框
+  void _showEditBuyerInfoDialog(int index, BuyerInfoItem item) {
+    final labelController = TextEditingController(text: item.label);
+    final descriptionController = TextEditingController(text: item.description);
+    bool isRequired = item.isRequired;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)?.seller_product_edit_edit_info_title(item.type.displayName) ?? 'Edit ${item.type.displayName} Info'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.5, // 限制最大高度
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: labelController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_label ?? 'Info Label',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_description ?? 'Detailed Description',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CheckboxListTile(
+                    title: Text(AppLocalizations.of(context)?.seller_product_edit_required_field ?? 'Required Field'),
+                    value: isRequired,
+                    onChanged: (value) {
+                      setState(() {
+                        isRequired = value ?? false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (labelController.text.isNotEmpty) {
+                  _updateBuyerInfoItem(
+                    index,
+                    labelController.text,
+                    descriptionController.text,
+                    isRequired,
+                  );
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+                ),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// 构建成功案例部分
+  Widget _buildSuccessCasesSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)?.product_edit_success_cases ?? 'Success Cases',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (state.successCases.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)?.seller_product_edit_cases_count(state.successCases.length) ?? '${state.successCases.length} cases',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFFBF7D2A),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // 成功案例网格
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.8,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: state.successCases.length + 1, // +1 for add button
+            itemBuilder: (context, index) {
+              if (index == state.successCases.length) {
+                return _buildAddSuccessCaseButton();
+              }
+              return _buildSuccessCaseItem(state, index);
+                },
+              ),
+            ],
+          ),
+    );
+  }
+
+  /// 构建添加成功案例按钮
+  Widget _buildAddSuccessCaseButton() {
+    return InkWell(
+      onTap: _showAddSuccessCaseDialog,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+          borderRadius: BorderRadius.circular(8),
+          color: Colors.grey[50],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.add, size: 32, color: Colors.grey),
+            const SizedBox(height: 8),
+            Text(
+              AppLocalizations.of(context)?.seller_product_edit_add_case ?? 'Add Case',
+              style: const TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// 构建编辑对话框的图片
+  Widget _buildEditDialogImage(String? localPath, String? imageUrl, bool imageChanged) {
+    // 如果图片已更改，只显示本地图片
+    if (imageChanged && localPath != null && localPath.isNotEmpty) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              const SizedBox(height: 4),
+              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            ],
+          );
+        },
+      );
+    }
+
+    // 优先显示网络图片
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // 网络图片失败，尝试本地图片
+          if (localPath != null && localPath.isNotEmpty) {
+            return Image.file(
+              File(localPath),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+                    const SizedBox(height: 4),
+                    Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                );
+              },
+            );
+          }
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              const SizedBox(height: 4),
+              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            ],
+          );
+        },
+      );
+    }
+
+    // 显示本地图片
+    if (localPath != null && localPath.isNotEmpty) {
+      return Image.file(
+        File(localPath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              const SizedBox(height: 4),
+              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            ],
+          );
+        },
+      );
+    }
+    
+    // 没有图片，显示占位符
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
+        const SizedBox(height: 4),
+        Text(AppLocalizations.of(context)?.seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      ],
+    );
+  }
+
+  /// 构建成功案例图片
+  Widget _buildSuccessCaseImage(SuccessCase successCase) {
+    Widget imageWidget;
+    
+    // 根据上传状态显示不同内容
+    if (successCase.uploadStatus == SuccessCaseUploadStatus.uploading) {
+      // 上传中 - 显示进度
+      imageWidget = Stack(
+        children: [
+          // 显示本地图片作为背景
+          if (successCase.imagePath.isNotEmpty)
+            Image.file(
+              File(successCase.imagePath),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          // 半透明遮罩
+          Container(
+            color: Colors.black.withOpacity(0.3),
+          ),
+          // 进度指示器
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(
+                  value: successCase.uploadProgress / 100,
+                  backgroundColor: Colors.white30,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${successCase.uploadProgress.toInt()}%',
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (successCase.uploadStatus == SuccessCaseUploadStatus.failed) {
+      // 上传失败 - 显示错误状态
+      imageWidget = Stack(
+        children: [
+          // 显示本地图片作为背景
+          if (successCase.imagePath.isNotEmpty)
+            Image.file(
+              File(successCase.imagePath),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              color: Colors.grey,
+              colorBlendMode: BlendMode.saturation,
+            ),
+          // 错误图标
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                const SizedBox(height: 4),
+                Text(AppLocalizations.of(context)?.seller_product_edit_upload_failed ?? 'Upload Failed', style: const TextStyle(color: Colors.red, fontSize: 12)),
+                if (successCase.canRetry)
+                  TextButton(
+                    onPressed: () => _bloc.add(RetrySuccessCaseUpload(caseId: successCase.id)),
+                    child: Text(AppLocalizations.of(context)?.seller_product_edit_upload_retry ?? 'Retry', style: const TextStyle(fontSize: 12)),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (successCase.imageUrl.isNotEmpty) {
+      // 已上传 - 显示网络图片
+      imageWidget = Image.network(
+        successCase.imageUrl,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // 如果网络图片加载失败，尝试使用本地图片
+          if (successCase.imagePath.isNotEmpty) {
+            return Image.file(
+              File(successCase.imagePath),
+              width: double.infinity,
+              height: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                );
+              },
+            );
+          }
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.grey[200],
+            child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+          );
+        },
+      );
+    } else if (successCase.imagePath.isNotEmpty) {
+      // 待上传 - 显示本地图片
+      imageWidget = Image.file(
+        File(successCase.imagePath),
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.grey[200],
+            child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+          );
+        },
+      );
+    } else {
+      // 没有图片
+      imageWidget = Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.grey[200],
+        child: const Icon(Icons.image, size: 40, color: Colors.grey),
+      );
+    }
+    
+    return imageWidget;
+  }
+
+  /// 构建成功案例项
+  Widget _buildSuccessCaseItem(ProductEditState state, int index) {
+    final successCase = state.successCases[index];
+    
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 图片区域
+          Expanded(
+            flex: 3,
+            child: Stack(
+            children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                  child: _buildSuccessCaseImage(successCase),
+                ),
+                // 操作按钮
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 编辑按钮
+                      InkWell(
+                        onTap: () => _showEditSuccessCaseDialog(state, successCase.id),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      // 删除按钮
+                      InkWell(
+                        onTap: () => _removeSuccessCase(successCase.id),
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          ),
+          
+          // 文字区域
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    successCase.title,
+                    style: const TextStyle(
+                fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: Text(
+                      successCase.description,
+                      style: const TextStyle(
+                        fontSize: 12,
+                color: Colors.grey,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 显示添加成功案例对话框
+  void _showAddSuccessCaseDialog() {
+    final titleController = TextEditingController();
+    final descriptionController = TextEditingController();
+    String? selectedImagePath;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)?.product_edit_add_success_case ?? 'Add Success Case'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+      child: Column(
+                mainAxisSize: MainAxisSize.min,
+        children: [
+                  // 图片选择区域 - 使用ImageUploadHelper
+                  InkWell(
+                    onTap: () async {
+                      final results = await ImageUploadHelper.pickFromGallery(
+                        type: ImageUploadType.product,
+                        allowMultiple: false,
+                      );
+                      if (results.isNotEmpty) {
+                        setState(() {
+                          selectedImagePath = results.first.finalFile.path;
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 100, // 减小图片预览高度
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: selectedImagePath != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                File(selectedImagePath!),
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
+                                const SizedBox(height: 4),
+                                Text(AppLocalizations.of(context)?.seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                              ],
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 标题输入
+                  TextField(
+                    controller: titleController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_title_label ?? 'Case Title',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_title_hint ?? 'Brief description of this case',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 描述输入
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_desc_label ?? 'Case Description',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+            ),
+            ElevatedButton(
+                onPressed: () {
+                if (selectedImagePath != null && titleController.text.isNotEmpty) {
+                  _addSuccessCase(
+                    selectedImagePath!,
+                    titleController.text,
+                    descriptionController.text,
+                  );
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)?.seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_add ?? 'Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 显示编辑成功案例对话框
+  void _showEditSuccessCaseDialog(ProductEditState state, String caseId) {
+    final successCase = state.successCases.firstWhere((c) => c.id == caseId);
+    final titleController = TextEditingController(text: successCase.title);
+    final descriptionController = TextEditingController(text: successCase.description);
+    String? selectedImagePath = successCase.imagePath;
+    String? currentImageUrl = successCase.imageUrl;
+    bool imageChanged = false;
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(AppLocalizations.of(context)?.product_edit_edit_success_case ?? 'Edit Success Case'),
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
+              maxWidth: double.maxFinite,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 图片选择区域 - 使用ImageUploadHelper
+                  InkWell(
+                    onTap: () async {
+                      final results = await ImageUploadHelper.pickFromGallery(
+                        type: ImageUploadType.product,
+                        allowMultiple: false,
+                      );
+                      if (results.isNotEmpty) {
+                        setState(() {
+                          selectedImagePath = results.first.finalFile.path;
+                          imageChanged = true;
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 100, // 减小图片预览高度
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey[300]!),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _buildEditDialogImage(selectedImagePath, currentImageUrl, imageChanged),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 标题输入
+                  TextField(
+                    controller: titleController,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_title_label ?? 'Case Title',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_title_hint ?? 'Brief description of this case',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // 描述输入
+                  TextField(
+                    controller: descriptionController,
+                    maxLines: 3,
+                    decoration: _lightBorderDecoration.copyWith(
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_desc_label ?? 'Case Description',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (selectedImagePath != null && selectedImagePath!.isNotEmpty && titleController.text.isNotEmpty) {
+                  Navigator.pop(context);
+                  _updateSuccessCase(
+                    caseId,
+                    imagePath: imageChanged ? selectedImagePath : null,
+                    title: titleController.text,
+                    description: descriptionController.text,
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(AppLocalizations.of(context)?.seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFBF7D2A),
+                foregroundColor: Colors.white,
+              ),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// 构建商品图片上传部分
+  Widget _buildImageUploadSection(ProductEditState state) {
+    return Container(
+      color: Colors.white,
+      margin: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 顶部标题区域与状态指示
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)?.seller_product_edit_cover_image ?? 'Service Cover Image',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              // 上传状态指示器
+              _buildUploadStatusIndicator(state),
+            ],
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // 图片网格区域 - 使用GridView替代之前的行布局
+          _buildImageGrid(state),
+          
+          // 上传失败错误消息
+          if (state.uploadStatus == UploadStatus.failure && state.errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                AppLocalizations.of(context)?.seller_product_edit_upload_error(state.errorMessage ?? '') ?? 'Upload error: ${state.errorMessage}',
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          
+          // 图片上传说明
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              AppLocalizations.of(context)?.seller_product_edit_image_format_hint ?? 'Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // 构建上传状态指示器
+  Widget _buildUploadStatusIndicator(ProductEditState state) {
+    if (state.uploadStatus == UploadStatus.uploading) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.blue[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context)?.product_edit_uploading_progress != null
+                  ? AppLocalizations.of(context)!.product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount)
+                  : 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.blue[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (state.uploadStatus == UploadStatus.success && state.uploadedImageUrls.isNotEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.green[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, size: 16, color: Colors.green[700]),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context)?.seller_product_edit_upload_success ?? 'Upload Successful',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.green[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (state.uploadStatus == UploadStatus.failure) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.red[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error, size: 16, color: Colors.red),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context)?.seller_product_edit_upload_failed ?? 'Upload Failed',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.red,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink(); // 如果没有上传状态，返回空
+  }
+
+  // 构建图片网格
+  Widget _buildImageGrid(ProductEditState state) {
+    // 合并已上传的图片URL和新选择的图片路径
+    final List<String> allImages = [
+      ...state.uploadedImageUrls,  // 已上传的图片（网络URL）
+      ...state.selectedImagePaths, // 新选择的图片（本地路径）
+    ];
+        
+    // 确定要显示的图片数量，包括"添加"按钮格子
+    final bool hasImages = allImages.isNotEmpty;
+    int totalItemCount = hasImages ? allImages.length + 1 : 1;
+    
+    // 限制最多9张图片 + 1个添加按钮 = 10个格子
+    if (totalItemCount > 10) totalItemCount = 10;
+    
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3, // 每行3个
+        mainAxisSpacing: 10, // 主轴间距
+        crossAxisSpacing: 10, // 交叉轴间距
+        childAspectRatio: 1, // 正方形
+      ),
+      itemCount: totalItemCount,
+      itemBuilder: (context, index) {
+        // 最后一个格子显示添加按钮
+        if (hasImages && index == totalItemCount - 1) {
+          return _buildAddImageButton(state);
+        } 
+        // 显示图片
+        else if (index < allImages.length) {
+          final String imagePath = allImages[index];
+          // 判断是否为网络URL
+          final bool isNetworkImage = imagePath.startsWith('http');
+          
+          return _buildImageItem(
+            state, 
+            index, 
+            isNetworkImage ? null : imagePath,  // 本地路径
+            isNetworkImage ? imagePath : null,  // 网络URL
+          );
+        } 
+        // 添加按钮格子（以防万一）
+        else {
+          return _buildAddImageButton(state);
+        }
+      },
+    );
+  }
+  
+  // 构建单个图片项
+  Widget _buildImageItem(ProductEditState state, int index, String? localPath, String? networkUrl) {
+    return GestureDetector(
+      onTap: () => _openImagePreview(state, index),
+      child: Stack(
+      children: [
+        // 图片容器
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+            child: localPath != null
+                ? Image.file(
+                    File(localPath),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                : networkUrl != null 
+                    ? Image.network(
+                        networkUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                  : null,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.image_not_supported, color: Colors.grey),
+                        ),
+                      )
+                    : const Center(
+                        child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                      ),
+          ),
+        ),
+        
+        // 删除按钮
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () {
+              // 删除图片逻辑
+              _removeImage(index);
+            },
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+          ),
+        ),
+        
+        // 如果是第一张图片，添加主图标识
+        if (index == 0)
+          Positioned(
+            bottom: 4,
+            left: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                AppLocalizations.of(context)?.seller_product_edit_main_image ?? 'Main',
+                style: const TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ),
+          ),
+      ],
+    ),
+    );
+  }
+  
+  // 构建添加图片按钮
+  Widget _buildAddImageButton(ProductEditState state) {
+    bool canAdd = (state.selectedImagePaths.length < 9);
+    
+    // 如果正在上传，显示上传状态但仍然允许添加
+    bool isUploading = (state.uploadStatus == UploadStatus.uploading);
+                 
+    return InkWell(
+      onTap: canAdd ? () => _pickImages(replaceExisting: false) : null,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: canAdd ? Colors.grey[300]! : Colors.grey[200]!,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: canAdd ? Colors.white : Colors.grey[100],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 如果正在上传，显示上传图标和进度
+            if (isUploading)
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  Icon(
+                    Icons.cloud_upload,
+                    color: Theme.of(context).primaryColor,
+                    size: 12,
+                  ),
+                ],
+              )
+            else
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              color: canAdd ? Theme.of(context).primaryColor : Colors.grey,
+              size: 28,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isUploading ? (AppLocalizations.of(context)?.product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context)?.product_edit_add_image ?? 'Add Image'),
+              style: TextStyle(
+                fontSize: 12,
+                color: canAdd ? Colors.grey[700] : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
   // 删除图片方法
   void _removeImage(int index) {
     // 使用新的删除事件，避免重新上传
@@ -1465,6 +2791,29 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     
     // 触发变更检测
     _onFormFieldChanged();
+  }
+
+  /// 打开图片预览页面
+  void _openImagePreview(ProductEditState state, int index) {
+    // 合并已上传的图片URL和新选择的图片路径
+    final List<String> allImagePaths = [
+      ...state.uploadedImageUrls,
+      ...state.selectedImagePaths,
+    ];
+    
+    if (allImagePaths.isNotEmpty) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ImagePreviewPage(
+            imagePaths: allImagePaths,
+            initialIndex: index,
+            mainImageIndex: 0, // 第一张总是主图
+            onSetMainImage: (selectedIndex) => _setMainImage(selectedIndex),
+            onDeleteImage: (selectedIndex) => _removeImage(selectedIndex),
+          ),
+        ),
+      );
+    }
   }
 
   /// 设置主图
@@ -1478,105 +2827,43 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     final isSelected = _selectedTier == tier;
     final tierConfig = _serviceTiers.getTierConfig(tier);
     final hasPrice = tierConfig.price > 0;
-
-    // 根据档位获取主题色
-    Color getTierColor() {
-      switch (tier) {
-        case ServiceTier.basic:
-          return AppColors.info;
-        case ServiceTier.standard:
-          return Colors.purple.shade600;
-        case ServiceTier.premium:
-          return AppColors.warning;
-      }
-    }
-
-    // 根据档位获取图标
-    IconData getTierIcon() {
-      switch (tier) {
-        case ServiceTier.basic:
-          return Icons.flash_on;
-        case ServiceTier.standard:
-          return Icons.star;
-        case ServiceTier.premium:
-          return Icons.diamond;
-      }
-    }
-
-    final tierColor = getTierColor();
-
+    
     return Expanded(
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _selectServiceTier(tier),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            splashColor: tierColor.withOpacity(0.2),
-            highlightColor: tierColor.withOpacity(0.1),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: EdgeInsets.symmetric(
-                vertical: isSelected ? 12 : 8,
-                horizontal: isSelected ? 16 : 12,
-              ),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isSelected ? tierColor : AppColors.borderInput,
-                  width: isSelected ? 2 : 1,
-                ),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                color: isSelected ? tierColor.withOpacity(0.1) : AppColors.backgroundCard,
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: tierColor.withOpacity(0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : [],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedScale(
-                    scale: isSelected ? 1.1 : 1.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      getTierIcon(),
-                      color: isSelected ? tierColor : AppColors.textSecondary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 200),
-                    style: TextStyle(
-                      fontSize: isSelected ? 15 : 14,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? tierColor : AppColors.textPrimary,
-                    ),
-                    child: Text(tier.displayName),
-                  ),
-                  if (hasPrice) ...[
-                    const SizedBox(height: 2),
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: TextStyle(
-                        fontSize: isSelected ? 13 : 12,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected ? tierColor : AppColors.textSecondary,
-                      ),
-                      child: Text(
-                        '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+      child: GestureDetector(
+        onTap: () => _selectServiceTier(tier),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? Colors.blue : Colors.grey[300]!,
+              width: isSelected ? 2 : 1,
             ),
+            borderRadius: BorderRadius.circular(8),
+            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                tier.displayName,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? Colors.blue : Colors.grey[700],
+                ),
+              ),
+              if (hasPrice) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '${RegionConfig.currencySymbol}${tierConfig.price.toStringAsFixed(tierConfig.price % 1 == 0 ? 0 : 2)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.normal,
+                    color: isSelected ? Colors.blue : Colors.grey[600],
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),
@@ -1586,77 +2873,63 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建档位价格编辑器
   Widget _buildTierPriceEditor() {
     final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
-
-    return AnimatedBuilder(
-      animation: _flashAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(_flashAnimation.value * 0.8),
-                blurRadius: 20 * _flashAnimation.value,
-                spreadRadius: 5 * _flashAnimation.value,
-              ),
-            ],
-          ),
-          child: TextField(
+    
+    return TextField(
       controller: tierConfig.priceController,
       readOnly: widget.isPreviewMode,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: AppColors.textPrimary,
+        color: Colors.black87,
       ),
       decoration: InputDecoration(
-        labelText: '${_selectedTier.displayName}价格',
-        labelStyle: const TextStyle(
+        labelText: AppLocalizations.of(context)?.seller_product_edit_tier_price_label(_selectedTier.displayName) ?? '${_selectedTier.displayName} Price',
+        labelStyle: TextStyle(
           fontSize: 14,
-          color: AppColors.textSecondary,
+          color: Colors.grey[600],
         ),
         floatingLabelStyle: const TextStyle(
           fontSize: 12,
-          color: AppColors.borderInputFocus,
+          color: Colors.blue,
         ),
         prefixText: RegionConfig.currencySymbol,
         prefixStyle: const TextStyle(
           fontSize: 16,
-          color: AppColors.textPrimary,
+          color: Colors.black87,
         ),
-        helperText: '最大值：${ValidationConstants.maxPrice}',
-        helperStyle: const TextStyle(
+        helperText: AppLocalizations.of(context)?.seller_product_edit_max_price('${ValidationConstants.maxPrice}') ?? 'Maximum: ${ValidationConstants.maxPrice}',
+        helperStyle: TextStyle(
           fontSize: 12,
-          color: AppColors.textTertiary,
+          color: Colors.grey[500],
         ),
         errorText: _formErrors['price_${_selectedTier.name}'],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: const BorderSide(color: AppColors.borderInput),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: const BorderSide(color: AppColors.borderInput),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.grey[300]!),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+          borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(
-            color: AppColors.borderInputFocus,
+            color: Colors.blue,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingLg),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         filled: true,
-        fillColor: AppColors.backgroundCard,
+        fillColor: Colors.white,
       ),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -1671,21 +2944,20 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         }),
       ],
       onChanged: (value) {
-        final price = double.tryParse(value) ?? 0;
-        tierConfig.updatePrice(price);
-
-        // 验证价格 —— 直接更新错误 map，不触发 setState 避免全树 rebuild
-        if (price > ValidationConstants.maxPrice) {
-          _formErrors['price_${_selectedTier.name}'] = '价格不能超过${ValidationConstants.maxPrice}';
-        } else if (price > 0 && price < 0.01) {
-          _formErrors['price_${_selectedTier.name}'] = '价格最小值为0.01';
-        } else {
-          _formErrors.remove('price_${_selectedTier.name}');
-        }
+        setState(() {
+          final price = double.tryParse(value) ?? 0;
+          tierConfig.updatePrice(price);
+          
+          // 验证价格
+          if (price > ValidationConstants.maxPrice) {
+            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_exceed_max('${ValidationConstants.maxPrice}') ?? 'Price cannot exceed ${ValidationConstants.maxPrice}';
+          } else if (price > 0 && price < 0.01) {
+            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_min ?? 'Minimum price is 0.01';
+          } else {
+            _formErrors.remove('price_${_selectedTier.name}');
+          }
+        });
         _onFormFieldChanged();
-      },
-          ),
-        );
       },
     );
   }
@@ -1693,94 +2965,80 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建档位属性列表
   Widget _buildTierAttributesList() {
     final tierConfig = _serviceTiers.getTierConfig(_selectedTier);
-
+    
     // 构建所有属性的列表（包括系统属性和自定义属性）
     final List<Widget> attributeItems = [];
-
+    
+    // 添加系统属性：交付期
+    attributeItems.add(_buildFloatingLabelAttribute(
+      labelText: AppLocalizations.of(context)?.seller_product_edit_delivery_period ?? 'Delivery Period',
+      value: tierConfig.deliveryDay.toString(),
+      suffix: AppLocalizations.of(context)?.seller_product_edit_delivery_days_suffix ?? 'days',
+      isSystem: true,
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        final parsedValue = int.tryParse(value);
+        if (parsedValue != null && parsedValue > 0) {
+          setState(() {
+            tierConfig.updateDeliveryDay(parsedValue);
+          });
+          _onFormFieldChanged();
+        }
+      },
+    ));
+    
+    // 添加系统属性：次数
+    attributeItems.add(_buildFloatingLabelAttribute(
+      labelText: AppLocalizations.of(context)?.seller_product_edit_times ?? 'Revisions',
+      value: tierConfig.editNum.toString(),
+      suffix: AppLocalizations.of(context)?.seller_product_edit_times_suffix ?? 'times',
+      isSystem: true,
+      keyboardType: TextInputType.number,
+      onChanged: (value) {
+        final parsedValue = int.tryParse(value);
+        if (parsedValue != null && parsedValue > 0) {
+          setState(() {
+            tierConfig.updateEditNum(parsedValue);
+          });
+          _onFormFieldChanged();
+        }
+      },
+    ));
+    
     // 添加自定义属性
     final customAttributes = _serviceTiers.getAttributesForTier(_selectedTier);
-    for (int i = 0; i < customAttributes.length; i++) {
-      final attr = customAttributes[i];
-      Widget attributeWidget;
-
+    for (final attr in customAttributes) {
       if (attr.type == ProductAttributeType.boolean) {
         // 单选属性使用特殊的显示方式
-        attributeWidget = _buildBooleanAttribute(attr);
+        attributeItems.add(_buildBooleanAttribute(attr));
       } else {
         // 文本输入属性
-        attributeWidget = _buildFloatingLabelAttribute(
+        attributeItems.add(_buildFloatingLabelAttribute(
           labelText: attr.name,
           value: attr.value,
           isSystem: false,
           attributeId: attr.id,
           keyboardType: TextInputType.text,
           onChanged: (value) {
-            // 直接更新数据，不调用setState避免输入法问题
-            _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
+            setState(() {
+              _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(attr.id, value);
+            });
             _onFormFieldChanged();
           },
-        );
+        ));
       }
-
-      attributeItems.add(
-        attributeWidget,
-      );
     }
-
-    return FadeTransition(
-      opacity: _attributeFadeAnimation,
-      child: SlideTransition(
-        position: _tierSlideAnimation,
-        child: Column(
-          children: [
-            // 档位特色提示卡片
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _getTierThemeColor().withOpacity(0.05),
-                    _getTierThemeColor().withOpacity(0.02),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: _getTierThemeColor().withOpacity(0.2),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _getTierIcon(),
-                    size: 16,
-                    color: _getTierThemeColor(),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _getTierHintText(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _getTierThemeColor(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 属性列表
-            ...attributeItems,
+    
+    return Column(
+      children: [
+        // 属性列表
+        ...attributeItems,
         
         // 底部操作按钮
         Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: AppColors.borderInput),
+              top: BorderSide(color: Colors.grey[300]!),
             ),
           ),
           child: Row(
@@ -1790,15 +3048,15 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   onTap: _showAddFeatureDialog,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, size: 20, color: AppColors.textTertiary),
-                        SizedBox(width: 4),
+                        const Icon(Icons.add, size: 20, color: Colors.grey),
+                        const SizedBox(width: 4),
                         Text(
-                          '输入',
-                          style: TextStyle(
-                            color: AppColors.textTertiary,
+                          AppLocalizations.of(context)?.seller_product_edit_input ?? 'Input',
+                          style: const TextStyle(
+                            color: Colors.grey,
                             fontSize: 14,
                           ),
                         ),
@@ -1810,22 +3068,22 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.borderInput,
+                color: Colors.grey[300],
               ),
               Expanded(
                 child: InkWell(
                   onTap: () => _showAddSelectionAttribute(),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.radio_button_checked, size: 20, color: AppColors.textTertiary),
-                        SizedBox(width: 4),
+                        const Icon(Icons.radio_button_checked, size: 20, color: Colors.grey),
+                        const SizedBox(width: 4),
                         Text(
-                          '单选',
-                          style: TextStyle(
-                            color: AppColors.textTertiary,
+                          AppLocalizations.of(context)?.seller_product_edit_radio ?? 'Radio',
+                          style: const TextStyle(
+                            color: Colors.grey,
                             fontSize: 14,
                           ),
                         ),
@@ -1837,9 +3095,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             ],
           ),
         ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
@@ -1866,21 +3122,25 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     String? helperText;
     
     // 系统属性的验证
+    final deliveryLabel = AppLocalizations.of(context)?.seller_product_edit_delivery_period ?? 'Delivery Period';
+    final deliverySuffix = AppLocalizations.of(context)?.seller_product_edit_delivery_days_suffix ?? 'days';
+    final timesLabel = AppLocalizations.of(context)?.seller_product_edit_times ?? 'Revisions';
+    final timesSuffix = AppLocalizations.of(context)?.seller_product_edit_times_suffix ?? 'times';
     if (isSystem) {
-      if (labelText == '交付期' && suffix == '天') {
+      if (labelText == deliveryLabel && suffix == deliverySuffix) {
         inputFormatters = [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(3),
           _MaxValueTextInputFormatter(ValidationConstants.maxDeliveryDays),
         ];
-        helperText = '最多${ValidationConstants.maxDeliveryDays}天';
-      } else if (labelText == '次数' && suffix == '次') {
+        helperText = AppLocalizations.of(context)?.seller_product_edit_max_days(ValidationConstants.maxDeliveryDays) ?? 'Max ${ValidationConstants.maxDeliveryDays} days';
+      } else if (labelText == timesLabel && suffix == timesSuffix) {
         inputFormatters = [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(2),
           _MaxValueTextInputFormatter(ValidationConstants.maxEditNum),
         ];
-        helperText = '最多${ValidationConstants.maxEditNum}次';
+        helperText = AppLocalizations.of(context)?.seller_product_edit_max_times(ValidationConstants.maxEditNum) ?? 'Max ${ValidationConstants.maxEditNum} times';
       }
     } else {
       // 自定义属性的验证 - 属性值最大长度
@@ -1902,46 +3162,46 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               inputFormatters: inputFormatters,
               style: const TextStyle(
                 fontSize: 16,
-                color: AppColors.textPrimary,
+                color: Colors.black87,
               ),
               decoration: InputDecoration(
                 labelText: labelText,
-                labelStyle: const TextStyle(
+                labelStyle: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: Colors.grey[600],
                 ),
                 floatingLabelStyle: const TextStyle(
                   fontSize: 12,
-                  color: AppColors.borderInputFocus,
+                  color: Colors.blue,
                 ),
                 suffixText: suffix,
-                suffixStyle: const TextStyle(
+                suffixStyle: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: Colors.grey[600],
                 ),
                 helperText: helperText,
                 helperStyle: const TextStyle(
                   fontSize: 12,
-                  color: AppColors.textTertiary,
+                  color: Colors.grey,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.borderInput),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                  borderSide: const BorderSide(color: AppColors.borderInput),
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                  borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(
-                    color: AppColors.borderInputFocus,
+                    color: Colors.blue,
                     width: 2,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingLg),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 filled: true,
-                fillColor: AppColors.backgroundCard,
+                fillColor: Colors.white,
               ),
               onChanged: (newValue) {
                 // 对于系统属性，直接更新值，inputFormatters已经处理了验证
@@ -1964,7 +3224,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               },
             ),
           ),
-
+          
           // 删除按钮（仅对自定义属性显示）
           if (!isSystem && attributeId != null) ...[
             const SizedBox(width: 8),
@@ -1972,7 +3232,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               onPressed: () => _removeProductAttribute(attributeId),
               icon: const Icon(
                 Icons.delete_outline,
-                color: AppColors.error,
+                color: Colors.red,
                 size: 20,
               ),
               padding: const EdgeInsets.all(8),
@@ -1990,27 +3250,27 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
   /// 构建布尔类型属性（单选）
   Widget _buildBooleanAttribute(ProductAttribute attribute) {
     final isTrue = attribute.value == 'true';
-
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingSm),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.borderInput),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                color: AppColors.backgroundCard,
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     attribute.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textSecondary,
+                      color: Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -2025,10 +3285,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                             _onFormFieldChanged();
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: isTrue ? AppColors.borderInputFocus.withValues(alpha: 0.1) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                              color: isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2036,13 +3296,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                                 Icon(
                                   isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: isTrue ? AppColors.borderInputFocus : AppColors.textTertiary,
+                                  color: isTrue ? Colors.blue : Colors.grey,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '是',
+                                  AppLocalizations.of(context)?.seller_product_edit_yes ?? 'Yes',
                                   style: TextStyle(
-                                    color: isTrue ? AppColors.borderInputFocus : AppColors.textPrimary,
+                                    color: isTrue ? Colors.blue : Colors.grey[700],
                                     fontWeight: isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -2061,10 +3321,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                             _onFormFieldChanged();
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: !isTrue ? AppColors.borderInputFocus.withValues(alpha: 0.1) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                              color: !isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -2072,13 +3332,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                                 Icon(
                                   !isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: !isTrue ? AppColors.borderInputFocus : AppColors.textTertiary,
+                                  color: !isTrue ? Colors.blue : Colors.grey,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '否',
+                                  AppLocalizations.of(context)?.seller_product_edit_no ?? 'No',
                                   style: TextStyle(
-                                    color: !isTrue ? AppColors.borderInputFocus : AppColors.textPrimary,
+                                    color: !isTrue ? Colors.blue : Colors.grey[700],
                                     fontWeight: !isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -2099,7 +3359,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
             onPressed: () => _removeProductAttribute(attribute.id),
             icon: const Icon(
               Icons.delete_outline,
-              color: AppColors.error,
+              color: Colors.red,
               size: 20,
             ),
             padding: const EdgeInsets.all(8),
@@ -2134,8 +3394,17 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!controllerMap.containsKey(key)) {
       controllerMap[key] = TextEditingController(text: initialValue);
     } else {
-      // Controller 已存在，不覆盖 text —— controller 是输入的 source of truth
-      // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
+      // 更新现有控制器的值（如果不同）
+      final controller = controllerMap[key]!;
+      if (controller.text != initialValue) {
+        // 保存当前光标位置
+        final selection = controller.selection;
+        controller.text = initialValue;
+        // 恢复光标位置（如果合理）
+        if (selection.isValid && selection.end <= initialValue.length) {
+          controller.selection = selection;
+        }
+      }
     }
     
     return controllerMap[key]!;
@@ -2165,7 +3434,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: const Text('添加单选属性'),
+          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_selection_attribute ?? 'Add Selection Attribute'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -2173,8 +3442,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 controller: nameController,
                 maxLength: ValidationConstants.maxAttributeNameLength,
                 decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-                  helperText: AppLocalizations.of(context)!?.product_edit_max_characters != null 
+                  hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
+                  helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
                   ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
                   : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
                   errorText: errorText,
@@ -2185,7 +3454,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 onChanged: (value) {
                   setDialogState(() {
                     if (value.length > ValidationConstants.maxAttributeNameLength) {
-                      errorText = '属性名称最多${ValidationConstants.maxAttributeNameLength}个字符';
+                      errorText = AppLocalizations.of(context)?.seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
                     } else {
                       errorText = null;
                     }
@@ -2194,10 +3463,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
               ),
               const SizedBox(height: 16),
               Text(
-                '默认选项：是/否',
-                style: const TextStyle(
+                AppLocalizations.of(context)?.seller_product_edit_default_options_yes_no ?? 'Default options: Yes/No',
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: Colors.grey[600],
                 ),
               ),
             ],
@@ -2205,7 +3474,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -2220,7 +3489,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   Navigator.pop(context);
                 }
               },
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_confirm ?? 'Confirm'),
             ),
           ],
         ),
@@ -2246,16 +3515,6 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
         placeholder: placeholder,
       );
       _serviceTiers.addAttributeTemplate(template);
-      // 确保新属性的默认值 —— 使用 update 方法同步 controller
-      for (final tier in ServiceTier.values) {
-        final config = _serviceTiers.getTierConfig(tier);
-        if (config.deliveryDay != 1) {
-          config.updateDeliveryDay(1);
-        }
-        if (config.editNum != 1) {
-          config.updateEditNum(1);
-        }
-      }
       // 为当前选中档位设置值
       _serviceTiers.getTierConfig(_selectedTier).updateAttributeValue(template.id, value);
     });
@@ -2277,10 +3536,40 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     if (!_attributeControllers.containsKey(attributeId)) {
       _attributeControllers[attributeId] = TextEditingController(text: initialValue);
     }
-    // Controller 已存在时不覆盖 text —— controller 是输入的 source of truth
-    // initialValue 可能因 debounce 而过时，强制覆盖会导致红色报错闪烁
-    return _attributeControllers[attributeId]!;
+    // 如果初始值发生变化，更新控制器的文本（但不移动光标）
+    final controller = _attributeControllers[attributeId]!;
+    if (controller.text != initialValue) {
+      // 保存当前的光标位置
+      final selection = controller.selection;
+      controller.text = initialValue;
+      // 恢复光标位置，确保不超出新文本的长度
+      if (selection.isValid && selection.end <= initialValue.length) {
+        controller.selection = selection;
+      }
+    }
+    return controller;
   }
+
+  /// 获取或创建QA控制器
+  TextEditingController _getQAController(int qaIndex, String type, String initialValue) {
+    final key = '${qaIndex}_$type';
+    if (!_qaControllers.containsKey(key)) {
+      _qaControllers[key] = TextEditingController(text: initialValue);
+    }
+    // 如果初始值发生变化，更新控制器的文本（但不移动光标）
+    final controller = _qaControllers[key]!;
+    if (controller.text != initialValue) {
+      // 保存当前的光标位置
+      final selection = controller.selection;
+      controller.text = initialValue;
+      // 恢复光标位置，确保不超出新文本的长度
+      if (selection.isValid && selection.end <= initialValue.length) {
+        controller.selection = selection;
+      }
+    }
+    return controller;
+  }
+
 
   /// 更新属性值
   void _updateAttributeValue(String attributeId, String newValue) {
@@ -2413,6 +3702,27 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
     }
   }
 
+  /// 清理未使用的QA控制器
+  void _cleanupUnusedQAControllers() {
+    final currentQAKeys = <String>{};
+    
+    // 收集所有当前使用的QA键
+    for (int i = 0; i < _qaList.length; i++) {
+      currentQAKeys.add('${i}_question');
+      currentQAKeys.add('${i}_answer');
+    }
+    
+    // 移除不再使用的控制器
+    final keysToRemove = _qaControllers.keys
+        .where((key) => !currentQAKeys.contains(key))
+        .toList();
+    
+    for (final key in keysToRemove) {
+      _qaControllers[key]?.dispose();
+      _qaControllers.remove(key);
+    }
+  }
+
   /// 显示编辑属性对话框
   void _showEditAttributeDialog(ProductAttribute feature) {
     final nameController = TextEditingController(text: feature.name);
@@ -2425,7 +3735,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
+          title: Text(AppLocalizations.of(context)?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7,
@@ -2440,8 +3750,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   TextField(
                     controller: nameController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: '属性名称 *',
-                      hintText: '例如：颜色、型号、材质、适用年龄',
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_attribute_name_label ?? 'Attribute Name *',
+                      hintText: AppLocalizations.of(context)?.seller_product_edit_attribute_name_example ?? 'e.g.: Color, Model, Material, Suitable Age',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -2450,7 +3760,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                   DropdownButtonFormField<ProductAttributeType>(
                     value: selectedType,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: '属性类型',
+                      labelText: AppLocalizations.of(context)?.seller_product_edit_attribute_type_label ?? 'Attribute Type',
                     ),
                     items: ProductAttributeType.values.map((type) => 
                       DropdownMenuItem(
@@ -2482,8 +3792,8 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                     TextField(
                       controller: placeholderController,
                       decoration: _lightBorderDecoration.copyWith(
-                        labelText: AppLocalizations.of(context)!?.product_edit_placeholder_label ?? 'Placeholder Text',
-                        hintText: AppLocalizations.of(context)!?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
+                        labelText: AppLocalizations.of(context)?.product_edit_placeholder_label ?? 'Placeholder Text',
+                        hintText: AppLocalizations.of(context)?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -2501,7 +3811,7 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                             });
                           },
                         ),
-                        const Text('必填项'),
+                        Text(AppLocalizations.of(context)?.seller_product_edit_required_item ?? 'Required'),
                       ],
                     ),
                   ],
@@ -2512,13 +3822,13 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
+                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
                   );
                   return;
                 }
@@ -2538,10 +3848,10 @@ class _ProductEditPageState extends State<ProductEditPage> with TickerProviderSt
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
+                backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('保存'),
+              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
             ),
           ],
         ),

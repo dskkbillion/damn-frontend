@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:io';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 图片预览页面
 class ImagePreviewPage extends StatefulWidget {
@@ -104,13 +103,13 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.all(AppDimensions.spacingXl),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8), // TODO(reskin): review this color
+                    Colors.black.withOpacity(0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -122,19 +121,17 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                     // 主图标识/设置按钮
                     if (_currentIndex == widget.mainImageIndex)
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingLg,
-                            vertical: AppDimensions.spacingSm),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                          color: Theme.of(context).primaryColor,
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.star, color: Colors.white, size: 16),
-                            SizedBox(width: AppDimensions.spacingXs),
-                            const Text('主图', style: TextStyle(color: Colors.white)),
+                            const SizedBox(width: 4),
+                            Text(AppLocalizations.of(context)?.seller_image_preview_main_image ?? 'Main', style: const TextStyle(color: Colors.white)),
                           ],
                         ),
                       )
@@ -142,24 +139,22 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                       ElevatedButton.icon(
                         onPressed: () => _setAsMainImage(),
                         icon: const Icon(Icons.star_border, size: 16),
-                        label: const Text('设为主图'),
+                        label: Text(AppLocalizations.of(context)?.seller_image_preview_set_main ?? 'Set as Main'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.2),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                       ),
                     
                     // 页面指示器
                     Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingMd,
-                          vertical: AppDimensions.spacingXs),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5), // TODO(reskin): review this color
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -208,13 +203,13 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
           );
         },
         errorBuilder: (context, error, stackTrace) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error, color: Colors.white, size: 64),
-                SizedBox(height: AppDimensions.spacingLg),
-                Text('图片加载失败', style: TextStyle(color: Colors.white)),
+                const Icon(Icons.error, color: Colors.white, size: 64),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)?.seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
               ],
             ),
           );
@@ -226,13 +221,13 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
         File(imagePath),
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error, color: Colors.white, size: 64),
-                SizedBox(height: AppDimensions.spacingLg),
-                Text('图片加载失败', style: TextStyle(color: Colors.white)),
+                const Icon(Icons.error, color: Colors.white, size: 64),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)?.seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
               ],
             ),
           );
@@ -252,19 +247,19 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('删除图片'),
-        content: Text('确定要删除第 ${_currentIndex + 1} 张图片吗？'),
+        title: Text(AppLocalizations.of(context)?.seller_image_preview_delete_title ?? 'Delete Image'),
+        content: Text(AppLocalizations.of(context)?.seller_image_preview_delete_confirm(_currentIndex + 1) ?? 'Delete image ${_currentIndex + 1}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)?.seller_common_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // 关闭对话框
               _deleteCurrentImage();
             },
-            child: Text('删除', style: TextStyle(color: AppColors.error)),
+            child: Text(AppLocalizations.of(context)?.seller_image_preview_delete ?? 'Delete', style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

@@ -41,7 +41,34 @@ class LanguageSettingsPage extends ConsumerWidget {
             title: const Text('English'),
             value: 'en',
             groupValue: currentLocale?.languageCode,
-            onChanged: (value) => 
+            onChanged: (value) =>
+                ref.read(localeProvider.notifier).setLocale(Locale(value!)),
+          ),
+
+          // 日本語选项
+          RadioListTile<String>(
+            title: const Text('日本語'),
+            value: 'ja',
+            groupValue: currentLocale?.languageCode,
+            onChanged: (value) =>
+                ref.read(localeProvider.notifier).setLocale(Locale(value!)),
+          ),
+
+          // 한국어选项
+          RadioListTile<String>(
+            title: const Text('한국어'),
+            value: 'ko',
+            groupValue: currentLocale?.languageCode,
+            onChanged: (value) =>
+                ref.read(localeProvider.notifier).setLocale(Locale(value!)),
+          ),
+
+          // Tiếng Việt选项
+          RadioListTile<String>(
+            title: const Text('Tiếng Việt'),
+            value: 'vi',
+            groupValue: currentLocale?.languageCode,
+            onChanged: (value) =>
                 ref.read(localeProvider.notifier).setLocale(Locale(value!)),
           ),
         ],

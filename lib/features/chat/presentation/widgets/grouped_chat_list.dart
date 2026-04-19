@@ -1,21 +1,15 @@
-import 'dart:convert'; // For JSON parsing
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
-import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import '../../domain/entities/chat_room.dart';
-import '../../domain/entities/chat_message.dart'; // For ChatMessage type
 import '../../domain/entities/participant.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import 'chat_list_item.dart';
 
 /// 按卖家分组的聊天列表组件
-class GroupedChatList extends StatefulWidget {
+class GroupedChatList extends StatelessWidget {
   final Function(ChatRoom) onChatTap;
   final int currentUserId;
 
@@ -26,68 +20,52 @@ class GroupedChatList extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<GroupedChatList> createState() => _GroupedChatListState();
-}
-
-class _GroupedChatListState extends State<GroupedChatList> {
-  List<ChatRoom>? _cachedChatRooms;
-  List<SellerChatGroup> _cachedGroups = [];
-
-  List<SellerChatGroup> _getGroupedChats(List<ChatRoom> chatRooms) {
-    if (!identical(_cachedChatRooms, chatRooms)) {
-      _cachedChatRooms = chatRooms;
-      _cachedGroups = _groupChatsBySeller(chatRooms);
-    }
-    return _cachedGroups;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
-
+    final s = AppLocalizations.of(context)!;
+    
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
         if (state.status == ChatListStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-
+        
         if (state.chatRooms.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
+                Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
-                  '暂无聊天记录',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+                  s.chat_no_chat_records,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 ),
               ],
             ),
           );
         }
-
-        // 按卖家分组（带缓存，仅在 chatRooms 引用变化时重新计算）
-        final groupedChats = _getGroupedChats(state.chatRooms);
-
+        
+        // 按卖家分组
+        final groupedChats = _groupChatsBySeller(state.chatRooms);
+        
         return ListView.builder(
           itemCount: groupedChats.length,
           itemBuilder: (context, index) {
             final group = groupedChats[index];
-
+            
             if (group.chatRooms.length == 1) {
               // 单个聊天室，直接显示
               return ChatListItem(
                 chatRoom: group.chatRooms.first,
-                currentUserId: widget.currentUserId,
-                onTap: () => widget.onChatTap(group.chatRooms.first),
+                currentUserId: currentUserId,
+                onTap: () => onChatTap(group.chatRooms.first),
               );
             } else {
               // 多个聊天室，显示分组
               return SellerGroupItem(
                 group: group,
-                currentUserId: widget.currentUserId,
-                onTap: widget.onChatTap,
+                currentUserId: currentUserId,
+                onTap: onChatTap,
               );
             }
           },
@@ -95,7 +73,7 @@ class _GroupedChatListState extends State<GroupedChatList> {
       },
     );
   }
-
+  
   /// 按卖家分组聊天室
   List<SellerChatGroup> _groupChatsBySeller(List<ChatRoom> chatRooms) {
     final Map<int, List<ChatRoom>> grouped = {};
@@ -106,7 +84,7 @@ class _GroupedChatListState extends State<GroupedChatList> {
       int sellerId;
       
       // 判断当前用户的类型
-      if (chatRoom.participant1.referId == widget.currentUserId) {
+      if (chatRoom.participant1.referId == currentUserId) {
         // 当前用户是participant1
         if (chatRoom.participant1.type == 'MEMBER') {
           // 当前用户是买家，对方是卖家
@@ -141,7 +119,7 @@ class _GroupedChatListState extends State<GroupedChatList> {
       Participant seller;
       
       // 重新确定卖家信息（与上面逻辑一致）
-      if (firstRoom.participant1.referId == widget.currentUserId) {
+      if (firstRoom.participant1.referId == currentUserId) {
         if (firstRoom.participant1.type == 'MEMBER') {
           seller = firstRoom.participant2;
         } else {
@@ -182,14 +160,12 @@ class SellerGroupItem extends StatefulWidget {
   final SellerChatGroup group;
   final int currentUserId;
   final Function(ChatRoom) onTap;
-  final Function(ChatRoom)? onDelete;
-
+  
   const SellerGroupItem({
     Key? key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
-    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -240,7 +216,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
   
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context)!;
     
     // 计算总未读数
     final totalUnread = widget.group.chatRooms.fold<int>(
@@ -249,7 +225,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
     );
     
     return Container(
-      color: AppColors.backgroundCard,
+      color: Colors.white,
       child: Column(
         children: [
           // 主要内容区域
@@ -266,7 +242,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: _isExpanded 
-                          ? Border.all(color: AppColors.info, width: 2)
+                          ? Border.all(color: Colors.blue, width: 2)
                           : null,
                       ),
                       child: CircleAvatar(
@@ -274,13 +250,13 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         backgroundImage: (widget.group.seller.avatar != null && widget.group.seller.avatar!.isNotEmpty)
                             ? CachedNetworkImageProvider(widget.group.seller.avatar!)
                             : null,
-                        backgroundColor: AppColors.textTertiary,
+                        backgroundColor: Colors.grey[200],
                         child: (widget.group.seller.avatar == null || widget.group.seller.avatar!.isEmpty)
                             ? Text(
                                 widget.group.seller.nickName?.isNotEmpty == true
                                     ? widget.group.seller.nickName![0].toUpperCase()
                                     : '?',
-                                style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.w500),
+                                style: const TextStyle(fontSize: 20, color: Colors.white),
                               )
                             : null,
                       ),
@@ -296,7 +272,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       children: [
                         // 卖家名称
                         Text(
-                          widget.group.seller.nickName ?? '未知卖家',
+                          widget.group.seller.nickName ?? AppLocalizations.of(context)!.chat_unknown_seller,
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                         ),
                         
@@ -322,7 +298,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                               return Container(
                                                 width: 24,
                                                 height: 24,
-                                                color: AppColors.borderInput,
+                                                color: Colors.grey[300],
                                                 child: const Icon(Icons.shopping_bag, size: 12),
                                               );
                                             },
@@ -330,7 +306,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                         : Container(
                                             width: 24,
                                             height: 24,
-                                            color: AppColors.borderInput,
+                                            color: Colors.grey[300],
                                             child: const Icon(Icons.shopping_bag, size: 12),
                                           ),
                                   ),
@@ -342,14 +318,14 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppColors.borderPrimary,
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     '+${widget.group.chatRooms.length - 3}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: AppColors.textSecondary,
+                                      color: Colors.grey[600],
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -360,10 +336,10 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    widget.group.chatRooms.first.productName ?? '商品对话',
+                                    widget.group.chatRooms.first.productName ?? AppLocalizations.of(context)!.chat_product_conversation,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: AppColors.textSecondary,
+                                      color: Colors.grey[600],
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -374,19 +350,17 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         ] else ...[
                           // 展开状态下显示商品数量
                           Text(
-                            widget.group.chatRooms.length == 1 
-                              ? '1个商品对话' 
-                              : '${widget.group.chatRooms.length}个商品对话',
+                            AppLocalizations.of(context)!.chat_product_conversation_count(widget.group.chatRooms.length),
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ],
                       ],
                     ),
                   ),
-                  
+
                   // 右侧信息
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -395,18 +369,18 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       if (widget.group.chatRooms.isNotEmpty && widget.group.chatRooms.first.lastActivityTime != null)
                         Text(
                           _formatTime(widget.group.chatRooms.first.lastActivityTime!),
-                          style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // 未读消息数量
                       if (totalUnread > 0)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.error,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           constraints: const BoxConstraints(
                             minWidth: 18,
@@ -418,13 +392,13 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                             textAlign: TextAlign.center,
                           ),
                         ),
-                      
+
                       // 展开/收起指示器
                       const SizedBox(height: 4),
                       if (widget.group.chatRooms.length > 1)
                         Icon(
                           _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: AppColors.textTertiary,
+                          color: Colors.grey[400],
                           size: 20,
                         ),
                     ],
@@ -433,26 +407,25 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
               ),
             ),
           ),
-          
+
           // 展开的商品列表
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: AppColors.backgroundSecondary,
+              color: Colors.grey[50],
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(
                     margin: const EdgeInsets.only(left: 16.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        left: BorderSide(color: AppColors.borderInput, width: 2),
+                        left: BorderSide(color: Colors.grey[300]!, width: 2),
                       ),
                     ),
                     child: ProductChatItem(
                       chatRoom: chatRoom,
                       currentUserId: widget.currentUserId,
                       onTap: () => widget.onTap(chatRoom),
-                      onDelete: widget.onDelete != null ? () => widget.onDelete!(chatRoom) : null,
                     ),
                   );
                 }).toList(),
@@ -463,25 +436,26 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
       ),
     );
   }
-
+  
   String _formatTime(DateTime time) {
+    final s = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
     final difference = today.difference(messageDate).inDays;
 
     if (difference == 0) {
-      // 今天：显示时间
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else if (difference == 1) {
-      // 昨天
-      return '昨天';
+      return s.chat_yesterday;
     } else if (difference < 7) {
-      // 一周内：显示星期
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      final weekdays = [
+        s.chat_weekday_mon, s.chat_weekday_tue, s.chat_weekday_wed,
+        s.chat_weekday_thu, s.chat_weekday_fri, s.chat_weekday_sat,
+        s.chat_weekday_sun,
+      ];
       return weekdays[time.weekday - 1];
     } else {
-      // 更早：显示日期
       return '${time.month}/${time.day}';
     }
   }
@@ -492,54 +466,19 @@ class ProductChatItem extends StatelessWidget {
   final ChatRoom chatRoom;
   final int currentUserId;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
-
+  
   const ProductChatItem({
     Key? key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
-    this.onDelete,
   }) : super(key: key);
-  
-  String _getMessagePreview(ChatMessage? message) {
-    if (message == null) return '';
-    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
-    
-    switch (message.type) {
-      case 'text':
-        const maxLength = 30;
-        return message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
-            : message.context;
-      case 'image':
-        return '[图片]';
-      case 'audio':
-        return '[语音]';
-      case 'file':
-        try {
-          if (message.context.startsWith('{')) {
-            final Map<String, dynamic> fileInfo = jsonDecode(message.context);
-            final fileName = fileInfo['name'] ?? '文件';
-            return '[文件] $fileName';
-          }
-        } catch (e) {
-          // 解析失败
-        }
-        return '[文件]';
-      default:
-        const maxLength = 30;
-        return message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
-            : message.context;
-    }
-  }
   
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
-
-    final listTile = ListTile(
+    final s = AppLocalizations.of(context)!;
+    
+    return ListTile(
       leading: chatRoom.productImage != null
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
@@ -553,10 +492,10 @@ class ProductChatItem extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.borderPrimary,
+                      color: Colors.grey[200],
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
+                    child: const Icon(Icons.shopping_bag, color: Colors.grey),
                   );
                 },
               ),
@@ -565,13 +504,13 @@ class ProductChatItem extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.borderPrimary,
+                color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
+              child: const Icon(Icons.shopping_bag, color: Colors.grey),
             ),
       title: Text(
-        chatRoom.productName ?? '未知商品',
+        chatRoom.productName ?? s.chat_unknown_product,
         style: const TextStyle(fontWeight: FontWeight.w500),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -581,16 +520,16 @@ class ProductChatItem extends StatelessWidget {
         children: [
           if (chatRoom.productPrice != null)
             Text(
-              PriceFormatter.format(chatRoom.productPrice!),
+              '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
               style: TextStyle(
-                color: AppColors.error,
+                color: Colors.red[600],
                 fontWeight: FontWeight.bold,
               ),
             ),
           if (chatRoom.lastMessage != null)
             Text(
-              _getMessagePreview(chatRoom.lastMessage),
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              chatRoom.lastMessage!.context,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -602,15 +541,15 @@ class ProductChatItem extends StatelessWidget {
         children: [
           if (chatRoom.lastActivityTime != null)
             Text(
-              _formatTime(chatRoom.lastActivityTime!),
-              style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+              _formatTime(context, chatRoom.lastActivityTime!),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
           const SizedBox(height: 4),
           if (chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.error,
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -623,70 +562,27 @@ class ProductChatItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
-
-    if (onDelete != null) {
-      return Dismissible(
-        key: ValueKey('product_chat_${chatRoom.id}'),
-        direction: DismissDirection.endToStart,
-        confirmDismiss: (direction) async {
-          return await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('确认删除'),
-                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                    child: const Text('删除'),
-                  ),
-                ],
-              );
-            },
-          ) ?? false;
-        },
-        onDismissed: (direction) {
-          onDelete!();
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          color: AppColors.error,
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
-        ),
-        child: listTile,
-      );
-    }
-
-    return listTile;
   }
 
-  String _formatTime(DateTime time) {
+  String _formatTime(BuildContext context, DateTime time) {
+    final s = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
     final difference = today.difference(messageDate).inDays;
 
     if (difference == 0) {
-      // 今天：显示时间
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else if (difference == 1) {
-      // 昨天
-      return '昨天';
+      return s.chat_yesterday;
     } else if (difference < 7) {
-      // 一周内：显示星期
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      final weekdays = [
+        s.chat_weekday_mon, s.chat_weekday_tue, s.chat_weekday_wed,
+        s.chat_weekday_thu, s.chat_weekday_fri, s.chat_weekday_sat,
+        s.chat_weekday_sun,
+      ];
       return weekdays[time.weekday - 1];
     } else {
-      // 更早：显示日期
       return '${time.month}/${time.day}';
     }
   }
@@ -714,14 +610,12 @@ class ProductGroupItem extends StatefulWidget {
   final ProductChatGroup group;
   final int currentUserId;
   final Function(ChatRoom) onTap;
-  final Function(ChatRoom)? onDelete;
-
+  
   const ProductGroupItem({
     Key? key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
-    this.onDelete,
   }) : super(key: key);
 
   @override
@@ -779,7 +673,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
     );
     
     return Container(
-      color: AppColors.backgroundCard,
+      color: Colors.white,
       child: Column(
         children: [
           // 主要内容区域
@@ -796,7 +690,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         border: _isExpanded 
-                          ? Border.all(color: AppColors.info, width: 2)
+                          ? Border.all(color: Colors.blue, width: 2)
                           : null,
                       ),
                       child: ClipRRect(
@@ -811,16 +705,16 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                   return Container(
                                     width: 50,
                                     height: 50,
-                                    color: AppColors.borderPrimary,
-                                    child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.shopping_bag, color: Colors.grey),
                                   );
                                 },
                               )
                             : Container(
                                 width: 50,
                                 height: 50,
-                                color: AppColors.borderPrimary,
-                                child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.shopping_bag, color: Colors.grey),
                               ),
                       ),
                     ),
@@ -835,7 +729,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       children: [
                         // 商品名称
                         Text(
-                          widget.group.productName ?? '未知商品',
+                          widget.group.productName ?? AppLocalizations.of(context)!.chat_unknown_product,
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -846,9 +740,9 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         // 商品价格
                         if (widget.group.productPrice != null)
                           Text(
-                            PriceFormatter.format(widget.group.productPrice!),
+                            '¥${widget.group.productPrice!.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: AppColors.error,
+                              color: Colors.red[600],
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
@@ -870,7 +764,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                     backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
                                         ? CachedNetworkImageProvider(buyer.avatar!)
                                         : null,
-                                    backgroundColor: AppColors.textTertiary,
+                                    backgroundColor: Colors.grey[300],
                                     child: (buyer.avatar == null || buyer.avatar!.isEmpty)
                                         ? Text(
                                             buyer.nickName?.isNotEmpty == true
@@ -888,14 +782,14 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: AppColors.borderPrimary,
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     '+${widget.group.chatRooms.length - 3}',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: AppColors.textSecondary,
+                                      color: Colors.grey[600],
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -906,10 +800,10 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    widget.group.chatRooms.first.participant2.nickName ?? '未知用户',
+                                    widget.group.chatRooms.first.participant2.nickName ?? AppLocalizations.of(context)!.chat_unknown_user,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: AppColors.textSecondary,
+                                      color: Colors.grey[600],
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -920,12 +814,10 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         ] else ...[
                           // 展开状态下显示用户数量
                           Text(
-                            widget.group.chatRooms.length == 1 
-                              ? '1个用户咨询' 
-                              : '${widget.group.chatRooms.length}个用户咨询',
+                            AppLocalizations.of(context)!.chat_user_inquiry_count(widget.group.chatRooms.length),
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textSecondary,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ],
@@ -941,7 +833,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       if (widget.group.chatRooms.isNotEmpty && widget.group.chatRooms.first.lastActivityTime != null)
                         Text(
                           _formatTime(widget.group.chatRooms.first.lastActivityTime!),
-                          style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                          style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         ),
                       
                       const SizedBox(height: 4),
@@ -951,8 +843,8 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.error,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           constraints: const BoxConstraints(
                             minWidth: 18,
@@ -970,7 +862,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       if (widget.group.chatRooms.length > 1)
                         Icon(
                           _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: AppColors.textTertiary,
+                          color: Colors.grey[400],
                           size: 20,
                         ),
                     ],
@@ -984,21 +876,20 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: AppColors.backgroundSecondary,
+              color: Colors.grey[50],
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(
                     margin: const EdgeInsets.only(left: 16.0),
                     decoration: BoxDecoration(
                       border: Border(
-                        left: BorderSide(color: AppColors.borderInput, width: 2),
+                        left: BorderSide(color: Colors.grey[300]!, width: 2),
                       ),
                     ),
                     child: BuyerChatItem(
                       chatRoom: chatRoom,
                       currentUserId: widget.currentUserId,
                       onTap: () => widget.onTap(chatRoom),
-                      onDelete: widget.onDelete != null ? () => widget.onDelete!(chatRoom) : null,
                     ),
                   );
                 }).toList(),
@@ -1009,25 +900,26 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
       ),
     );
   }
-
+  
   String _formatTime(DateTime time) {
+    final s = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
     final difference = today.difference(messageDate).inDays;
 
     if (difference == 0) {
-      // 今天：显示时间
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else if (difference == 1) {
-      // 昨天
-      return '昨天';
+      return s.chat_yesterday;
     } else if (difference < 7) {
-      // 一周内：显示星期
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      final weekdays = [
+        s.chat_weekday_mon, s.chat_weekday_tue, s.chat_weekday_wed,
+        s.chat_weekday_thu, s.chat_weekday_fri, s.chat_weekday_sat,
+        s.chat_weekday_sun,
+      ];
       return weekdays[time.weekday - 1];
     } else {
-      // 更早：显示日期
       return '${time.month}/${time.day}';
     }
   }
@@ -1038,61 +930,27 @@ class BuyerChatItem extends StatelessWidget {
   final ChatRoom chatRoom;
   final int currentUserId;
   final VoidCallback onTap;
-  final VoidCallback? onDelete;
-
+  
   const BuyerChatItem({
     Key? key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
-    this.onDelete,
   }) : super(key: key);
-  
-  String _getMessagePreview(ChatMessage? message) {
-    if (message == null) return '';
-    if (message.withdrawFlag || message.type == 'revoke') return '消息已撤回';
-    
-    switch (message.type) {
-      case 'text':
-        const maxLength = 30;
-        return message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
-            : message.context;
-      case 'image':
-        return '[图片]';
-      case 'audio':
-        return '[语音]';
-      case 'file':
-        try {
-          if (message.context.startsWith('{')) {
-            final Map<String, dynamic> fileInfo = jsonDecode(message.context);
-            final fileName = fileInfo['name'] ?? '文件';
-            return '[文件] $fileName';
-          }
-        } catch (e) {
-          // 解析失败
-        }
-        return '[文件]';
-      default:
-        const maxLength = 30;
-        return message.context.length > maxLength 
-            ? '${message.context.substring(0, maxLength)}...' 
-            : message.context;
-    }
-  }
   
   @override
   Widget build(BuildContext context) {
+    final s = AppLocalizations.of(context)!;
     // 在卖家视角下，participant2是买家
     final buyer = chatRoom.participant2;
 
-    final listTile = ListTile(
+    return ListTile(
       leading: CircleAvatar(
         radius: 20,
         backgroundImage: (buyer.avatar != null && buyer.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(buyer.avatar!)
             : null,
-        backgroundColor: AppColors.textTertiary,
+        backgroundColor: Colors.grey[200],
         child: (buyer.avatar == null || buyer.avatar!.isEmpty)
             ? Text(
                 buyer.nickName?.isNotEmpty == true
@@ -1103,7 +961,7 @@ class BuyerChatItem extends StatelessWidget {
             : null,
       ),
       title: Text(
-        buyer.nickName ?? '未知用户',
+        buyer.nickName ?? s.chat_unknown_user,
         style: const TextStyle(fontWeight: FontWeight.w500),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -1111,13 +969,13 @@ class BuyerChatItem extends StatelessWidget {
       subtitle: chatRoom.lastMessage != null
           ? Text(
               chatRoom.lastMessage!.context,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )
           : Text(
-              '暂无消息',
-              style: TextStyle(color: AppColors.textTertiary, fontSize: 12),
+              s.chat_no_messages_brief,
+              style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1125,15 +983,15 @@ class BuyerChatItem extends StatelessWidget {
         children: [
           if (chatRoom.lastActivityTime != null)
             Text(
-              _formatTime(chatRoom.lastActivityTime!),
-              style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+              _formatTime(context, chatRoom.lastActivityTime!),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
           const SizedBox(height: 4),
           if (chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: AppColors.error,
+                color: Colors.red,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -1146,71 +1004,28 @@ class BuyerChatItem extends StatelessWidget {
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     );
-
-    if (onDelete != null) {
-      return Dismissible(
-        key: ValueKey('buyer_chat_${chatRoom.id}'),
-        direction: DismissDirection.endToStart,
-        confirmDismiss: (direction) async {
-          return await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('确认删除'),
-                content: const Text('确定要删除这个聊天会话吗？删除后将无法恢复。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                    child: const Text('删除'),
-                  ),
-                ],
-              );
-            },
-          ) ?? false;
-        },
-        onDismissed: (direction) {
-          onDelete!();
-        },
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          color: AppColors.error,
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
-        ),
-        child: listTile,
-      );
-    }
-
-    return listTile;
   }
 
-  String _formatTime(DateTime time) {
+  String _formatTime(BuildContext context, DateTime time) {
+    final s = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
     final difference = today.difference(messageDate).inDays;
 
     if (difference == 0) {
-      // 今天：显示时间
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else if (difference == 1) {
-      // 昨天
-      return '昨天';
+      return s.chat_yesterday;
     } else if (difference < 7) {
-      // 一周内：显示星期
-      const weekdays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      final weekdays = [
+        s.chat_weekday_mon, s.chat_weekday_tue, s.chat_weekday_wed,
+        s.chat_weekday_thu, s.chat_weekday_fri, s.chat_weekday_sat,
+        s.chat_weekday_sun,
+      ];
       return weekdays[time.weekday - 1];
     } else {
-      // 更早：显示日期
       return '${time.month}/${time.day}';
     }
   }
-} 
+}

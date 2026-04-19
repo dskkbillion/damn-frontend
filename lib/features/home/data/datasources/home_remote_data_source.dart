@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -77,13 +78,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   /// 获取请求头
   Future<Map<String, String>> _getHeaders() async {
     final token = await getToken();
+    // 优先使用 App 内语言设置，否则跟随系统语言
+    final prefs = await SharedPreferences.getInstance();
+    final appLanguage = prefs.getString('app_language');
+    final language = appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
     return {
       'Content-Type': 'application/json',
       'Authorization': token,
       'clienttype': '1',
       'client': 'android',
       'version': '100',
-      'Accept-Language': PlatformDispatcher.instance.locale.languageCode,
+      'Accept-Language': language,
     };
   }
 

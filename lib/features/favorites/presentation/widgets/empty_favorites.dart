@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 收藏为空时的展示组件
 class EmptyFavorites extends StatelessWidget {
@@ -22,27 +22,27 @@ class EmptyFavorites extends StatelessWidget {
           Icon(
             Icons.favorite_border,
             size: 80,
-            color: AppColors.textTertiary,
+            color: Colors.grey[400],
           ),
           const SizedBox(height: 16),
           // 空状态文本
           Text(
-            tabIndex == 0 ? '暂无收藏的服务' : '暂无关注的卖家',
+            tabIndex == 0 ? AppLocalizations.of(context)!.favorites_empty_services : AppLocalizations.of(context)!.favorites_empty_sellers,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.grey[600],
             ),
           ),
           const SizedBox(height: 8),
           // 空状态提示
           Text(
             tabIndex == 0
-                ? '您可以在浏览服务时点击收藏按钮'
-                : '您可以在浏览卖家时点击关注按钮',
+                ? AppLocalizations.of(context)!.favorites_empty_services_hint
+                : AppLocalizations.of(context)!.favorites_empty_sellers_hint,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textTertiary,
+              color: Colors.grey[500],
             ),
           ),
         ],

@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/services.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
-import 'package:dskk_flutter_refactor/features/after_sales/domain/usecases/get_refund_id_by_order_id_use_case.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/audit_refund_usecase.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
 // 移除邀请评价状态类
@@ -30,183 +26,13 @@ class SellerOrderDetailActions extends StatefulWidget {
 }
 
 class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
-  int? _refundId;
-  bool _isResolvingRefund = false;
-  bool _isAuditingRefund = false;
   // 移除邀请评价相关状态
   // InvitationStatus? _invitationStatus;
 
   @override
   void initState() {
     super.initState();
-    _loadRefundIdIfNeeded();
     // 不再加载邀请状态
-  }
-
-  @override
-  void didUpdateWidget(covariant SellerOrderDetailActions oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.order.id != widget.order.id || oldWidget.order.state != widget.order.state) {
-      _loadRefundIdIfNeeded();
-    }
-  }
-
-  bool get _needsRefundActions {
-    switch (widget.order.state) {
-      case OrderStatus.afterSale:
-      case OrderStatus.AfterSaleRejection:
-      case OrderStatus.sellerSupplementaryMaterials:
-      case OrderStatus.applyForRefuse:
-      case OrderStatus.applyingForMediation:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  Future<void> _loadRefundIdIfNeeded() async {
-    if (!_needsRefundActions) {
-      if (mounted) {
-        setState(() {
-          _refundId = null;
-          _isResolvingRefund = false;
-        });
-      }
-      return;
-    }
-
-    if (widget.order.refundId != null) {
-      setState(() {
-        _refundId = widget.order.refundId;
-        _isResolvingRefund = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _isResolvingRefund = true;
-    });
-
-    final useCase = GetIt.instance<GetRefundIdByOrderIdUseCase>();
-    final result = await useCase(GetRefundIdByOrderIdParams(orderId: widget.order.id));
-
-    if (!mounted) return;
-
-    result.fold(
-      (failure) {
-        AppLogger.d('[SellerOrderDetailActions] Failed to resolve refundId for order ${widget.order.id}: ${failure.message}');
-        setState(() {
-          _refundId = null;
-          _isResolvingRefund = false;
-        });
-      },
-      (refundId) {
-        setState(() {
-          _refundId = refundId;
-          _isResolvingRefund = false;
-        });
-      },
-    );
-  }
-
-  Future<void> _auditRefund(BuildContext context, {required bool approved}) async {
-    if (_refundId == null || _isAuditingRefund) return;
-
-    String? refusalReason;
-    if (!approved) {
-      refusalReason = await _showRefusalReasonDialog(context);
-      if (refusalReason == null || refusalReason.trim().isEmpty) {
-        return;
-      }
-    }
-
-    setState(() {
-      _isAuditingRefund = true;
-    });
-
-    final useCase = GetIt.instance<AuditRefundUseCase>();
-    final result = await useCase(
-      AuditRefundParams(
-        id: _refundId!,
-        state: approved ? RefundAuditState.pass : RefundAuditState.reject,
-        auditRemark: refusalReason?.trim(),
-      ),
-    );
-
-    if (!mounted) return;
-
-    result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(failure.message),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      },
-      (_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(approved ? '已同意退款' : '已拒绝售后'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        BlocProvider.of<SellerOrderDetailBloc>(context).add(
-          LoadSellerOrderDetail(orderId: widget.order.id),
-        );
-      },
-    );
-
-    if (!mounted) return;
-    setState(() {
-      _isAuditingRefund = false;
-    });
-  }
-
-  Future<void> _openSellerChat(BuildContext context) async {
-    final buyerId = widget.order.buyer?.id;
-    final sellerId = widget.order.tenant?.id;
-    final productId = widget.order.items.isNotEmpty ? widget.order.items.first.productId : null;
-
-    if (buyerId == null || sellerId == null || productId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('缺少订单关联信息，无法定位聊天室')),
-      );
-      return;
-    }
-
-    final chatRepository = GetIt.instance<IChatRepository>();
-    final result = await chatRepository.getChatRooms();
-    if (!mounted) return;
-
-    result.fold(
-      (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('打开聊天室失败: ${failure.message}')),
-        );
-      },
-      (chatRooms) {
-        final room = chatRooms.cast<ChatRoom?>().firstWhere(
-          (room) =>
-              room != null &&
-              ((room.participant1.referId == buyerId && room.participant2.referId == sellerId) ||
-               (room.participant1.referId == sellerId && room.participant2.referId == buyerId)) &&
-              room.productId == productId.toString(),
-          orElse: () => null,
-        );
-
-        if (room == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('未找到该订单对应聊天室，请在卖家聊天列表中查找“${widget.order.items.first.productName}”'),
-            ),
-          );
-          return;
-        }
-
-        context.push('/chat/refactored/${room.id}');
-      },
-    );
   }
 
   // 移除邀请状态加载方法
@@ -248,7 +74,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           });
         }
       } catch (e) {
-        AppLogger.d('[SellerOrderDetailActions] Error parsing invitation status: $e');
+        print('[SellerOrderDetailActions] Error parsing invitation status: $e');
       }
     }
     
@@ -370,7 +196,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           color: Theme.of(context).canvasColor, // Or scaffoldBackgroundColor
           boxShadow: [
             BoxShadow(
-              color: AppColors.borderSecondary,
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 4,
               offset: const Offset(0, -2),
             ),
@@ -411,7 +237,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              final Map<String, String?>? reasonInfo = await _showRejectReasonDialog(context);
 
              if (reasonInfo != null) {
-                final String reasonLabel = reasonInfo['reasonLabel'] ?? '卖家拒绝接单'; // Default if somehow null
+                final String reasonLabel = reasonInfo['reasonLabel'] ?? AppLocalizations.of(context)!.order_seller_reject_order; // Default if somehow null
                 final String? remarks = reasonInfo['remarks'];
 
                 // Basic validation: reason cannot be empty if dialog confirmed
@@ -428,23 +254,23 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                     bloc.add(SellerRejectRequested(params: params)); 
                 } else {
                      ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text('请输入拒绝理由'), backgroundColor: AppColors.warning),
+                       SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_reject_reason_required), backgroundColor: Colors.orange),
                     );
                 }
              } // User cancelled dialog
           }, 
           style: outlineStyle, 
-          child: const Text('拒绝接单')
+          child: Text(AppLocalizations.of(context)!.order_seller_reject_order)
         ));
         buttons.add(ElevatedButton(
            onPressed: () async {
-            final confirmed = await _showConfirmationDialog(context, title: '确认接单', content: '您确定要接受此订单吗？');
+            final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_accept_title, content: AppLocalizations.of(context)!.order_seller_confirm_accept_content);
             if (confirmed == true) {
               bloc.add(SellerConfirmAcceptanceRequested(orderId: widget.order.id));
             }
            }, 
            style: filledStyle, 
-           child: const Text('确认接单')
+           child: Text(AppLocalizations.of(context)!.order_seller_confirm_order)
           ));
         break;
       case OrderStatus.awaitingDelivery:
@@ -466,7 +292,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                // 显示提示信息，帮助用户识别应该选择哪个聊天
                ScaffoldMessenger.of(context).showSnackBar(
                  SnackBar(
-                   content: Text('请选择关于商品"${widget.order.items.first.productName}"的聊天'),
+                   content: Text(AppLocalizations.of(context)!.order_seller_delivery_chat_hint(widget.order.items.first.productName)),
                    duration: const Duration(seconds: 3),
                  ),
                );
@@ -476,7 +302,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              context.push('/seller/chat');
            }, 
            style: outlineStyle, 
-           child: const Text('联系买家')
+           child: Text(AppLocalizations.of(context)!.order_seller_contact_buyer)
          ));
          buttons.add(ElevatedButton(
           onPressed: () async {
@@ -497,79 +323,42 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                } else {
                  // Content was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: const Text('请输入交付说明'), backgroundColor: AppColors.warning),
+                   SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_delivery_desc_required), backgroundColor: Colors.orange),
                  );
                }
              } // If deliveryInfo is null, user canceled dialog - do nothing
             }, 
             style: filledStyle, 
-            child: const Text('去交付')
+            child: Text(AppLocalizations.of(context)!.order_seller_go_deliver)
             ));
         break;
       case OrderStatus.awaitingConfirmation:
-         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show delivery details */ }, style: outlineStyle, child: const Text('查看交付内容')));
-         buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: const Text('提醒买家确认')));
+         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show delivery details */ }, style: outlineStyle, child: Text(AppLocalizations.of(context)!.order_seller_view_delivery_content)));
+         buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: Text(AppLocalizations.of(context)!.order_seller_remind_buyer)));
         break;
       case OrderStatus.orderCompleted:
         buttons.add(OutlinedButton(
           onPressed: () async {
-             final confirmed = await _showConfirmationDialog(context, title: '确认删除', content: '您确定要删除这条订单记录吗？此操作无法撤销。');
+             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_delete_title, content: AppLocalizations.of(context)!.order_seller_confirm_delete_content);
              if (confirmed == true) {
                bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
              }
-          }, 
-          style: outlineStyle, 
-          child: const Text('删除记录')
+          },
+          style: outlineStyle,
+          child: Text(AppLocalizations.of(context)!.order_seller_delete_record)
           ));
         // 移除邀请评价按钮
-        break;
-      case OrderStatus.afterSale:
-      case OrderStatus.AfterSaleRejection:
-      case OrderStatus.applyingForMediation:
-      case OrderStatus.sellerSupplementaryMaterials:
-      case OrderStatus.applyForRefuse:
-        if (widget.order.state != OrderStatus.applyingForMediation) {
-          if (_isResolvingRefund || _isAuditingRefund) {
-            buttons.add(
-              OutlinedButton(
-                onPressed: null,
-                style: outlineStyle,
-                child: Text(_isResolvingRefund ? '加载售后中...' : '处理中...'),
-              ),
-            );
-          } else if (_refundId != null) {
-            buttons.add(
-              OutlinedButton(
-                onPressed: () => _auditRefund(context, approved: false),
-                style: outlineStyle,
-                child: const Text('拒绝售后'),
-              ),
-            );
-            buttons.add(
-              ElevatedButton(
-                onPressed: () => _auditRefund(context, approved: true),
-                style: filledStyle,
-                child: const Text('同意退款'),
-              ),
-            );
-          }
-        }
-        buttons.add(OutlinedButton(
-          onPressed: () => _openSellerChat(context),
-          style: outlineStyle,
-          child: const Text('去聊天室沟通'),
-        ));
         break;
       case OrderStatus.canceled:
           buttons.add(OutlinedButton(
            onPressed: () async {
-             final confirmed = await _showConfirmationDialog(context, title: '确认删除', content: '您确定要删除这条已取消的订单记录吗？此操作无法撤销。');
+             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_delete_title, content: AppLocalizations.of(context)!.order_seller_confirm_delete_canceled_content);
              if (confirmed == true) {
                 bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
               }
-            }, 
-            style: outlineStyle, 
-            child: const Text('删除记录')
+            },
+            style: outlineStyle,
+            child: Text(AppLocalizations.of(context)!.order_seller_delete_record)
            ));
         break;
       // TODO: Add buttons for other relevant seller states
@@ -579,54 +368,6 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
     }
 
     return buttons;
-  }
-
-  Future<String?> _showRefusalReasonDialog(BuildContext context) {
-    final controller = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    return showDialog<String?>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('拒绝售后'),
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: controller,
-              autofocus: true,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: '拒绝原因 *',
-                hintText: '请输入拒绝售后的原因',
-                alignLabelWithHint: true,
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return '请输入拒绝原因';
-                }
-                return null;
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(null),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  Navigator.of(dialogContext).pop(controller.text.trim());
-                }
-              },
-              child: const Text('确认拒绝'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   // Helper to show a dialog for entering rejection reason and remarks
@@ -639,8 +380,9 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('拒绝订单'),
+          title: Text(l10n.order_seller_reject_dialog_title),
           content: Form(
             key: formKey,
             child: Column(
@@ -648,13 +390,13 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
               children: [
                 TextFormField(
                   controller: reasonController,
-                  decoration: const InputDecoration(
-                    labelText: '拒绝理由 *',
-                    hintText: '请输入拒绝理由'
+                  decoration: InputDecoration(
+                    labelText: l10n.order_seller_reject_reason_label,
+                    hintText: l10n.order_seller_reject_reason_hint,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return '拒绝理由不能为空';
+                      return l10n.order_seller_reject_reason_empty;
                     }
                     return null;
                   },
@@ -663,9 +405,9 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: remarksController,
-                  decoration: const InputDecoration(
-                    labelText: '补充说明 (可选)',
-                    hintText: '选填'
+                  decoration: InputDecoration(
+                    labelText: l10n.order_seller_remarks_label,
+                    hintText: l10n.order_seller_remarks_hint,
                   ),
                    maxLines: 2,
                 ),
@@ -674,11 +416,11 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('取消'),
+              child: Text(l10n.order_dialog_cancel),
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
             TextButton(
-              child: const Text('确认拒绝'),
+              child: Text(l10n.order_seller_confirm_reject_btn),
               onPressed: () {
                  if (formKey.currentState!.validate()) {
                     Navigator.of(dialogContext).pop({
@@ -695,7 +437,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
   }
 
   // Helper to show a confirmation dialog
-  Future<bool?> _showConfirmationDialog(BuildContext context, {required String title, required String content, String confirmText = '确认'}) {
+  Future<bool?> _showConfirmationDialog(BuildContext context, {required String title, required String content, String? confirmText}) {
     return showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -704,11 +446,11 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           content: Text(content),
           actions: <Widget>[
             TextButton(
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)!.order_dialog_cancel),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             TextButton(
-              child: Text(confirmText),
+              child: Text(confirmText ?? AppLocalizations.of(context)!.order_seller_confirm_btn),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -727,8 +469,9 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
+        final l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: const Text('交付内容'),
+          title: Text(l10n.order_seller_delivery_dialog_title),
           content: SingleChildScrollView(
             child: Form(
               key: formKey,
@@ -738,16 +481,16 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                 children: [
                   TextFormField(
                     controller: contentController,
-                    decoration: const InputDecoration(
-                      labelText: '交付说明 *',
-                      hintText: '请描述您的交付内容',
+                    decoration: InputDecoration(
+                      labelText: l10n.order_seller_delivery_desc_label,
+                      hintText: l10n.order_seller_delivery_desc_hint,
                       alignLabelWithHint: true,
                     ),
                     autofocus: true,
                     maxLines: 4,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return '交付说明不能为空';
+                        return l10n.order_seller_delivery_desc_empty;
                       }
                       return null;
                     },
@@ -765,9 +508,9 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.attach_file, size: 20, color: Theme.of(context).colorScheme.primary),
+                            Icon(Icons.attach_file, size: 20, color: Theme.of(context).primaryColor),
                             const SizedBox(width: 8),
-                            const Text('附件', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(l10n.order_seller_delivery_attachment, style: const TextStyle(fontWeight: FontWeight.bold)),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -781,23 +524,23 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(vertical: 24),
                                     decoration: BoxDecoration(
-                                      color: AppColors.backgroundSecondary,
-                                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                                      color: Colors.grey[50],
+                                      borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                        color: AppColors.borderPrimary,
+                                        color: Colors.grey[300]!,
                                         style: BorderStyle.solid,
                                       ),
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.cloud_upload_outlined,
-                                          size: 40,
-                                          color: AppColors.textTertiary,
+                                        Icon(Icons.cloud_upload_outlined, 
+                                          size: 40, 
+                                          color: Colors.grey[400]
                                         ),
-                                        const SizedBox(height: AppDimensions.spacingSm),
+                                        const SizedBox(height: 8),
                                         Text(
-                                          '点击下方按钮选择文件',
-                                          style: TextStyle(color: AppColors.textSecondary),
+                                          l10n.order_seller_delivery_select_file,
+                                          style: TextStyle(color: Colors.grey[600]),
                                         ),
                                       ],
                                     ),
@@ -831,14 +574,14 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                     // TODO: 实现文件选择功能
                                     // 这里暂时使用模拟数据
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('文件选择功能即将实现'),
+                                      SnackBar(
+                                        content: Text(l10n.order_seller_delivery_file_select_soon),
                                         duration: Duration(seconds: 2),
                                       ),
                                     );
                                   },
                                   icon: const Icon(Icons.add),
-                                  label: const Text('添加附件'),
+                                  label: Text(l10n.order_seller_delivery_add_attachment),
                                 ),
                               ],
                             );
@@ -853,11 +596,11 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('取消'),
+              child: Text(l10n.order_dialog_cancel),
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
             TextButton(
-              child: const Text('确认交付'),
+              child: Text(l10n.order_seller_delivery_confirm),
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   Navigator.of(dialogContext).pop({
@@ -874,3 +617,4 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
   }
   
 }
+

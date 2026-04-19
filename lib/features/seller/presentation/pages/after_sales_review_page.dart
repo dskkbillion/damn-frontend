@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -11,7 +10,6 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refu
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 售后审核列表页面
 class AfterSalesReviewPage extends StatefulWidget {
@@ -43,14 +41,14 @@ class _AfterSalesReviewPageState extends State<AfterSalesReviewPage> {
         final l10n = AppLocalizations.of(context)!;
         return Scaffold(
           appBar: AppBar(
-            title: Text(l10n?.after_sales_review_title ?? 'After-sales Review'),
+            title: Text(l10n.after_sales_review_title),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: () {
                 context.read<AfterSalesReviewBloc>().add(ReloadAfterSalesList());
               },
-              tooltip: l10n?.after_sales_refresh ?? 'Refresh',
+              tooltip: l10n.after_sales_refresh,
             ),
           ],
         ),
@@ -120,7 +118,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
           final l10n = AppLocalizations.of(context)!;
           return EmptyState(
             icon: Icons.assignment_returned,
-            text: l10n?.after_sales_no_pending ?? 'No pending after-sales requests',
+            text: l10n.after_sales_no_pending ?? 'No pending after-sales requests',
           );
         }
         
@@ -129,7 +127,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
         }
         
         final l10n = AppLocalizations.of(context)!;
-        return Center(child: Text(l10n?.after_sales_load_failed ?? 'Load failed, please try again'));
+        return Center(child: Text(l10n.after_sales_load_failed ?? 'Load failed, please try again'));
       },
     );
   }
@@ -145,15 +143,9 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16.0),
-        itemCount: state.refunds.length + (isLoadingMore || state.hasMore ? 1 : 0) + 1,
+        itemCount: state.refunds.length + (isLoadingMore || state.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildCommunicationHint(context);
-          }
-
-          final refundIndex = index - 1;
-
-          if (refundIndex == state.refunds.length) {
+          if (index == state.refunds.length) {
             // 最后一项显示加载更多指示器
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0),
@@ -161,57 +153,12 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
             );
           }
           
-          final refund = state.refunds[refundIndex];
+          final refund = state.refunds[index];
           return _RefundCard(
             refund: refund,
             isProcessing: isAuditing && (state as AfterSalesReviewAuditing).auditingId == refund.id,
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildCommunicationHint(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.18),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.forum_outlined, color: colorScheme.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '交付与协商统一在聊天室处理',
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '此页面仅保留售后审核动作。如需继续沟通、补充说明或确认处理方案，请回到卖家聊天列表。',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -251,7 +198,7 @@ class _RefundCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${AppLocalizations.of(context)!?.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
+                    '${AppLocalizations.of(context)!.after_sales_order_number ?? "Order Number"}: ${refund.orderSn}',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -266,24 +213,24 @@ class _RefundCard extends StatelessWidget {
             const Divider(height: 24),
             
             // 退款信息
-            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_apply_type ?? 'Request Type', _getRefundTypeLabel(context, refund.type)),
+            _buildInfoRow(context, AppLocalizations.of(context)!.after_sales_apply_type, _getRefundTypeLabel(context, refund.type)),
             const SizedBox(height: 8),
-            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_apply_time ?? 'Request Time', dateFormat.format(refund.applyTime ?? DateTime.now())),
+            _buildInfoRow(context, AppLocalizations.of(context)!.after_sales_apply_time, dateFormat.format(refund.applyTime ?? DateTime.now())),
             const SizedBox(height: 8),
-            _buildInfoRow(context, AppLocalizations.of(context)!?.after_sales_refund_amount ?? 'Refund Amount', '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
+            _buildInfoRow(context, AppLocalizations.of(context)!.after_sales_refund_amount, '¥${refund.formattedRefundPrice.toStringAsFixed(2)}'),
             
             // 退款原因
             if (refund.reason != null && refund.reason!.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('${AppLocalizations.of(context)!?.after_sales_apply_reason ?? "Request Reason"}:', style: textTheme.titleSmall),
+              Text('${AppLocalizations.of(context)!.after_sales_apply_reason ?? "Request Reason"}:', style: textTheme.titleSmall),
               const SizedBox(height: 4),
-              Text(refund.reason ?? '无', style: textTheme.bodyMedium),
+              Text(refund.reason ?? (AppLocalizations.of(context)!.after_sales_reason_none ?? 'None'), style: textTheme.bodyMedium),
             ],
             
             // 图片证据
             if (refund.credentials.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('${AppLocalizations.of(context)!?.after_sales_image_evidence ?? "Image Evidence"}:', style: textTheme.titleSmall),
+              Text('${AppLocalizations.of(context)!.after_sales_image_evidence ?? "Image Evidence"}:', style: textTheme.titleSmall),
               const SizedBox(height: 8),
               SizedBox(
                 height: 80,
@@ -305,7 +252,7 @@ class _RefundCard extends StatelessWidget {
                             errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
-                              color: AppColors.borderInput,
+                              color: Colors.grey[300],
                               child: const Icon(Icons.broken_image),
                             ),
                           ),
@@ -320,34 +267,26 @@ class _RefundCard extends StatelessWidget {
             const Divider(height: 24),
             
             // 操作按钮
-            if (!isProcessing)
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                alignment: WrapAlignment.end,
+            if (refund.state == OrderRefundState.waitAudit && !isProcessing)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  OutlinedButton.icon(
-                    onPressed: () => _openSellerChat(context),
-                    icon: const Icon(Icons.forum_outlined, size: 18),
-                    label: const Text('去聊天室沟通'),
+                  OutlinedButton(
+                    onPressed: () => _showRejectDialog(context),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.error,
+                    ),
+                    child: Text(AppLocalizations.of(context)!.after_sales_reject ?? 'Reject'),
                   ),
-                  if (refund.state == OrderRefundState.waitAudit)
-                    OutlinedButton(
-                      onPressed: () => _showRejectDialog(context),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colorScheme.error,
-                      ),
-                      child: Text(AppLocalizations.of(context)!?.after_sales_reject ?? 'Reject'),
+                  const SizedBox(width: 16),
+                  ElevatedButton(
+                    onPressed: () => _showConfirmDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: Colors.white,
                     ),
-                  if (refund.state == OrderRefundState.waitAudit)
-                    ElevatedButton(
-                      onPressed: () => _showConfirmDialog(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: Text(AppLocalizations.of(context)!?.after_sales_agree ?? 'Approve'),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.after_sales_agree ?? 'Approve'),
+                  ),
                 ],
               )
             else if (isProcessing)
@@ -362,17 +301,6 @@ class _RefundCard extends StatelessWidget {
       ),
     );
   }
-
-  void _openSellerChat(BuildContext context) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('请在卖家聊天列表中继续处理订单 ${refund.orderSn} 的售后沟通'),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-    context.push('/seller/chat');
-  }
   
   // 构建信息行
   Widget _buildInfoRow(BuildContext context, String label, String value) {
@@ -386,7 +314,7 @@ class _RefundCard extends StatelessWidget {
           child: Text(
             '$label:',
             style: textTheme.bodyMedium?.copyWith(
-              color: AppColors.textSecondary,
+              color: Colors.grey[600],
             ),
           ),
         ),
@@ -405,12 +333,12 @@ class _RefundCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     switch (type) {
       case RefundType.onlyMoney:
-        return l10n?.after_sales_type_refund_only ?? 'Refund Only';
+        return l10n.after_sales_type_refund_only ?? 'Refund Only';
       case RefundType.moneyAndProduct:
-        return l10n?.after_sales_type_refund_return ?? 'Return & Refund';
+        return l10n.after_sales_type_refund_return ?? 'Return & Refund';
       case RefundType.unknown:
       default:
-        return l10n?.after_sales_type_unknown ?? 'Unknown Type';
+        return l10n.after_sales_type_unknown ?? 'Unknown Type';
     }
   }
   
@@ -418,20 +346,20 @@ class _RefundCard extends StatelessWidget {
   Color _getStateColor(OrderRefundState state) {
     switch (state) {
       case OrderRefundState.waitAudit:
-        return AppColors.warning;
+        return Colors.amber;
       case OrderRefundState.auditPass:
-        return AppColors.success;
+        return Colors.green;
       case OrderRefundState.refused:
-        return AppColors.error;
+        return Colors.red;
       case OrderRefundState.buyerShip:
       case OrderRefundState.sellerReceived:
-        return AppColors.info;
+        return Colors.blue;
       case OrderRefundState.finished:
-        return AppColors.success;
+        return Colors.teal;
       case OrderRefundState.canceled:
-        return AppColors.textTertiary;
+        return Colors.grey;
       default:
-        return AppColors.textTertiary;
+        return Colors.grey;
     }
   }
   
@@ -462,12 +390,12 @@ class _RefundCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n?.after_sales_confirm_title ?? 'Confirm'),
-        content: Text(l10n?.after_sales_confirm_message ?? 'Are you sure you want to approve this after-sales request?'),
+        title: Text(l10n.after_sales_confirm_title ?? 'Confirm'),
+        content: Text(l10n.after_sales_confirm_message ?? 'Are you sure you want to approve this after-sales request?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n?.after_sales_cancel ?? 'Cancel'),
+            child: Text(l10n.after_sales_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -479,7 +407,7 @@ class _RefundCard extends StatelessWidget {
                 ),
               );
             },
-            child: Text(l10n?.after_sales_confirm ?? 'Confirm'),
+            child: Text(l10n.after_sales_confirm ?? 'Confirm'),
           ),
         ],
       ),
@@ -495,19 +423,19 @@ class _RefundCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n?.after_sales_reject_reason ?? 'Rejection Reason'),
+        title: Text(l10n.after_sales_reject_reason ?? 'Rejection Reason'),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: reasonController,
             decoration: InputDecoration(
-              hintText: l10n?.after_sales_reject_reason_hint ?? 'Please enter rejection reason',
+              hintText: l10n.after_sales_reject_reason_hint ?? 'Please enter rejection reason',
               border: const OutlineInputBorder(),
             ),
             maxLines: 3,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return l10n?.after_sales_reject_reason_required ?? 'Please enter rejection reason';
+                return l10n.after_sales_reject_reason_required ?? 'Please enter rejection reason';
               }
               return null;
             },
@@ -516,7 +444,7 @@ class _RefundCard extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n?.after_sales_cancel ?? 'Cancel'),
+            child: Text(l10n.after_sales_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -531,7 +459,7 @@ class _RefundCard extends StatelessWidget {
                 );
               }
             },
-            child: Text(l10n?.after_sales_confirm ?? 'Confirm'),
+            child: Text(l10n.after_sales_confirm ?? 'Confirm'),
           ),
         ],
       ),
@@ -548,7 +476,7 @@ class _RefundCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AppBar(
-              title: Text(l10n?.after_sales_image_view ?? 'Image View'),
+              title: Text(l10n.after_sales_image_view ?? 'Image View'),
               centerTitle: true,
               leading: IconButton(
                 icon: const Icon(Icons.close),
@@ -565,13 +493,13 @@ class _RefundCard extends StatelessWidget {
                   errorBuilder: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
-                    color: AppColors.borderInput,
+                    color: Colors.grey[300],
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.broken_image, size: 60),
                         const SizedBox(height: 8),
-                        Text(l10n?.after_sales_image_load_failed ?? 'Image load failed'),
+                        Text(l10n.after_sales_image_load_failed ?? 'Image load failed'),
                       ],
                     ),
                   ),
