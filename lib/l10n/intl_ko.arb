@@ -3,7 +3,7 @@
     "language_settings": "언어 설정",
     "system_language": "시스템 언어",
     "system_language_description": "기기의 언어 설정을 자동으로 사용합니다",
-    "product_detail_translated_from": "번역 출처",
+    "product_detail_translated_from": "{language}에서 번역됨",
     "product_detail_translation_auto": "자동 번역",
     "product_detail_show_original": "원문 보기",
     "ai_docs_assistant_title": "AI 어시스턴트",
@@ -1977,7 +1977,7 @@
     "order_demand_submitting_replenishment": "보충 자료 신청 제출 중...",
     "order_demand_validation_empty": "상세 내용을 입력해 주세요",
     "order_demand_validation_min": "설명은 최소 10자 이상이어야 합니다",
-    "order_detail_error": "주문 상세 불러오기 실패: {error}",
+    "order_detail_error": "오류",
     "order_detail_invalid_id": "유효하지 않은 주문 ID",
     "order_detail_load_failed": "불러오기 실패: {error}",
     "@order_detail_load_failed": {

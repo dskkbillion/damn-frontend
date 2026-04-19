@@ -2812,9 +2812,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get order_detail_invalid_id => '无效的订单 ID';
 
   @override
-  String order_detail_error(Object error) {
-    return '错误';
-  }
+  String get order_detail_error => '错误';
 
   @override
   String get order_detail_title => '订单详情';

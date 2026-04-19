@@ -12,7 +12,7 @@ import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_i
 import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
 class ProductPreviewPage extends StatefulWidget {

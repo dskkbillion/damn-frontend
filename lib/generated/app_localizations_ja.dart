@@ -2397,7 +2397,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String order_demand_failed(String error) {
-    return '申請に失敗しました';
+    return '申請に失敗しました：$error';
   }
 
   @override
@@ -2849,9 +2849,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get order_detail_invalid_id => '無効な注文IDです';
 
   @override
-  String order_detail_error(Object error) {
-    return 'エラー';
-  }
+  String get order_detail_error => 'エラー';
 
   @override
   String get order_detail_title => '注文詳細';
@@ -2888,7 +2886,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String order_list_load_failed(String error) {
-    return '注文一覧の読み込みに失敗しました';
+    return '読み込み失敗: $error';
   }
 
   @override
@@ -4704,7 +4702,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String after_sales_refund_amount_hint(String symbol, String amount) {
-    return '返金金額を入力してください';
+    return '最大 $symbol$amount まで返金可能';
   }
 
   @override
@@ -4767,7 +4765,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String after_sales_list_load_failed(String error) {
-    return 'アフターサービス一覧の読み込みに失敗しました';
+    return '読み込み失敗: $error';
   }
 
   @override

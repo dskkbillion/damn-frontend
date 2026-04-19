@@ -2099,7 +2099,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String product_detail_translated_from(String language) {
-    return '번역 출처';
+    return '$language에서 번역됨';
   }
 
   @override
@@ -2850,9 +2850,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get order_detail_invalid_id => '유효하지 않은 주문 ID';
 
   @override
-  String order_detail_error(Object error) {
-    return '주문 상세 불러오기 실패: $error';
-  }
+  String get order_detail_error => '오류';
 
   @override
   String get order_detail_title => '주문 상세';

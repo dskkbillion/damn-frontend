@@ -2173,7 +2173,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String product_detail_translated_from(String language) {
-    return 'Dịch từ tiếng Trung';
+    return 'Dịch từ $language';
   }
 
   @override
@@ -2951,9 +2951,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get order_detail_invalid_id => 'ID đơn hàng không hợp lệ';
 
   @override
-  String order_detail_error(Object error) {
-    return 'Lỗi';
-  }
+  String get order_detail_error => 'Lỗi';
 
   @override
   String get order_detail_title => 'Chi tiết đơn hàng';

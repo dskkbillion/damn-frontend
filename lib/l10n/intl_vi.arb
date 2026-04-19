@@ -396,7 +396,7 @@
     "product_detail_premium_tier": "Cao cấp",
     "product_detail_sample_review": "Tốt, rất kiên nhẫn",
     "product_detail_sample_user": "Rui123",
-    "product_detail_translated_from": "Dịch từ tiếng Trung",
+    "product_detail_translated_from": "Dịch từ {language}",
     "product_detail_translation_auto": "Bản dịch tự động",
     "product_detail_show_original": "Hiện bản gốc",
     "product_reviews_title": "Đánh giá",

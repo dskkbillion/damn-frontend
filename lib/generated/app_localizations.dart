@@ -5322,7 +5322,7 @@ abstract class AppLocalizations {
   ///
   /// In zh, this message translates to:
   /// **'错误'**
-  String order_detail_error(Object error);
+  String get order_detail_error;
 
   /// No description provided for @order_detail_title.
   ///

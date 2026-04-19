@@ -2952,9 +2952,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get order_detail_invalid_id => 'Invalid Order ID';
 
   @override
-  String order_detail_error(Object error) {
-    return 'Error';
-  }
+  String get order_detail_error => 'Error';
 
   @override
   String get order_detail_title => 'Order Details';

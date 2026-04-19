@@ -1195,7 +1195,7 @@
     "order_demand_reason_error": "エラーがある",
     "order_demand_submitting_replenishment": "補充資料申請を送信中...",
     "order_demand_submitting_reform": "再制作申請を送信中...",
-    "order_demand_failed": "申請に失敗しました",
+    "order_demand_failed": "申請に失敗しました：{error}",
     "@order_demand_failed": {
         "placeholders": {
             "error": {
@@ -1616,7 +1616,7 @@
             }
         }
     },
-    "order_list_load_failed": "注文一覧の読み込みに失敗しました",
+    "order_list_load_failed": "読み込み失敗: {error}",
     "@order_list_load_failed": {
         "placeholders": {
             "error": {
@@ -2841,7 +2841,7 @@
     "after_sales_apply_title": "アフターサービス申請",
     "after_sales_select_reason_hint": "アフターサービス理由を選択してください",
     "after_sales_select_reason_validator": "アフターサービス理由を選択してください",
-    "after_sales_refund_amount_hint": "返金金額を入力してください",
+    "after_sales_refund_amount_hint": "最大 {symbol}{amount} まで返金可能",
     "@after_sales_refund_amount_hint": {
         "placeholders": {
             "symbol": {
@@ -2918,7 +2918,7 @@
     "after_sales_info_reason": "申請理由",
     "after_sales_info_description": "詳細説明",
     "after_sales_info_audit_remark": "審査備考",
-    "after_sales_list_load_failed": "アフターサービス一覧の読み込みに失敗しました",
+    "after_sales_list_load_failed": "読み込み失敗: {error}",
     "@after_sales_list_load_failed": {
         "placeholders": {
             "error": {
