@@ -155,15 +155,17 @@ class PlaceholderPage extends StatelessWidget {
   }
 }
 
+/// 全局 root navigator key，供 GlobalMessageNotification / AppToast 等使用
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
 // Provider for the GoRouter instance (from HEAD/auth-module)
-final goRouterProvider = Provider<GoRouter>((ref) {  
-  // 读取是否显示开发tab的配置  
-  final showDevTab = ref.watch(showDevTabProvider);    
-  
-  final authRepository = GetIt.instance<IAuthRepository>();  
-  final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');  
-  // Navigation keys for ShellRoutes  
-  final buyerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'buyer_shell');  
+final goRouterProvider = Provider<GoRouter>((ref) {
+  // 读取是否显示开发tab的配置
+  final showDevTab = ref.watch(showDevTabProvider);
+
+  final authRepository = GetIt.instance<IAuthRepository>();
+  // Navigation keys for ShellRoutes
+  final buyerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'buyer_shell');
   final sellerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'seller_shell');
 
   // Helper function to filter routes by path prefix
