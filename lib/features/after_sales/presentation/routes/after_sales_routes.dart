@@ -34,10 +34,8 @@ class AfterSalesRoutes {
       name: 'afterSalesDetail',
       builder: (BuildContext context, GoRouterState state) {
         final String id = state.pathParameters['id'] ?? 'invalid';
-        final resolveByOrderId = state.uri.queryParameters['mode'] == 'order';
         return AfterSalesDetailPage(
           id: id,
-          resolveByOrderId: resolveByOrderId,
         );
       },
     ),
