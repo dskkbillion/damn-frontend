@@ -613,6 +613,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get home_pull_to_refresh => '引っ張って更新し、おすすめを表示';
 
   @override
+  String get home_refreshing_recommendations => 'おすすめを更新中...';
+
+  @override
+  String get home_loading_more => 'さらに読み込み中...';
+
+  @override
+  String get home_back_to_top_refresh => 'トップに戻って更新';
+
+  @override
   String home_banner_clicked(String targetType, String targetValue) {
     return 'バナーをタップしました: $targetType - $targetValue';
   }

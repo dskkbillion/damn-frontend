@@ -298,6 +298,9 @@
     "home_end_of_list": "Đã đến cuối danh sách",
     "home_no_content": "Chưa có nội dung đề xuất",
     "home_pull_to_refresh": "Kéo xuống để làm mới và nhận nội dung đề xuất",
+    "home_refreshing_recommendations": "Đang làm mới đề xuất...",
+    "home_loading_more": "Đang tải thêm...",
+    "home_back_to_top_refresh": "Lên đầu trang và làm mới",
     "home_banner_clicked": "Đã nhấn vào banner: {targetType} - {targetValue}",
     "@home_banner_clicked": {
         "placeholders": {

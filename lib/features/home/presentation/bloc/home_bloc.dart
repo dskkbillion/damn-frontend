@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/error/failures.dart';
+import '../../../../../core/events/event_bus.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../../../core/utils/app_logger.dart';
 import '../../data/datasources/home_local_data_source.dart';
@@ -23,6 +26,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   /// 默认每页数量
   static const int defaultLimit = 10;
   int _currentPage = 1;
+  StreamSubscription<LocaleChangedEvent>? _localeChangedSubscription;
 
   HomeBloc({
     required this.getHomePageData,
@@ -30,6 +34,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required this.navigationService,
     required this.localDataSource,
   }) : super(const HomeInitial()) {
+    // 监听语言切换事件，自动刷新首页数据
+    _localeChangedSubscription = EventBus().localeChangedStream.listen((event) {
+      AppLogger.d('HomeBloc: Locale changed to ${event.languageCode}, refreshing home data');
+      add(const RefreshHomeData());
+    });
     on<LoadHomeData>(_onLoadHomeData);
     on<RefreshHomeData>(_onRefreshHomeData);
     on<LoadMoreHomeData>(_onLoadMoreHomeData);
@@ -221,6 +230,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       event.productId,
       event.productName,
     );
+  }
+
+  @override
+  Future<void> close() {
+    _localeChangedSubscription?.cancel();
+    return super.close();
   }
 
   /// 将 Failure 映射为错误消息

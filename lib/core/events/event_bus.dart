@@ -77,6 +77,14 @@ class ChatListUpdateEvent {
   });
 }
 
+/// 语言切换事件，用于通知各模块重新加载数据
+class LocaleChangedEvent {
+  /// 新的语言代码
+  final String languageCode;
+
+  LocaleChangedEvent({required this.languageCode});
+}
+
 /// 事件总线单例类，负责全局消息事件的分发
 class EventBus {
   /// 私有构造函数
@@ -97,6 +105,9 @@ class EventBus {
   /// 评价提交事件的广播控制器
   final _evaluationSubmittedStreamController = StreamController<EvaluationSubmittedEvent>.broadcast();
 
+  /// 语言切换事件的广播控制器
+  final _localeChangedStreamController = StreamController<LocaleChangedEvent>.broadcast();
+
   /// 消息事件流
   Stream<ChatMessageEvent> get messageStream => _messageStreamController.stream;
 
@@ -105,6 +116,9 @@ class EventBus {
 
   /// 评价提交事件流
   Stream<EvaluationSubmittedEvent> get evaluationSubmittedStream => _evaluationSubmittedStreamController.stream;
+
+  /// 语言切换事件流
+  Stream<LocaleChangedEvent> get localeChangedStream => _localeChangedStreamController.stream;
 
   /// 发送一个聊天消息事件
   void fireChatMessageEvent(ChatMessageEvent event) {
@@ -121,10 +135,16 @@ class EventBus {
     _evaluationSubmittedStreamController.add(event);
   }
 
+  /// 发送一个语言切换事件
+  void fireLocaleChangedEvent(LocaleChangedEvent event) {
+    _localeChangedStreamController.add(event);
+  }
+
   /// 关闭事件总线
   void dispose() {
     _messageStreamController.close();
     _chatListUpdateStreamController.close();
     _evaluationSubmittedStreamController.close();
+    _localeChangedStreamController.close();
   }
 } 

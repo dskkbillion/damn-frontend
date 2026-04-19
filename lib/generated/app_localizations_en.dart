@@ -632,6 +632,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get home_pull_to_refresh => 'Pull to refresh for recommendations';
 
   @override
+  String get home_refreshing_recommendations => 'Refreshing recommendations...';
+
+  @override
+  String get home_loading_more => 'Loading more...';
+
+  @override
+  String get home_back_to_top_refresh => 'Back to top & refresh';
+
+  @override
   String home_banner_clicked(String targetType, String targetValue) {
     return 'Banner clicked: $targetType - $targetValue';
   }

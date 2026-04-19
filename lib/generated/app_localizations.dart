@@ -1238,6 +1238,24 @@ abstract class AppLocalizations {
   /// **'下拉刷新获取推荐内容'**
   String get home_pull_to_refresh;
 
+  /// No description provided for @home_refreshing_recommendations.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在刷新推荐...'**
+  String get home_refreshing_recommendations;
+
+  /// No description provided for @home_loading_more.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在加载更多...'**
+  String get home_loading_more;
+
+  /// No description provided for @home_back_to_top_refresh.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到顶部并刷新'**
+  String get home_back_to_top_refresh;
+
   /// No description provided for @home_banner_clicked.
   ///
   /// In zh, this message translates to:

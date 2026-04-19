@@ -613,6 +613,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get home_pull_to_refresh => '당겨서 추천 콘텐츠를 새로고침하세요';
 
   @override
+  String get home_refreshing_recommendations => '추천 새로고침 중...';
+
+  @override
+  String get home_loading_more => '더 불러오는 중...';
+
+  @override
+  String get home_back_to_top_refresh => '맨 위로 이동 및 새로고침';
+
+  @override
   String home_banner_clicked(String targetType, String targetValue) {
     return '배너 클릭: $targetType - $targetValue';
   }

@@ -301,6 +301,9 @@
     "home_end_of_list": "더 이상 항목이 없습니다",
     "home_no_content": "추천 콘텐츠가 없습니다",
     "home_pull_to_refresh": "당겨서 추천 콘텐츠를 새로고침하세요",
+    "home_refreshing_recommendations": "추천 새로고침 중...",
+    "home_loading_more": "더 불러오는 중...",
+    "home_back_to_top_refresh": "맨 위로 이동 및 새로고침",
     "home_banner_clicked": "배너 클릭: {targetType} - {targetValue}",
     "@home_banner_clicked": {
         "placeholders": {

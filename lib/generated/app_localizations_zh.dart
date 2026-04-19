@@ -607,6 +607,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get home_pull_to_refresh => '下拉刷新获取推荐内容';
 
   @override
+  String get home_refreshing_recommendations => '正在刷新推荐...';
+
+  @override
+  String get home_loading_more => '正在加载更多...';
+
+  @override
+  String get home_back_to_top_refresh => '回到顶部并刷新';
+
+  @override
   String home_banner_clicked(String targetType, String targetValue) {
     return '点击了轮播图: $targetType - $targetValue';
   }

@@ -309,6 +309,9 @@
     "home_end_of_list": "End of list",
     "home_no_content": "No recommended content",
     "home_pull_to_refresh": "Pull to refresh for recommendations",
+    "home_refreshing_recommendations": "Refreshing recommendations...",
+    "home_loading_more": "Loading more...",
+    "home_back_to_top_refresh": "Back to top & refresh",
     "home_banner_clicked": "Banner clicked: {targetType} - {targetValue}",
     "@home_banner_clicked": {
         "placeholders": {

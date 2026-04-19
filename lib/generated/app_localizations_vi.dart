@@ -634,6 +634,15 @@ class AppLocalizationsVi extends AppLocalizations {
       'Kéo xuống để làm mới và nhận nội dung đề xuất';
 
   @override
+  String get home_refreshing_recommendations => 'Đang làm mới đề xuất...';
+
+  @override
+  String get home_loading_more => 'Đang tải thêm...';
+
+  @override
+  String get home_back_to_top_refresh => 'Lên đầu trang và làm mới';
+
+  @override
   String home_banner_clicked(String targetType, String targetValue) {
     return 'Đã nhấn vào banner: $targetType - $targetValue';
   }

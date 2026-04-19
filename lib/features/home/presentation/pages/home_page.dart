@@ -163,14 +163,14 @@ class _HomeViewState extends State<HomeView> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                '暂无推荐内容',
+                                appLocalizations.home_no_content,
                                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                '下拉刷新获取推荐内容',
+                                appLocalizations.home_pull_to_refresh,
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: AppColors.textTertiary,
                                 ),
@@ -239,7 +239,7 @@ class _HomeViewState extends State<HomeView> {
                                     const CircularProgressIndicator(),
                                     const SizedBox(height: 12),
                                     Text(
-                                      '正在刷新推荐...',
+                                      appLocalizations.home_refreshing_recommendations,
                                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                         color: AppColors.textSecondary,
                                       ),
@@ -252,7 +252,7 @@ class _HomeViewState extends State<HomeView> {
                                       const CircularProgressIndicator(),
                                       const SizedBox(height: 12),
                                       Text(
-                                        '正在加载更多...',
+                                        appLocalizations.home_loading_more,
                                         style: TextStyle(
                                           color: AppColors.textSecondary,
                                           fontSize: 14,
@@ -284,13 +284,13 @@ class _HomeViewState extends State<HomeView> {
                                           color: Theme.of(context).primaryColor,
                                           size: 28,
                                         ),
-                                        tooltip: '回到顶部并刷新',
+                                        tooltip: appLocalizations.home_back_to_top_refresh,
                                         padding: const EdgeInsets.all(12),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      '回到顶部并刷新',
+                                      appLocalizations.home_back_to_top_refresh,
                                       style: TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 14,

@@ -309,6 +309,9 @@
     "home_end_of_list": "已经到底了",
     "home_no_content": "暂无推荐内容",
     "home_pull_to_refresh": "下拉刷新获取推荐内容",
+    "home_refreshing_recommendations": "正在刷新推荐...",
+    "home_loading_more": "正在加载更多...",
+    "home_back_to_top_refresh": "回到顶部并刷新",
     "home_banner_clicked": "点击了轮播图: {targetType} - {targetValue}",
     "@home_banner_clicked": {
         "placeholders": {
