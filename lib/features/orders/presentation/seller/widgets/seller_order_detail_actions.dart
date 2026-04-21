@@ -275,33 +275,32 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
         break;
       case OrderStatus.awaitingDelivery:
          buttons.add(OutlinedButton(
-           onPressed: () {
-             // 简化实现：直接跳转到卖家聊天列表
-             // TODO: 未来实现获取或创建与买家关于该商品的专属聊天室
-             // 需要的信息：
-             // 1. 买家ID (需要从订单或商品中获取)
-             // 2. 商品ID (从订单items中的第一个商品获取)
-             // 3. 调用API查找或创建聊天室
-             
-             // 获取商品ID（假设订单至少有一个商品）
-             final productId = widget.order.items.isNotEmpty 
-                 ? widget.order.items.first.productId 
-                 : null;
-             
-             if (productId != null) {
-               // 显示提示信息，帮助用户识别应该选择哪个聊天
+           onPressed: () async {
+             final buyerId = widget.order.buyer?.id;
+             if (buyerId == null) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(
-                   content: Text(AppLocalizations.of(context)!.order_seller_delivery_chat_hint(widget.order.items.first.productName)),
-                   duration: const Duration(seconds: 3),
-                 ),
+                 SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_contact_buyer)),
                );
+               return;
              }
-             
-             // 跳转到卖家聊天列表
-             context.push('/seller/chat');
-           }, 
-           style: outlineStyle, 
+             final chatRepository = GetIt.I<IChatRepository>();
+             final productId = widget.order.items.isNotEmpty
+                 ? widget.order.items.first.productId
+                 : null;
+             final result = await chatRepository.createRoom(buyerId, productId: productId);
+             result.fold(
+               (failure) {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                   SnackBar(content: Text(failure.message)),
+                 );
+               },
+               (chatId) {
+                 final room = (id: chatId);
+                 context.push('/chat/refactored/${room.id}');
+               },
+             );
+           },
+           style: outlineStyle,
            child: Text(AppLocalizations.of(context)!.order_seller_contact_buyer)
          ));
          buttons.add(ElevatedButton(

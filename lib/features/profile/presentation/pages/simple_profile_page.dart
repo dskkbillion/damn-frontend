@@ -57,7 +57,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 MenuItem(
                   icon: Icons.star_border,
                   title: AppLocalizations.of(context)!.profile_favorites,
-                  onTap: () => context.go('/favorites'),
+                  onTap: () => context.push('/favorites'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,

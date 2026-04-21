@@ -202,7 +202,7 @@ class PaymentNavigationService {
       _showInfoSnackBar(context, l10n.payment_nav_retrying);
 
       // 示例：跳转到订单详情页面，用户可以在那里重新支付
-      context.go('/orderDetail/$orderId');
+      context.push('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, l10n.payment_nav_retry_failed);
     }
@@ -216,7 +216,7 @@ class PaymentNavigationService {
       _showInfoSnackBar(context, l10n.payment_nav_querying);
 
       // 跳转到订单详情页面，用户可以查看最新状态
-      context.go('/orderDetail/$orderId');
+      context.push('/orderDetail/$orderId');
     } else {
       _showErrorSnackBar(context, l10n.payment_nav_query_failed);
     }

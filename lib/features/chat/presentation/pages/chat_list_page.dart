@@ -8,6 +8,8 @@ import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
@@ -200,7 +202,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             child: BlocBuilder<ChatListBloc, ChatListState>(
               builder: (context, state) {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
-                  return Center(child: CircularProgressIndicator()); 
+                  return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
@@ -210,7 +212,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                   return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
                 } else {
                   // 真正的加载状态
-                  return Center(child: CircularProgressIndicator());
+                  return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
                 }
               },
             ),

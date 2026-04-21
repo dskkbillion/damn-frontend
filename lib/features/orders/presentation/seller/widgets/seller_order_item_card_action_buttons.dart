@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -132,8 +134,28 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
       case OrderStatus.awaitingDelivery:
         // Seller needs to ship
         buttons.add(OutlinedButton(
-          onPressed: () {
-            context.push('/chat');
+          onPressed: () async {
+            final buyerId = order.buyer?.id;
+            if (buyerId == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(l10n.order_seller_contact_buyer)),
+              );
+              return;
+            }
+            final chatRepository = GetIt.I<IChatRepository>();
+            final productId = order.items.isNotEmpty ? order.items.first.productId : null;
+            final result = await chatRepository.createRoom(buyerId, productId: productId);
+            result.fold(
+              (failure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(failure.message)),
+                );
+              },
+              (chatId) {
+                final room = (id: chatId);
+                context.push('/chat/refactored/${room.id}');
+              },
+            );
           },
           style: outlineStyle,
           child: Text(l10n.order_seller_contact_buyer)

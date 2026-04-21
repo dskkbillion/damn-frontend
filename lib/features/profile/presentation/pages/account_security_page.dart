@@ -9,6 +9,8 @@ import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import '../pages/bind_contact_page.dart';
+import '../bloc/bind_contact_cubit.dart';
 
 class AccountSecurityPage extends StatefulWidget {
   const AccountSecurityPage({Key? key}) : super(key: key);
@@ -351,7 +353,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 color: Colors.grey.shade600,
               ),
             ),
-            onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_bound_phone),
+            onTap: () => _navigateToBindContact(),
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
@@ -400,7 +402,48 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     );
   }
 
+  void _navigateToChangeContact(String contactType, String currentContact) async {
+    final result = await context.push<bool>(
+      Uri(
+        path: '/profile/change-contact',
+        queryParameters: {
+          'contactType': contactType,
+          'currentContact': currentContact,
+        },
+      ).toString(),
+    );
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent());
+    }
+  }
+
+  void _navigateToUnbindContact(String contactType, String currentContact) async {
+    final result = await context.push<bool>(
+      Uri(
+        path: '/profile/unbind-contact',
+        queryParameters: {
+          'contactType': contactType,
+          'currentContact': currentContact,
+        },
+      ).toString(),
+    );
+    if (result == true) {
+      _profileBloc.add(GetUserProfileEvent());
+    }
+  }
+
+  void _navigateToBindContact() {
+    // TODO(Step1.4): BindContactPage 待路由注册后迁移到 GoRouter (需要 BlocProvider)
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BindContactPage(contactType: BindContactType.phone),
+      ),
+    );
+  }
+
   void _navigateToEditNickname(UserProfile? profile) async {
+    // TODO(Step1.4): EditNicknamePage 待路由注册后迁移到 GoRouter
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
