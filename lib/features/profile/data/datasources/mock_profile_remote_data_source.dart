@@ -161,4 +161,9 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
     // 返回空数据，这个方法暂未实现
     return [];
   }
+
+  @override
+  Future<void> submitWithdrawal({required double amount}) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
 }

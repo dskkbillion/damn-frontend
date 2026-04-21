@@ -23,7 +23,7 @@ class OrderDetailActionButtons extends StatelessWidget {
     final dialogs = OrderActionDialogs(order: order);
     final buttons = <Widget>[];
     Widget? primaryButton;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     // 使用 order_status.dart 中定义的实际枚举值
     switch (order.state) {
@@ -241,7 +241,7 @@ class OrderDetailActionButtons extends StatelessWidget {
   }
 
   void _navigateToAfterSales(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       if (order.items.isNotEmpty) {
         final firstItem = order.items.first;
@@ -276,7 +276,7 @@ class OrderDetailActionButtons extends StatelessWidget {
   }
 
   void _navigateToEvaluation(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       if (order.items.isNotEmpty) {
         final firstItem = order.items.first;
@@ -311,7 +311,7 @@ class OrderDetailActionButtons extends StatelessWidget {
   }
 
   void _navigateToPlatformIntervention(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       Future.delayed(const Duration(milliseconds: 50), () {
         if (context.mounted) {

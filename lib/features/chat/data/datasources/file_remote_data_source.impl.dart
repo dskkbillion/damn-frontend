@@ -4,7 +4,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart'; // Import Dio
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import ServerException
-import 'package:injectable/injectable.dart'; // Add injectable import
+// Add injectable import
 
 // Correct import for Interface using package path
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
@@ -30,7 +30,7 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
 
   @override
   Future<String> uploadFile(File file) async {
-    final uploadPath = '/api/common/public/upload'; // Define path clearly
+    const uploadPath = '/api/common/public/upload'; // Define path clearly
     final targetUrl = dio.options.baseUrl + uploadPath;
     AppLogger.d("[API Call] Uploading file: ${file.path} to $targetUrl"); // Log full target URL
 

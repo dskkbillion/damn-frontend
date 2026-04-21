@@ -12,9 +12,9 @@ class ModeFlipTransitionOverlay extends ConsumerStatefulWidget {
   final Widget child;
   
   const ModeFlipTransitionOverlay({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
   
   @override
   ConsumerState<ModeFlipTransitionOverlay> createState() => _ModeFlipTransitionOverlayState();

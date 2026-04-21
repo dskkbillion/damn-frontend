@@ -19,32 +19,32 @@ class ChatTestEntry extends StatelessWidget {
           children: [
             Card(
               color: Colors.blue.shade50,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+              child: const Padding(
+                padding: EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       '聊天重构测试',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       '新版本使用 flutter_chat_ui 组件库',
                       style: TextStyle(color: Colors.grey),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       '特性：',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const Text('• 离线消息支持'),
-                    const Text('• WebSocket自动重连'),
-                    const Text('• 性能优化'),
-                    const Text('• 消息缓存'),
+                    Text('• 离线消息支持'),
+                    Text('• WebSocket自动重连'),
+                    Text('• 性能优化'),
+                    Text('• 消息缓存'),
                   ],
                 ),
               ),
@@ -148,7 +148,7 @@ class ChatTestEntry extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isNew ? Colors.green : Colors.grey,
-          child: Icon(
+          child: const Icon(
             Icons.chat,
             color: Colors.white,
           ),

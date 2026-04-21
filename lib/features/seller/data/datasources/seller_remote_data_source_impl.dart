@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
@@ -67,7 +66,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
 
       // Weekly income data seems missing in the response, handle gracefully
       AppLogger.d('[DataSource DEBUG] Parsing statistics...'); // DEBUG LOG
-      final statistics = SellerStatistics(
+      const statistics = SellerStatistics(
         weeklyIncome: [], // Return empty list as weeklyIncome is missing
       );
       AppLogger.d('[DataSource DEBUG] Parsed statistics: $statistics'); // DEBUG LOG
@@ -441,7 +440,7 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
       AppLogger.d('Sending product update request with extended timeout (120s)');
       // 使用update端点进行完整更新
       // 注意：后端需要修复审核状态被重置的问题
-      final endpoint = '/api/shop/product/update';
+      const endpoint = '/api/shop/product/update';
       AppLogger.d('Using endpoint: $endpoint for all product updates to ensure productMaterials are saved');
       final response = await productUpdateDio.post(endpoint, data: mergedData, options: options);
       

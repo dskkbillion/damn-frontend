@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../app/app_mode.dart';
 import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
-import '../../features/seller/presentation/widgets/seller_bottom_navigation_bar.dart';
 import '../navigation/app_router_config.dart';
 import '../../core/config/theme/app_colors.dart';
 
@@ -75,7 +74,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
   @override
   Widget build(BuildContext context) {
     final mode = ref.watch(appModeProvider);
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     // 监听模式切换，切换到对应的分支
     ref.listen<AppMode>(appModeProvider, (previous, next) {
@@ -112,7 +111,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),

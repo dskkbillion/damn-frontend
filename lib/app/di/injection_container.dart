@@ -413,16 +413,20 @@ class AuthInterceptor extends Interceptor {
 
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
-      options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
+      options.headers['Authorization'] = 'Bearer $token';
       AppLogger.d(
-          '[AuthInterceptor] Added token to Authorization header: ${token.substring(0, 15)}...');
+          '[AuthInterceptor] 成功添加Authorization头');
     } else {
       AppLogger.d(
           '[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
 
-    // 记录最终的Headers状态
-    AppLogger.d('[AuthInterceptor] 最终headers: ${options.headers}');
+    // 记录最终的Headers状态（过滤敏感信息）
+    final safeHeaders = Map<String, dynamic>.from(options.headers);
+    if (safeHeaders.containsKey('Authorization')) {
+      safeHeaders['Authorization'] = '[REDACTED]';
+    }
+    AppLogger.d('[AuthInterceptor] 最终headers: $safeHeaders');
 
     handler.next(options);
   }

@@ -153,3 +153,23 @@ class WalletTransactionsLoadingMore extends WalletState {
         currentPage,
       ];
 }
+
+/// 提款提交中状态
+class WithdrawalSubmitting extends WalletState {
+  const WithdrawalSubmitting();
+}
+
+/// 提款成功状态
+class WithdrawalSuccess extends WalletState {
+  const WithdrawalSuccess();
+}
+
+/// 提款失败状态
+class WithdrawalFailed extends WalletState {
+  final String message;
+
+  const WithdrawalFailed(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}

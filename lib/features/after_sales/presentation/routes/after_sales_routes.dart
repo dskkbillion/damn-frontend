@@ -47,7 +47,7 @@ class AfterSalesRoutes {
         if (orderItem == null) {
           AppLogger.d('Error: OrderItem not passed correctly to /selectAfterSalesType');
           // Consider navigating to an error page or showing a dialog
-          return Scaffold(body: Center(child: Text('Error: Missing order item data.')));
+          return const Scaffold(body: Center(child: Text('Error: Missing order item data.')));
         }
         AppLogger.d('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
         return SelectAfterSalesTypePage(orderItem: orderItem);
@@ -67,7 +67,7 @@ class AfterSalesRoutes {
           // Validate parameters
           if (itemId == null || type == null || type.isEmpty || orderItem == null) {
              AppLogger.d('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
-             return Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
+             return const Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
           }
 
           AppLogger.d('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');

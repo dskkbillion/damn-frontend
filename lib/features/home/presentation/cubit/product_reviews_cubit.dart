@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:injectable/injectable.dart';
 
-import '../../domain/entities/product_review.dart';
 import '../../domain/usecases/get_product_reviews_use_case.dart';
 import 'product_reviews_state.dart';
 

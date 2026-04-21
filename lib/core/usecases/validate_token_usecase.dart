@@ -31,16 +31,16 @@ class ValidateTokenUseCase implements UseCase<bool, ValidateTokenParams> {
           return const Right(true);
 
         case TokenValidationResult.expired:
-          return Left(AuthenticationFailure(message: 'Token has expired. Please login again.'));
+          return const Left(AuthenticationFailure(message: 'Token has expired. Please login again.'));
 
         case TokenValidationResult.invalid:
-          return Left(AuthenticationFailure(message: 'Invalid token. Please login again.'));
+          return const Left(AuthenticationFailure(message: 'Invalid token. Please login again.'));
 
         case TokenValidationResult.error:
-          return Left(ServerFailure(message: 'Error validating token. Please try again.'));
+          return const Left(ServerFailure(message: 'Error validating token. Please try again.'));
       }
     } catch (e) {
-      return Left(UnknownFailure(message: 'An unknown error occurred during token validation.'));
+      return const Left(UnknownFailure(message: 'An unknown error occurred during token validation.'));
     }
   }
 }

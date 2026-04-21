@@ -194,9 +194,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   // 构建消息时间显示
   Widget _buildMessageTime() {
-    if (widget.message.createTime == null) return const SizedBox.shrink();
-    
-    final timeString = DateFormat('HH:mm').format(widget.message.createTime!);
+    final timeString = DateFormat('HH:mm').format(widget.message.createTime);
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     
     return Padding(
@@ -225,7 +223,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         ? const Color(0xFFC9E6FF) // Light blue for current user
         : Colors.white;          // White for opponent
     // Consistent text color for both bubble types
-    final textColor = Colors.black87;
+    const textColor = Colors.black87;
 
     // Avatar Widget (only for opponent)
     final avatarWidget = !isCurrentUser && widget.opponent != null
@@ -327,7 +325,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     if (widget.message.type == 'text') {
        // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
@@ -358,7 +356,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
      } else {
        // Keep handling for unsupported types
-       return Text('[${AppLocalizations.of(context)!.chat_unknown_message}: ${widget.message.type}]', style: TextStyle(color: Colors.red));
+       return Text('[${AppLocalizations.of(context).chat_unknown_message}: ${widget.message.type}]', style: const TextStyle(color: Colors.red));
      }
   }
 
@@ -377,7 +375,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
            children: [
              const CircularProgressIndicator(strokeWidth: 2.0),
              const SizedBox(height: 8),
-             Text(AppLocalizations.of(context)!.chat_uploading, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+             Text(AppLocalizations.of(context).chat_uploading, style: const TextStyle(fontSize: 12, color: Colors.grey)),
            ],
          ),
        );
@@ -397,7 +395,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
            children: [
              const Icon(Icons.error_outline, color: Colors.red, size: 40),
              const SizedBox(height: 8),
-             Text(AppLocalizations.of(context)!.chat_upload_failed, style: const TextStyle(fontSize: 12)),
+             Text(AppLocalizations.of(context).chat_upload_failed, style: const TextStyle(fontSize: 12)),
              const SizedBox(height: 8),
              ElevatedButton(
                onPressed: () {
@@ -413,7 +411,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                  minimumSize: const Size(60, 24),
                  padding: const EdgeInsets.symmetric(horizontal: 8),
                ),
-               child: Text(AppLocalizations.of(context)!.chat_retry, style: const TextStyle(fontSize: 12)),
+               child: Text(AppLocalizations.of(context).chat_retry, style: const TextStyle(fontSize: 12)),
              ),
            ],
          ),
@@ -459,7 +457,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                      children: [
                        const CircularProgressIndicator(strokeWidth: 2),
                        const SizedBox(height: 8),
-                       Text(AppLocalizations.of(context)!.chat_image_loading, style: const TextStyle(fontSize: 12)),
+                       Text(AppLocalizations.of(context).chat_image_loading, style: const TextStyle(fontSize: 12)),
                      ],
                    ),
                  ),
@@ -477,7 +475,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                      children: [
                        const Icon(Icons.broken_image, color: Colors.red, size: 40),
                        const SizedBox(height: 8),
-                       Text(AppLocalizations.of(context)!.chat_image_load_failed, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                       Text(AppLocalizations.of(context).chat_image_load_failed, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                        const SizedBox(height: 8),
                        // 重试按钮
                        ElevatedButton(
@@ -494,7 +492,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                            padding: const EdgeInsets.symmetric(horizontal: 8),
                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                          ),
-                         child: Text(AppLocalizations.of(context)!.chat_retry, style: const TextStyle(fontSize: 12)),
+                         child: Text(AppLocalizations.of(context).chat_retry, style: const TextStyle(fontSize: 12)),
                        ),
                      ],
                    ),
@@ -540,7 +538,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(),
               onPressed: _playPauseAudio,
-              tooltip: _isPlaying ? AppLocalizations.of(context)!.chat_audio_pause : AppLocalizations.of(context)!.chat_audio_play,
+              tooltip: _isPlaying ? AppLocalizations.of(context).chat_audio_pause : AppLocalizations.of(context).chat_audio_play,
             ),
           ),
           
@@ -628,7 +626,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
    void _showActionMenu(BuildContext context, Offset tapPosition, bool isCurrentUser) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
@@ -706,17 +704,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   // 检查消息撤回状态（更详细的版本）
   RevokeCheckResult _checkRevokeStatus() {
-      final s = AppLocalizations.of(context)!;
-
-      if (widget.message.createTime == null) {
-          return RevokeCheckResult(
-              canRevoke: false,
-              reason: s.chat_revoke_time_missing
-          );
-      }
+      final s = AppLocalizations.of(context);
 
       final now = DateTime.now();
-      final messageTime = widget.message.createTime!;
+      final messageTime = widget.message.createTime;
       final timeDifference = now.difference(messageTime);
 
       // 允许撤回的时间窗口：2分钟（120秒）
@@ -748,7 +739,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 添加一个方法用于获取allocate消息的显示名称
   String _getSellerName() {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     

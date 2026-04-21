@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../entities/ai_conversation_entity.dart';
 import '../repositories/i_ai_chat_repository.dart';
 import 'get_conversations_usecase.dart'; // 导入GetConversationsResult
 

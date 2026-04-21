@@ -62,7 +62,7 @@ Future<void> initDependencies() async {
   
   // 注册获取token和userId的函数 - 使用硬编码的token和userId
   sl.registerLazySingleton<Future<String?> Function()>(
-    () => () async => 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjJmZDc3ZTM0LTY0YTQtNDRkYy1hMzRkLTRlNzI1YzA1YzA0YiJ9.aCyO_gQyGvrLTd5-WZXLwUVT8pWI-UkHtEXRzHiUMuVtJcZ-pEj-NKjOvTwKRLfbXjXaABgWmhIQq_ixvjGguA', // 硬编码token用于预览
+    () => () async => 'Bearer PLACEHOLDER_TOKEN_FOR_DEV', // 硬编码token用于预览
     instanceName: 'getAuthToken',
   );
   

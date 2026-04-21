@@ -35,7 +35,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
   void _onScroll() {
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    final threshold = 200.0; // 距离底部200像素时触发加载更多
+    const threshold = 200.0; // 距离底部200像素时触发加载更多
 
     // 检查是否滚动到底部，触发加载更多对话
     if (maxScroll - currentScroll <= threshold && !_scrollController.position.outOfRange) {
@@ -51,7 +51,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     // Wrap the content in SafeArea to avoid status bar overlap
     return SafeArea(
@@ -85,12 +85,12 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                     onPressed: state.conversationsStatus == ConversationsStatus.loading
                                ? null
                                : () {
-                                   context.read<AiChatBloc>().add(CreateNewConversation());
+                                   context.read<AiChatBloc>().add(const CreateNewConversation());
                                    Navigator.pop(context); // Close drawer after event dispatch
                                  },
                   ),
                 ),
-                Divider(height: 1, color: AppColors.borderPrimary),
+                const Divider(height: 1, color: AppColors.borderPrimary),
                 // --- Conversation List Area with Pull to Refresh ---
                 Expanded(
                   child: RefreshIndicator(
@@ -112,7 +112,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the list based on status
   Widget _buildConversationList(BuildContext context, AiChatState state) {
-     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+     final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
      switch (state.conversationsStatus) {
        case ConversationsStatus.loading:
@@ -159,7 +159,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to build the actual ListView with pagination support
   Widget _buildList(BuildContext context, List<AiConversationEntity> conversations, int? selectedId, AiChatState state) {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     return ListView.builder(
        controller: _scrollController,
@@ -214,7 +214,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
 
   // Helper method to show delete confirmation dialog
   Future<void> _confirmDelete(BuildContext context, int conversationId) async {
-     final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+     final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
      final bool? confirm = await showDialog<bool>(
         context: context,

@@ -8,7 +8,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart' as mock;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // Import authentication related classes
@@ -16,7 +15,6 @@ import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 
 // Import the main shell page which will act as the navigator shell
-import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart';
 import 'package:dskk_flutter_refactor/app/widgets/dual_mode_navigation_shell.dart';
 // Import the dev menu page
 import 'package:dskk_flutter_refactor/app/widgets/dev_menu_page.dart';
@@ -50,8 +48,8 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 
 // Import Shell Pages
-import 'package:dskk_flutter_refactor/app/widgets/main_shell_page.dart'; // 使用正确的名字和路径
-import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_shell_page.dart'; // 卖家 Shell
+// 使用正确的名字和路径
+// 卖家 Shell
 
 // --- 引入 Seller 模块相关的 Blocs 和 Pages --- 
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_bloc.dart';
@@ -73,6 +71,11 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_s
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/order_delivery_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_statistics_page.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/connect_account_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_event.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/stripe_connect_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
 
@@ -86,14 +89,6 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/delete_pro
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 
 // Import necessary classes
-import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/notification_list/notification_list_bloc.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller_notification_list_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
-import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
 
 // Import new page
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/seller_public_profile_page.dart';
@@ -104,7 +99,6 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 // Import payment related pages and blocs
 import '../../features/payment/presentation/bloc/payment_bloc.dart';
 import '../../features/payment/presentation/pages/order_confirm_page.dart';
-import '../../features/payment/presentation/pages/payment_result_page.dart';
 
 // Import mock preview page
 import 'package:dskk_flutter_refactor/features/orders/presentation/pages/mock_orders_preview_page.dart';
@@ -132,7 +126,6 @@ import 'package:dskk_flutter_refactor/features/home/presentation/bloc/home_bloc.
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/home_page.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_page.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/pages/search_results_page.dart';
-import 'package:dskk_flutter_refactor/features/home/presentation/cubit/product_detail_cubit.dart';
 
 // Import ImageCompressService
 import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
@@ -169,7 +162,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final sellerShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'seller_shell');
 
   // Helper function to filter routes by path prefix
-  List<RouteBase> _filterRoutes(List<RouteBase> routes, List<String> paths) {
+  List<RouteBase> filterRoutes(List<RouteBase> routes, List<String> paths) {
       return routes.where((route) {
           if (route is GoRoute) {
               return paths.contains(route.path);
@@ -179,7 +172,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   }
 
   // Helper function to get routes NOT matching specific paths (for top-level)
-  List<RouteBase> _filterNonShellRoutes(List<RouteBase> allRoutes, List<String> shellPaths) {
+  List<RouteBase> filterNonShellRoutes(List<RouteBase> allRoutes, List<String> shellPaths) {
      List<RouteBase> nonShell = [];
      for (var route in allRoutes) {
         if (route is GoRoute && !shellPaths.contains(route.path)) {
@@ -270,7 +263,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       create: (_) {
         try {
           // 优先使用GetIt工厂获取ProductManagementBloc
-          return GetIt.I<ProductManagementBloc>()..add(LoadProductList());
+          return GetIt.I<ProductManagementBloc>()..add(const LoadProductList());
         } catch (e) {
           print('[GoRouter] 无法从GetIt获取ProductManagementBloc，创建新实例: $e');
           // 如果从GetIt获取失败，则手动创建
@@ -280,7 +273,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             GetSellerDraftListUseCase(sellerRepository),
             UpdateProductStatusUseCase(sellerRepository),
             DeleteProductUseCase(sellerRepository),
-          )..add(LoadProductList());
+          )..add(const LoadProductList());
         }
       },
       child: const ProductManagementPage(),
@@ -374,7 +367,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: SellerRoutes.authentication, 
         pageBuilder: (context, state) => state.buildSmartPage(
-          AuthManagementPage(),
+          const AuthManagementPage(),
           name: 'sellerAuthentication',
           source: 'app_navigation_seller_non_shell',
         ),
@@ -417,7 +410,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: SellerRoutes.storeSettings, 
         pageBuilder: (context, state) => state.buildSmartPage(
-          Placeholder(child: Center(child: Text(AppLocalizations.of(context)!.app_store_settings))),
+          Placeholder(child: Center(child: Text(AppLocalizations.of(context).app_store_settings))),
           name: 'sellerStoreSettings',
           source: 'app_navigation_seller_non_shell',
         ),
@@ -478,6 +471,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             final walletBloc = WalletBloc(
               getWalletSummary: getWalletSummary,
               getWalletTransactions: getWalletTransactions,
+              walletRepository: walletRepository,
             );
             
             return state.buildSmartPage(
@@ -490,7 +484,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             );
           } catch (e) {
             print('Error creating WalletBloc: $e');
-            final l10n = AppLocalizations.of(context)!;
+            final l10n = AppLocalizations.of(context);
             return state.buildSmartPage(
               Scaffold(
               appBar: AppBar(title: Text(l10n.app_wallet)),
@@ -516,14 +510,46 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           }
         },
       ),
+      // 卖家收款账户绑定路由
       GoRoute(
-        path: 'orders/:id/delivery', 
+        path: SellerRoutes.connectAccount,
+        name: 'seller_connect_account',
+        pageBuilder: (context, state) {
+          try {
+            final getIt = GetIt.I;
+            final dio = getIt<CoreDioClient>().dio;
+            final dataSource = StripeConnectRemoteDataSourceImpl(dio);
+            final bloc = ConnectAccountBloc(dataSource: dataSource)
+              ..add(CheckConnectAccountStatus());
+
+            return state.buildSmartPage(
+              BlocProvider(
+                create: (_) => bloc,
+                child: const ConnectAccountPage(),
+              ),
+              name: 'sellerConnectAccount',
+              source: 'app_navigation_seller_non_shell',
+            );
+          } catch (e) {
+            return state.buildSmartPage(
+              Scaffold(
+                appBar: AppBar(title: const Text('收款账户')),
+                body: Center(child: Text('初始化失败: $e')),
+              ),
+              name: 'sellerConnectAccountError',
+              source: 'app_navigation_seller_non_shell',
+            );
+          }
+        },
+      ),
+      GoRoute(
+        path: 'orders/:id/delivery',
         pageBuilder: (context, state) => state.buildSmartPage(
           OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0')),
           name: 'sellerOrderDelivery',
           source: 'app_navigation_seller_non_shell',
         ),
-      ), 
+      ),
       // 确保所有非 Shell 路由都在这里或者在其父路由的 sub-routes 中
   ];
 
@@ -816,7 +842,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
     // errorBuilder from HEAD/auth-module
     errorBuilder: (context, state) {
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       return Scaffold(
         appBar: AppBar(title: Text(l10n.app_page_not_found)),
         body: Center(child: Text('${l10n.app_path_error}: ${state.uri}\n${l10n.app_error_generic}: ${state.error}')),
@@ -872,7 +898,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ]; 
       
       // 特殊情况：卖家主页路径（公共路径，不应受模式限制）
-      final String sellerPublicProfilePathPrefix = '/seller-profile/'; // 更新路径前缀
+      const String sellerPublicProfilePathPrefix = '/seller-profile/'; // 更新路径前缀
       
       bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）

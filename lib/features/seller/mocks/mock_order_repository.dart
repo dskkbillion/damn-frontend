@@ -43,7 +43,7 @@ class MockOrderRepository extends Mock implements IOrderRepository {
         'buyer': {
           'id': 5000 + index,
           'nickName': '买家${index + 1}',
-          'avatar': 'https://example.com/avatar${index}.jpg',
+          'avatar': 'https://example.com/avatar$index.jpg',
         },
         'tenant': {
           'id': 12345,
@@ -55,7 +55,7 @@ class MockOrderRepository extends Mock implements IOrderRepository {
             'productName': '测试商品${index + 1}',
             'price': 100.0 + (index * 50),
             'number': 1,
-            'image': 'https://example.com/product${index}.jpg',
+            'image': 'https://example.com/product$index.jpg',
           }
         ],
         'createTime': '2023-11-0${index + 1} 10:00:00',
@@ -102,21 +102,21 @@ class MockOrderRepository extends Mock implements IOrderRepository {
   
   @override
   Future<Either<Failure, bool>> verifyOrder(int orderId) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
   
   @override
   Future<Either<Failure, bool>> completeOrder(int orderId) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
   
   @override
   Future<Either<Failure, bool>> cancelOrder(int orderId) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
   
   @override
   Future<Either<Failure, bool>> deleteSellerOrder(int orderId) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
 } 

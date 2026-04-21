@@ -25,7 +25,7 @@ class PhoneInputField extends StatelessWidget {
       controller: controller,
       keyboardType: TextInputType.phone,
       decoration: InputDecoration(
-        labelText: AppLocalizations.of(context)!?.auth_phone_number ?? 'Phone Number',
+        labelText: AppLocalizations.of(context).auth_phone_number ?? 'Phone Number',
         border: const OutlineInputBorder(),
         prefixIcon: Padding(
           padding: const EdgeInsets.only(left: 8.0),
@@ -39,7 +39,7 @@ class PhoneInputField extends StatelessWidget {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return AppLocalizations.of(context)!?.auth_phone_validation_empty ?? 'Please enter phone number';
+          return AppLocalizations.of(context).auth_phone_validation_empty ?? 'Please enter phone number';
         }
         // 使用统一的验证工具类
         final result = PhoneValidator.validate(

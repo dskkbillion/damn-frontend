@@ -82,7 +82,7 @@ Future<void> main() async { // Make main async
   try {
     final storage = getIt<FlutterSecureStorage>();
     // Use a generic test token and ID for buyer/general use
-    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjMwZmZjY2YxLWFjNDUtNGM3OS04MjJiLTliNzM0MDZjZjdkYiJ9.g0FkPdnBuvpsirksABX04FrQLTjn-qgbLwRE9QLJOW6Df5syAdTGLn0IhpUYMDRaefbFQ49MWnL5wYUMRtMuiQ"; // Example Buyer/General Token
+    const testToken = "PLACEHOLDER_TOKEN_FOR_DEV"; // Example Buyer/General Token
     const testUserId = "13333333333"; // Example Buyer/General ID
     await storage.write(key: 'auth_token', value: testToken);
     await storage.write(key: 'user_id', value: testUserId);

@@ -12,9 +12,9 @@ class GlobalMessageNotification extends StatefulWidget {
   
   /// 构造函数
   const GlobalMessageNotification({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
   
   @override
   State<GlobalMessageNotification> createState() => _GlobalMessageNotificationState();

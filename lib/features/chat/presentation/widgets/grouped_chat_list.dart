@@ -14,14 +14,14 @@ class GroupedChatList extends StatelessWidget {
   final int currentUserId;
 
   const GroupedChatList({
-    Key? key,
+    super.key,
     required this.onChatTap,
     required this.currentUserId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     return BlocBuilder<ChatListBloc, ChatListState>(
       builder: (context, state) {
@@ -162,11 +162,11 @@ class SellerGroupItem extends StatefulWidget {
   final Function(ChatRoom) onTap;
   
   const SellerGroupItem({
-    Key? key,
+    super.key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<SellerGroupItem> createState() => _SellerGroupItemState();
@@ -216,7 +216,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
   
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     // 计算总未读数
     final totalUnread = widget.group.chatRooms.fold<int>(
@@ -272,7 +272,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                       children: [
                         // 卖家名称
                         Text(
-                          widget.group.seller.nickName ?? AppLocalizations.of(context)!.chat_unknown_seller,
+                          widget.group.seller.nickName ?? AppLocalizations.of(context).chat_unknown_seller,
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                         ),
                         
@@ -311,7 +311,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                           ),
                                   ),
                                 );
-                              }).toList(),
+                              }),
                               
                               // 如果有更多商品，显示数量
                               if (widget.group.chatRooms.length > 3)
@@ -336,7 +336,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    widget.group.chatRooms.first.productName ?? AppLocalizations.of(context)!.chat_product_conversation,
+                                    widget.group.chatRooms.first.productName ?? AppLocalizations.of(context).chat_product_conversation,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[600],
@@ -350,7 +350,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                         ] else ...[
                           // 展开状态下显示商品数量
                           Text(
-                            AppLocalizations.of(context)!.chat_product_conversation_count(widget.group.chatRooms.length),
+                            AppLocalizations.of(context).chat_product_conversation_count(widget.group.chatRooms.length),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -438,7 +438,7 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
   }
   
   String _formatTime(DateTime time) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
@@ -468,15 +468,15 @@ class ProductChatItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const ProductChatItem({
-    Key? key,
+    super.key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     return ListTile(
       leading: chatRoom.productImage != null
@@ -565,7 +565,7 @@ class ProductChatItem extends StatelessWidget {
   }
 
   String _formatTime(BuildContext context, DateTime time) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
@@ -612,11 +612,11 @@ class ProductGroupItem extends StatefulWidget {
   final Function(ChatRoom) onTap;
   
   const ProductGroupItem({
-    Key? key,
+    super.key,
     required this.group,
     required this.currentUserId,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductGroupItem> createState() => _ProductGroupItemState();
@@ -729,7 +729,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       children: [
                         // 商品名称
                         Text(
-                          widget.group.productName ?? AppLocalizations.of(context)!.chat_unknown_product,
+                          widget.group.productName ?? AppLocalizations.of(context).chat_unknown_product,
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -775,7 +775,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                         : null,
                                   ),
                                 );
-                              }).toList(),
+                              }),
                               
                               // 如果有更多用户，显示数量
                               if (widget.group.chatRooms.length > 3)
@@ -800,7 +800,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    widget.group.chatRooms.first.participant2.nickName ?? AppLocalizations.of(context)!.chat_unknown_user,
+                                    widget.group.chatRooms.first.participant2.nickName ?? AppLocalizations.of(context).chat_unknown_user,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey[600],
@@ -814,7 +814,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         ] else ...[
                           // 展开状态下显示用户数量
                           Text(
-                            AppLocalizations.of(context)!.chat_user_inquiry_count(widget.group.chatRooms.length),
+                            AppLocalizations.of(context).chat_user_inquiry_count(widget.group.chatRooms.length),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -902,7 +902,7 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
   }
   
   String _formatTime(DateTime time) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);
@@ -932,15 +932,15 @@ class BuyerChatItem extends StatelessWidget {
   final VoidCallback onTap;
   
   const BuyerChatItem({
-    Key? key,
+    super.key,
     required this.chatRoom,
     required this.currentUserId,
     required this.onTap,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     // 在卖家视角下，participant2是买家
     final buyer = chatRoom.participant2;
 
@@ -1007,7 +1007,7 @@ class BuyerChatItem extends StatelessWidget {
   }
 
   String _formatTime(BuildContext context, DateTime time) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final messageDate = DateTime(time.year, time.month, time.day);

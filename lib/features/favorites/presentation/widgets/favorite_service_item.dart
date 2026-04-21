@@ -16,11 +16,11 @@ class FavoriteServiceItem extends StatelessWidget {
 
   /// 构造函数
   const FavoriteServiceItem({
-    Key? key,
+    super.key,
     required this.service,
     this.onTap,
     this.onRemove,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +116,7 @@ class FavoriteServiceItem extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.favorite, color: Colors.red),
                   onPressed: onRemove,
-                  tooltip: AppLocalizations.of(context)!.favorites_remove,
+                  tooltip: AppLocalizations.of(context).favorites_remove,
                 ),
             ],
           ),

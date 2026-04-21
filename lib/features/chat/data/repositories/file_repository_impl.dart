@@ -9,7 +9,7 @@ import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_file_r
 // Correct import for Interface using package path
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
 // import 'package:dskk_flutter_refactor/core/platform/network_info.dart'; // Import if checking network status
-import 'package:injectable/injectable.dart'; // Import injectable
+// Import injectable
 
 // @LazySingleton(as: IFileRepository) // Add annotation
 class FileRepositoryImpl implements IFileRepository {
@@ -34,7 +34,7 @@ class FileRepositoryImpl implements IFileRepository {
     } catch (e) {
       // FIX: Use correct GeneralFailure constructor (no message)
       AppLogger.d("Unexpected error in uploadFile Repository: $e");
-      return Left(GeneralFailure(message: '上传文件失败'));
+      return const Left(GeneralFailure(message: '上传文件失败'));
     }
   }
 } 

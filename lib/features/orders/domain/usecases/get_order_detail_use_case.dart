@@ -23,6 +23,7 @@ class GetOrderDetailUseCase implements UseCase<Order, int> {
 
 /// [GetOrderDetailUseCase] 的默认实现。
 class GetOrderDetailUseCaseImpl implements GetOrderDetailUseCase {
+  @override
   final IOrderRepository repository;
 
   GetOrderDetailUseCaseImpl({required this.repository});

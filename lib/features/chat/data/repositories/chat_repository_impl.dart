@@ -48,7 +48,7 @@ class ChatRepositoryImpl implements IChatRepository {
       } catch (e) {
         // Catch unexpected errors during user fetch or API call
         AppLogger.d("Unexpected error in getChatRooms Repository: $e");
-        return Left(GeneralFailure(message: '读取聊天室列表失败'));
+        return const Left(GeneralFailure(message: '读取聊天室列表失败'));
       }
     // } else {
     //   // Handle no network connection case if needed
@@ -85,7 +85,7 @@ class ChatRepositoryImpl implements IChatRepository {
                int senderId;
                if (dto.memberId != null) {
                  senderId = dto.memberId!;
-                 AppLogger.d("[Repository]   判定：senderId = memberId = ${senderId}");
+                 AppLogger.d("[Repository]   判定：senderId = memberId = $senderId");
                } else {
                  throw Exception("[Repository] 错误：消息没有memberId！messageId=${dto.id}");
                }
@@ -100,7 +100,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        AppLogger.d("Unexpected error in getMessages Repository: $e");
-       return Left(GeneralFailure(message: '读取聊天消息失败'));
+       return const Left(GeneralFailure(message: '读取聊天消息失败'));
     }
   }
 
@@ -122,7 +122,7 @@ class ChatRepositoryImpl implements IChatRepository {
        );
     } catch (e) {
        AppLogger.d("Unexpected error in getRoomDetails Repository: $e");
-       return Left(GeneralFailure(message: '读取聊天室详情失败'));
+       return const Left(GeneralFailure(message: '读取聊天室详情失败'));
     }
   }
 
@@ -147,7 +147,7 @@ class ChatRepositoryImpl implements IChatRepository {
             // 所以发送消息时，senderId应该总是使用participant1.id（当前用户）
             int senderParticipantId = room.participant1.id; // participant1总是当前用户
 
-            AppLogger.d("[Repository] 发送的消息: 当前用户发送，senderId=${senderParticipantId}");
+            AppLogger.d("[Repository] 发送的消息: 当前用户发送，senderId=$senderParticipantId");
             AppLogger.d("[Repository] 调试信息: participant1.id=${room.participant1.id} (当前用户), participant2.id=${room.participant2.id} (对方)");
             AppLogger.d("[Repository] 调试信息: user.id=${user.id}, user.type=${user.type}");
             AppLogger.d("[Repository] 调试信息: memberId=${sentMessageDto.memberId}, doctorId=${sentMessageDto.doctorId}");
@@ -167,7 +167,7 @@ class ChatRepositoryImpl implements IChatRepository {
     } catch (e) {
        AppLogger.d("Unexpected error in sendMessage Repository: $e");
        // FIX: Use correct GeneralFailure constructor (no message)
-       return Left(GeneralFailure(message: '发送消息失败'));
+       return const Left(GeneralFailure(message: '发送消息失败'));
     }
   }
 
@@ -188,7 +188,7 @@ class ChatRepositoryImpl implements IChatRepository {
        return Left(ServerFailure(message: e.message ?? 'Server error', code: e.statusCode?.toString()));
      } catch (e) {
        AppLogger.d("[Repository] Unexpected error creating room: $e");
-       return Left(GeneralFailure(message: '创建聊天室失败'));
+       return const Left(GeneralFailure(message: '创建聊天室失败'));
      }
   }
 

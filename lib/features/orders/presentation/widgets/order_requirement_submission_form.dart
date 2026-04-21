@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
 import 'package:file_picker/file_picker.dart'; // Import file_picker
-import 'dart:io'; // Import dart:io for File
+// Import dart:io for File
 import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 import 'dart:convert'; // Import dart:convert for json handling
 import 'file_upload_item.dart';
@@ -106,7 +106,7 @@ class _OrderRequirementSubmissionFormState
       // Optionally show an error message to the user
       if (mounted) { // Check if widget is still in the tree
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_load_draft_failed)),
+          SnackBar(content: Text(AppLocalizations.of(context).order_requirement_load_draft_failed)),
         );
       }
     } finally {
@@ -152,7 +152,7 @@ class _OrderRequirementSubmissionFormState
       // Optionally show an error message to the user
       if (mounted) { // Check if widget is still in the tree
          ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_save_draft_failed)),
+           SnackBar(content: Text(AppLocalizations.of(context).order_requirement_save_draft_failed)),
          );
       }
     }
@@ -227,7 +227,7 @@ class _OrderRequirementSubmissionFormState
             if (item != null) const Divider(height: 24),
 
             // --- Requirements Section ---
-            Text(AppLocalizations.of(context)!.order_requirement_title, style: textTheme.titleMedium),
+            Text(AppLocalizations.of(context).order_requirement_title, style: textTheme.titleMedium),
             const SizedBox(height: 8),
             // 动态显示商品要求
             _buildRequirementFields(context),
@@ -242,10 +242,10 @@ class _OrderRequirementSubmissionFormState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(AppLocalizations.of(context)!.order_requirement_attachment_title, style: textTheme.titleMedium),
+                      Text(AppLocalizations.of(context).order_requirement_attachment_title, style: textTheme.titleMedium),
                       const SizedBox(height: 4),
                       Text(
-                        AppLocalizations.of(context)!.order_requirement_attachment_limit(_maxFileCount, _maxFileSize ~/ (1024 * 1024)),
+                        AppLocalizations.of(context).order_requirement_attachment_limit(_maxFileCount, _maxFileSize ~/ (1024 * 1024)),
                         style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -256,7 +256,7 @@ class _OrderRequirementSubmissionFormState
                   TextButton.icon(
                     onPressed: _pickFiles,
                     icon: const Icon(Icons.add, size: 18),
-                    label: Text(AppLocalizations.of(context)!.order_requirement_add),
+                    label: Text(AppLocalizations.of(context).order_requirement_add),
                   ),
               ],
             ),
@@ -293,7 +293,7 @@ class _OrderRequirementSubmissionFormState
                           Icon(Icons.cloud_upload_outlined, size: 32, color: Colors.grey[400]),
                           const SizedBox(height: 8),
                           Text(
-                            AppLocalizations.of(context)!.order_requirement_click_select_file,
+                            AppLocalizations.of(context).order_requirement_click_select_file,
                             style: TextStyle(color: Colors.grey[600], fontSize: 14),
                           ),
                         ],
@@ -323,7 +323,7 @@ class _OrderRequirementSubmissionFormState
                             
                             if (hasUploadingFiles) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_wait_upload)),
+                                SnackBar(content: Text(AppLocalizations.of(context).order_requirement_wait_upload)),
                               );
                               return;
                             }
@@ -338,16 +338,16 @@ class _OrderRequirementSubmissionFormState
                               final shouldRetry = await showDialog<bool>(
                                 context: context,
                                 builder: (ctx) => AlertDialog(
-                                  title: Text(AppLocalizations.of(context)!.order_requirement_upload_failed_title),
-                                  content: Text(AppLocalizations.of(context)!.order_requirement_upload_failed_count(failedFiles.length)),
+                                  title: Text(AppLocalizations.of(context).order_requirement_upload_failed_title),
+                                  content: Text(AppLocalizations.of(context).order_requirement_upload_failed_count(failedFiles.length)),
                                   actions: [
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx, false),
-                                      child: Text(AppLocalizations.of(context)!.order_requirement_remove_failed),
+                                      child: Text(AppLocalizations.of(context).order_requirement_remove_failed),
                                     ),
                                     TextButton(
                                       onPressed: () => Navigator.pop(ctx, true),
-                                      child: Text(AppLocalizations.of(context)!.order_requirement_retry_upload),
+                                      child: Text(AppLocalizations.of(context).order_requirement_retry_upload),
                                     ),
                                   ],
                                 ),
@@ -390,7 +390,7 @@ class _OrderRequirementSubmissionFormState
                             final productId = item?.productId ?? -1;
                             if (productId == -1) {
                                ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_error_product_id)),
+                                SnackBar(content: Text(AppLocalizations.of(context).order_requirement_error_product_id)),
                               );
                               return;
                             }
@@ -411,7 +411,7 @@ class _OrderRequirementSubmissionFormState
                           },
                           child: isSubmitting
                              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                             : Text(AppLocalizations.of(context)!.order_requirement_confirm_submit),
+                             : Text(AppLocalizations.of(context).order_requirement_confirm_submit),
                        );
                     },
                  ),
@@ -438,7 +438,7 @@ class _OrderRequirementSubmissionFormState
     // 获取商品信息
     final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
     if (item == null) {
-      return Text(AppLocalizations.of(context)!.order_items_empty);
+      return Text(AppLocalizations.of(context).order_items_empty);
     }
 
     // TODO: 需要实现以下功能：
@@ -474,7 +474,7 @@ class _OrderRequirementSubmissionFormState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context)!.order_requirement_service_selected(_getLocalizedSkuName(context, item.skuName), item.price.toStringAsFixed(2)),
+                  AppLocalizations.of(context).order_requirement_service_selected(_getLocalizedSkuName(context, item.skuName), item.price.toStringAsFixed(2)),
                   style: TextStyle(fontSize: 14, color: Colors.blue[700]),
                 ),
               ),
@@ -484,16 +484,16 @@ class _OrderRequirementSubmissionFormState
         const SizedBox(height: 16),
         
         // 问题1：需求描述
-        _buildSellerQuestion(context, AppLocalizations.of(context)!.order_requirement_q1),
+        _buildSellerQuestion(context, AppLocalizations.of(context).order_requirement_q1),
         TextField(
           controller: _requirementController1,
           decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.order_requirement_q1_hint,
+            hintText: AppLocalizations.of(context).order_requirement_q1_hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
             fillColor: Colors.grey[100],
             contentPadding: const EdgeInsets.all(12),
-            helperText: AppLocalizations.of(context)!.order_requirement_q1_helper,
+            helperText: AppLocalizations.of(context).order_requirement_q1_helper,
             helperStyle: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
           maxLines: 4,
@@ -501,11 +501,11 @@ class _OrderRequirementSubmissionFormState
         const SizedBox(height: 16),
 
         // 问题2：补充说明
-        _buildSellerQuestion(context, AppLocalizations.of(context)!.order_requirement_q2),
+        _buildSellerQuestion(context, AppLocalizations.of(context).order_requirement_q2),
         TextField(
           controller: _requirementController2,
           decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.order_requirement_q2_hint,
+            hintText: AppLocalizations.of(context).order_requirement_q2_hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
             fillColor: Colors.grey[100],
@@ -528,7 +528,7 @@ class _OrderRequirementSubmissionFormState
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context)!.order_requirement_warning,
+                  AppLocalizations.of(context).order_requirement_warning,
                   style: TextStyle(fontSize: 12, color: Colors.orange[700]),
                 ),
               ),
@@ -541,7 +541,7 @@ class _OrderRequirementSubmissionFormState
   
   // Helper method to get localized SKU name
   String _getLocalizedSkuName(BuildContext context, String? skuName) {
-    if (skuName == null) return AppLocalizations.of(context)!.order_requirement_default_service;
+    if (skuName == null) return AppLocalizations.of(context).order_requirement_default_service;
     
     // TODO: 这里需要从商品的本地化数据中获取中文名称
     // 临时映射常见的SKU名称
@@ -562,7 +562,7 @@ class _OrderRequirementSubmissionFormState
   Future<void> _pickFiles() async {
     if (_fileUploadItems.length >= _maxFileCount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_max_files(_maxFileCount))),
+        SnackBar(content: Text(AppLocalizations.of(context).order_requirement_max_files(_maxFileCount))),
       );
       return;
     }
@@ -580,12 +580,12 @@ class _OrderRequirementSubmissionFormState
         final filesToAdd = result.files.take(remainingSlots);
         
         for (final file in filesToAdd) {
-          if (file.path != null && file.size != null) {
+          if (file.path != null) {
             final fileItem = FileUploadItem(
-              id: DateTime.now().millisecondsSinceEpoch.toString() + '_${file.name}',
+              id: '${DateTime.now().millisecondsSinceEpoch}_${file.name}',
               localPath: file.path!,
               fileName: file.name,
-              fileSize: file.size!,
+              fileSize: file.size,
             );
             
             setState(() {
@@ -597,7 +597,7 @@ class _OrderRequirementSubmissionFormState
     } catch (e) {
       print('Error picking files: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.order_requirement_pick_failed(e.toString()))),
+        SnackBar(content: Text(AppLocalizations.of(context).order_requirement_pick_failed(e.toString()))),
       );
     }
   }
@@ -639,7 +639,7 @@ class _OrderRequirementSubmissionFormState
     _retryCount++;
     if (_retryCount > _maxRetryCount) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.order_upload_max_retry(_maxRetryCount))),
+        SnackBar(content: Text(AppLocalizations.of(context).order_upload_max_retry(_maxRetryCount))),
       );
       return;
     }

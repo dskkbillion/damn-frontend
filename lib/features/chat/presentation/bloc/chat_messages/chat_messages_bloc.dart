@@ -6,7 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart'; 
 import 'package:dartz/dartz.dart'; 
 import 'package:flutter/material.dart'; // For @immutable
-import 'package:intl/intl.dart'; // If using date formatting inside bloc
+// If using date formatting inside bloc
 
 // --- Use package imports ---
 // Domain Entities (Required by State/Event parts & Bloc logic)
@@ -28,7 +28,6 @@ import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_web_so
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // For ChatMessageDto used in event
 // Core Dependencies (Required by Bloc logic/Error handling)
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
-import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // For EventBus
 // ---------------------------
 
@@ -63,7 +62,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     required this.deleteChatMessage,
     required this.userRepository,
     required this.webSocketDataSource,
-  }) : super(ChatMessagesInitial()) {
+  }) : super(const ChatMessagesInitial()) {
     on<LoadChatMessages>(_onLoadChatMessages);
     on<LoadMoreChatMessages>(_onLoadMoreChatMessages);
     on<SendMessageRequested>(_onSendMessageRequested);
@@ -78,11 +77,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     LoadChatMessages event,
     Emitter<ChatMessagesState> emit
   ) async {
-    emit(ChatMessagesLoading());
+    emit(const ChatMessagesLoading());
     try {
       // 1. Fetch current user's main ID (referId)
       final userResult = await userRepository.getCurrentUser();
-      final userEither = await userResult.fold(
+      final userEither = userResult.fold(
         (failure) {
           emit(ChatMessagesError('Failed to get current user: ${failure.message}'));
           return null;
@@ -154,12 +153,12 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
                AppLogger.d("[ChatMessagesBloc] Error: Current user (id: $currentReferId) not found in room participants!");
               AppLogger.d("[ChatMessagesBloc]   p1.id=${p1.id}, p1.referId=${p1.referId}");
               AppLogger.d("[ChatMessagesBloc]   p2.id=${p2.id}, p2.referId=${p2.referId}");
-               emit(ChatMessagesError('Error: You are not a participant in this chat.'));
+               emit(const ChatMessagesError('Error: You are not a participant in this chat.'));
                return false; // Indicate failure
            }
 
            if (currentUserParticipantId == null || opponentParticipant == null) {
-              emit(ChatMessagesError('Failed to identify participants in chat.'));
+              emit(const ChatMessagesError('Failed to identify participants in chat.'));
               return false; // Indicate failure
            }
 
@@ -193,7 +192,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
             AppLogger.d("[ChatMessagesBloc]   senderId(内部): ${msg.senderId}");
             AppLogger.d("[ChatMessagesBloc]   memberId: ${msg.memberId}");
             AppLogger.d("[ChatMessagesBloc]   doctorId: ${msg.doctorId}");
-            AppLogger.d("[ChatMessagesBloc]   content: ${msg.context?.substring(0, msg.context!.length > 20 ? 20 : msg.context!.length)}...");
+            AppLogger.d("[ChatMessagesBloc]   content: ${msg.context.substring(0, msg.context.length > 20 ? 20 : msg.context.length)}...");
             AppLogger.d("[ChatMessagesBloc]   是否应该在右侧(senderId=$currentUserParticipantId): ${msg.senderId == currentUserParticipantId}");
           }
           
@@ -282,7 +281,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     }
     
     // 按时间排序
-    uniqueMessages.sort((a, b) => a.createTime!.compareTo(b.createTime!));
+    uniqueMessages.sort((a, b) => a.createTime.compareTo(b.createTime));
     
     return uniqueMessages;
   }
@@ -330,7 +329,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     AppLogger.d("[ChatMessagesBloc]   senderId: ${optimisticMessage.senderId}");
     AppLogger.d("[ChatMessagesBloc]   memberId: ${optimisticMessage.memberId}");
     AppLogger.d("[ChatMessagesBloc]   doctorId: ${optimisticMessage.doctorId}");
-    AppLogger.d("[ChatMessagesBloc]   内容: ${optimisticMessage.context?.substring(0, optimisticMessage.context!.length > 30 ? 30 : optimisticMessage.context!.length)}...");
+    AppLogger.d("[ChatMessagesBloc]   内容: ${optimisticMessage.context.substring(0, optimisticMessage.context.length > 30 ? 30 : optimisticMessage.context.length)}...");
     AppLogger.d("[ChatMessagesBloc] ========================");
 
     // 2. Emit state with optimistic message ADDED TO THE END
@@ -404,7 +403,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
       AppLogger.d("[Bloc] =====WebSocket消息接收调试=====");
       AppLogger.d("[Bloc] 接收到WebSocket消息ID: ${messageDto.id}");
-      AppLogger.d("[Bloc] 消息内容: ${messageDto.context?.substring(0, messageDto.context!.length > 30 ? 30 : messageDto.context!.length)}...");
+      AppLogger.d("[Bloc] 消息内容: ${messageDto.context.substring(0, messageDto.context.length > 30 ? 30 : messageDto.context.length)}...");
       AppLogger.d("[Bloc] DTO中的ID信息:");
       AppLogger.d("[Bloc]   memberId: ${messageDto.memberId}");
       AppLogger.d("[Bloc]   doctorId: ${messageDto.doctorId}");
@@ -418,19 +417,19 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         if (messageDto.memberId != null && messageDto.doctorId == null) {
           // 买家发送的消息，使用participant1的内部ID
           senderParticipantId = _currentRoom!.participant1.id;
-          AppLogger.d("[Bloc] WebSocket消息: memberId=${messageDto.memberId}, 买家(participant1)发送, senderId=${senderParticipantId}");
+          AppLogger.d("[Bloc] WebSocket消息: memberId=${messageDto.memberId}, 买家(participant1)发送, senderId=$senderParticipantId");
         } else if (messageDto.doctorId != null && messageDto.memberId == null) {
           // 卖家发送的消息，使用participant2的内部ID
           senderParticipantId = _currentRoom!.participant2.id;
-          AppLogger.d("[Bloc] WebSocket消息: doctorId=${messageDto.doctorId}, 卖家(participant2)发送, senderId=${senderParticipantId}");
+          AppLogger.d("[Bloc] WebSocket消息: doctorId=${messageDto.doctorId}, 卖家(participant2)发送, senderId=$senderParticipantId");
         } else if (messageDto.memberId != null && messageDto.doctorId != null) {
           // 两者都有值，根据当前用户类型判断
           if (_currentUser!.type == 'MEMBER') {
             senderParticipantId = _currentRoom!.participant1.id;
-            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=${senderParticipantId}");
+            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=$senderParticipantId");
           } else {
             senderParticipantId = _currentRoom!.participant2.id;
-            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=${senderParticipantId}");
+            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=$senderParticipantId");
           }
         } else {
           AppLogger.d("[Bloc] 错误: 消息DTO既没有memberId也没有doctorId. DTO: ${messageDto.toJson()}");
@@ -527,7 +526,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         // 找到原始消息应该插入的位置（保持时间顺序）
         int insertIndex = revertedMessages.length;
         for (int i = 0; i < revertedMessages.length; i++) {
-          if (revertedMessages[i].createTime!.isAfter(originalMessage.createTime!)) {
+          if (revertedMessages[i].createTime.isAfter(originalMessage.createTime)) {
             insertIndex = i;
             break;
           }
@@ -627,16 +626,13 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
      _messageSubscription = webSocketDataSource.messageStream.listen(
        (messageDto) {
          // Ensure DTO is not null before adding event
-         if (messageDto != null) { 
-             add(_MessageReceived(messageDto));
-         } else {
-            AppLogger.d("[WebSocket] Received null message DTO from stream.");
-         }
-       },
+ 
+           add(_MessageReceived(messageDto));
+              },
        onError: (error) {
           AppLogger.d("[WebSocket] Error on message stream: $error");
           // Handle stream error, maybe emit failure state
-          emit(ChatMessagesError("WebSocket connection error."));
+          emit(const ChatMessagesError("WebSocket connection error."));
        },
        onDone: () {
          AppLogger.d("[WebSocket] Message stream closed.");

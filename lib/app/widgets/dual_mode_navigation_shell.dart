@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 import '../../app/app_mode.dart';
 import 'main_shell_page.dart';
-import '../../features/seller/presentation/widgets/seller_shell_page.dart';
 import '../navigation/app_router_config.dart';
 import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
@@ -145,7 +144,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
   Widget _buildSellerBottomNavigationBar(_SellerNavigationShellWrapper wrapper) {
     return Consumer(
       builder: (context, ref, child) {
-        final appLocalizations = AppLocalizations.of(context)!;
+        final appLocalizations = AppLocalizations.of(context);
         
         return BottomNavigationBar(
           type: BottomNavigationBarType.fixed,

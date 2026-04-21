@@ -38,7 +38,7 @@ void main() {
     expect(bloc.state, const WalletInitial());
   });
 
-  final tWalletSummary = WalletSummary(
+  const tWalletSummary = WalletSummary(
     balance: 1000.0,
     pendingAmount: 200.0,
     totalIncome: 5000.0,
@@ -52,13 +52,13 @@ void main() {
       '应该发出 [WalletLoading, WalletSummaryLoaded] 当获取钱包摘要成功',
       build: () {
         when(mockGetWalletSummary(any))
-            .thenAnswer((_) async => Right(tWalletSummary));
+            .thenAnswer((_) async => const Right(tWalletSummary));
         return bloc;
       },
       act: (bloc) => bloc.add(const FetchWalletSummary()),
       expect: () => [
         const WalletLoading(),
-        WalletSummaryLoaded(tWalletSummary),
+        const WalletSummaryLoaded(tWalletSummary),
       ],
       verify: (_) {
         verify(mockGetWalletSummary(NoParams()));
@@ -85,12 +85,12 @@ void main() {
       '应该只发出 WalletSummaryLoaded 当刷新钱包摘要成功 (不显示加载状态)',
       build: () {
         when(mockGetWalletSummary(any))
-            .thenAnswer((_) async => Right(tWalletSummary));
+            .thenAnswer((_) async => const Right(tWalletSummary));
         return bloc;
       },
       act: (bloc) => bloc.add(const RefreshWalletSummary()),
       expect: () => [
-        WalletSummaryLoaded(tWalletSummary),
+        const WalletSummaryLoaded(tWalletSummary),
       ],
       verify: (_) {
         verify(mockGetWalletSummary(NoParams()));

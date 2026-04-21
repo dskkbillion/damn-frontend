@@ -96,7 +96,7 @@ class RateLimitWarningBanner extends StatelessWidget {
                       borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                       child: Container(
                         padding: const EdgeInsets.all(AppDimensions.spacingXs),
-                        child: Icon(
+                        child: const Icon(
                           Icons.close,
                           size: 16,
                           color: AppColors.textSecondary,
@@ -117,7 +117,7 @@ class RateLimitWarningBanner extends StatelessWidget {
     if (minutes > 60) {
       return '${(minutes / 60).ceil()}小时';
     }
-    return '${minutes}分钟';
+    return '$minutes分钟';
   }
 
   void _showDetailedInfo(BuildContext context) {
@@ -196,7 +196,7 @@ class _DetailedRateLimitSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [AppColors.backgroundSecondary, AppColors.borderPrimary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -209,9 +209,9 @@ class _DetailedRateLimitSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 '今日使用情况',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.w600,
@@ -323,12 +323,12 @@ class _DetailedRateLimitSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.star, size: 20),
-            const SizedBox(width: AppDimensions.spacingSm),
-            const Text(
+            Icon(Icons.star, size: 20),
+            SizedBox(width: AppDimensions.spacingSm),
+            Text(
               '升级获取更多次数',
               style: TextStyle(
                 fontSize: 16,
@@ -346,6 +346,6 @@ class _DetailedRateLimitSheet extends StatelessWidget {
     if (minutes > 60) {
       return '${(minutes / 60).ceil()}小时';
     }
-    return '${minutes}分钟';
+    return '$minutes分钟';
   }
 }

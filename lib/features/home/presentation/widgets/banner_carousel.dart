@@ -23,13 +23,13 @@ class BannerCarousel extends StatefulWidget {
   final Duration autoPlayInterval;
 
   const BannerCarousel({
-    Key? key,
+    super.key,
     required this.banners,
     this.onBannerClicked,
     this.height = 200.0,
     this.autoPlay = true,
     this.autoPlayInterval = const Duration(seconds: 4),
-  }) : super(key: key);
+  });
 
   @override
   State<BannerCarousel> createState() => _BannerCarouselState();
@@ -170,7 +170,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      AppLocalizations.of(context)!.home_image_load_failed,
+                                      AppLocalizations.of(context).home_image_load_failed,
                                       style: TextStyle(
                                         color: Colors.grey[600],
                                         fontWeight: FontWeight.bold,
@@ -196,7 +196,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    AppLocalizations.of(context)!.home_banner_placeholder(index + 1),
+                                    AppLocalizations.of(context).home_banner_placeholder(index + 1),
                                     style: TextStyle(
                                       color: Colors.grey[600],
                                       fontWeight: FontWeight.bold,

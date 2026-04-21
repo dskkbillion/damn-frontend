@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
-import 'package:dskk_flutter_refactor/core/error/failures.dart';
-import 'package:dartz/dartz.dart';
 
 /// Token验证结果的枚举
 enum TokenValidationResult {

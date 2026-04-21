@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/add_order_delivery_usecase.dart';
@@ -94,7 +93,7 @@ class OrderDeliveryBloc extends Bloc<OrderDeliveryEvent, OrderDeliveryState> {
       
       // 验证表单
       if (formState.content.trim().isEmpty) {
-        emit(OrderDeliveryError('请输入交付内容描述'));
+        emit(const OrderDeliveryError('请输入交付内容描述'));
         emit(formState); // 恢复表单状态
         return;
       }

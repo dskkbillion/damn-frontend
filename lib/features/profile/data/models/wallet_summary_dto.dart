@@ -21,9 +21,9 @@ class WalletSummaryDto {
   /// 从 JSON 映射创建 WalletSummaryDto 实例
   factory WalletSummaryDto.fromJson(Map<String, dynamic> json) {
     return WalletSummaryDto(
-      balance: _parseDouble(json['balance']) ?? 0.0,
-      pendingAmount: _parseDouble(json['pendingAmount'] ?? json['pending_amount']),
-      totalIncome: _parseDouble(json['totalIncome'] ?? json['total_income']),
+      balance: _parseDouble(json['balance'] ?? json['useableAmount'] ?? json['useable_amount']) ?? 0.0,
+      pendingAmount: _parseDouble(json['pendingAmount'] ?? json['pending_amount'] ?? json['freezeAmount'] ?? json['freeze_amount']),
+      totalIncome: _parseDouble(json['totalIncome'] ?? json['total_income'] ?? json['incomeTotal'] ?? json['income_total']),
       hasBankCard: json['hasBankCard'] ?? json['has_bank_card'] ?? false,
       hasPaymentPassword: json['hasPaymentPassword'] ?? json['has_payment_password'] ?? false,
       recentTransactionsCount: json['recentTransactionsCount'] ?? json['recent_transactions_count'] ?? 0,

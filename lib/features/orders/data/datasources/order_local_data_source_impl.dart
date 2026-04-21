@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart' hide Order;
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:drift/drift.dart'; // Import drift exceptions if needed
+// Import drift exceptions if needed
 import 'package:injectable/injectable.dart' hide Order; // Hide Order from injectable
-import 'dart:convert'; // Import jsonDecode
+// Import jsonDecode
 
 import '../../../../core/database/app_database.dart'; // Import AppDatabase
 // import '../../../../core/database/daos/order_dao.dart'; // Remove DAO import
@@ -33,7 +33,7 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       return Right(orders);
     } catch (e) {
       AppLogger.d('[OrderLocalDataSource] Error getting orders from cache: $e');
-      return Left(CacheFailure(message: '获取订单缓存失败'));
+      return const Left(CacheFailure(message: '获取订单缓存失败'));
     }
   }
 
@@ -49,7 +49,7 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
       return Right(orders);
     } catch (e) {
       AppLogger.d('[OrderLocalDataSource] Error getting all orders from cache: $e');
-      return Left(CacheFailure(message: '获取所有订单缓存失败'));
+      return const Left(CacheFailure(message: '获取所有订单缓存失败'));
     }
   }
 
@@ -92,7 +92,7 @@ class OrderLocalDataSourceImpl implements IOrderLocalDataSource {
   // Helper function to map Order entity to OrderCache data class
   OrderCache _mapOrderToOrderCache(Order order) {
     // Ensure state is non-null before converting, provide default if necessary
-    final stateString = order.state?.toJsonString() ?? OrderStatus.unknown.toJsonString(); 
+    final stateString = order.state.toJsonString() ?? OrderStatus.unknown.toJsonString(); 
     return OrderCache(
         id: order.id,
         orderSn: order.orderSn,

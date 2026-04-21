@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:injectable/injectable.dart';
@@ -34,7 +33,7 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   Future<UserProfileDto> getLastUserProfile() async {
     final jsonString = sharedPreferences.getString('USER_PROFILE');
     if (jsonString != null) {
-      return Future.value(UserProfileDto(
+      return Future.value(const UserProfileDto(
         userId: 'cached_user',
         nickName: '缓存用户',
         avatarUrl: 'https://example.com/avatar.jpg',

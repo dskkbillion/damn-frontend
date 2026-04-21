@@ -22,6 +22,7 @@ class ConfirmOrderReceiptUseCase implements UseCase<void, int> {
 
 /// [ConfirmOrderReceiptUseCase] 的默认实现。
 class ConfirmOrderReceiptUseCaseImpl implements ConfirmOrderReceiptUseCase {
+  @override
   final IOrderRepository repository;
 
   ConfirmOrderReceiptUseCaseImpl({required this.repository});

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
@@ -62,7 +61,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
       foregroundColor: Theme.of(context).colorScheme.onPrimary,
     );
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     // Determine buttons based on state
     switch (order.state) {
       case OrderStatus.awaitingStart:

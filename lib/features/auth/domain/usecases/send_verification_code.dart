@@ -18,7 +18,7 @@ class SendVerificationCodeUseCase implements UseCase<void, SendVerificationCodeP
   Future<Either<Failure, void>> call(SendVerificationCodeParams params) async {
     // 验证输入格式（支持手机号和邮箱）
     if (params.phone.isEmpty) {
-      return Left(ValidationFailure(message: 'Account cannot be empty'));
+      return const Left(ValidationFailure(message: 'Account cannot be empty'));
     }
     
     // 检查是否是邮箱格式
@@ -27,7 +27,7 @@ class SendVerificationCodeUseCase implements UseCase<void, SendVerificationCodeP
     
     // 如果不是邮箱，则验证手机号格式
     if (!isEmail && params.phone.length < 11) {
-      return Left(ValidationFailure(message: 'Invalid phone number format'));
+      return const Left(ValidationFailure(message: 'Invalid phone number format'));
     }
     
     // 后端的 mobile 参数同时支持手机号和邮箱

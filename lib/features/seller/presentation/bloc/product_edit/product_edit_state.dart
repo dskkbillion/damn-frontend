@@ -149,7 +149,7 @@ class ProductEditState extends Equatable {
     return ProductEditState(
       isLoading: true,
       isCreateMode: isCreateMode,
-      formData: ProductFormData(),
+      formData: const ProductFormData(),
     );
   }
 

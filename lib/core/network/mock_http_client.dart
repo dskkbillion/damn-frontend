@@ -1,10 +1,7 @@
 import 'dart:io';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:injectable/injectable.dart';
 import 'i_http_client.dart';
-import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart' show CancelToken;
-import 'package:dskk_flutter_refactor/core/error/failures.dart';
+import 'package:dio/dio.dart';
 
 /// A mock implementation of IHttpClient for testing and development.
 ///
@@ -13,8 +10,8 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 class MockHttpClient implements IHttpClient {
 
   @override
-  Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? queryParameters}) async {
-    AppLogger.d('[MockHttpClient] GET: $path, Params: $queryParameters');
+  Future<dynamic> get(String path, {Map<String, dynamic>? queryParams}) async {
+    AppLogger.d('[MockHttpClient] GET: $path, Params: $queryParams');
     await Future.delayed(const Duration(milliseconds: 400)); // Slightly longer delay for recommendations
 
     if (path == '/model/chat/list') { 
@@ -30,7 +27,7 @@ class MockHttpClient implements IHttpClient {
         }
       };
     } else if (path == '/model/chat/messages') {
-        final convId = int.tryParse(queryParameters?['conversation_id'] ?? '1') ?? 1;
+        final convId = int.tryParse(queryParams?['conversation_id'] ?? '1') ?? 1;
         AppLogger.d('[MockHttpClient] GET history for conv: $convId');
         return {
            'code': 200,
@@ -78,14 +75,14 @@ class MockHttpClient implements IHttpClient {
   }
 
   @override
-  Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? data}) async {
-    AppLogger.d('[MockHttpClient] POST: $path, Data: $data');
+  Future<dynamic> post(String path, {required Map<String, dynamic> body}) async {
+    AppLogger.d('[MockHttpClient] POST: $path, Data: $body');
     await Future.delayed(const Duration(milliseconds: 500));
 
     // Match the expected path from the data source exactly
     if (path == '/model/chat/create') { 
         final newId = DateTime.now().millisecondsSinceEpoch % 1000; // Simple mock ID
-        final title = data?['title'] ?? 'New Mock Conversation $newId';
+        final title = body['title'] ?? 'New Mock Conversation $newId';
         AppLogger.d('[MockHttpClient] Creating conversation: $title');
         // Ensure the response includes code, message, and data with expected fields
         return {
@@ -107,7 +104,7 @@ class MockHttpClient implements IHttpClient {
         // Ensure transcription response matches _handleResponse expectations
         return {'code': 200, 'message': 'Transcribed', 'data': {'content': 'This is the mock transcription result.'}};
     } else if (path.contains('/model/chat/messages')) { // Assuming history might be POST (though GET is better)
-        final convId = data?['conversation_id'] ?? 1; 
+        final convId = body['conversation_id'] ?? 1; 
          AppLogger.d('[MockHttpClient] Fetching history via POST for conv: $convId');
         // Return structure matching the GET version
         return {
@@ -168,15 +165,27 @@ class MockHttpClient implements IHttpClient {
   }
 
   @override
-  Stream<String> postAndStream(String path, {Map<String, dynamic>? data, Map<String, dynamic>? queryParameters}) {
-    // Corrected signature to match IHttpClient
-    // Removed CancelToken as it's not in the interface signature defined earlier?
-    // Removed queryParameters as it might not be in the interface either
+  Stream<String> postAndStream(String path, {Map<String, dynamic>? body}) {
     AppLogger.d('[MockHttpClient] postAndStream called for $path - Returning error stream');
-    // Return a stream that emits an error, matching the interface return type
-    return Stream.error(NetworkFailure(message: 'MockHttpClient.postAndStream not implemented'));
+    return Stream<String>.error(UnimplementedError('MockHttpClient.postAndStream not implemented'));
   }
 
-  // TODO: Implement mock behavior for PUT, DELETE if added to IHttpClient
-  // TODO: Implement mock SSE streaming if needed
+  @override
+  Dio getDioInstance() {
+    return Dio();
+  }
+
+  @override
+  Future<dynamic> put(String endpoint, {required Map<String, dynamic> body}) async {
+    AppLogger.d('[MockHttpClient] PUT: $endpoint, Body: $body');
+    await Future.delayed(const Duration(milliseconds: 300));
+    return {'code': 200, 'message': 'Success (Unhandled Mock PUT)', 'data': {}};
+  }
+
+  @override
+  Future<dynamic> delete(String endpoint) async {
+    AppLogger.d('[MockHttpClient] DELETE: $endpoint');
+    await Future.delayed(const Duration(milliseconds: 300));
+    return {'code': 200, 'message': 'Success (Unhandled Mock DELETE)', 'data': {}};
+  }
 } 

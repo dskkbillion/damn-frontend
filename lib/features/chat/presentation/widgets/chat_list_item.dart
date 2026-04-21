@@ -6,7 +6,6 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
-import '../../domain/entities/participant.dart';
 
 class ChatListItem extends StatefulWidget { // Change to StatefulWidget for initState
   final ChatRoom chatRoom;
@@ -35,7 +34,7 @@ class _ChatListItemState extends State<ChatListItem> {
   // Updated timestamp formatting based on frontend.md
   String _formatTimestamp(DateTime? timestamp) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     if (timestamp == null) return '';
     final now = DateTime.now();
@@ -61,7 +60,7 @@ class _ChatListItemState extends State<ChatListItem> {
 
   String _getLastMessagePreview(ChatMessage? message) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     if (message == null) return '';
     // Limit preview length for text messages
@@ -88,19 +87,10 @@ class _ChatListItemState extends State<ChatListItem> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     // 获取对方信息（可能是买家或卖家）
     final opponent = widget.chatRoom.getOpponent(widget.currentUserId);
-
-    // 如果对方信息为空，显示错误
-    if (opponent == null) {
-      return ListTile(
-        leading: CircleAvatar(child: Icon(Icons.error)),
-        title: Text(s.chat_invalid_session),
-        subtitle: Text(s.chat_opponent_info_missing),
-      );
-    }
 
     final timestampText = _formatTimestamp(widget.chatRoom.lastActivityTime);
     final lastMessageText = _getLastMessagePreview(widget.chatRoom.lastMessage);

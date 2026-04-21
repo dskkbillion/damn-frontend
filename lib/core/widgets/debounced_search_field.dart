@@ -31,7 +31,7 @@ class DebouncedSearchField extends StatefulWidget {
   final TextStyle? style;
 
   const DebouncedSearchField({
-    Key? key,
+    super.key,
     required this.onSearch,
     this.onChanged,
     this.hintText,
@@ -41,7 +41,7 @@ class DebouncedSearchField extends StatefulWidget {
     this.autofocus = false,
     this.decoration,
     this.style,
-  }) : super(key: key);
+  });
 
   @override
   State<DebouncedSearchField> createState() => _DebouncedSearchFieldState();
@@ -156,7 +156,7 @@ class DebouncedSearchFieldWithSuggestions<T> extends StatefulWidget {
   final int maxSuggestions;
 
   const DebouncedSearchFieldWithSuggestions({
-    Key? key,
+    super.key,
     required this.onGetSuggestions,
     required this.onSearch,
     required this.suggestionBuilder,
@@ -167,7 +167,7 @@ class DebouncedSearchFieldWithSuggestions<T> extends StatefulWidget {
     this.controller,
     this.autofocus = false,
     this.maxSuggestions = 5,
-  }) : super(key: key);
+  });
 
   @override
   State<DebouncedSearchFieldWithSuggestions<T>> createState() => 

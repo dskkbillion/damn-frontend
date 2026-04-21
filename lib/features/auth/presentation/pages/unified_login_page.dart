@@ -67,9 +67,9 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   @override
   Widget build(BuildContext context) {
     // Define Theme Colors
-    final Color primaryColor = AppColors.primary;
-    final Color buttonBackgroundColor = AppColors.primaryVariant;
-    final Color linkColor = AppColors.textSecondary;
+    const Color primaryColor = AppColors.primary;
+    const Color buttonBackgroundColor = AppColors.primaryVariant;
+    const Color linkColor = AppColors.textSecondary;
 
     return Scaffold(
       body: Theme(
@@ -126,13 +126,13 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                               'assets/icons/nav/dskk_logo.svg',
                               width: 100,
                               height: 100,
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                 primaryColor,
                                 BlendMode.srcIn,
                               ),
                             ),
                             const SizedBox(height: 16),
-                            Text(
+                            const Text(
                               '多少看看',
                               style: TextStyle(
                                 fontSize: 24,
@@ -333,8 +333,8 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                               style: TextStyle(fontSize: 12),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
                             child: Text(
                               '和',
                               style: TextStyle(fontSize: 12, color: linkColor),
@@ -375,7 +375,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
     required String label,
   }) {
     final isSelected = _loginMode == mode;
-    final primaryColor = AppColors.primary;
+    const primaryColor = AppColors.primary;
     
     return Material(
       color: isSelected ? primaryColor.withOpacity(0.1) : Colors.transparent,

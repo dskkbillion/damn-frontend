@@ -50,7 +50,7 @@ class OrderInfoSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_info_title,
+                  AppLocalizations.of(context).order_info_title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -63,7 +63,7 @@ class OrderInfoSection extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Builder(
               builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
+                final l10n = AppLocalizations.of(context);
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

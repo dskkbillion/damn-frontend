@@ -42,7 +42,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
   
   // Generate title text based on sender/receiver
   String get _titleText {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     final sellerName = widget.allocateData['sellerName'] ?? '卖家';
     
     if (widget.isCurrentUser) {
@@ -50,13 +50,13 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
       return appLocalizations.chat_i_want_seller_to_see;
     } else {
       // Current user is receiver (seller)
-      return "${sellerName}${appLocalizations.chat_wants_to_see}";
+      return "$sellerName${appLocalizations.chat_wants_to_see}";
     }
   }
   
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -99,7 +99,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
                     DateFormat('HH:mm').format(
                       DateTime.fromMillisecondsSinceEpoch(widget.message.createdAt!),
                     ),
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textTertiary,
                       fontSize: 12.0,
                     ),

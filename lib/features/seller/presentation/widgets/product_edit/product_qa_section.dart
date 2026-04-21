@@ -32,17 +32,17 @@ class _ProductQASectionState extends State<ProductQASection> {
   InputDecoration get _lightBorderDecoration => InputDecoration(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+          borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+          borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
         filled: true,
         fillColor: AppColors.backgroundCard,
@@ -130,8 +130,8 @@ class _ProductQASectionState extends State<ProductQASection> {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.backgroundCard,
-      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -139,7 +139,7 @@ class _ProductQASectionState extends State<ProductQASection> {
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             child: Container(
-              padding: EdgeInsets.symmetric(
+              padding: const EdgeInsets.symmetric(
                   vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingXs),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,7 +154,7 @@ class _ProductQASectionState extends State<ProductQASection> {
                     children: [
                       if (_qaList.isNotEmpty)
                         Container(
-                          padding: EdgeInsets.symmetric(
+                          padding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingSm,
                               vertical: AppDimensions.spacingXs),
                           decoration: BoxDecoration(
@@ -168,7 +168,7 @@ class _ProductQASectionState extends State<ProductQASection> {
                                 ),
                           ),
                         ),
-                      SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.spacingSm),
                       Icon(
                         _isExpanded ? Icons.expand_less : Icons.expand_more,
                         color: AppColors.textSecondary,
@@ -182,21 +182,21 @@ class _ProductQASectionState extends State<ProductQASection> {
 
           // 展开内容
           if (_isExpanded) ...[
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             if (_qaList.isNotEmpty)
               ...List.generate(_qaList.length, (index) => _buildQAItem(index)),
             if (!widget.isPreviewMode)
               Container(
                 width: double.infinity,
-                margin: EdgeInsets.only(top: AppDimensions.spacingLg),
+                margin: const EdgeInsets.only(top: AppDimensions.spacingLg),
                 child: OutlinedButton.icon(
                   onPressed: _addQAPair,
                   icon: const Icon(Icons.add),
                   label: const Text('添加问题'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary),
-                    padding: EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
                   ),
                 ),
               ),
@@ -210,8 +210,8 @@ class _ProductQASectionState extends State<ProductQASection> {
     final qa = _qaList[index];
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppDimensions.spacingLg),
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.borderInput),
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
@@ -236,16 +236,16 @@ class _ProductQASectionState extends State<ProductQASection> {
                   keyboardType: TextInputType.text,
                 ),
               ),
-              SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.spacingSm),
               if (!widget.isPreviewMode)
                 IconButton(
-                  icon: Icon(Icons.delete_outline, color: AppColors.error),
+                  icon: const Icon(Icons.delete_outline, color: AppColors.error),
                   onPressed: () => _removeQAPair(index),
                   tooltip: '删除问题',
                 ),
             ],
           ),
-          SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingMd),
           TextField(
             readOnly: widget.isPreviewMode,
             decoration: _lightBorderDecoration.copyWith(

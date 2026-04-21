@@ -1,8 +1,6 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
-import '../entities/ai_chat_message_entity.dart';
-import '../entities/ai_conversation_entity.dart';
 import '../entities/chat_allocation_result_entity.dart';
 import '../entities/related_service_entity.dart';
 import '../usecases/load_history_usecase.dart';

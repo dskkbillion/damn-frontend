@@ -26,7 +26,7 @@ class OrderItemsSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
-          child: Text(AppLocalizations.of(context)!.order_items_empty),
+          child: Text(AppLocalizations.of(context).order_items_empty),
         ),
       );
     }
@@ -67,7 +67,7 @@ class OrderItemsSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_items_title,
+                  AppLocalizations.of(context).order_items_title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -80,7 +80,7 @@ class OrderItemsSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    AppLocalizations.of(context)!.order_items_count(items.length),
+                    AppLocalizations.of(context).order_items_count(items.length),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).primaryColor,

@@ -40,11 +40,11 @@ class SmartTimeFormatter {
     
     // 本年内（跳过本周内逻辑）
     if (timestamp.year == now.year) {
-      return '${DateFormat('MM月dd日 HH:mm').format(timestamp)}';
+      return DateFormat('MM月dd日 HH:mm').format(timestamp);
     }
     
     // 更久
-    return '${DateFormat('yyyy年MM月dd日 HH:mm').format(timestamp)}';
+    return DateFormat('yyyy年MM月dd日 HH:mm').format(timestamp);
   }
   
   /// 判断是否需要显示时间分隔符

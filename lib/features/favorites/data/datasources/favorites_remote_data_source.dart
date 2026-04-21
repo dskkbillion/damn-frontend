@@ -1,4 +1,3 @@
-import '../models/favorite_model.dart';
 import '../models/favorite_service_model.dart';
 import '../models/favorite_seller_model.dart';
 import '../models/common_user_model.dart';

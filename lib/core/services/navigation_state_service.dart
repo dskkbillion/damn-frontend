@@ -69,7 +69,7 @@ extension NavigationStateExtension on GoRouter {
     final currentMode = ref.read(appModeProvider);
     
     // 保存当前模式的导航状态
-    final currentLocation = this.routerDelegate.currentConfiguration.fullPath;
+    final currentLocation = routerDelegate.currentConfiguration.fullPath;
     // TODO: 获取当前shell index
     navigationStateService.saveNavigationState(currentMode, currentLocation, 0);
     
@@ -80,10 +80,10 @@ extension NavigationStateExtension on GoRouter {
     final savedState = navigationStateService.getNavigationState(targetMode);
     if (savedState != null) {
       // 恢复到之前的位置
-      this.go(savedState.location);
+      go(savedState.location);
     } else if (defaultLocation != null) {
       // 导航到默认位置
-      this.go(defaultLocation);
+      go(defaultLocation);
     }
   }
 }

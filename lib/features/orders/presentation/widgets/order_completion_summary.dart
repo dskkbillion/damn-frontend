@@ -45,11 +45,11 @@ class OrderCompletionSummary extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -58,7 +58,7 @@ class OrderCompletionSummary extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(AppDimensions.spacingLg),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               border: Border(
                 bottom: BorderSide(
                   color: AppColors.borderPrimary,

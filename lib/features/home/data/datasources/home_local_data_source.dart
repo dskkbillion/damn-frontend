@@ -84,7 +84,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
 
   @override
   Future<void> cacheHomeFeed(int page, List<HomeFeedItemModel> homeFeed) {
-    final jsonList = homeFeed.map((item) => (item as HomeFeedItemModel).toJson()).toList();
+    final jsonList = homeFeed.map((item) => (item).toJson()).toList();
     return sharedPreferences.setString(
       '$CACHED_HOME_FEED_PREFIX$page',
       json.encode(jsonList),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import getIt
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/routes/ai_docs_routes.dart'; // Import AI Docs routes
+// Import AI Docs routes
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // Change to StatefulWidget to read storage in initState
@@ -44,7 +44,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.app_dev_menu_title),
@@ -100,7 +100,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
   }
 
   Widget _buildInfoCard() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Card(
       color: Colors.blue[50],
       child: Padding(
@@ -129,7 +129,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
           try {
             context.go(path);
           } catch (e) {
-            final l10n = AppLocalizations.of(context)!;
+            final l10n = AppLocalizations.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(l10n.app_dev_navigation_failed(path, e.toString()))),
             );

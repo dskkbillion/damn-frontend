@@ -41,7 +41,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
                        widget.order.state != OrderStatus.sellerSupplementaryMaterials &&
                        widget.order.state != OrderStatus.applyForRefuse;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

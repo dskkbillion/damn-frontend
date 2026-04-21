@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
-import 'dart:convert'; // For jsonDecode in stream handling
+// For jsonDecode in stream handling
 import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
@@ -18,7 +18,6 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package 
 // Domain Layer - Use package imports
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/create_conversation_usecase.dart';
@@ -36,7 +35,6 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/generate_
 
 // Data source import for rate limit access
 import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_chat_remote_data_source.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/exceptions.dart' as ds_exceptions;
 
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
@@ -405,7 +403,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
 
         // Reload the conversation list to show the new conversation
-        add(LoadConversations()); 
+        add(const LoadConversations()); 
       },
     );
   }
@@ -451,7 +449,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          ));
          
          // 重新加载对话列表
-         add(LoadConversations());
+         add(const LoadConversations());
          
          // 立即发送消息
          add(SendMessage(message: event.message));
@@ -500,7 +498,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          ));
          
          // 重新加载对话列表
-         add(LoadConversations());
+         add(const LoadConversations());
          
          // 立即发送语音消息
          add(SendVoiceMessage(audioFile: event.audioFile));
@@ -554,7 +552,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         // 如果删除的不是当前选中的对话，保持当前状态不变
         
         // Refresh conversation list to remove the deleted one
-        add(LoadConversations()); 
+        add(const LoadConversations()); 
       },
     );
   }
@@ -943,9 +941,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     
     while (retryCount <= maxRetries) {
       if (retryCount > 0) {
-        AppLogger.d('正在重试音频上传 (${retryCount}/${maxRetries})...');
+        AppLogger.d('正在重试音频上传 ($retryCount/$maxRetries)...');
         // 在重试时不改变消息状态，保持转录中状态
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
       }
       
       try {
@@ -1243,7 +1241,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         if (state.streamingResponseText.isNotEmpty && state.streamingResponseText != '...') {
             final aiMessage = AiChatMessageEntity(
                 messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}_cancelled', 
-                content: state.streamingResponseText + " (cancelled)", 
+                content: "${state.streamingResponseText} (cancelled)", 
                 sender: MessageSender.ai,
                 timestamp: DateTime.now(),
                 conversationId: state.selectedConversationId!,
@@ -1317,7 +1315,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
            if (state.streamingResponseText.isNotEmpty && state.streamingResponseText != '...') {
              final aiMessage = AiChatMessageEntity(
                messageId: 'ai_${DateTime.now().millisecondsSinceEpoch}_cancelled',
-               content: state.streamingResponseText + " (用户取消)",
+               content: "${state.streamingResponseText} (用户取消)",
                sender: MessageSender.ai,
                timestamp: DateTime.now(),
                conversationId: currentConversationId,

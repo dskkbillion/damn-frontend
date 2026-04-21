@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
-import 'dart:io'; // Import dart:io for File
+// Import dart:io for File
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
@@ -33,13 +33,13 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   final _descriptionController = TextEditingController(); // Controller for description
   final _amountController = TextEditingController(); // Controller for amount
   // Use ImageProcessResult for better image handling
-  List<ImageProcessResult> _selectedImages = [];
+  final List<ImageProcessResult> _selectedImages = [];
   final int _maxImages = 9; // Define max images based on prototype hint
   bool _isProcessingImages = false;
 
   // Reasons will be built in build() using l10n
   List<String> _getAfterSalesReasons(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return [
       s.after_sales_reason_quality,
       s.after_sales_reason_mismatch,
@@ -62,7 +62,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
     final remainingSlots = _maxImages - _selectedImages.length;
     if (remainingSlots <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.after_sales_max_images(_maxImages))),
+        SnackBar(content: Text(AppLocalizations.of(context).after_sales_max_images(_maxImages))),
       );
       return;
     }
@@ -96,7 +96,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.after_sales_image_process_success(successCount, avgCompression.toStringAsFixed(1))),
+              content: Text(AppLocalizations.of(context).after_sales_image_process_success(successCount, avgCompression.toStringAsFixed(1))),
               backgroundColor: Colors.green,
             ),
           );
@@ -105,7 +105,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
         if (errorCount > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.after_sales_image_process_failed(errorCount)),
+              content: Text(AppLocalizations.of(context).after_sales_image_process_failed(errorCount)),
               backgroundColor: Colors.orange,
             ),
           );
@@ -114,7 +114,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
     } catch (e) {
       print("Error picking images: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.after_sales_image_pick_failed(e.toString()))),
+        SnackBar(content: Text(AppLocalizations.of(context).after_sales_image_pick_failed(e.toString()))),
       );
     } finally {
       setState(() {
@@ -133,7 +133,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   @override
   Widget build(BuildContext context) {
     // Determine the AppBar title based on the type
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     String title = s.after_sales_apply_title;
     if (widget.afterSalesType == 'REMAKE') {
       title = s.after_sales_apply_remake;
@@ -163,7 +163,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
 
               // --- Reason Selection Dropdown ---
               DropdownButtonFormField<String>(
-                value: _selectedReason,
+                initialValue: _selectedReason,
                 hint: Text(s.after_sales_select_reason_hint),
                 isExpanded: true,
                 items: _getAfterSalesReasons(context).map((String reason) {
@@ -180,8 +180,8 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                 validator: (value) => value == null || value.isEmpty ? s.after_sales_select_reason_validator : null,
                 decoration: InputDecoration(
                   labelText: s.after_sales_reason_label,
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
                 ),
               ),
               const SizedBox(height: 16.0),
@@ -192,7 +192,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                 decoration: InputDecoration(
                   labelText: s.after_sales_description_label,
                   hintText: s.after_sales_description_hint,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   alignLabelWithHint: true, // Better alignment for multiline
                 ),
                 maxLines: 4, // Allow multiple lines
@@ -314,7 +314,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                     icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    tooltip: AppLocalizations.of(context)!.after_sales_remove_image,
+                    tooltip: AppLocalizations.of(context).after_sales_remove_image,
                     onPressed: () => _removeImage(idx),
                     splashRadius: 15,
                   ),
@@ -347,7 +347,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   Widget _buildOrderItemInfo(BuildContext context, OrderItem item) {
      return Card(
       elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -360,7 +360,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                      borderRadius: BorderRadius.circular(4.0),
                      child: Image.network(item.imageUrl, fit: BoxFit.cover,
                        errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image, color: Colors.grey[500]),
-                       loadingBuilder: (context, child, progress) => progress == null ? child : Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                       loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                      ),
                    )
                  : Icon(Icons.image, color: Colors.grey[500]),

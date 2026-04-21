@@ -8,7 +8,7 @@ class DeliveryFilesDemoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     // 模拟交付文件数据
     final deliveryFiles = [

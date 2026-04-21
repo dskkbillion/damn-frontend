@@ -12,7 +12,7 @@ import '../widgets/home_feed_list.dart';
 class SearchResultsPage extends StatefulWidget {
   final String keyword;
 
-  const SearchResultsPage({Key? key, required this.keyword}) : super(key: key);
+  const SearchResultsPage({super.key, required this.keyword});
 
   @override
   State<SearchResultsPage> createState() => _SearchResultsPageState();
@@ -22,7 +22,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     return BlocProvider(
       create: (_) {
@@ -54,7 +54,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: AppColors.textTertiary),
+                  const Icon(Icons.search, color: AppColors.textTertiary),
                   const SizedBox(width: AppDimensions.spacingSm),
                   Expanded(
                     child: Text(

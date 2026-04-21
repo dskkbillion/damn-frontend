@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
-import 'dart:io'; // Import dart:io for File
+// Import dart:io for File
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget for submitting order evaluation (rating and comment).
@@ -22,7 +22,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
   int _score = 5; // Default score as int
   final _contentController = TextEditingController();
   bool _isAnonymous = false;
-  List<ImageProcessResult> _selectedImages = []; // Use ImageProcessResult
+  final List<ImageProcessResult> _selectedImages = []; // Use ImageProcessResult
   bool _isProcessingImages = false;
 
   // --- Build Rating Stars --- 
@@ -115,7 +115,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    AppLocalizations.of(context)!.order_evaluation_title,
+                    AppLocalizations.of(context).order_evaluation_title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -136,7 +136,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                   TextFormField(
                     controller: _contentController,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.order_evaluation_hint,
+                      hintText: AppLocalizations.of(context).order_evaluation_hint,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       filled: true,
                       fillColor: Colors.grey[100],
@@ -148,14 +148,14 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                   const SizedBox(height: 16),
 
                   // --- Picture Upload Section ---
-                  Text(AppLocalizations.of(context)!.order_evaluation_add_images, style: textTheme.bodyMedium),
+                  Text(AppLocalizations.of(context).order_evaluation_add_images, style: textTheme.bodyMedium),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8.0,
                     runSpacing: 8.0,
                     children: [
                       // Display selected image thumbnails
-                      ..._selectedImages.map((result) => _buildImageThumbnail(result)).toList(),
+                      ..._selectedImages.map((result) => _buildImageThumbnail(result)),
                       // Show "Add Picture" button if limit not reached
                       if (_selectedImages.length < 9 && !_isProcessingImages)
                         _buildAddPictureButton(context),
@@ -176,7 +176,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                           });
                         },
                       ),
-                      Text(AppLocalizations.of(context)!.order_evaluation_anonymous, style: textTheme.bodyMedium),
+                      Text(AppLocalizations.of(context).order_evaluation_anonymous, style: textTheme.bodyMedium),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -198,7 +198,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                           ),
                           child: isSubmitting
                               ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : Text(AppLocalizations.of(context)!.order_evaluation_submit),
+                              : Text(AppLocalizations.of(context).order_evaluation_submit),
                         ),
                       );
                     },
@@ -308,7 +308,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     // Check limit before picking
     if (_selectedImages.length >= 9) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.order_evaluation_max_images)),
+        SnackBar(content: Text(AppLocalizations.of(context).order_evaluation_max_images)),
       );
       return;
     }
@@ -344,7 +344,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.order_evaluation_success_count(successCount, avgCompression.toStringAsFixed(1))),
+              content: Text(AppLocalizations.of(context).order_evaluation_success_count(successCount, avgCompression.toStringAsFixed(1))),
               backgroundColor: Colors.green,
             ),
           );
@@ -353,7 +353,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         if (errorCount > 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)!.order_evaluation_failed_count(errorCount)),
+              content: Text(AppLocalizations.of(context).order_evaluation_failed_count(errorCount)),
               backgroundColor: Colors.orange,
             ),
           );
@@ -362,7 +362,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
     } catch (e) {
        print('Error picking images: $e');
        ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text(AppLocalizations.of(context)!.order_evaluation_pick_failed(e.toString()))),
+         SnackBar(content: Text(AppLocalizations.of(context).order_evaluation_pick_failed(e.toString()))),
        );
     } finally {
       setState(() {
@@ -391,7 +391,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           ),
           const SizedBox(height: 4),
           Text(
-            AppLocalizations.of(context)!.order_evaluation_processing,
+            AppLocalizations.of(context).order_evaluation_processing,
             style: const TextStyle(fontSize: 10, color: Colors.grey),
           ),
         ],

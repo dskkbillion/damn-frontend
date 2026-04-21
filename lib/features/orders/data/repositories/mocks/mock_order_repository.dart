@@ -12,9 +12,10 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_pric
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_payment_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_shipping_info.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_creation_result.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 
 /// IOrderRepository 的手动 Mock/Dummy 实现，用于预览环境。
 class MockOrderRepository implements IOrderRepository {
@@ -28,7 +29,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK001', // Keep entity as orderSn, mapping happens in model
       state: OrderStatus.awaitingPayment,
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 101, orderId: 1, productId: 1001, productName: '测试商品 A (待付款)', skuId: 2001, skuName: '规格 1', imageUrl: 'https://picsum.photos/seed/MOCK001/150/150', quantity: 1, price: 50.0, totalPrice: 50.0),
       ],
       // Use the Address entity directly in the mock
@@ -45,7 +46,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK002',
       state: OrderStatus.awaitingDelivery,
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 102, orderId: 2, productId: 1002, productName: '测试商品 B (待发货)', skuId: 2002, skuName: '规格 X', imageUrl: 'https://picsum.photos/seed/MOCK002/150/150', quantity: 2, price: 30.0, totalPrice: 60.0),
       ],
       shippingAddress: const Address(recipientName: '张三', phone: '13900139000', areaId: '310101', detailAddress: '上海市某某区某某路2号'),
@@ -59,7 +60,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK003',
       state: OrderStatus.awaitingEvaluation,
       orderType: '1',
-      items: [
+      items: const [
         OrderItem(id: 103, orderId: 3, productId: 1003, productName: '测试商品 C (待评价)', skuId: 2003, skuName: '豪华版', imageUrl: 'https://picsum.photos/seed/MOCK003/150/150', quantity: 1, price: 199.0, totalPrice: 199.0),
       ],
       shippingAddress: const Address(recipientName: '李四', phone: '13700137000', areaId: '440101', detailAddress: '广州市某某区某某大道3号'),
@@ -74,7 +75,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK004',
       state: OrderStatus.awaitingConfirmation,
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 104, orderId: 4, productId: 1004, productName: '测试商品 D (待收货)', skuId: 2004, skuName: '基础版', imageUrl: 'https://picsum.photos/seed/MOCK004/150/150', quantity: 2, price: 30.00, totalPrice: 60.00),
       ],
       shippingAddress: const Address(recipientName: '王五', phone: '13600136000', areaId: '510101', detailAddress: '成都市某某区某某街4号'),
@@ -88,7 +89,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK005',
       state: OrderStatus.awaitingSubmission,
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 105, orderId: 5, productId: 1005, productName: '测试服务 E (待提交要求)', skuId: 2005, skuName: '加急处理', imageUrl: 'https://picsum.photos/seed/MOCK005/150/150', quantity: 1, price: 100.00, totalPrice: 100.00),
       ],
       shippingAddress: const Address(recipientName: '赵六', phone: '13500135000', areaId: '330101', detailAddress: '杭州市某某区某某路5号'),
@@ -102,7 +103,7 @@ class MockOrderRepository implements IOrderRepository {
       id: 6,
       orderSn: 'MOCK006',
       state: OrderStatus.canceled,
-      items: [
+      items: const [
         OrderItem(id: 106, orderId: 6, productId: 1006, productName: '测试商品 F (已取消)', skuId: 2006, skuName: '特殊规格', imageUrl: 'https://picsum.photos/seed/MOCK006/150/150', quantity: 1, price: 60.0, totalPrice: 60.0),
       ],
       shippingAddress: const Address(recipientName: '钱七', phone: '13400134000', areaId: '420101', detailAddress: '武汉市某某区某某路6号'),
@@ -117,7 +118,7 @@ class MockOrderRepository implements IOrderRepository {
       id: 1,
       orderSn: 'MOCK007',
       state: OrderStatus.afterSale,
-       items: [
+       items: const [
         OrderItem(id: 107, orderId: 1, productId: 1007, productName: '测试商品 G (售后中)', skuId: 2007, skuName: '定制版', imageUrl: 'https://picsum.photos/seed/MOCK007/150/150', quantity: 1, price: 120.0, totalPrice: 120.0),
       ],
       shippingAddress: const Address(recipientName: '孙八', phone: '13300133000', areaId: '320101', detailAddress: '南京市某某区某某街7号'),
@@ -134,7 +135,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK008_SELLER', 
       state: OrderStatus.awaitingStart, // **Seller: Waiting for seller to confirm acceptance**
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 108, orderId: 8, productId: 1008, productName: '服务 H (待接单)', skuId: 2008, skuName: '标准服务', imageUrl: 'https://picsum.photos/seed/MOCK008/150/150', quantity: 1, price: 80.0, totalPrice: 80.0),
       ],
       shippingAddress: const Address(recipientName: '买家小明', phone: '13100131000', areaId: '110105', detailAddress: '朝阳区 XX 路 8 号'),
@@ -149,7 +150,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK009_SELLER', 
       state: OrderStatus.awaitingDelivery, // **Seller: Order accepted, waiting for delivery**
       orderType: '0',
-      items: [
+      items: const [
         OrderItem(id: 109, orderId: 9, productId: 1009, productName: '设计服务 I (进行中)', skuId: 2009, skuName: 'Logo 设计', imageUrl: 'https://picsum.photos/seed/MOCK009/150/150', quantity: 1, price: 500.0, totalPrice: 500.0),
       ],
       shippingAddress: const Address(recipientName: '买家小红', phone: '13200132000', areaId: '440305', detailAddress: '南山区 YY 路 9 号'),
@@ -164,7 +165,7 @@ class MockOrderRepository implements IOrderRepository {
       orderSn: 'MOCK010_SELLER',
       state: OrderStatus.applyForRefuse, // **Seller: Buyer requested redo/refund (showing refuse for example)**
       orderType: '1',
-      items: [
+      items: const [
         OrderItem(id: 110, orderId: 10, productId: 1010, productName: '翻译服务 J (买家申请重做)', skuId: 2010, skuName: '英译中 1000 字', imageUrl: 'https://picsum.photos/seed/MOCK010/150/150', quantity: 1, price: 150.0, totalPrice: 150.0),
       ],
       shippingAddress: const Address(recipientName: '买家小刚', phone: '13300133000', areaId: '330106', detailAddress: '西湖区 ZZ 路 10 号'),
@@ -217,7 +218,7 @@ class MockOrderRepository implements IOrderRepository {
     // Simulate keyword search (simple)
     if (keyword != null && keyword.isNotEmpty) {
       results = results.where((order) =>
-        (order.orderSn?.contains(keyword) ?? false) || // Null check for safety
+        (order.orderSn.contains(keyword)) ||
         order.items.any((item) => item.productName.contains(keyword)) ||
         (order.shippingAddress.recipientName.contains(keyword))
       ).toList();
@@ -262,7 +263,7 @@ class MockOrderRepository implements IOrderRepository {
        return const Right(null);
     } else {
       AppLogger.d('[MockOrderRepository] Cannot cancel order $orderId (state: ${order?.state}).');
-      return Left(ServerFailure(message: 'Mock: Cannot cancel order in its current state'));
+      return const Left(ServerFailure(message: 'Mock: Cannot cancel order in its current state'));
     }
   }
 
@@ -277,7 +278,7 @@ class MockOrderRepository implements IOrderRepository {
         return const Right(null);
      } else {
        AppLogger.d('[MockOrderRepository] Cannot confirm receipt for order $orderId (state: ${order?.state}).');
-       return Left(ServerFailure(message: 'Mock: Cannot confirm receipt in its current state'));
+       return const Left(ServerFailure(message: 'Mock: Cannot confirm receipt in its current state'));
      }
   }
 
@@ -294,7 +295,7 @@ class MockOrderRepository implements IOrderRepository {
        return const Right(null);
     } else {
        AppLogger.d('[MockOrderRepository] Order $orderId not found for deletion.');
-       return Left(ServerFailure(message: 'Mock: Order not found for deletion'));
+       return const Left(ServerFailure(message: 'Mock: Order not found for deletion'));
     }
   }
 
@@ -333,7 +334,7 @@ class MockOrderRepository implements IOrderRepository {
         return const Right(null);
      } else {
        AppLogger.d('[MockOrderRepository] Cannot submit requirements for order ${params.orderId} (state: ${order?.state}).');
-       return Left(ServerFailure(message: 'Mock: Cannot submit requirements in its current state'));
+       return const Left(ServerFailure(message: 'Mock: Cannot submit requirements in its current state'));
      }
   }
 
@@ -356,7 +357,7 @@ class MockOrderRepository implements IOrderRepository {
       return const Right(null);
     } else {
       AppLogger.d('[MockOrderRepository] Cannot confirm acceptance for order $orderId (state: ${order?.state}).');
-      return Left(ServerFailure(message: 'Mock: Order not in awaitingStart state'));
+      return const Left(ServerFailure(message: 'Mock: Order not in awaitingStart state'));
     }
   }
 
@@ -374,12 +375,12 @@ class MockOrderRepository implements IOrderRepository {
         AppLogger.d('[MockOrderRepository] Order ${params.orderId} status changed to sellerSupplementaryMaterials.');
       } else {
         AppLogger.d('[MockOrderRepository] Unknown demand type: ${params.type}');
-        return Left(ServerFailure(message: 'Mock: Invalid demand type'));
+        return const Left(ServerFailure(message: 'Mock: Invalid demand type'));
       }
       return const Right(null);
     } else {
       AppLogger.d('[MockOrderRepository] Order ${params.orderId} not found for adding demand.');
-      return Left(ServerFailure(message: 'Mock: Order not found'));
+      return const Left(ServerFailure(message: 'Mock: Order not found'));
     }
   }
 
@@ -394,7 +395,7 @@ class MockOrderRepository implements IOrderRepository {
       return const Right(null);
     } else {
       AppLogger.d('[MockOrderRepository] Cannot deliver order ${params.orderId} (state: ${order?.state}).');
-      return Left(ServerFailure(message: 'Mock: Order not in correct state for delivery'));
+      return const Left(ServerFailure(message: 'Mock: Order not in correct state for delivery'));
     }
   }
 
@@ -414,6 +415,34 @@ class MockOrderRepository implements IOrderRepository {
     await Future.delayed(const Duration(milliseconds: 150));
     // Just simulate success
     return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, List<OrderMaterials>>> getOrderMaterials(int orderId) async {
+    AppLogger.d('[MockOrderRepository] Getting Order Materials for ID: $orderId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, List<OrderDelivery>>> getOrderDeliveries(int orderId) async {
+    AppLogger.d('[MockOrderRepository] Getting Order Deliveries for ID: $orderId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, OrderMaterials>> getOrderMaterialById(int materialId) async {
+    AppLogger.d('[MockOrderRepository] Getting Order Material by ID: $materialId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    return const Left(ServerFailure(message: 'Mock: Material not found'));
+  }
+
+  @override
+  Future<Either<Failure, OrderDelivery>> getOrderDeliveryById(int deliveryId) async {
+    AppLogger.d('[MockOrderRepository] Getting Order Delivery by ID: $deliveryId');
+    await Future.delayed(const Duration(milliseconds: 150));
+    return const Left(ServerFailure(message: 'Mock: Delivery not found'));
   }
 
   @override

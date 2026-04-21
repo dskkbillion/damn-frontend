@@ -6,12 +6,12 @@ class AppTheme {
       primarySwatch: Colors.blue, // Or your primary color
       brightness: Brightness.light,
       scaffoldBackgroundColor: Colors.grey[100], // Light background
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         elevation: 0,
         backgroundColor: Colors.blue, // Example AppBar color
         foregroundColor: Colors.white, // AppBar text/icon color
       ),
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: Colors.blue,
         secondary: Colors.blueAccent,
         // You can define more colors here

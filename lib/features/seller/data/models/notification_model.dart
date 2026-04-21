@@ -4,20 +4,13 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_not
 /// 通知模型类
 class NotificationModel extends Notification {
   const NotificationModel({
-    required String id,
-    required String title,
-    required String content,
-    required DateTime createdAt,
-    required NotificationType type,
-    required bool isRead,
-  }) : super(
-          id: id,
-          title: title,
-          content: content,
-          createdAt: createdAt,
-          type: type,
-          isRead: isRead,
-        );
+    required super.id,
+    required super.title,
+    required super.content,
+    required super.createdAt,
+    required super.type,
+    required super.isRead,
+  });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(

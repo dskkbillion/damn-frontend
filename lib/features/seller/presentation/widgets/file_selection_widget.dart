@@ -21,12 +21,12 @@ class FileSelectionWidget extends StatelessWidget {
 
   /// 构造函数
   const FileSelectionWidget({
-    Key? key,
+    super.key,
     required this.selectedFiles,
     required this.onFileSelected,
     required this.onFileRemoved,
     this.disabled = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class FileSelectionWidget extends StatelessWidget {
               }
             },
             icon: const Icon(Icons.attach_file),
-            label: Text(AppLocalizations.of(context)?.seller_file_select ?? 'Select File'),
+            label: Text(AppLocalizations.of(context).seller_file_select ?? 'Select File'),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
               backgroundColor: Colors.blue,
@@ -65,7 +65,7 @@ class FileSelectionWidget extends StatelessWidget {
         // 已选择文件列表
         if (selectedFiles.isNotEmpty) ...[
           Text(
-            AppLocalizations.of(context)?.seller_file_selected ?? 'Selected files:',
+            AppLocalizations.of(context).seller_file_selected ?? 'Selected files:',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -88,7 +88,7 @@ class FileSelectionWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   subtitle: Text(
-                    AppLocalizations.of(context)?.seller_file_size(_getFileSize(filePath)) ?? 'Size: ${_getFileSize(filePath)}',
+                    AppLocalizations.of(context).seller_file_size(_getFileSize(filePath)) ?? 'Size: ${_getFileSize(filePath)}',
                     style: const TextStyle(fontSize: 12),
                   ),
                   trailing: !disabled
@@ -221,7 +221,7 @@ class FileSelectionWidget extends StatelessWidget {
       // 非图片文件，显示信息
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)?.seller_file_preview_unsupported(fileName) ?? 'Cannot preview this file type: $fileName'),
+          content: Text(AppLocalizations.of(context).seller_file_preview_unsupported(fileName) ?? 'Cannot preview this file type: $fileName'),
           duration: const Duration(seconds: 2),
         ),
       );

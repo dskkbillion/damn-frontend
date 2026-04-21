@@ -34,10 +34,10 @@ class UserInfoRepositoryImpl implements IUserInfoRepository {
         return Left(ServerFailure(message: e.message ?? '获取用户信息时发生服务器错误'));
       } catch (e) {
         AppLogger.d('Unknown exception in UserInfoRepository: ${e.toString()}');
-        return Left(UnknownFailure(message: 'Failed to fetch user info'));
+        return const Left(UnknownFailure(message: 'Failed to fetch user info'));
       }
     } else {
-      return Left(NetworkFailure(message: '网络连接不可用'));
+      return const Left(NetworkFailure(message: '网络连接不可用'));
     }
   }
 }

@@ -4,20 +4,13 @@ import '../../domain/entities/favorite_service.dart';
 class FavoriteServiceModel extends FavoriteService {
   /// 构造函数
   const FavoriteServiceModel({
-    required int id,
-    required String title,
-    String? description,
-    String? imageUrl,
-    required double price,
-    required bool isFavorite,
-  }) : super(
-          id: id,
-          title: title,
-          description: description,
-          imageUrl: imageUrl,
-          price: price,
-          isFavorite: isFavorite,
-        );
+    required super.id,
+    required super.title,
+    super.description,
+    super.imageUrl,
+    required super.price,
+    required super.isFavorite,
+  });
 
   /// 从JSON创建模型
   factory FavoriteServiceModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +39,7 @@ class FavoriteServiceModel extends FavoriteService {
   }
 
   /// 创建一个新的FavoriteServiceModel实例，并更新指定的字段
+  @override
   FavoriteServiceModel copyWith({
     int? id,
     String? title,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 
 /// 认证状态详情页面
 class AuthStatusPage extends StatelessWidget {
@@ -11,15 +10,15 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构造函数
   const AuthStatusPage({
-    Key? key,
+    super.key,
     required this.authInfo,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.seller_auth_status_title(_getAuthenticationTypeName(context, authInfo.type)) ?? '${_getAuthenticationTypeName(context, authInfo.type)} Certification'),
+        title: Text(AppLocalizations.of(context).seller_auth_status_title(_getAuthenticationTypeName(context, authInfo.type)) ?? '${_getAuthenticationTypeName(context, authInfo.type)} Certification'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -77,7 +76,7 @@ class AuthStatusPage extends StatelessWidget {
           Row(
             children: [
               Text(
-                AppLocalizations.of(context)?.seller_auth_status_label ?? 'Status: ',
+                AppLocalizations.of(context).seller_auth_status_label ?? 'Status: ',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -91,7 +90,7 @@ class AuthStatusPage extends StatelessWidget {
           Row(
             children: [
               Text(
-                AppLocalizations.of(context)?.seller_auth_status_name_label ?? 'Name: ',
+                AppLocalizations.of(context).seller_auth_status_name_label ?? 'Name: ',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -119,7 +118,7 @@ class AuthStatusPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)?.seller_auth_status_materials ?? 'Certification Materials',
+          AppLocalizations.of(context).seller_auth_status_materials ?? 'Certification Materials',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -136,7 +135,7 @@ class AuthStatusPage extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                AppLocalizations.of(context)?.seller_auth_status_no_materials ?? 'No certification materials',
+                AppLocalizations.of(context).seller_auth_status_no_materials ?? 'No certification materials',
                 style: const TextStyle(color: Colors.grey),
               ),
             ),
@@ -189,7 +188,7 @@ class AuthStatusPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)?.seller_auth_status_info ?? 'Certification Info',
+          AppLocalizations.of(context).seller_auth_status_info ?? 'Certification Info',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -249,7 +248,7 @@ class AuthStatusPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)?.seller_auth_status_history ?? 'Certification History',
+          AppLocalizations.of(context).seller_auth_status_history ?? 'Certification History',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -272,7 +271,7 @@ class AuthStatusPage extends StatelessWidget {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(AppLocalizations.of(context)?.seller_auth_status_no_history ?? 'No history records'),
+                    child: Text(AppLocalizations.of(context).seller_auth_status_no_history ?? 'No history records'),
                   ),
                 )
               : Column(
@@ -343,7 +342,7 @@ class AuthStatusPage extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: Text(AppLocalizations.of(context)?.seller_auth_status_reapply ?? 'Reapply', style: const TextStyle(fontSize: 16)),
+              child: Text(AppLocalizations.of(context).seller_auth_status_reapply ?? 'Reapply', style: const TextStyle(fontSize: 16)),
             ),
           ),
         ] else if (authInfo.status == AuthenticationStatus.approved) ...[
@@ -361,7 +360,7 @@ class AuthStatusPage extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)?.seller_auth_status_approved_hint ?? 'Certification approved, no need to resubmit',
+                    AppLocalizations.of(context).seller_auth_status_approved_hint ?? 'Certification approved, no need to resubmit',
                     style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -383,7 +382,7 @@ class AuthStatusPage extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppLocalizations.of(context)?.seller_auth_status_pending_hint ?? 'Certification under review, please wait',
+                    AppLocalizations.of(context).seller_auth_status_pending_hint ?? 'Certification under review, please wait',
                     style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -407,25 +406,25 @@ class AuthStatusPage extends StatelessWidget {
       case AuthenticationStatus.approved:
         backgroundColor = Colors.green[50]!;
         textColor = Colors.green[800]!;
-        text = l10n?.seller_auth_status_tag_approved ?? 'Certified';
+        text = l10n.seller_auth_status_tag_approved ?? 'Certified';
         icon = Icons.check_circle;
         break;
       case AuthenticationStatus.pending:
         backgroundColor = Colors.orange[50]!;
         textColor = Colors.orange[800]!;
-        text = l10n?.seller_auth_status_tag_pending ?? 'Under Review';
+        text = l10n.seller_auth_status_tag_pending ?? 'Under Review';
         icon = Icons.hourglass_top;
         break;
       case AuthenticationStatus.rejected:
         backgroundColor = Colors.red[50]!;
         textColor = Colors.red[800]!;
-        text = l10n?.seller_auth_status_tag_rejected ?? 'Rejected';
+        text = l10n.seller_auth_status_tag_rejected ?? 'Rejected';
         icon = Icons.cancel;
         break;
       default:
         backgroundColor = Colors.grey[50]!;
         textColor = Colors.grey[800]!;
-        text = l10n?.seller_auth_status_tag_not_submitted ?? 'Not Submitted';
+        text = l10n.seller_auth_status_tag_not_submitted ?? 'Not Submitted';
         icon = Icons.circle_outlined;
     }
 
@@ -505,15 +504,15 @@ class AuthStatusPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     switch (type) {
       case AuthenticationType.idCard:
-        return l10n?.seller_auth_status_type_idcard ?? 'Identity';
+        return l10n.seller_auth_status_type_idcard ?? 'Identity';
       case AuthenticationType.education:
-        return l10n?.seller_auth_status_type_education ?? 'Education';
+        return l10n.seller_auth_status_type_education ?? 'Education';
       case AuthenticationType.profession:
-        return l10n?.seller_auth_status_type_profession ?? 'Profession';
+        return l10n.seller_auth_status_type_profession ?? 'Profession';
       case AuthenticationType.company:
-        return l10n?.seller_auth_status_type_company ?? 'Company';
+        return l10n.seller_auth_status_type_company ?? 'Company';
       default:
-        return l10n?.seller_auth_status_type_other ?? 'Other';
+        return l10n.seller_auth_status_type_other ?? 'Other';
     }
   }
   
@@ -523,8 +522,8 @@ class AuthStatusPage extends StatelessWidget {
     final Map<String, String> fields = {};
 
     // 基本信息
-    fields[l10n?.seller_auth_status_field_auth_name ?? 'Certification Name'] = authInfo.name;
-    fields[l10n?.seller_auth_status_field_auth_type ?? 'Certification Type'] = authInfo.type.displayName;
+    fields[l10n.seller_auth_status_field_auth_name ?? 'Certification Name'] = authInfo.name;
+    fields[l10n.seller_auth_status_field_auth_type ?? 'Certification Type'] = authInfo.type.displayName;
 
     // 从实际数据中获取字段
     if (authInfo.fields != null) {
@@ -534,25 +533,25 @@ class AuthStatusPage extends StatelessWidget {
       if (authFields.containsKey('name')) {
         switch (authInfo.type) {
           case AuthenticationType.company:
-            fields[l10n?.seller_auth_status_field_company_name ?? 'Company Name'] = authFields['name'].toString();
+            fields[l10n.seller_auth_status_field_company_name ?? 'Company Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.idCard:
-            fields[l10n?.seller_auth_status_field_name ?? 'Name'] = authFields['name'].toString();
+            fields[l10n.seller_auth_status_field_name ?? 'Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.education:
-            fields[l10n?.seller_auth_status_field_school_name ?? 'School Name'] = authFields['name'].toString();
+            fields[l10n.seller_auth_status_field_school_name ?? 'School Name'] = authFields['name'].toString();
             break;
           case AuthenticationType.profession:
-            fields[l10n?.seller_auth_status_field_profession ?? 'Profession/Position'] = authFields['name'].toString();
+            fields[l10n.seller_auth_status_field_profession ?? 'Profession/Position'] = authFields['name'].toString();
             break;
           default:
-            fields[l10n?.seller_auth_status_field_name_or_title ?? 'Name/Title'] = authFields['name'].toString();
+            fields[l10n.seller_auth_status_field_name_or_title ?? 'Name/Title'] = authFields['name'].toString();
         }
       }
 
       // 获取备注信息
       if (authFields.containsKey('remarks') && authFields['remarks'].toString().isNotEmpty) {
-        fields[l10n?.seller_auth_status_field_remarks ?? 'Remarks'] = authFields['remarks'].toString();
+        fields[l10n.seller_auth_status_field_remarks ?? 'Remarks'] = authFields['remarks'].toString();
       }
 
       // 根据认证类型显示特定字段
@@ -562,40 +561,40 @@ class AuthStatusPage extends StatelessWidget {
         switch (authInfo.type) {
           case AuthenticationType.profession:
             if (feature.containsKey('certificateNumber')) {
-              fields[l10n?.seller_auth_status_field_cert_number ?? 'Certificate Number'] = feature['certificateNumber'].toString();
+              fields[l10n.seller_auth_status_field_cert_number ?? 'Certificate Number'] = feature['certificateNumber'].toString();
             }
             if (feature.containsKey('workExperience')) {
-              fields[l10n?.seller_auth_status_field_work_experience ?? 'Work Experience'] = feature['workExperience'].toString();
+              fields[l10n.seller_auth_status_field_work_experience ?? 'Work Experience'] = feature['workExperience'].toString();
             }
             if (feature.containsKey('issuer')) {
-              fields[l10n?.seller_auth_status_field_issuer ?? 'Issuing Authority'] = feature['issuer'].toString();
+              fields[l10n.seller_auth_status_field_issuer ?? 'Issuing Authority'] = feature['issuer'].toString();
             }
             break;
 
           case AuthenticationType.company:
             if (feature.containsKey('creditCode')) {
-              fields[l10n?.seller_auth_status_field_credit_code ?? 'Unified Social Credit Code'] = feature['creditCode'].toString();
+              fields[l10n.seller_auth_status_field_credit_code ?? 'Unified Social Credit Code'] = feature['creditCode'].toString();
             }
             if (feature.containsKey('legalRepresentative')) {
-              fields[l10n?.seller_auth_status_field_legal_rep ?? 'Legal Representative'] = feature['legalRepresentative'].toString();
+              fields[l10n.seller_auth_status_field_legal_rep ?? 'Legal Representative'] = feature['legalRepresentative'].toString();
             }
             if (feature.containsKey('registeredCapital')) {
-              fields[l10n?.seller_auth_status_field_registered_capital ?? 'Registered Capital'] = feature['registeredCapital'].toString();
+              fields[l10n.seller_auth_status_field_registered_capital ?? 'Registered Capital'] = feature['registeredCapital'].toString();
             }
             if (feature.containsKey('establishmentDate')) {
-              fields[l10n?.seller_auth_status_field_establishment_date ?? 'Establishment Date'] = feature['establishmentDate'].toString();
+              fields[l10n.seller_auth_status_field_establishment_date ?? 'Establishment Date'] = feature['establishmentDate'].toString();
             }
             break;
 
           case AuthenticationType.education:
             if (feature.containsKey('degree')) {
-              fields[l10n?.seller_auth_status_field_degree ?? 'Degree'] = feature['degree'].toString();
+              fields[l10n.seller_auth_status_field_degree ?? 'Degree'] = feature['degree'].toString();
             }
             if (feature.containsKey('major')) {
-              fields[l10n?.seller_auth_status_field_major ?? 'Major'] = feature['major'].toString();
+              fields[l10n.seller_auth_status_field_major ?? 'Major'] = feature['major'].toString();
             }
             if (feature.containsKey('graduationYear')) {
-              fields[l10n?.seller_auth_status_field_graduation_year ?? 'Graduation Year'] = feature['graduationYear'].toString();
+              fields[l10n.seller_auth_status_field_graduation_year ?? 'Graduation Year'] = feature['graduationYear'].toString();
             }
             break;
 
@@ -604,13 +603,13 @@ class AuthStatusPage extends StatelessWidget {
               // 身份证号部分隐藏
               final idNumber = feature['idNumber'].toString();
               if (idNumber.length > 10) {
-                fields[l10n?.seller_auth_status_field_id_number ?? 'ID Number'] = '${idNumber.substring(0, 6)}****${idNumber.substring(idNumber.length - 4)}';
+                fields[l10n.seller_auth_status_field_id_number ?? 'ID Number'] = '${idNumber.substring(0, 6)}****${idNumber.substring(idNumber.length - 4)}';
               } else {
-                fields[l10n?.seller_auth_status_field_id_number ?? 'ID Number'] = idNumber;
+                fields[l10n.seller_auth_status_field_id_number ?? 'ID Number'] = idNumber;
               }
             }
             if (feature.containsKey('validPeriod')) {
-              fields[l10n?.seller_auth_status_field_valid_period ?? 'Valid Period'] = feature['validPeriod'].toString();
+              fields[l10n.seller_auth_status_field_valid_period ?? 'Valid Period'] = feature['validPeriod'].toString();
             }
             break;
 
@@ -627,14 +626,14 @@ class AuthStatusPage extends StatelessWidget {
 
     // 添加时间信息
     if (authInfo.submittedAt != null) {
-      fields[l10n?.seller_auth_status_field_submit_time ?? 'Submission Time'] = _formatDateTime(authInfo.submittedAt!);
+      fields[l10n.seller_auth_status_field_submit_time ?? 'Submission Time'] = _formatDateTime(authInfo.submittedAt!);
     }
 
     // 如果是被拒绝的认证，显示拒绝原因
     if (authInfo.status == AuthenticationStatus.rejected &&
         authInfo.rejectionReason != null &&
         authInfo.rejectionReason!.isNotEmpty) {
-      fields[l10n?.seller_auth_status_field_reject_reason ?? 'Rejection Reason'] = authInfo.rejectionReason!;
+      fields[l10n.seller_auth_status_field_reject_reason ?? 'Rejection Reason'] = authInfo.rejectionReason!;
     }
 
     return fields;
@@ -653,35 +652,35 @@ class AuthStatusPage extends StatelessWidget {
       case AuthenticationStatus.approved:
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 3))),
-          'title': l10n?.seller_auth_status_history_approved_title ?? 'Certification Approved',
-          'description': l10n?.seller_auth_status_history_approved_desc(typeName) ?? 'Your $typeName certification has been approved.',
+          'title': l10n.seller_auth_status_history_approved_title ?? 'Certification Approved',
+          'description': l10n.seller_auth_status_history_approved_desc(typeName) ?? 'Your $typeName certification has been approved.',
         });
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 5))),
-          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
-          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
+          'title': l10n.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
 
       case AuthenticationStatus.pending:
         history.add({
           'time': _formatDateTime(authInfo.submittedAt ?? DateTime.now().subtract(const Duration(days: 1))),
-          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
-          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
+          'title': l10n.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
 
       case AuthenticationStatus.rejected:
-        final reason = authInfo.rejectionReason ?? (l10n?.seller_auth_status_history_rejected_default_reason ?? 'Materials do not meet requirements');
+        final reason = authInfo.rejectionReason ?? (l10n.seller_auth_status_history_rejected_default_reason ?? 'Materials do not meet requirements');
         history.add({
           'time': _formatDateTime(DateTime.now().subtract(const Duration(days: 2))),
-          'title': l10n?.seller_auth_status_history_rejected_title ?? 'Certification Rejected',
-          'description': l10n?.seller_auth_status_history_rejected_desc(typeName, reason) ?? 'Your $typeName certification was rejected. Reason: $reason',
+          'title': l10n.seller_auth_status_history_rejected_title ?? 'Certification Rejected',
+          'description': l10n.seller_auth_status_history_rejected_desc(typeName, reason) ?? 'Your $typeName certification was rejected. Reason: $reason',
         });
         history.add({
           'time': _formatDateTime(authInfo.submittedAt ?? DateTime.now().subtract(const Duration(days: 5))),
-          'title': l10n?.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
-          'description': l10n?.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
+          'title': l10n.seller_auth_status_history_submitted_title ?? 'Certification Submitted',
+          'description': l10n.seller_auth_status_history_submitted_desc(typeName) ?? 'Your $typeName certification has been submitted.',
         });
         break;
 

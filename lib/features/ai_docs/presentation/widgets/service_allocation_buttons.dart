@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../bloc/ai_chat/ai_chat_bloc.dart';
-import '../../domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 class ServiceAllocationButtons extends StatelessWidget {
@@ -20,7 +19,7 @@ class ServiceAllocationButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) =>

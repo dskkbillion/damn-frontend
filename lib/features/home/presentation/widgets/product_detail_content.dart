@@ -17,13 +17,13 @@ class ProductDetailContent extends StatefulWidget {
   final Widget? customActions;
 
   const ProductDetailContent({
-    Key? key,
+    super.key,
     required this.product,
     this.isPreviewMode = false,
     this.onContactSeller,
     this.onBuyNow,
     this.customActions,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductDetailContent> createState() => _ProductDetailContentState();
@@ -181,10 +181,10 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle, color: AppColors.success, size: 14),
+                            const Icon(Icons.check_circle, color: AppColors.success, size: 14),
                             const SizedBox(width: 2),
                             Text(
-                              AppLocalizations.of(context)!.product_detail_verified_label,
+                              AppLocalizations.of(context).product_detail_verified_label,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppColors.success,
                               ),
@@ -225,7 +225,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                   children: [
                     const Icon(Icons.chat_bubble_outline, size: 16),
                     const SizedBox(width: AppDimensions.spacingXs),
-                    Text(AppLocalizations.of(context)!.product_detail_contact_seller),
+                    Text(AppLocalizations.of(context).product_detail_contact_seller),
                   ],
                 ),
               ),
@@ -252,7 +252,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             child: Text(
               widget.isPreviewMode
                   ? '预览模式'
-                  : AppLocalizations.of(context)!.product_detail_published_status,
+                  : AppLocalizations.of(context).product_detail_published_status,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textPrimary,
               ),
@@ -316,8 +316,8 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                               children: [
                                 Text(
                                   _isDescriptionExpanded
-                                    ? AppLocalizations.of(context)!.product_detail_collapse
-                                    : AppLocalizations.of(context)!.product_detail_more,
+                                    ? AppLocalizations.of(context).product_detail_collapse
+                                    : AppLocalizations.of(context).product_detail_more,
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.blue[600],
@@ -348,11 +348,11 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   String _getTierDisplayName(String tierName, BuildContext context) {
     switch (tierName) {
       case 'Basic Tier':
-        return AppLocalizations.of(context)!.product_detail_basic_tier;
+        return AppLocalizations.of(context).product_detail_basic_tier;
       case 'Standard Tier':
-        return AppLocalizations.of(context)!.product_detail_standard_tier;
+        return AppLocalizations.of(context).product_detail_standard_tier;
       case 'Premium Tier':
-        return AppLocalizations.of(context)!.product_detail_premium_tier;
+        return AppLocalizations.of(context).product_detail_premium_tier;
       default:
         return tierName;
     }
@@ -417,7 +417,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
     return Column(
       children: [
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             border: Border(
               bottom: BorderSide(color: AppColors.borderPrimary, width: 0.5),
             ),
@@ -454,7 +454,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context)!.product_detail_delivery_times,
+            Text(AppLocalizations.of(context).product_detail_delivery_times,
                 style: Theme.of(context).textTheme.bodyLarge),
             Text('${variant.editNum}',
                 style: Theme.of(context).textTheme.bodyLarge),
@@ -472,7 +472,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context)!.product_detail_delivery_period,
+            Text(AppLocalizations.of(context).product_detail_delivery_period,
                 style: Theme.of(context).textTheme.bodyLarge),
             Text('${variant.deliveryDay}',
                 style: Theme.of(context).textTheme.bodyLarge),
@@ -648,7 +648,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
       child: ExpansionTile(
         initiallyExpanded: true, // 默认展开
         title: Text(
-          AppLocalizations.of(context)!.product_detail_faq,
+          AppLocalizations.of(context).product_detail_faq,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -735,7 +735,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.product_detail_case_showcase,
+            AppLocalizations.of(context).product_detail_case_showcase,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -750,8 +750,8 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             ),
             child: Center(
               child: Text(
-                AppLocalizations.of(context)!.product_detail_no_cases,
-                style: TextStyle(color: AppColors.textSecondary),
+                AppLocalizations.of(context).product_detail_no_cases,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
           ),
@@ -770,7 +770,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!.product_detail_reviews(widget.product.evaluateNum),
+                AppLocalizations.of(context).product_detail_reviews(widget.product.evaluateNum),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -785,9 +785,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(AppLocalizations.of(context)!.product_detail_view_all,
-                        style: TextStyle(color: AppColors.textTertiary)),
-                    Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
+                    Text(AppLocalizations.of(context).product_detail_view_all,
+                        style: const TextStyle(color: AppColors.textTertiary)),
+                    const Icon(Icons.chevron_right, color: AppColors.textTertiary, size: 20),
                   ],
                 ),
               ),
@@ -801,7 +801,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg),
                 child: Text(
-                  AppLocalizations.of(context)!.product_detail_no_reviews,
+                  AppLocalizations.of(context).product_detail_no_reviews,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textTertiary,
                   ),
@@ -828,7 +828,7 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                         children: [
                           Flexible(
                             child: Text(
-                              AppLocalizations.of(context)!.product_detail_sample_user,
+                              AppLocalizations.of(context).product_detail_sample_user,
                               style: const TextStyle(fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -845,14 +845,14 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                       const SizedBox(height: AppDimensions.spacingXs),
                       Row(
                         children: [
-                          Text(AppLocalizations.of(context)!.product_detail_basic_package,
+                          Text(AppLocalizations.of(context).product_detail_basic_package,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: AppColors.textTertiary,
                               )),
                         ],
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
-                      Text(AppLocalizations.of(context)!.product_detail_sample_review),
+                      Text(AppLocalizations.of(context).product_detail_sample_review),
                     ],
                   ),
                 ),

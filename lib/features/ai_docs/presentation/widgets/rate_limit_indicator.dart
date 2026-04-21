@@ -226,10 +226,10 @@ class RateLimitDetailDialog extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.rule, size: 20, color: AppColors.textSecondary),
-              const SizedBox(width: AppDimensions.spacingSm),
+              SizedBox(width: AppDimensions.spacingSm),
               Text(
                 '使用规则',
                 style: TextStyle(
@@ -301,12 +301,12 @@ class RateLimitDetailDialog extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           ),
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.rocket_launch, size: 20),
-            const SizedBox(width: AppDimensions.spacingSm),
-            const Text(
+            Icon(Icons.rocket_launch, size: 20),
+            SizedBox(width: AppDimensions.spacingSm),
+            Text(
               '升级获取更多次数',
               style: TextStyle(
                 fontSize: 16,
@@ -338,11 +338,11 @@ class RateLimitDetailDialog extends StatelessWidget {
     final secs = seconds % 60;
 
     if (hours > 0) {
-      return '${hours}小时${minutes}分钟';
+      return '$hours小时$minutes分钟';
     } else if (minutes > 0) {
-      return '${minutes}分钟${secs}秒';
+      return '$minutes分钟$secs秒';
     } else {
-      return '${secs}秒';
+      return '$secs秒';
     }
   }
 }

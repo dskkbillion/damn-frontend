@@ -44,7 +44,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.order_detail_invalid_id), backgroundColor: Colors.red),
+            SnackBar(content: Text(AppLocalizations.of(context).order_detail_invalid_id), backgroundColor: Colors.red),
           );
           Navigator.of(context).pop();
         }
@@ -78,8 +78,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     
     if (_orderIdInt == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.order_detail_error)),
-        body: Center(child: Text(AppLocalizations.of(context)!.order_detail_invalid_id)),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).order_detail_error)),
+        body: Center(child: Text(AppLocalizations.of(context).order_detail_invalid_id)),
       );
     }
 
@@ -99,7 +99,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
             builder: (context, state) {
               final extractedOrder = _extractOrder(state);
-              return Text(extractedOrder != null ? AppLocalizations.of(context)!.order_detail_title_with_id(extractedOrder.id) : AppLocalizations.of(context)!.order_detail_title);
+              return Text(extractedOrder != null ? AppLocalizations.of(context).order_detail_title_with_id(extractedOrder.id) : AppLocalizations.of(context).order_detail_title);
             },
           ),
         ),
@@ -165,13 +165,13 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(AppLocalizations.of(context)!.order_detail_load_failed(state.message)),
+            Text(AppLocalizations.of(context).order_detail_load_failed(state.message)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
               },
-              child: Text(AppLocalizations.of(context)!.order_detail_reload),
+              child: Text(AppLocalizations.of(context).order_detail_reload),
             ),
           ],
         ),
@@ -180,7 +180,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     final extractedOrder = _extractOrder(state);
     if (extractedOrder == null) {
-      return Center(child: Text(AppLocalizations.of(context)!.order_detail_unavailable));
+      return Center(child: Text(AppLocalizations.of(context).order_detail_unavailable));
     }
 
     return Stack(

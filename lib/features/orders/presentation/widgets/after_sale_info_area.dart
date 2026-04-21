@@ -15,7 +15,7 @@ class AfterSaleInfoArea extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     String title;
     String message;
     IconData iconData = Icons.support_agent_outlined;
@@ -116,9 +116,9 @@ class AfterSaleInfoArea extends StatelessWidget {
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
      children: [
-       _buildDetailRow(context, AppLocalizations.of(context)!.order_after_sale_refund_status, status, valueColor: Colors.orange[700]),
+       _buildDetailRow(context, AppLocalizations.of(context).order_after_sale_refund_status, status, valueColor: Colors.orange[700]),
        const SizedBox(height: 8),
-       _buildDetailRow(context, AppLocalizations.of(context)!.order_after_sale_refund_amount, amount, valueStyle: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+       _buildDetailRow(context, AppLocalizations.of(context).order_after_sale_refund_amount, amount, valueStyle: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
      ],
    );
  }
@@ -128,7 +128,7 @@ class AfterSaleInfoArea extends StatelessWidget {
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
      children: [
-       Text(AppLocalizations.of(context)!.order_after_sale_reject_reason, style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
+       Text(AppLocalizations.of(context).order_after_sale_reject_reason, style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
        const SizedBox(height: 4),
        Text(reason, style: textTheme.bodyMedium?.copyWith(color: Colors.red[700])), 
      ],

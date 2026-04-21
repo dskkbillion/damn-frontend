@@ -4,24 +4,15 @@ import '../../domain/entities/favorite.dart';
 class FavoriteModel extends Favorite {
   /// 构造函数
   const FavoriteModel({
-    required int id,
-    required String type,
-    required int memberId,
-    required int objectId,
-    Map<String, dynamic>? feature,
-    int? sort,
-    required DateTime createTime,
-    required DateTime updateTime,
-  }) : super(
-          id: id,
-          type: type,
-          memberId: memberId,
-          objectId: objectId,
-          feature: feature,
-          sort: sort,
-          createTime: createTime,
-          updateTime: updateTime,
-        );
+    required super.id,
+    required super.type,
+    required super.memberId,
+    required super.objectId,
+    super.feature,
+    super.sort,
+    required super.createTime,
+    required super.updateTime,
+  });
 
   /// 从JSON创建模型
   factory FavoriteModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +43,7 @@ class FavoriteModel extends Favorite {
   }
 
   /// 创建一个新的FavoriteModel实例，并更新指定的字段
+  @override
   FavoriteModel copyWith({
     int? id,
     String? type,

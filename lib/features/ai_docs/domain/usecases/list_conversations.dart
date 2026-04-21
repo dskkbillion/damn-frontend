@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
-import '../entities/ai_conversation_entity.dart';
 import '../repositories/i_ai_chat_repository.dart';
 import 'get_conversations_usecase.dart'; // 导入GetConversationsResult
 

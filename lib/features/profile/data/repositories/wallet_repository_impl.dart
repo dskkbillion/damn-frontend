@@ -31,7 +31,7 @@ class WalletRepositoryImpl implements IWalletRepository {
         return Left(GeneralFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接'));
+      return const Left(NetworkFailure(message: '无网络连接'));
     }
   }
 
@@ -59,7 +59,23 @@ class WalletRepositoryImpl implements IWalletRepository {
         return Left(GeneralFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接'));
+      return const Left(NetworkFailure(message: '无网络连接'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> submitWithdrawal({required double amount}) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.submitWithdrawal(amount: amount);
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
+      } catch (e) {
+        return Left(GeneralFailure(message: e.toString()));
+      }
+    } else {
+      return const Left(NetworkFailure(message: '无网络连接'));
     }
   }
 }

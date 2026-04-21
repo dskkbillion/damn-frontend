@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart'; // For navigation
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -28,7 +27,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
   static const int _tabCount = 8;
 
   List<String> _getTabLabels(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return [
       l10n.order_seller_tab_all,
       l10n.order_seller_tab_awaiting_start,
@@ -137,7 +136,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             ? Navigator.of(context).pop() 
             : context.go('/seller'), // 如果不能返回，则导航到卖家首页
         ),
-        title: Text(AppLocalizations.of(context)!.order_seller_list_title),
+        title: Text(AppLocalizations.of(context).order_seller_list_title),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -150,7 +149,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
             if (state is SellerOrderListActionFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(AppLocalizations.of(context)!.order_seller_action_failed(state.message)),
+                  content: Text(AppLocalizations.of(context).order_seller_action_failed(state.message)),
                   backgroundColor: Theme.of(context).colorScheme.error,
                   ), 
               );
@@ -211,13 +210,13 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                          children: [
                            Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
                            const SizedBox(height: 16),
-                           Text(AppLocalizations.of(context)!.order_seller_load_failed_msg(state.message)),
+                           Text(AppLocalizations.of(context).order_seller_load_failed_msg(state.message)),
                            const SizedBox(height: 16),
                            ElevatedButton(
                               onPressed: () => context.read<SellerOrderListBloc>().add(
                                   LoadSellerOrdersRequested(statusFilter: _tabStatuses[_tabController.index])
                               ),
-                             child: Text(AppLocalizations.of(context)!.order_list_retry),
+                             child: Text(AppLocalizations.of(context).order_list_retry),
                            ),
                          ],
                        ),
@@ -244,7 +243,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                      ),
                      child: Padding(
                        padding: const EdgeInsets.all(48.0),
-                       child: Text(AppLocalizations.of(context)!.order_seller_empty, style: Theme.of(context).textTheme.bodyLarge),
+                       child: Text(AppLocalizations.of(context).order_seller_empty, style: Theme.of(context).textTheme.bodyLarge),
                      ),
                    ),
                  ),
@@ -285,7 +284,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                                 ),
                               ),
                               title: Text(
-                                AppLocalizations.of(context)!.order_seller_pending_count(_getPendingCount(successState)),
+                                AppLocalizations.of(context).order_seller_pending_count(_getPendingCount(successState)),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -435,7 +434,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     final awaitingStart = state.orders.where((o) => o.state == OrderStatus.awaitingStart).length;
     final awaitingDelivery = state.orders.where((o) => o.state == OrderStatus.awaitingDelivery).length;
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final parts = <String>[];
     if (awaitingStart > 0) parts.add(l10n.order_seller_pending_awaiting_start(awaitingStart));
     if (awaitingDelivery > 0) parts.add(l10n.order_seller_pending_awaiting_delivery(awaitingDelivery));

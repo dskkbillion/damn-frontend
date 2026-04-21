@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For date formatting
+// For date formatting
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -17,11 +17,11 @@ class ChatMessageWidget extends StatelessWidget {
     final alignment = isUser ? Alignment.centerRight : Alignment.centerLeft;
 
     // Define colors based on the new scheme
-    final userBubbleColor = Theme.of(context).colorScheme.surfaceVariant; // User uses AI's old color
+    final userBubbleColor = Theme.of(context).colorScheme.surfaceContainerHighest; // User uses AI's old color
     // AI使用固定的浅灰色，与StreamingMessageBubble保持一致
-    final aiBubbleColor = AppColors.backgroundSecondary; // AI uses backgroundSecondary
+    const aiBubbleColor = AppColors.backgroundSecondary; // AI uses backgroundSecondary
     final userTextColor = Theme.of(context).colorScheme.onSurfaceVariant;
-    final aiTextColor = AppColors.textPrimary; // 与固定浅灰色背景匹配的文本颜色
+    const aiTextColor = AppColors.textPrimary; // 与固定浅灰色背景匹配的文本颜色
 
     final color = isUser ? userBubbleColor : aiBubbleColor;
     final textColor = isUser ? userTextColor : aiTextColor;

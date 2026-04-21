@@ -158,7 +158,7 @@ Future<void> _injectTestCredentials() async {
   
   // 测试账号信息（硬编码）
   // 使用与main_domestic_dev.dart相同的token格式
-  const userToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjllYWQ5YWJjLWMxZmEtNGM3ZC04ODllLWJjM2EzNjg4MDQxNSJ9.GgGSkCr4YG_Hf-stG8NuYFRZeebOO24vkhYQ_i8EVZzvIj9VO3VB7PdnpV6VlM7-TBJydQSdKy1mUI9jwsaKRw";
+  const userToken = "PLACEHOLDER_TOKEN_FOR_DEV";
   const userId = "13819198810";
   const commonUserId = "10319";
   const referId = "10319";

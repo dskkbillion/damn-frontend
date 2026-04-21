@@ -147,7 +147,7 @@ class _EnhancedOrderStatusWidgetState extends State<EnhancedOrderStatusWidget> {
   
   /// 格式化时间间隔
   String _formatDuration(Duration duration) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (duration.isNegative) return l10n.order_countdown_expired;
 
     if (duration.inDays > 0) {
@@ -278,7 +278,7 @@ class _CountdownChipState extends State<CountdownChip> {
   }
   
   String _formatDuration(Duration duration) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (duration.isNegative) return l10n.order_countdown_expired;
 
     if (duration.inDays > 0) {

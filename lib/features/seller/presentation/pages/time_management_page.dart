@@ -14,7 +14,7 @@ class TimeManagementPage extends StatelessWidget {
   static const routeName = '/seller/profile/time-management';
 
   /// 构造函数
-  const TimeManagementPage({Key? key}) : super(key: key);
+  const TimeManagementPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class TimeManagementPage extends StatelessWidget {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!?.time_management_title ?? 'Time Management'),
+            title: Text(AppLocalizations.of(context).time_management_title ?? 'Time Management'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -58,7 +58,7 @@ class TimeManagementPage extends StatelessWidget {
 /// 时间管理页面主体
 class TimeManagementBody extends StatelessWidget {
   /// 构造函数
-  const TimeManagementBody({Key? key}) : super(key: key);
+  const TimeManagementBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class TimeManagementBody extends StatelessWidget {
           );
         } else if (state is TimeManagementLoaded) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!?.time_management_settings_saved ?? '设置已保存')),
+            SnackBar(content: Text(AppLocalizations.of(context).time_management_settings_saved ?? '设置已保存')),
           );
         }
       },
@@ -100,13 +100,13 @@ class TimeManagementBody extends StatelessWidget {
              child: Column(
                mainAxisAlignment: MainAxisAlignment.center,
                children: [
-                 Text(AppLocalizations.of(context)!?.time_management_load_failed ?? 'Load Failed'),
+                 Text(AppLocalizations.of(context).time_management_load_failed ?? 'Load Failed'),
                  const SizedBox(height: 8),
                  Text(state.message, style: const TextStyle(color: AppColors.error)),
                  const SizedBox(height: 16),
                  ElevatedButton(
                    onPressed: () => context.read<TimeManagementBloc>().add(LoadTimeSettings()),
-                   child: Text(AppLocalizations.of(context)!?.time_management_retry ?? 'Retry'),
+                   child: Text(AppLocalizations.of(context).time_management_retry ?? 'Retry'),
                  )
                ],
              ),
@@ -114,7 +114,7 @@ class TimeManagementBody extends StatelessWidget {
         }
 
         // Fallback for any other unhandled state
-        return Center(child: Text(AppLocalizations.of(context)!?.time_management_unknown_status ?? 'Unknown Status'));
+        return Center(child: Text(AppLocalizations.of(context).time_management_unknown_status ?? 'Unknown Status'));
       },
     );
   }
@@ -152,7 +152,7 @@ class TimeManagementBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              AppLocalizations.of(context)!?.time_management_current_status ?? 'Current Status',
+              AppLocalizations.of(context).time_management_current_status ?? 'Current Status',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -162,8 +162,8 @@ class TimeManagementBody extends StatelessWidget {
               children: [
                 Text(
                   settings.isOnline 
-                    ? (AppLocalizations.of(context)!?.time_management_online ?? 'Online')
-                    : (AppLocalizations.of(context)!?.time_management_offline ?? 'Offline'),
+                    ? (AppLocalizations.of(context).time_management_online ?? 'Online')
+                    : (AppLocalizations.of(context).time_management_offline ?? 'Offline'),
                   style: TextStyle(
                     color: settings.isOnline ? AppColors.success : AppColors.textTertiary,
                     fontSize: 14,
@@ -173,7 +173,7 @@ class TimeManagementBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Switch(
                   value: settings.isOnline,
-                  activeColor: AppColors.success,
+                  activeThumbColor: AppColors.success,
                   onChanged: isUpdating 
                       ? null 
                       : (value) {
@@ -202,8 +202,8 @@ class TimeManagementBody extends StatelessWidget {
           children: [
             Text(
               isOnline 
-                ? (AppLocalizations.of(context)!?.time_management_online_status_description ?? 'Online Status Description')
-                : (AppLocalizations.of(context)!?.time_management_offline_status_description ?? 'Offline Status Description'),
+                ? (AppLocalizations.of(context).time_management_online_status_description ?? 'Online Status Description')
+                : (AppLocalizations.of(context).time_management_offline_status_description ?? 'Offline Status Description'),
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -212,8 +212,8 @@ class TimeManagementBody extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               isOnline 
-                  ? (AppLocalizations.of(context)!?.time_management_online_description ?? 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.')
-                  : (AppLocalizations.of(context)!?.time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
+                  ? (AppLocalizations.of(context).time_management_online_description ?? 'You are currently online. Buyers can send you messages and you will receive notifications for new messages. Please ensure timely responses to buyer messages as maintaining a good response rate helps improve your service quality rating.')
+                  : (AppLocalizations.of(context).time_management_offline_description ?? 'You are currently offline. Buyers can still send you messages but the system will inform them that you are temporarily unavailable. You will still receive notifications for new messages but may not be able to respond immediately. Staying offline for extended periods may affect your order efficiency.'),
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textTertiary,

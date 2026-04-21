@@ -5,12 +5,12 @@ import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入生成的国际化类
 
 class LanguageSettingsPage extends ConsumerWidget {
-  const LanguageSettingsPage({Key? key}) : super(key: key);
+  const LanguageSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentLocale = ref.watch(localeProvider);
-    final appLocalizations = AppLocalizations.of(context)!; // 使用AppLocalizations.of(context)!获取当前语言的字符串
+    final appLocalizations = AppLocalizations.of(context); // 使用AppLocalizations.of(context)!获取当前语言的字符串
     
     return Scaffold(
       appBar: AppBar(

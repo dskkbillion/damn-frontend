@@ -96,7 +96,7 @@ class FileUploadService implements IFileUploadService {
           return Left(ServerFailure(message: data['msg'] ?? '文件上传失败'));
         }
       } else {
-        return Left(ServerFailure(message: '文件上传失败'));
+        return const Left(ServerFailure(message: '文件上传失败'));
       }
     } on DioException catch (e) {
       AppLogger.d('文件上传失败: ${e.message}');
@@ -159,7 +159,7 @@ class FileUploadService implements IFileUploadService {
           return Left(ServerFailure(message: data['msg'] ?? '文件上传失败'));
         }
       } else {
-        return Left(ServerFailure(message: '文件上传失败'));
+        return const Left(ServerFailure(message: '文件上传失败'));
       }
     } on DioException catch (e) {
       AppLogger.d('文件上传失败: ${e.message}');

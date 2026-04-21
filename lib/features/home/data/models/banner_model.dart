@@ -5,20 +5,13 @@ import '../../domain/entities/banner.dart';
 /// Banner 模型，用于序列化和反序列化 API 响应
 class BannerModel extends Banner {
   const BannerModel({
-    required String id,
-    required String imageUrl,
-    required String targetType,
-    required String targetValue,
-    required String createTime,
-    required String updateTime,
-  }) : super(
-          id: id,
-          imageUrl: imageUrl,
-          targetType: targetType,
-          targetValue: targetValue,
-          createTime: createTime,
-          updateTime: updateTime,
-        );
+    required super.id,
+    required super.imageUrl,
+    required super.targetType,
+    required super.targetValue,
+    required super.createTime,
+    required super.updateTime,
+  });
 
   /// 从 JSON 创建 BannerModel 实例
   factory BannerModel.fromJson(Map<String, dynamic> json) {

@@ -18,12 +18,10 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_notification_as_read_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/mark_all_notifications_as_read_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_unread_notification_count_usecase.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/repositories/seller_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_remote_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/seller_local_data_source_impl.dart';
 import 'package:dskk_flutter_refactor/core/services/notification_navigation_service.dart';
-import 'package:dskk_flutter_refactor/app/app_mode.dart';
 
 /// 通知列表页面 - 共享于买家和卖家模式
 /// 
@@ -81,10 +79,10 @@ class NotificationListPage extends ConsumerWidget {
           markNotificationAsReadUseCase,
           markAllNotificationsAsReadUseCase,
           getUnreadNotificationCountUseCase,
-        )..add(LoadNotificationList()), // 加载初始数据
+        )..add(const LoadNotificationList()), // 加载初始数据
         child: Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!?.notification_center_title ?? 'Notification Center'),
+            title: Text(AppLocalizations.of(context).notification_center_title ?? 'Notification Center'),
             centerTitle: true,
           ),
           body: const NotificationListContent(),
@@ -94,11 +92,11 @@ class NotificationListPage extends ConsumerWidget {
       AppLogger.d('Error creating NotificationListBloc: $e');
       return Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!?.notification_center_title ?? 'Notification Center'),
+          title: Text(AppLocalizations.of(context).notification_center_title ?? 'Notification Center'),
           centerTitle: true,
         ),
         body: Center(
-          child: Text(AppLocalizations.of(context)!?.notification_load_failed(e.toString()) ?? 'Failed to load notification center: $e'),
+          child: Text(AppLocalizations.of(context).notification_load_failed(e.toString()) ?? 'Failed to load notification center: $e'),
         ),
       );
     }
@@ -108,7 +106,7 @@ class NotificationListPage extends ConsumerWidget {
 /// 通知列表内容组件
 class NotificationListContent extends StatefulWidget {
   /// 构造函数
-  const NotificationListContent({Key? key}) : super(key: key);
+  const NotificationListContent({super.key});
 
   @override
   State<NotificationListContent> createState() => _NotificationListContentState();
@@ -169,11 +167,11 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           unselectedLabelColor: Colors.grey,
           indicatorColor: Theme.of(context).primaryColor,
           tabs: [
-            Tab(text: AppLocalizations.of(context)!?.notification_tab_all ?? 'All'),
-            Tab(text: AppLocalizations.of(context)!?.notification_tab_order ?? 'Orders'),
-            Tab(text: AppLocalizations.of(context)!?.notification_tab_system ?? 'System'),
-            Tab(text: AppLocalizations.of(context)!?.notification_tab_refund ?? 'After-sales'),
-            Tab(text: AppLocalizations.of(context)!?.notification_tab_message ?? 'Messages'),
+            Tab(text: AppLocalizations.of(context).notification_tab_all ?? 'All'),
+            Tab(text: AppLocalizations.of(context).notification_tab_order ?? 'Orders'),
+            Tab(text: AppLocalizations.of(context).notification_tab_system ?? 'System'),
+            Tab(text: AppLocalizations.of(context).notification_tab_refund ?? 'After-sales'),
+            Tab(text: AppLocalizations.of(context).notification_tab_message ?? 'Messages'),
           ],
         ),
         Expanded(
@@ -206,7 +204,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                             ),
                           );
                         },
-                        child: Text(AppLocalizations.of(context)!?.notification_retry ?? 'Retry'),
+                        child: Text(AppLocalizations.of(context).notification_retry ?? 'Retry'),
                       ),
                     ],
                   ),
@@ -221,8 +219,8 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 return _buildNotificationList(context, state);
               }
               
-              final l10n = AppLocalizations.of(context)!;
-              return Center(child: Text(l10n?.order_delivery_load_failed ?? 'Load failed'));
+              final l10n = AppLocalizations.of(context);
+              return Center(child: Text(l10n.order_delivery_load_failed ?? 'Load failed'));
             },
           ),
         ),
@@ -250,35 +248,35 @@ class _NotificationListContentState extends State<NotificationListContent> with 
   
   /// 构建空状态
   Widget _buildEmptyState(NotificationType? type) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     String message;
     if (type == null) {
-      message = l10n?.notification_empty_all ?? 'No notifications';
+      message = l10n.notification_empty_all ?? 'No notifications';
     } else {
       switch (type) {
         case NotificationType.order:
-          message = l10n?.notification_empty_order ?? 'No order notifications';
+          message = l10n.notification_empty_order ?? 'No order notifications';
           break;
         case NotificationType.system:
-          message = l10n?.notification_empty_system ?? 'No system notifications';
+          message = l10n.notification_empty_system ?? 'No system notifications';
           break;
         case NotificationType.refund:
-          message = l10n?.notification_empty_refund ?? 'No after-sales notifications';
+          message = l10n.notification_empty_refund ?? 'No after-sales notifications';
           break;
         case NotificationType.message:
-          message = l10n?.notification_empty_message ?? 'No message notifications';
+          message = l10n.notification_empty_message ?? 'No message notifications';
           break;
         case NotificationType.review:
-          message = l10n?.notification_empty_review ?? 'No review notifications';
+          message = l10n.notification_empty_review ?? 'No review notifications';
           break;
         case NotificationType.authentication:
-          message = l10n?.notification_empty_authentication ?? 'No authentication notifications';
+          message = l10n.notification_empty_authentication ?? 'No authentication notifications';
           break;
         case NotificationType.other:
-          message = l10n?.notification_empty_other ?? 'No other notifications';
+          message = l10n.notification_empty_other ?? 'No other notifications';
           break;
         default:
-          message = l10n?.notification_empty_generic ?? 'No notifications';
+          message = l10n.notification_empty_generic ?? 'No notifications';
       }
     }
     
@@ -296,7 +294,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 LoadNotificationList(type: type, refresh: true),
               );
             },
-            child: Text(AppLocalizations.of(context)!?.notification_refresh ?? 'Refresh'),
+            child: Text(AppLocalizations.of(context).notification_refresh ?? 'Refresh'),
           ),
         ],
       ),
@@ -350,13 +348,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
     }
     
     // 处理标题和内容，确保它们不是JSON格式字符串
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     String displayTitle = notification.title;
     String displayContent = notification.content;
     
     // 如果标题或内容仍包含JSON格式，尝试提取
     if (displayTitle.contains('{title:') || displayTitle.contains('content:')) {
-      displayTitle = l10n?.notification_detail_title ?? 'Notification Details';
+      displayTitle = l10n.notification_detail_title ?? 'Notification Details';
     }
     
     showDialog(
@@ -383,13 +381,13 @@ class _NotificationListContentState extends State<NotificationListContent> with 
                 // 根据通知类型跳转到相应页面
                 _navigateToRelatedPage(context, notification);
               },
-              child: Text(AppLocalizations.of(context)!?.notification_detail_view ?? 'View Details'),
+              child: Text(AppLocalizations.of(context).notification_detail_view ?? 'View Details'),
             ),
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
             },
-            child: Text(AppLocalizations.of(context)!?.notification_detail_close ?? 'Close'),
+            child: Text(AppLocalizations.of(context).notification_detail_close ?? 'Close'),
           ),
         ],
       ),
@@ -434,10 +432,9 @@ class _NotificationItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const _NotificationItem({
-    Key? key,
     required this.notification,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -463,7 +460,7 @@ class _NotificationItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           notification.title.startsWith('{') 
-                            ? AppLocalizations.of(context)!?.notification_default_title ?? 'Notification'
+                            ? AppLocalizations.of(context).notification_default_title ?? 'Notification'
                             : notification.title,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
@@ -485,7 +482,7 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.content.startsWith('{') 
-                      ? AppLocalizations.of(context)!?.notification_click_to_view ?? 'Click to view details'
+                      ? AppLocalizations.of(context).notification_click_to_view ?? 'Click to view details'
                       : notification.content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -563,7 +560,7 @@ class _NotificationItem extends StatelessWidget {
 
   /// 格式化日期时间
   String _formatDateTime(BuildContext context, DateTime dateTime) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final now = DateTime.now();
     final difference = now.difference(dateTime);
     
@@ -571,15 +568,15 @@ class _NotificationItem extends StatelessWidget {
       return DateFormat('yyyy-MM-dd').format(dateTime);
     } else if (difference.inDays > 30) {
       final months = difference.inDays ~/ 30;
-      return l10n?.notification_time_months_ago(months) ?? '$months months ago';
+      return l10n.notification_time_months_ago(months) ?? '$months months ago';
     } else if (difference.inDays > 0) {
-      return l10n?.notification_time_days_ago(difference.inDays) ?? '${difference.inDays} days ago';
+      return l10n.notification_time_days_ago(difference.inDays) ?? '${difference.inDays} days ago';
     } else if (difference.inHours > 0) {
-      return l10n?.notification_time_hours_ago(difference.inHours) ?? '${difference.inHours} hours ago';
+      return l10n.notification_time_hours_ago(difference.inHours) ?? '${difference.inHours} hours ago';
     } else if (difference.inMinutes > 0) {
-      return l10n?.notification_time_minutes_ago(difference.inMinutes) ?? '${difference.inMinutes} minutes ago';
+      return l10n.notification_time_minutes_ago(difference.inMinutes) ?? '${difference.inMinutes} minutes ago';
     } else {
-      return l10n?.notification_time_just_now ?? 'Just now';
+      return l10n.notification_time_just_now ?? 'Just now';
     }
   }
 } 

@@ -10,11 +10,11 @@ class ReviewSummaryCard extends StatelessWidget {
   final Map<int, int> scoreDistribution;
 
   const ReviewSummaryCard({
-    Key? key,
+    super.key,
     required this.averageScore,
     required this.totalReviews,
     required this.scoreDistribution,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +23,11 @@ class ReviewSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -52,7 +52,7 @@ class ReviewSummaryCard extends StatelessWidget {
                     _buildRatingStars(averageScore),
                     const SizedBox(height: AppDimensions.spacingSm),
                     Text(
-                      AppLocalizations.of(context)!.product_reviews_total_count(totalReviews),
+                      AppLocalizations.of(context).product_reviews_total_count(totalReviews),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),

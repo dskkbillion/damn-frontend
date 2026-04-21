@@ -139,7 +139,7 @@ class SimpleMockOrderDataSource {
           productName: productName,
           skuId: 200 + orderId,
           skuName: '标准版',
-          imageUrl: 'https://picsum.photos/200/200?random=${orderId}',
+          imageUrl: 'https://picsum.photos/200/200?random=$orderId',
           quantity: 1,
           price: price,
           totalPrice: price,
@@ -147,7 +147,7 @@ class SimpleMockOrderDataSource {
           editNum: 2, // 可修改2次
         ),
       ],
-      shippingAddress: Address(
+      shippingAddress: const Address(
         recipientName: '测试用户',
         phone: '13800138000',
         areaId: '440305', // 南山区的区域代码
@@ -164,7 +164,7 @@ class SimpleMockOrderDataSource {
         payTime: payTime,
         payChannelCode: isPaid ? (orderId % 2 == 0 ? 'wx_lite' : 'alipay_app') : null,
       ),
-      shippingInfo: OrderShippingInfo(
+      shippingInfo: const OrderShippingInfo(
         logisticsId: null,
         logisticsNo: null,
         deliveryTime: null,

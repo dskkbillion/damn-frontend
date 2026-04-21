@@ -13,11 +13,9 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_paym
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_price_summary.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_creation_result.dart'; // 导入OrderCreationResult
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
-import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_requirements_use_case.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_materials.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_delivery.dart';
-import 'package:injectable/injectable.dart' hide Order;
 
 // TODO: Consider if @LazySingleton or @Injectable is needed for this mock in preview
 // @LazySingleton(as: IOrderRepository, env: [Environment.dev]) // Example if using env
@@ -62,7 +60,7 @@ class MockSellerOrderRepository implements IOrderRepository {
   void _generateMockSellerOrders() {
     _mockSellerOrders.clear(); // Clear previous data if regenerating
     // Define some mock items first
-    final item1 = OrderItem(
+    const item1 = OrderItem(
       id: 201,
       orderId: 101, // Will be set later if needed, keep track
       productId: 301,
@@ -74,7 +72,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       price: 150.00, // Correct field name
       totalPrice: 150.00, // Correct field name
     );
-     final item2 = OrderItem(
+     const item2 = OrderItem(
       id: 202,
       orderId: 102,
       productId: 302,
@@ -86,7 +84,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       price: 88.00,
       totalPrice: 88.00,
     );
-     final item3 = OrderItem(
+     const item3 = OrderItem(
       id: 203,
       orderId: 103,
       productId: 303,
@@ -98,7 +96,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       price: 250.00,
       totalPrice: 250.00,
     );
-      final item4 = OrderItem(
+      const item4 = OrderItem(
       id: 204,
       orderId: 104,
       productId: 304,
@@ -111,7 +109,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       totalPrice: 500.00,
       // evaluateState: 1, // This field is not in OrderItem definition
     );
-     final item5 = OrderItem(
+     const item5 = OrderItem(
       id: 205,
       orderId: 105,
       productId: 305,
@@ -132,7 +130,7 @@ class MockSellerOrderRepository implements IOrderRepository {
         orderSn: 'SELLER_SN_101',
         state: OrderStatus.awaitingStart,
         orderType: "NORMAL", // Use String?
-        items: [item1],
+        items: const [item1],
         shippingAddress: _createMockAddress(101),
         priceSummary: _createMockPriceSummary(item1.totalPrice),
         paymentInfo: _createMockPaymentInfo('SELLER_SN_101', true),
@@ -146,7 +144,7 @@ class MockSellerOrderRepository implements IOrderRepository {
         orderSn: 'SELLER_SN_102',
         state: OrderStatus.awaitingDelivery,
         orderType: "NORMAL",
-        items: [item2],
+        items: const [item2],
         shippingAddress: _createMockAddress(102),
         priceSummary: _createMockPriceSummary(item2.totalPrice),
         paymentInfo: _createMockPaymentInfo('SELLER_SN_102', true),
@@ -159,7 +157,7 @@ class MockSellerOrderRepository implements IOrderRepository {
         orderSn: 'SELLER_SN_103',
         state: OrderStatus.awaitingConfirmation,
         orderType: "NORMAL",
-        items: [item3],
+        items: const [item3],
         shippingAddress: _createMockAddress(103),
         priceSummary: _createMockPriceSummary(item3.totalPrice),
         paymentInfo: _createMockPaymentInfo('SELLER_SN_103', true),
@@ -172,7 +170,7 @@ class MockSellerOrderRepository implements IOrderRepository {
         orderSn: 'SELLER_SN_104',
         state: OrderStatus.orderCompleted,
         orderType: "NORMAL",
-        items: [item4],
+        items: const [item4],
         shippingAddress: _createMockAddress(104),
         priceSummary: _createMockPriceSummary(item4.totalPrice),
         paymentInfo: _createMockPaymentInfo('SELLER_SN_104', true),
@@ -186,7 +184,7 @@ class MockSellerOrderRepository implements IOrderRepository {
         orderSn: 'SELLER_SN_105',
         state: OrderStatus.canceled,
         orderType: "NORMAL",
-        items: [item5],
+        items: const [item5],
         shippingAddress: _createMockAddress(105),
         priceSummary: _createMockPriceSummary(item5.totalPrice),
         paymentInfo: _createMockPaymentInfo('SELLER_SN_105', false),
@@ -242,8 +240,8 @@ class MockSellerOrderRepository implements IOrderRepository {
     // Filter by keyword (simple search in product name or SN)
     if (keyword != null && keyword.isNotEmpty) {
       filteredOrders = filteredOrders.where((order) {
-        final orderSnMatch = order.orderSn?.toLowerCase().contains(keyword.toLowerCase()) ?? false;
-        final itemNameMatch = order.items?.any((item) => item.productName.toLowerCase().contains(keyword.toLowerCase())) ?? false;
+        final orderSnMatch = order.orderSn.toLowerCase().contains(keyword.toLowerCase()) ?? false;
+        final itemNameMatch = order.items.any((item) => item.productName.toLowerCase().contains(keyword.toLowerCase())) ?? false;
         return orderSnMatch || itemNameMatch;
       }).toList();
     }
@@ -274,7 +272,7 @@ class MockSellerOrderRepository implements IOrderRepository {
     if (order != null) {
       return Right(order);
     } else {
-      return Left(ServerFailure(message: 'Mock Seller: Order not found'));
+      return const Left(ServerFailure(message: 'Mock Seller: Order not found'));
     }
   }
 
@@ -291,7 +289,7 @@ class MockSellerOrderRepository implements IOrderRepository {
       return const Right(null);
     } else {
       AppLogger.d('[MockSellerOrderRepository] Cannot confirm acceptance for order $orderId (state: ${order?.state}).');
-      return Left(ServerFailure(message: 'Mock Seller: Order not in awaitingStart state'));
+      return const Left(ServerFailure(message: 'Mock Seller: Order not in awaitingStart state'));
     }
   }
 
@@ -310,12 +308,12 @@ class MockSellerOrderRepository implements IOrderRepository {
          AppLogger.d('[MockSellerOrderRepository] Order ${params.orderId} status changed to sellerSupplementaryMaterials.');
        } else {
          AppLogger.d('[MockSellerOrderRepository] Unknown demand type: ${params.type}');
-         return Left(ServerFailure(message: 'Mock Seller: Invalid demand type'));
+         return const Left(ServerFailure(message: 'Mock Seller: Invalid demand type'));
        }
        return const Right(null);
      } else {
        AppLogger.d('[MockSellerOrderRepository] Order ${params.orderId} not found for adding demand.');
-       return Left(ServerFailure(message: 'Mock Seller: Order not found'));
+       return const Left(ServerFailure(message: 'Mock Seller: Order not found'));
      }
   }
 
@@ -338,7 +336,7 @@ class MockSellerOrderRepository implements IOrderRepository {
        return const Right(null);
      } else {
        AppLogger.d('[MockSellerOrderRepository] Cannot deliver order ${params.orderId} (state: ${order?.state}).');
-       return Left(ServerFailure(message: 'Mock Seller: Order not in correct state for delivery'));
+       return const Left(ServerFailure(message: 'Mock Seller: Order not in correct state for delivery'));
      }
   }
 
@@ -354,7 +352,7 @@ class MockSellerOrderRepository implements IOrderRepository {
        return const Right(null);
      } else {
         AppLogger.d('[MockSellerOrderRepository] Order $orderId not found for seller deletion.');
-       return Left(ServerFailure(message: 'Mock Seller: Order not found for deletion'));
+       return const Left(ServerFailure(message: 'Mock Seller: Order not found for deletion'));
      }
   }
 
@@ -369,7 +367,7 @@ class MockSellerOrderRepository implements IOrderRepository {
        return const Right(null);
      } else {
        AppLogger.d('[MockSellerOrderRepository] Cannot invite evaluation for order $orderId (state: ${order?.state}).');
-       return Left(ServerFailure(message: 'Mock Seller: Order not completed'));
+       return const Left(ServerFailure(message: 'Mock Seller: Order not completed'));
      }
   }
 
@@ -380,19 +378,19 @@ class MockSellerOrderRepository implements IOrderRepository {
   Future<Either<Failure, void>> cancelOrder(int orderId) async {
     AppLogger.d('[MockSellerOrderRepository] cancelOrder called (Seller cannot initiate). Returning failure.');
     // Seller typically cannot cancel an order this way, buyer initiates cancellation or seller uses 'addOrderDemand' for refusal.
-    return Left(ActionNotAllowedFailure(message: 'Mock Seller: Seller cannot directly cancel order. Use refusal demand.'));
+    return const Left(ActionNotAllowedFailure(message: 'Mock Seller: Seller cannot directly cancel order. Use refusal demand.'));
   }
 
   @override
   Future<Either<Failure, void>> confirmOrderReceipt(int orderId) async {
     AppLogger.d('[MockSellerOrderRepository] confirmOrderReceipt called (Seller action not applicable). Returning failure.');
-    return Left(ActionNotAllowedFailure(message: 'Mock Seller: This action is for buyers.'));
+    return const Left(ActionNotAllowedFailure(message: 'Mock Seller: This action is for buyers.'));
   }
 
   @override
   Future<Either<Failure, void>> deleteOrder(int orderId) async {
      AppLogger.d('[MockSellerOrderRepository] deleteOrder called (Seller uses deleteSellerOrderRecord). Returning failure.');
-    return Left(ActionNotAllowedFailure(message: 'Mock Seller: Use deleteSellerOrderRecord for seller view deletion.'));
+    return const Left(ActionNotAllowedFailure(message: 'Mock Seller: Use deleteSellerOrderRecord for seller view deletion.'));
   }
 
   @override
@@ -403,19 +401,19 @@ class MockSellerOrderRepository implements IOrderRepository {
       required bool isAnonymous,
       required List<String> pictures}) async {
      AppLogger.d('[MockSellerOrderRepository] addEvaluation called (Seller action not applicable). Returning failure.');
-     return Left(ActionNotAllowedFailure(message: 'Mock Seller: Evaluation is added by buyers.'));
+     return const Left(ActionNotAllowedFailure(message: 'Mock Seller: Evaluation is added by buyers.'));
   }
 
   @override
   Future<Either<Failure, void>> submitRequirements(SubmitRequirementsParams params) async {
      AppLogger.d('[MockSellerOrderRepository] submitRequirements called (Seller action not applicable). Returning failure.');
-     return Left(ActionNotAllowedFailure(message: 'Mock Seller: Requirements are submitted by buyers.'));
+     return const Left(ActionNotAllowedFailure(message: 'Mock Seller: Requirements are submitted by buyers.'));
   }
 
   @override
   Future<Either<Failure, void>> saveRequirementDraft(/* DraftParams params */) async {
      AppLogger.d('[MockSellerOrderRepository] saveRequirementDraft called (Seller action not applicable). Returning failure.');
-    return Left(ActionNotAllowedFailure(message: 'Mock Seller: Drafts are saved by buyers.'));
+    return const Left(ActionNotAllowedFailure(message: 'Mock Seller: Drafts are saved by buyers.'));
   }
 
   @override
@@ -471,6 +469,7 @@ class MockSellerOrderRepository implements IOrderRepository {
 
 // Optional: Define ActionNotAllowedFailure if not already present
 class ActionNotAllowedFailure extends Failure {
+  @override
   final String message;
   const ActionNotAllowedFailure({required this.message}) : super(message: message);
   @override

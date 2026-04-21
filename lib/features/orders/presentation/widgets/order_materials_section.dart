@@ -21,7 +21,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     return BlocBuilder<OrderDetailBloc, OrderDetailState>(
       builder: (context, state) {
@@ -39,11 +39,11 @@ class OrderMaterialsSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: AppColors.borderSecondary,
                 blurRadius: 10,
-                offset: const Offset(0, 2),
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -53,7 +53,7 @@ class OrderMaterialsSection extends StatelessWidget {
               // 标题部分
               Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
                       color: AppColors.borderPrimary,
@@ -70,7 +70,7 @@ class OrderMaterialsSection extends StatelessWidget {
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Text(
-                      l10n?.materialsInfo ?? 'Materials Info',
+                      l10n.materialsInfo ?? 'Materials Info',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -86,7 +86,7 @@ class OrderMaterialsSection extends StatelessWidget {
                   children: [
                     // 买家提交的材料
                     Text(
-                      l10n?.buyerSubmittedMaterials ?? 'Buyer Submitted Materials',
+                      l10n.buyerSubmittedMaterials ?? 'Buyer Submitted Materials',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -100,7 +100,7 @@ class OrderMaterialsSection extends StatelessWidget {
                         order.state == OrderStatus.orderCompleted) ...[
                       const SizedBox(height: AppDimensions.spacingLg),
                       Text(
-                        l10n?.sellerDeliveryContent ?? 'Seller Delivery Content',
+                        l10n.sellerDeliveryContent ?? 'Seller Delivery Content',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -120,7 +120,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建买家材料内容
   Widget _buildBuyerMaterialsContent(BuildContext context, List<OrderMaterials>? materials) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     if (materials == null || materials.isEmpty) {
       return Container(
@@ -132,8 +132,8 @@ class OrderMaterialsSection extends StatelessWidget {
           border: Border.all(color: AppColors.borderPrimary),
         ),
         child: Text(
-          l10n?.noBuyerMaterials ?? 'No buyer materials submitted',
-          style: TextStyle(color: AppColors.textTertiary),
+          l10n.noBuyerMaterials ?? 'No buyer materials submitted',
+          style: const TextStyle(color: AppColors.textTertiary),
         ),
       );
     }
@@ -165,8 +165,8 @@ class OrderMaterialsSection extends StatelessWidget {
             // 显示附件文件（可预览和下载）
             if (material.files.isNotEmpty) ...[
               Text(
-                l10n?.attachments ?? 'Attachments',
-                style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                l10n.attachments ?? 'Attachments',
+                style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
               ),
               const SizedBox(height: AppDimensions.spacingSm),
               ...material.files.map((fileUrl) => DeliveryFileViewer(
@@ -182,7 +182,7 @@ class OrderMaterialsSection extends StatelessWidget {
 
   /// 构建卖家交付内容
   Widget _buildSellerDeliveriesContent(BuildContext context, List<OrderDelivery>? deliveries) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     if (deliveries == null || deliveries.isEmpty) {
       return Container(
@@ -194,8 +194,8 @@ class OrderMaterialsSection extends StatelessWidget {
           border: Border.all(color: AppColors.borderPrimary),
         ),
         child: Text(
-          l10n?.noSellerDelivery ?? 'No seller delivery content',
-          style: TextStyle(color: AppColors.textTertiary),
+          l10n.noSellerDelivery ?? 'No seller delivery content',
+          style: const TextStyle(color: AppColors.textTertiary),
         ),
       );
     }
@@ -217,8 +217,8 @@ class OrderMaterialsSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${l10n?.deliveryDescription ?? 'Delivery Description'}: ',
-                  style: TextStyle(
+                  '${l10n.deliveryDescription ?? 'Delivery Description'}: ',
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
@@ -235,8 +235,8 @@ class OrderMaterialsSection extends StatelessWidget {
             if (delivery.files.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.spacingMd),
               Text(
-                l10n?.deliveryFiles ?? 'Delivery Files',
-                style: TextStyle(
+                l10n.deliveryFiles ?? 'Delivery Files',
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,

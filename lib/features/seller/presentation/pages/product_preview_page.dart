@@ -6,10 +6,8 @@ import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_logged_in_user.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
-import 'package:go_router/go_router.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -20,10 +18,10 @@ class ProductPreviewPage extends StatefulWidget {
   final ExtendedProductFormData? formData; // 从编辑页面传入的表单数据
 
   const ProductPreviewPage({
-    Key? key,
+    super.key,
     this.productId,
     this.formData,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductPreviewPage> createState() => _ProductPreviewPageState();
@@ -56,7 +54,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     // Set default value first
     if (mounted) {
       setState(() {
-        _currentUserName = AppLocalizations.of(context)?.product_preview_current_seller ?? 'Current Seller';
+        _currentUserName = AppLocalizations.of(context).product_preview_current_seller ?? 'Current Seller';
       });
     }
     try {
@@ -81,7 +79,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               (userInfo) {
                 if (mounted) {
                   setState(() {
-                    _currentUserName = userInfo.nickName ?? (AppLocalizations.of(context)?.product_preview_seller_user ?? 'Seller User');
+                    _currentUserName = userInfo.nickName ?? (AppLocalizations.of(context).product_preview_seller_user ?? 'Seller User');
                   });
                   print('[PreviewPage] Got user name: $_currentUserName');
                 }
@@ -206,7 +204,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)?.seller_product_preview_title ?? 'Product Preview'),
+        title: Text(AppLocalizations.of(context).seller_product_preview_title ?? 'Product Preview'),
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
@@ -220,7 +218,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               Navigator.of(context).pop();
             },
             icon: const Icon(Icons.edit),
-            label: Text(AppLocalizations.of(context)?.seller_product_preview_back_to_edit ?? 'Back to Edit'),
+            label: Text(AppLocalizations.of(context).seller_product_preview_back_to_edit ?? 'Back to Edit'),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFFBF7D2A),
             ),
@@ -234,7 +232,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               bloc: _bloc,
               builder: (context, state) {
                 if (state.isLoading) {
-                  return LoadingState(text: AppLocalizations.of(context)?.seller_product_preview_loading ?? 'Loading product info...');
+                  return LoadingState(text: AppLocalizations.of(context).seller_product_preview_loading ?? 'Loading product info...');
                 }
                 
                 if (state.hasError) {
@@ -245,7 +243,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                         const Icon(Icons.error_outline, size: 48, color: Colors.red),
                         const SizedBox(height: 16),
                         Text(
-                          state.errorMessage ?? (AppLocalizations.of(context)?.seller_product_preview_load_failed ?? 'Failed to load product info'),
+                          state.errorMessage ?? (AppLocalizations.of(context).seller_product_preview_load_failed ?? 'Failed to load product info'),
                           style: const TextStyle(color: Colors.red),
                         ),
                         const SizedBox(height: 16),
@@ -256,7 +254,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                               _bloc.add(InitializeProductEdit(productId: productIdInt));
                             }
                           },
-                          child: Text(AppLocalizations.of(context)?.seller_product_preview_retry ?? 'Retry'),
+                          child: Text(AppLocalizations.of(context).seller_product_preview_retry ?? 'Retry'),
                         ),
                       ],
                     ),
@@ -265,7 +263,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                 
                 // 如果没有错误但产品为空，显示加载中
                 if (state.product == null) {
-                  return LoadingState(text: AppLocalizations.of(context)?.seller_product_preview_fetching ?? 'Fetching product data...');
+                  return LoadingState(text: AppLocalizations.of(context).seller_product_preview_fetching ?? 'Fetching product data...');
                 }
                 
                 // 从状态中的产品数据构建ProductDetail
@@ -407,7 +405,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              AppLocalizations.of(context)?.seller_product_preview_hint ?? 'This is preview mode. Buyers will see a similar interface.',
+              AppLocalizations.of(context).seller_product_preview_hint ?? 'This is preview mode. Buyers will see a similar interface.',
               style: TextStyle(
                 color: Colors.amber[800],
                 fontSize: 14,

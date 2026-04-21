@@ -108,7 +108,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     // 构建 HomePageDataModel
     return HomePageDataModel(
       banners: bannerResponse,
-      categories: [], // 目前 API 中没有分类数据，使用空列表
+      categories: const [], // 目前 API 中没有分类数据，使用空列表
       feedItems: productsResponse,
     );
   }

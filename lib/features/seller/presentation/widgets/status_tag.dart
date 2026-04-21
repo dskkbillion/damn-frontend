@@ -50,7 +50,7 @@ class StatusTag extends StatelessWidget {
   
   /// 构造函数
   const StatusTag({
-    Key? key,
+    super.key,
     required this.text,
     this.type = StatusTagType.defaultTag,
     this.rounded = true,
@@ -58,7 +58,7 @@ class StatusTag extends StatelessWidget {
     this.filled = true,
     this.backgroundColor,
     this.textColor,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

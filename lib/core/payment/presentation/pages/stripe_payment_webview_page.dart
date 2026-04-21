@@ -50,7 +50,7 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
             }
           },
           onPageStarted: (String url) {
-            AppLogger.d('[StripePaymentWebView] 页面开始加载: $url');
+            AppLogger.d('[StripePaymentWebView] 页面开始加载: ${_sanitizeUrl(url)}');
             setState(() {
               _isLoading = true;
               _currentUrl = url;
@@ -58,7 +58,7 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
             _checkUrl(url);
           },
           onPageFinished: (String url) {
-            AppLogger.d('[StripePaymentWebView] 页面加载完成: $url');
+            AppLogger.d('[StripePaymentWebView] 页面加载完成: ${_sanitizeUrl(url)}');
             setState(() {
               _isLoading = false;
               _currentUrl = url;
@@ -72,7 +72,12 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
             });
           },
           onNavigationRequest: (NavigationRequest request) {
-            AppLogger.d('[StripePaymentWebView] 导航请求: ${request.url}');
+            final uri = Uri.tryParse(request.url);
+            if (uri != null && !_isAllowedDomain(uri.host)) {
+              AppLogger.d('[StripePaymentWebView] 已阻止非白名单域名: ${uri.host}');
+              return NavigationDecision.prevent;
+            }
+            AppLogger.d('[StripePaymentWebView] 导航请求: ${uri?.host ?? "unknown"}');
             _checkUrl(request.url);
             return NavigationDecision.navigate;
           },
@@ -81,9 +86,22 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
       ..loadRequest(Uri.parse(widget.paymentUrl));
   }
 
+  /// 检查域名是否在白名单内
+  bool _isAllowedDomain(String host) {
+    return host.endsWith('.stripe.com') ||
+        host == 'stripe.com' ||
+        host.endsWith('.duoshaokankan.com') ||
+        host == 'duoshaokankan.com';
+  }
+
+  /// 从URL中提取域名用于安全日志
+  String _sanitizeUrl(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null ? '${uri.scheme}://${uri.host}/***' : '[invalid-url]';
+  }
+
   /// 检查URL是否匹配成功/取消/失败模式
   void _checkUrl(String url) {
-    AppLogger.d('[StripePaymentWebView] 检查URL: $url');
 
     // 检查是否为支付成功URL
     if (url.contains(widget.successUrlPattern)) {
@@ -114,7 +132,7 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
 
     // 设置标志位，防止重复处理
     _isHandlingResult = true;
-    AppLogger.d('[StripePaymentWebView] 开始处理支付结果: $result');
+    AppLogger.d('[StripePaymentWebView] 开始处理支付结果: ${result.name}');
 
     // 延迟一下确保页面完全加载
     Future.delayed(const Duration(milliseconds: 500), () {

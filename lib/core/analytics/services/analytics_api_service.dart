@@ -140,7 +140,7 @@ class AnalyticsApiService {
       final testEvent = AnalyticsEvent(
         businessType: 'test',
         path: '/test',
-        feature: {'test': true},
+        feature: const {'test': true},
       );
       
       await recordEvent(testEvent);

@@ -56,7 +56,7 @@ class CountryCodeSelector extends StatelessWidget {
   }
 
   void _showCountryPicker(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context);
     final isChineseLocale = Localizations.localeOf(context).languageCode == 'zh';
     
     showModalBottomSheet(
@@ -84,7 +84,7 @@ class CountryCodeSelector extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      localizations?.auth_select_country_region ?? 'Select Country/Region',
+                      localizations.auth_select_country_region ?? 'Select Country/Region',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     IconButton(

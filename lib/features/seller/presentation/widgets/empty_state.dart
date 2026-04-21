@@ -20,18 +20,18 @@ class EmptyState extends StatelessWidget {
   
   /// 构造函数
   const EmptyState({
-    Key? key,
+    super.key,
     required this.text,
     this.subText,
     this.icon = Icons.info_outline,
     this.action,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppDimensions.spacingXxl),
+        padding: const EdgeInsets.all(AppDimensions.spacingXxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -41,7 +41,7 @@ class EmptyState extends StatelessWidget {
               size: 64,
               color: AppColors.textTertiary,
             ),
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             Text(
               text,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -51,7 +51,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (subText != null) ...[
-              SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.spacingSm),
               Text(
                 subText!,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -61,7 +61,7 @@ class EmptyState extends StatelessWidget {
               ),
             ],
             if (action != null) ...[
-              SizedBox(height: AppDimensions.spacingXxl),
+              const SizedBox(height: AppDimensions.spacingXxl),
               action!,
             ],
           ],

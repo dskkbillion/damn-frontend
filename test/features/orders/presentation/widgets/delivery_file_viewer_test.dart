@@ -13,14 +13,14 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
+        const MaterialApp(
+          localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
+          supportedLocales: [
             Locale('en'),
             Locale('zh'),
           ],
@@ -41,14 +41,14 @@ void main() {
     testWidgets('shows correct icon for different file types', (WidgetTester tester) async {
       // Test image file
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
+        const MaterialApp(
+          localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
+          supportedLocales: [
             Locale('en'),
             Locale('zh'),
           ],
@@ -65,14 +65,14 @@ void main() {
 
       // Test document file
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
+        const MaterialApp(
+          localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
+          supportedLocales: [
             Locale('en'),
             Locale('zh'),
           ],
@@ -96,14 +96,14 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [
+        const MaterialApp(
+          localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [
+          supportedLocales: [
             Locale('en'),
             Locale('zh'),
           ],
@@ -129,7 +129,7 @@ void main() {
 
       // Act
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: ImagePreviewPage(
             imageUrl: testImageUrl,
             fileName: testFileName,

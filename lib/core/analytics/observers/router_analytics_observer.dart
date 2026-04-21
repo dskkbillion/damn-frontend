@@ -80,7 +80,7 @@ class RouterAnalyticsObserver extends NavigatorObserver {
       
       // 只记录停留时间大于1秒的页面
       if (routeName != null && routeName.isNotEmpty && stayDuration > 1) {
-        AppLogger.d('[RouterAnalyticsObserver] 记录页面离开埋点: $routeName, 停留时长: ${stayDuration}秒');
+        AppLogger.d('[RouterAnalyticsObserver] 记录页面离开埋点: $routeName, 停留时长: $stayDuration秒');
         
         final pageType = _getPageType(routeName);
         final businessId = _extractBusinessId(routeName);
@@ -98,7 +98,7 @@ class RouterAnalyticsObserver extends NavigatorObserver {
           },
         );
       } else {
-        AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面离开埋点: ${routeName ?? "无名称"}, 停留时长: ${stayDuration}秒 (小于阈值)');
+        AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面离开埋点: ${routeName ?? "无名称"}, 停留时长: $stayDuration秒 (小于阈值)');
       }
     } else {
       AppLogger.d('[RouterAnalyticsObserver] 跳过记录页面离开埋点: 未找到进入时间记录 (${route.settings.name})');

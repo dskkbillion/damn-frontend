@@ -97,7 +97,7 @@ class ApiClient {
           final token = await storage.read(key: storageKey);
 
           if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = token; // 直接使用token，不添加Bearer前缀
+            options.headers['Authorization'] = 'Bearer $token';
             AppLogger.d('[ApiClient AuthInterceptor] Added token to request');
           } else {
             AppLogger.d(

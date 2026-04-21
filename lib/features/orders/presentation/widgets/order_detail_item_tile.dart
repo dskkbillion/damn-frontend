@@ -88,7 +88,7 @@ class OrderDetailItemTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)!.order_item_delivery_days(item.deliveryDay!),
+                          AppLocalizations.of(context).order_item_delivery_days(item.deliveryDay!),
                           style: textTheme.bodySmall?.copyWith(
                             color: colorScheme.secondary
                           ),
@@ -104,7 +104,7 @@ class OrderDetailItemTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)!.order_item_edit_count(item.editNum!),
+                          AppLocalizations.of(context).order_item_edit_count(item.editNum!),
                           style: textTheme.bodySmall?.copyWith(
                             color: colorScheme.secondary
                           ),

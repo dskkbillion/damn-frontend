@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_list.dart';
+import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 
 /// 聊天系统ID调试页面
 /// 用于诊断和验证聊天室创建和查询中的ID使用问题

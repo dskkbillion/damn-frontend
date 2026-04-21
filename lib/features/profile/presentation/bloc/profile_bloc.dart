@@ -61,14 +61,14 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     // 如果已经有用户数据，不需要重新检查认证状态
     if (state is ProfileLoaded || state is ProfileUpdated) {
       AppLogger.d('[ProfileBloc] Already has profile data, skipping auth check');
-      emit(ProfileAuthStatusLoaded(isAuthenticated: true));
+      emit(const ProfileAuthStatusLoaded(isAuthenticated: true));
       return;
     }
     
     emit(const ProfileLoading());
     final result = await checkAuthStatus(NoParams());
     result.fold(
-      (failure) => emit(ProfileAuthStatusLoaded(isAuthenticated: false)),
+      (failure) => emit(const ProfileAuthStatusLoaded(isAuthenticated: false)),
       (isAuthenticated) => emit(ProfileAuthStatusLoaded(isAuthenticated: isAuthenticated)),
     );
   }
@@ -131,12 +131,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       } else {
         AppLogger.d('[ProfileBloc] No cached data found for ${event.mode.name}, triggering normal load');
         // 缓存未命中，触发普通的获取流程
-        add(GetUserProfileEvent());
+        add(const GetUserProfileEvent());
       }
     } catch (e) {
       AppLogger.d('[ProfileBloc] Failed to get cached profile for ${event.mode.name}: $e');
       // 发生错误时，回退到普通获取流程
-      add(GetUserProfileEvent());
+      add(const GetUserProfileEvent());
     }
   }
 

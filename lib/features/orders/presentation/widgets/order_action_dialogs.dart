@@ -36,7 +36,7 @@ class OrderActionDialogs {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(AppLocalizations.of(context)!.order_dialog_cancel),
+              child: Text(AppLocalizations.of(context).order_dialog_cancel),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -44,7 +44,7 @@ class OrderActionDialogs {
               },
             ),
             TextButton(
-              child: Text(AppLocalizations.of(context)!.order_dialog_confirm),
+              child: Text(AppLocalizations.of(context).order_dialog_confirm),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -65,7 +65,7 @@ class OrderActionDialogs {
     if (state is! OrderDetailLoaded) {
       // Show error if state is not loaded
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.order_dialog_data_not_loaded)),
+        SnackBar(content: Text(AppLocalizations.of(context).order_dialog_data_not_loaded)),
       );
       return;
     }
@@ -77,7 +77,7 @@ class OrderActionDialogs {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.order_dialog_view_delivery_title),
+          title: Text(AppLocalizations.of(context).order_dialog_view_delivery_title),
           content: SizedBox(
             width: double.maxFinite,
             height: 400,
@@ -85,11 +85,11 @@ class OrderActionDialogs {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(AppLocalizations.of(context)!.order_dialog_seller_delivery_content),
+                  Text(AppLocalizations.of(context).order_dialog_seller_delivery_content),
                   const SizedBox(height: 16),
                   _buildDeliveryDialogContent(context, deliveries),
                   const SizedBox(height: 16),
-                  Text(AppLocalizations.of(context)!.order_dialog_buyer_materials),
+                  Text(AppLocalizations.of(context).order_dialog_buyer_materials),
                   const SizedBox(height: 8),
                   _buildMaterialsDialogContent(context, materials),
                 ],
@@ -98,7 +98,7 @@ class OrderActionDialogs {
           ),
           actions: [
             TextButton(
-              child: Text(AppLocalizations.of(context)!.order_dialog_close),
+              child: Text(AppLocalizations.of(context).order_dialog_close),
               onPressed: () {
                 if (Navigator.of(dialogContext).canPop()) {
                   Navigator.of(dialogContext).pop();
@@ -117,7 +117,7 @@ class OrderActionDialogs {
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     String selectedReasonType = 'communication';
     
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final Map<String, String> reasonTypes = {
       'communication': l10n.order_intervention_reason_communication,
       'quality': l10n.order_intervention_reason_quality,
@@ -147,7 +147,7 @@ class OrderActionDialogs {
                       Text(l10n.order_intervention_problem_type, style: const TextStyle(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: selectedReasonType,
+                        initialValue: selectedReasonType,
                         items: reasonTypes.entries.map((entry) {
                           return DropdownMenuItem(
                             value: entry.key,
@@ -238,7 +238,7 @@ class OrderActionDialogs {
 
     // Save the outer context reference
     final outerContext = context;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     // Define reasons based on demand type
     final Map<String, Map<String, String>> demandReasons = {
@@ -293,7 +293,7 @@ class OrderActionDialogs {
                           Text(l10n.order_intervention_problem_type, style: const TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<String>(
-                            value: selectedReasonValue,
+                            initialValue: selectedReasonValue,
                             items: currentReasons.entries.map((entry) {
                               return DropdownMenuItem(
                                 value: entry.key,
@@ -437,7 +437,7 @@ class OrderActionDialogs {
                     ),
                     Expanded(
                       child: Text(
-                        AppLocalizations.of(context)!.order_action_submit_materials,
+                        AppLocalizations.of(context).order_action_submit_materials,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -467,7 +467,7 @@ class OrderActionDialogs {
   // Private helper methods
 
   Widget _buildDeliveryDialogContent(BuildContext context, List<OrderDelivery>? deliveries) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (deliveries == null || deliveries.isEmpty) {
       return Container(
         width: double.infinity,
@@ -520,7 +520,7 @@ class OrderActionDialogs {
   }
   
   Widget _buildMaterialsDialogContent(BuildContext context, List<OrderMaterials>? materials) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (materials == null || materials.isEmpty) {
       return Container(
         width: double.infinity,
@@ -596,7 +596,7 @@ class OrderActionDialogs {
     final editNum = firstItem.editNum ?? 0;
     final currentDeliveryCount = state.deliveries?.length ?? 0;
     
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     String infoText = '';
     IconData iconData = Icons.info_outline;
     Color iconColor = AppColors.primary;
@@ -635,7 +635,7 @@ class OrderActionDialogs {
     String reasonLabel,
     String description,
   ) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(
@@ -670,7 +670,7 @@ class OrderActionDialogs {
     String reasonLabel,
     String description,
   ) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       // Show loading
       ScaffoldMessenger.of(context).showSnackBar(

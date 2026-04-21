@@ -294,7 +294,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return MultiBlocProvider(
       providers: [
@@ -488,7 +488,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           // Find current user participant using the stored user ID
                           if (_currentUserId == null) {
                             AppLogger.d('ERROR: _currentUserId is null in build method');
-                            return Center(child: Text('Error: User ID not loaded'));
+                            return const Center(child: Text('Error: User ID not loaded'));
                           }
                           
                           final currentUserParticipant = chatRoom.participants.firstWhere(
@@ -544,7 +544,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                         backgroundColor: AppColors.backgroundCard,
                         elevation: 4.0,
                         onPressed: _scrollToBottom,
-                        child: Icon(Icons.arrow_downward, color: AppColors.textTertiary),
+                        child: const Icon(Icons.arrow_downward, color: AppColors.textTertiary),
                       ),
                     ),
                 ],
@@ -575,19 +575,19 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
                             color: AppColors.warning.withOpacity(0.05),
-                            border: Border(
+                            border: const Border(
                               top: BorderSide(color: AppColors.borderInput),
                             ),
                           ),
                           child: Row(
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.info_outline,
                                 color: AppColors.warning,
                                 size: 20,
                               ),
                               const SizedBox(width: AppDimensions.spacingSm),
-                              Expanded(
+                              const Expanded(
                                 child: Text(
                                   '达到免费咨询轮次，可发送付费提示',
                                   style: TextStyle(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/app/di/injection_container.dart'; // Import GetIt instance
+// Import GetIt instance
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/bloc/after_sales_bloc.dart';
 import '../../domain/entities/after_sales_application.dart'; // Import entity for list item
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -32,7 +32,7 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.after_sales_list_title),
+        title: Text(AppLocalizations.of(context).after_sales_list_title),
         // TODO: Potentially add filter/search actions
       ),
       // Provide the Bloc if not already provided higher up
@@ -51,13 +51,13 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppLocalizations.of(context)!.after_sales_list_load_failed(state.errorMessage ?? '')),
+                  Text(AppLocalizations.of(context).after_sales_list_load_failed(state.errorMessage ?? '')),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                        context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 10));
                     },
-                    child: Text(AppLocalizations.of(context)!.retry),
+                    child: Text(AppLocalizations.of(context).retry),
                   ),
                 ],
               )
@@ -67,14 +67,14 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
           // Handle Loaded State
           if (state is AfterSalesListLoaded) {
              if (state.applications.isEmpty) {
-                return Center(child: Text(AppLocalizations.of(context)!.after_sales_list_empty));
+                return Center(child: Text(AppLocalizations.of(context).after_sales_list_empty));
              }
             // TODO: Implement pagination/infinite scroll later
             return _buildApplicationsList(context, state.applications);
           }
 
           // Handle Initial State or other unhandled states
-          return Center(child: Text(AppLocalizations.of(context)!.after_sales_list_loading));
+          return Center(child: Text(AppLocalizations.of(context).after_sales_list_loading));
         },
       ),
     );
@@ -92,8 +92,8 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
               leading: application.productImage != null
                 ? Image.network(application.productImage!, width: 50, height: 50, fit: BoxFit.cover)
                 : const Icon(Icons.image, size: 50),
-              title: Text(application.productName ?? AppLocalizations.of(context)!.after_sales_list_unknown_product),
-              subtitle: Text('${AppLocalizations.of(context)!.after_sales_list_status(application.refundStateText ?? application.refundState)}\n${AppLocalizations.of(context)!.after_sales_list_apply_time(application.createTime?.toLocal().toString() ?? '-')}'),
+              title: Text(application.productName ?? AppLocalizations.of(context).after_sales_list_unknown_product),
+              subtitle: Text('${AppLocalizations.of(context).after_sales_list_status(application.refundStateText ?? application.refundState)}\n${AppLocalizations.of(context).after_sales_list_apply_time(application.createTime?.toLocal().toString() ?? '-')}'),
               trailing: Text('￥${application.refundPrice?.toStringAsFixed(2) ?? 'N/A'}'),
               isThreeLine: true,
               onTap: () {

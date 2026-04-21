@@ -101,21 +101,8 @@ class _VerificationCodeButtonState extends State<VerificationCodeButton> {
     return ElevatedButton(
       onPressed: canSend
           ? () {
-              final phone = widget.phoneController.text;
-              print('尝试发送验证码到: $phone');
-
-              // 验证中国手机号格式 (11位数字，以1开头)
-              final bool isValidPhone = RegExp(r'^1[3-9]\d{9}$').hasMatch(phone);
-
-              if (phone.isNotEmpty && isValidPhone) {
-                print('手机号格式有效，准备发送验证码');
-                widget.onSendCode(phone);
-              } else {
-                print('无效的手机号: $phone');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.auth_invalid_phone)),
-                );
-              }
+              final account = widget.phoneController.text;
+              widget.onSendCode(account);
             }
           : null,
       child: widget.isSending
@@ -123,7 +110,7 @@ class _VerificationCodeButtonState extends State<VerificationCodeButton> {
           : Text(
               widget.codeSentState == CodeButtonState.counting
                   ? '$_currentCountdown s' // 显示倒计时
-                  : AppLocalizations.of(context)!.auth_get_verification_code, // 空闲状态
+                  : AppLocalizations.of(context).auth_get_verification_code, // 空闲状态
             ),
     );
   }

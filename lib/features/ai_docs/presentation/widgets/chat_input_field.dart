@@ -8,7 +8,6 @@ import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart'; // Import the record package
 import 'package:permission_handler/permission_handler.dart'; // Import permission_handler
-import 'package:image_picker/image_picker.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 
@@ -49,7 +48,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     // Use BlocBuilder to access the full state, including pendingImageFiles & imageUploadStates
     return BlocBuilder<AiChatBloc, AiChatState>(
@@ -94,8 +93,8 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
                 decoration: BoxDecoration(
                  color: Theme.of(context).cardColor,
-                 boxShadow: [
-                    const BoxShadow(
+                 boxShadow: const [
+                    BoxShadow(
                       offset: Offset(0, -1),
                       blurRadius: 4,
                       color: AppColors.borderSecondary,
@@ -362,7 +361,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   // Handle voice button logic with actual recording
   void _handleVoiceButtonPress() async {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     if (!_isRecording) {
       // --- Start Recording ---

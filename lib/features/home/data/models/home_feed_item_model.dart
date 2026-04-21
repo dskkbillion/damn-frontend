@@ -5,28 +5,17 @@ import '../../domain/entities/home_feed_item.dart';
 /// HomeFeedItem 模型，用于序列化和反序列化 API 响应
 class HomeFeedItemModel extends HomeFeedItem {
   HomeFeedItemModel({
-    required String id,
-    required String type,
-    required String name,
-    required List<String> images,
-    required double sellingPrice,
-    required double score,
-    required int evaluateNum,
-    String? translatedName,
-    String? translatedDescription,
-    String? translationSourceLang,
-  }) : super(
-          id: id,
-          type: type,
-          name: name,
-          images: images,
-          sellingPrice: sellingPrice,
-          score: score,
-          evaluateNum: evaluateNum,
-          translatedName: translatedName,
-          translatedDescription: translatedDescription,
-          translationSourceLang: translationSourceLang,
-        );
+    required super.id,
+    required super.type,
+    required super.name,
+    required super.images,
+    required super.sellingPrice,
+    required super.score,
+    required super.evaluateNum,
+    super.translatedName,
+    super.translatedDescription,
+    super.translationSourceLang,
+  });
 
   /// 从 JSON 创建 HomeFeedItemModel 实例
   factory HomeFeedItemModel.fromJson(Map<String, dynamic> json) {

@@ -12,12 +12,12 @@ class CachedNavigationShell extends ConsumerStatefulWidget {
   final AppMode mode;
   
   const CachedNavigationShell({
-    Key? key,
+    super.key,
     required this.builder,
     required this.navigationShell,
     required this.state,
     required this.mode,
-  }) : super(key: key);
+  });
   
   @override
   ConsumerState<CachedNavigationShell> createState() => _CachedNavigationShellState();

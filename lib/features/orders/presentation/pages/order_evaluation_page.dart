@@ -34,7 +34,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.order_evaluation_page_title),
+        title: Text(AppLocalizations.of(context).order_evaluation_page_title),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
@@ -126,7 +126,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_evaluation_product_info,
+                  AppLocalizations.of(context).order_evaluation_product_info,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),

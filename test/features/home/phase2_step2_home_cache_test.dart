@@ -89,7 +89,7 @@ class _StubNavigationService implements HomeNavigationService {
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 HomePageDataModel _cachedModel() => HomePageDataModel(
-      banners: [
+      banners: const [
         BannerModel(
           id: 'b1',
           imageUrl: 'http://cached.img',
@@ -114,8 +114,8 @@ HomePageDataModel _cachedModel() => HomePageDataModel(
     );
 
 HomePageData _remoteData() => HomePageData(
-      banners: [
-        const Banner(id: 'b2', imageUrl: 'http://remote.img'),
+      banners: const [
+        Banner(id: 'b2', imageUrl: 'http://remote.img'),
       ],
       categories: const <HomeCategory>[],
       feedItems: [
@@ -195,7 +195,7 @@ void main() {
       'when cache exists and remote fails: keeps cached HomeLoaded, no HomeError emitted',
       build: () {
         mockLocal.setCache(_cachedModel());
-        mockUseCase.returns(Left(ServerFailure(message: 'network error')));
+        mockUseCase.returns(const Left(ServerFailure(message: 'network error')));
         return _buildBloc(useCase: mockUseCase, local: mockLocal);
       },
       act: (bloc) => bloc.add(const LoadHomeData()),
@@ -212,7 +212,7 @@ void main() {
       'when no cache and remote fails: emits HomeLoading then HomeError',
       build: () {
         mockLocal.throwOnGet = true;
-        mockUseCase.returns(Left(ServerFailure(message: 'network error')));
+        mockUseCase.returns(const Left(ServerFailure(message: 'network error')));
         return _buildBloc(useCase: mockUseCase, local: mockLocal);
       },
       act: (bloc) => bloc.add(const LoadHomeData()),

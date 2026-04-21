@@ -22,6 +22,7 @@ class CancelOrderUseCase implements UseCase<void, int> {
 
 /// [CancelOrderUseCase] 的默认实现。
 class CancelOrderUseCaseImpl implements CancelOrderUseCase {
+  @override
   final IOrderRepository repository;
 
   CancelOrderUseCaseImpl({required this.repository});

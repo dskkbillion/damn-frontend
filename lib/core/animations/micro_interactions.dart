@@ -19,11 +19,11 @@ class MicroInteractions {
     bool enableHaptic = true,
   }) {
     return _TapAnimationWidget(
-      child: child,
       onTap: onTap,
       scaleValue: scaleValue,
       duration: duration,
       enableHaptic: enableHaptic,
+      child: child,
     );
   }
   
@@ -38,9 +38,9 @@ class MicroInteractions {
     Duration duration = const Duration(milliseconds: 200),
   }) {
     return _HoverEffectWidget(
-      child: child,
       hoverColor: hoverColor,
       duration: duration,
+      child: child,
     );
   }
   
@@ -58,11 +58,11 @@ class MicroInteractions {
     bool enableHaptic = true,
   }) {
     return _LongPressAnimationWidget(
-      child: child,
       onLongPress: onLongPress,
       scaleValue: scaleValue,
       duration: duration,
       enableHaptic: enableHaptic,
+      child: child,
     );
   }
   
@@ -80,11 +80,11 @@ class MicroInteractions {
     bool enableHaptic = true,
   }) {
     return _BounceAnimationWidget(
-      child: child,
       onTap: onTap,
       bounceIntensity: bounceIntensity,
       duration: duration,
       enableHaptic: enableHaptic,
+      child: child,
     );
   }
 }

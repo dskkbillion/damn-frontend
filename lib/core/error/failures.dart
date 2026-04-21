@@ -22,13 +22,10 @@ class ServerFailure extends Failure {
   final String? code;
 
   const ServerFailure({
-    required String message,
-    int? statusCode,
+    required super.message,
+    super.statusCode,
     this.code,
-  }) : super(
-          message: message,
-          statusCode: statusCode,
-        );
+  });
 
   @override
   List<Object?> get props => [message, code, statusCode];
@@ -42,9 +39,9 @@ class NetworkFailure extends Failure {
   final String? code;
 
   const NetworkFailure({
-    required String message,
+    required super.message,
     this.code,
-  }) : super(message: message);
+  });
   
   @override
   List<Object?> get props => [message, code];
@@ -58,9 +55,9 @@ class CacheFailure extends Failure {
   final String? code;
 
   const CacheFailure({
-    required String message,
+    required super.message,
     this.code,
-  }) : super(message: message);
+  });
 
   @override
   List<Object?> get props => [message, code];
@@ -71,7 +68,7 @@ class CacheFailure extends Failure {
 
 /// 表示认证相关的错误
 class AuthFailure extends Failure {
-  const AuthFailure({required String message}) : super(message: message);
+  const AuthFailure({required super.message});
 }
 
 /// 表示一个简单的、通用的失败情况，通常只包含一个错误消息。
@@ -84,9 +81,9 @@ class GeneralFailure extends Failure {
   final String code;
 
   const GeneralFailure({
-    required String message,
+    required super.message,
     this.code = 'GENERAL_ERROR',
-  }) : super(message: message);
+  });
 
   @override
   List<Object?> get props => [message, code];
@@ -94,8 +91,7 @@ class GeneralFailure extends Failure {
 
 /// Represents a failure during input validation.
 class ValidationFailure extends Failure {
-  const ValidationFailure({required String message})
-      : super(message: message);
+  const ValidationFailure({required super.message});
 }
 
 /// 聊天错误
@@ -104,8 +100,8 @@ class ChatFailure extends Failure {
 
   const ChatFailure({
     required this.code,
-    String message = 'Chat Error'
-  }) : super(message: message);
+    super.message = 'Chat Error'
+  });
 
   @override
   List<Object?> get props => [message, code];
@@ -117,8 +113,8 @@ class UnauthorizedFailure extends Failure {
 
   const UnauthorizedFailure({
     this.code = 'UNAUTHORIZED',
-    String message = 'Unauthorized'
-  }) : super(message: message);
+    super.message = 'Unauthorized'
+  });
 
   @override
   List<Object?> get props => [message, code];
@@ -126,42 +122,38 @@ class UnauthorizedFailure extends Failure {
 
 /// 无效输入错误
 class InvalidInputFailure extends Failure {
-  const InvalidInputFailure({String message = 'Invalid Input'}) : super(message: message);
+  const InvalidInputFailure({super.message = 'Invalid Input'});
 }
 
 /// Represents a generic failure when no specific type is identified.
 class GenericFailure extends Failure {
-  const GenericFailure({String message = 'Generic Error'}) : super(message: message);
+  const GenericFailure({super.message = 'Generic Error'});
 }
 
 /// Represents a specific authentication failure
 class AuthenticationFailure extends Failure {
-  const AuthenticationFailure({String message = 'Authentication Failed'}) : super(message: message);
+  const AuthenticationFailure({super.message = 'Authentication Failed'});
 }
 
 /// Represents a client-side error
 class ClientFailure extends Failure {
-  const ClientFailure({String message = 'Client Error / Invalid Input'}) : super(message: message);
+  const ClientFailure({super.message = 'Client Error / Invalid Input'});
 }
 
 /// Represents a failure when a requested resource is not found.
 class NotFoundFailure extends Failure {
-  const NotFoundFailure({String message = 'Resource not found'}) : super(message: message);
+  const NotFoundFailure({super.message = 'Resource not found'});
 }
 
 /// Represents an unexpected failure.
 class UnknownFailure extends Failure {
-  const UnknownFailure({String message = 'An unknown error occurred'})
-      : super(message: message);
+  const UnknownFailure({super.message = 'An unknown error occurred'});
 }
 
 /// 支付错误
 class PaymentFailure extends Failure {
   const PaymentFailure({
-    required String message,
-    int? statusCode,
-  }) : super(
-          message: message,
-          statusCode: statusCode,
-        );
+    required super.message,
+    super.statusCode,
+  });
 }

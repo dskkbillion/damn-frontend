@@ -58,7 +58,7 @@ void main() {
   });
 
   test('初始状态应该是ProfileInitial', () {
-    expect(bloc.state, equals(ProfileInitial()));
+    expect(bloc.state, equals(const ProfileInitial()));
   });
 
   const tUserProfile = UserProfile(
@@ -68,7 +68,7 @@ void main() {
     onlineFlag: true,
   );
 
-  final tWalletSummary = WalletSummary(
+  const tWalletSummary = WalletSummary(
     balance: 1000.0,
     pendingAmount: 200.0,
     totalIncome: 5000.0,
@@ -87,7 +87,7 @@ void main() {
       },
       act: (bloc) => bloc.add(CheckAuthStatusEvent()),
       expect: () => [
-        ProfileLoading(),
+        const ProfileLoading(),
         const ProfileAuthStatusLoaded(isAuthenticated: true),
       ],
       verify: (_) {
@@ -104,7 +104,7 @@ void main() {
       },
       act: (bloc) => bloc.add(CheckAuthStatusEvent()),
       expect: () => [
-        ProfileLoading(),
+        const ProfileLoading(),
         const ProfileAuthStatusLoaded(isAuthenticated: false),
       ],
     );
@@ -118,9 +118,9 @@ void main() {
             .thenAnswer((_) async => const Right(tUserProfile));
         return bloc;
       },
-      act: (bloc) => bloc.add(GetUserProfileEvent()),
+      act: (bloc) => bloc.add(const GetUserProfileEvent()),
       expect: () => [
-        ProfileLoading(),
+        const ProfileLoading(),
         const ProfileLoaded(profile: tUserProfile),
       ],
       verify: (_) {
@@ -132,13 +132,13 @@ void main() {
       '应该发出 [ProfileLoading, ProfileError] 当获取用户资料失败',
       build: () {
         when(mockGetUserProfile(any))
-            .thenAnswer((_) async => Left(ServerFailure(message: '服务器错误')));
+            .thenAnswer((_) async => const Left(ServerFailure(message: '服务器错误')));
         return bloc;
       },
-      act: (bloc) => bloc.add(GetUserProfileEvent()),
+      act: (bloc) => bloc.add(const GetUserProfileEvent()),
       expect: () => [
-        ProfileLoading(),
-        ProfileError(message: 'ServerFailure(服务器错误, null)'),
+        const ProfileLoading(),
+        const ProfileError(message: 'ServerFailure(message: 服务器错误, code: null, statusCode: null)'),
       ],
     );
   });
@@ -148,13 +148,13 @@ void main() {
       '应该发出 [WalletSummaryLoading, WalletSummaryLoaded] 当获取钱包摘要成功',
       build: () {
         when(mockGetWalletSummary(any))
-            .thenAnswer((_) async => Right(tWalletSummary));
+            .thenAnswer((_) async => const Right(tWalletSummary));
         return bloc;
       },
       act: (bloc) => bloc.add(GetWalletSummaryEvent()),
       expect: () => [
-        WalletSummaryLoading(),
-        WalletSummaryLoaded(walletSummary: tWalletSummary),
+        const WalletSummaryLoading(),
+        const WalletSummaryLoaded(walletSummary: tWalletSummary),
       ],
       verify: (_) {
         verify(mockGetWalletSummary(NoParams()));
@@ -172,7 +172,7 @@ void main() {
       },
       act: (bloc) => bloc.add(LogoutEvent()),
       expect: () => [
-        ProfileLoggingOut(),
+        const ProfileLoggingOut(),
         const ProfileLoggedOut(),
       ],
       verify: (_) {

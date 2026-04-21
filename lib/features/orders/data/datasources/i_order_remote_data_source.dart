@@ -1,7 +1,6 @@
 import '../../domain/entities/order_status.dart';
 import '../models/order_model.dart';
 import '../../domain/repositories/i_order_repository.dart';
-import '../../domain/entities/order.dart';
 import '../../domain/entities/order_creation_result.dart';
 import '../../domain/usecases/submit_requirements_use_case.dart';
 

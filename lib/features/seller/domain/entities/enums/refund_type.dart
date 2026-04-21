@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 /// 退款类型枚举
 ///

@@ -11,13 +11,13 @@ class StreamingMessageBubble extends StatelessWidget {
   final DateTime timestamp;
 
   const StreamingMessageBubble({
-    Key? key,
+    super.key,
     required this.streamingText,
     this.fullText,
     required this.isStreaming,
     required this.sender,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class StreamingMessageBubble extends StatelessWidget {
             // 显示流式文本 - 使用 SelectableText 支持文本选择和复制
             SelectableText(
               streamingText.isEmpty ? '...' : streamingText,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
               ),

@@ -26,13 +26,13 @@ class CustomLoadingDialog extends StatelessWidget {
   final String? message;
 
   const CustomLoadingDialog({
-    Key? key,
+    super.key,
     this.message,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    final displayMessage = message ?? AppLocalizations.of(context)!.core_processing;
+    final displayMessage = message ?? AppLocalizations.of(context).core_processing;
     return Dialog(
       elevation: 0,
       backgroundColor: Colors.transparent,

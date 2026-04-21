@@ -14,10 +14,10 @@ class LoadingState extends StatelessWidget {
   
   /// 构造函数
   const LoadingState({
-    Key? key,
+    super.key,
     this.text,
     this.useOverlay = false,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class LoadingState extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           if (text != null) ...[
-            SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.spacingLg),
             Text(
               text!,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -70,15 +70,15 @@ class LoadingState extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
+        const SizedBox(
           width: AppDimensions.spacingLg,
           height: AppDimensions.spacingLg,
-          child: const CircularProgressIndicator(
+          child: CircularProgressIndicator(
             strokeWidth: 2,
           ),
         ),
         if (text != null) ...[
-          SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.spacingSm),
           Text(text),
         ],
       ],

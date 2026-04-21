@@ -1,6 +1,5 @@
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
-import 'get_auth_status_stream.dart';
 
 /// 获取并监听认证状态的实时变化。
 abstract class GetAuthStatusStreamUseCase {

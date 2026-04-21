@@ -47,27 +47,9 @@ abstract class IPaymentService {
   /// 
   /// [orderInfo] 支付宝订单信息字符串
   /// 返回支付结果
-  Future<PaymentResult> pay(String orderInfo);
+  Future<models.PaymentResult> pay(String orderInfo);
 
   // --- 可以根据需要添加更多支付相关方法 ---
   // Future<Either<Failure, List<PaymentMethod>>> getAvailablePaymentMethods();
   // Future<Either<Failure, PaymentStatus>> checkPaymentStatus(String orderId);
-}
-
-/// 支付结果
-class PaymentResult {
-  /// 支付是否成功
-  final bool success;
-  
-  /// 订单ID，支付成功时有值
-  final String? orderId;
-  
-  /// 错误信息，支付失败时有值
-  final String? errorMessage;
-  
-  PaymentResult({
-    required this.success,
-    this.orderId,
-    this.errorMessage,
-  });
 } 

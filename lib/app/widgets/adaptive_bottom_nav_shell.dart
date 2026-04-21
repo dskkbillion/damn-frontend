@@ -14,9 +14,9 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
   
   const AdaptiveBottomNavShell({
-    Key? key,
+    super.key,
     required this.navigationShell,
-  }) : super(key: key);
+  });
   
   void _onTap(BuildContext context, int index) {
     HapticUtils.lightTabFeedback();
@@ -30,7 +30,7 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMode = ref.watch(appModeProvider);
     final showDevTab = ref.watch(showDevTabProvider);
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     // 根据模式构建不同的底部导航项
     final List<BottomNavigationBarItem> items = currentMode == AppMode.buyer
@@ -64,7 +64,7 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),

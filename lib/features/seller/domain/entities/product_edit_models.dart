@@ -1,5 +1,6 @@
 /// 产品编辑相关的基础数据模型
 /// 从product_edit_page.dart中提取出来以减少代码复杂度
+library;
 
 /// QA数据模型
 class QAPair {

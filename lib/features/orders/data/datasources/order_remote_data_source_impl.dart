@@ -148,7 +148,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
         if (responseData != null && responseData is Map<String, dynamic>) {
           return OrderModel.fromJson(responseData);
         } else {
-          throw ServerFailure(message: 'Invalid response format from server.');
+          throw const ServerFailure(message: 'Invalid response format from server.');
         }
       } else {
         throw ServerFailure(
@@ -165,10 +165,10 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   @override
   Future<void> cancelOrder(int orderId) async {
     // API Doc says GET, query parameter is 'orderId' (string?)
-    const String _cancelEndpoint = '/api/shop/order/cancel';
+    const String cancelEndpoint = '/api/shop/order/cancel';
     try {
       final response = await coreDioClient.get(
-        _cancelEndpoint,
+        cancelEndpoint,
         queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
       );
       
@@ -196,10 +196,10 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   @override
   Future<void> confirmOrderReceipt(int orderId) async {
     // API Doc says GET, query parameter is 'orderId' (string?)
-    const String _receiptEndpoint = '/api/shop/order/complete'; // Correct path
+    const String receiptEndpoint = '/api/shop/order/complete'; // Correct path
     try {
       final response = await coreDioClient.get(
-        _receiptEndpoint, 
+        receiptEndpoint, 
         queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
       );
       
@@ -227,12 +227,12 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
   @override
   Future<void> deleteOrder(int orderId) async {
     // API Doc says POST, query parameter is 'orderId' (string?)
-     const String _deleteEndpoint = '/api/shop/order/delete';
+     const String deleteEndpoint = '/api/shop/order/delete';
     AppLogger.d('[OrderRemoteDataSourceImpl] 开始删除订单: $orderId');
     
     try {
       final response = await coreDioClient.post(
-        _deleteEndpoint,
+        deleteEndpoint,
         queryParameters: {'orderId': orderId.toString()}, // Send as string to be safe?
         data: {}, // Sending empty data as body might be needed for POST
       );
@@ -298,7 +298,7 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
 
   @override
   Future<void> submitRequirements(SubmitRequirementsParams params) async {
-    const String _submitRequirementsEndpoint = '/api/project/orderMaterials/add';
+    const String submitRequirementsEndpoint = '/api/project/orderMaterials/add';
     try {
       // Construct the request body based on API/RN code analysis
       final data = {
@@ -309,12 +309,12 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       };
 
       AppLogger.d('[OrderRemoteDataSourceImpl] submitRequirements called:');
-      AppLogger.d('  Endpoint: $_submitRequirementsEndpoint');
+      AppLogger.d('  Endpoint: $submitRequirementsEndpoint');
       AppLogger.d('  Data: $data');
 
       // CHANGED: Use coreDioClient.post
       final response = await coreDioClient.post(
-        _submitRequirementsEndpoint,
+        submitRequirementsEndpoint,
         data: data,
       );
 

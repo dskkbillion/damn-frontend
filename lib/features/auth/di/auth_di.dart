@@ -18,11 +18,6 @@ import 'package:dskk_flutter_refactor/features/auth/data/datasources/user_info_r
 import 'package:dskk_flutter_refactor/core/platform/token_validator.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
-import 'package:dskk_flutter_refactor/features/auth/data/models/authenticated_user_model.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
-import 'package:dartz/dartz.dart';
-import 'package:dskk_flutter_refactor/core/error/failures.dart';
 
 /// Auth模块的依赖注入类
 class AuthDI {

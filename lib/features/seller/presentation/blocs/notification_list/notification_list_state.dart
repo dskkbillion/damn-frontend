@@ -75,7 +75,7 @@ class NotificationListLoaded extends NotificationListState {
   }) {
     return NotificationListLoaded(
       notifications: notifications ?? this.notifications,
-      currentType: currentType != null ? currentType : this.currentType,
+      currentType: currentType ?? this.currentType,
       hasMore: hasMore ?? this.hasMore,
       unreadCount: unreadCount ?? this.unreadCount,
       error: error,

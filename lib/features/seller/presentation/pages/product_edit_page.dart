@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
@@ -14,8 +13,6 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import '../widgets/image_preview_page.dart';
 import 'product_preview_page.dart';
-import 'package:get_it/get_it.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
 
 // 导入重构后的数据模型
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
@@ -67,30 +64,19 @@ class ExtendedProductFormData extends ProductFormData {
   final List<String> images;
   
   const ExtendedProductFormData({
-    required String name,
-    required String description,
-    required double price,
-    int? categoryId,
-    required List<ProductOptionValue> variants,
-    required List<ProductMaterial> productMaterials,
-    required String detailContent,
-    required List<Map<String, String>> qaList,
-    required List<Map<String, dynamic>> buyerInfoItems,
-    required List<Map<String, dynamic>> successCases,
+    required super.name,
+    required super.description,
+    required super.price,
+    super.categoryId,
+    required super.variants,
+    required super.productMaterials,
+    required super.detailContent,
+    required super.qaList,
+    required super.buyerInfoItems,
+    required super.successCases,
     this.productId,
     required this.images,
-  }) : super(
-    name: name,
-    description: description,
-    price: price,
-    categoryId: categoryId,
-    variants: variants,
-    productMaterials: productMaterials,
-    detailContent: detailContent,
-    qaList: qaList,
-    buyerInfoItems: buyerInfoItems,
-    successCases: successCases,
-  );
+  });
 }
 
 /// 商品编辑页面
@@ -492,16 +478,16 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)?.seller_product_edit_unsaved_changes_title ?? 'Unsaved Changes Detected'),
-        content: Text(AppLocalizations.of(context)?.seller_product_edit_unsaved_changes_message ?? 'You have unsaved content. Save as draft?'),
+        title: Text(AppLocalizations.of(context).seller_product_edit_unsaved_changes_title ?? 'Unsaved Changes Detected'),
+        content: Text(AppLocalizations.of(context).seller_product_edit_unsaved_changes_message ?? 'You have unsaved content. Save as draft?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(null),
-            child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+            child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)?.seller_product_edit_discard ?? 'Discard'),
+            child: Text(AppLocalizations.of(context).seller_product_edit_discard ?? 'Discard'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -509,7 +495,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               backgroundColor: const Color(0xFFBF7D2A),
               foregroundColor: Colors.white,
             ),
-            child: Text(AppLocalizations.of(context)?.product_edit_save_draft ?? 'Save Draft'),
+            child: Text(AppLocalizations.of(context).product_edit_save_draft ?? 'Save Draft'),
           ),
         ],
       ),
@@ -641,7 +627,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         if (combinedPaths.length > 9) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context)?.seller_product_edit_max_images ?? 'Maximum 9 images allowed'),
+              content: Text(AppLocalizations.of(context).seller_product_edit_max_images ?? 'Maximum 9 images allowed'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -669,7 +655,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 验证商品名称
     if (_nameController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['name'] = AppLocalizations.of(context)?.product_edit_validation_name_required ?? 'Please enter service name';
+        _formErrors['name'] = AppLocalizations.of(context).product_edit_validation_name_required ?? 'Please enter service name';
       });
       isValid = false;
     }
@@ -677,7 +663,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     // 验证商品描述
     if (_descriptionController.text.trim().isEmpty) {
       setState(() {
-        _formErrors['description'] = AppLocalizations.of(context)?.product_edit_validation_description_required ?? 'Please enter service description';
+        _formErrors['description'] = AppLocalizations.of(context).product_edit_validation_description_required ?? 'Please enter service description';
       });
       isValid = false;
     }
@@ -686,7 +672,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)?.product_edit_at_least_one_image ?? 'Please upload at least one product image'),
+          content: Text(AppLocalizations.of(context).product_edit_at_least_one_image ?? 'Please upload at least one product image'),
           backgroundColor: Colors.red,
         ),
       );
@@ -699,7 +685,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       final tier = tiers[i];
       if (tier.price <= 0) {
         setState(() {
-          _formErrors['price_${tier.tier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_required(tier.tier.displayName) ?? '${tier.tier.displayName} price must be greater than 0';
+          _formErrors['price_${tier.tier.name}'] = AppLocalizations.of(context).seller_product_edit_price_required(tier.tier.displayName) ?? '${tier.tier.displayName} price must be greater than 0';
         });
         isValid = false;
       }
@@ -709,7 +695,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       // 滚动到第一个错误字段
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)?.seller_product_edit_form_incomplete ?? 'Form data incomplete. Please check highlighted fields.'),
+          content: Text(AppLocalizations.of(context).seller_product_edit_form_incomplete ?? 'Form data incomplete. Please check highlighted fields.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -743,15 +729,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_attribute ?? 'Add Attribute'),
+          title: Text(AppLocalizations.of(context).seller_product_edit_add_attribute ?? 'Add Attribute'),
           content: TextField(
             controller: nameController,
             maxLength: ValidationConstants.maxAttributeNameLength,
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-              helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
-                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
-                  : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
+              hintText: AppLocalizations.of(context).product_edit_attribute_name_hint ?? 'Please enter attribute name',
+              helperText: AppLocalizations.of(context).product_edit_max_characters(ValidationConstants.maxAttributeNameLength),
               errorText: errorText,
               border: const OutlineInputBorder(),
               counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -760,7 +744,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             onChanged: (value) {
               setDialogState(() {
                 if (value.length > ValidationConstants.maxAttributeNameLength) {
-                  errorText = AppLocalizations.of(context)?.seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
+                  errorText = AppLocalizations.of(context).seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
                 } else {
                   errorText = null;
                 }
@@ -770,7 +754,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -784,7 +768,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 }
               },
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_confirm ?? 'Confirm'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_confirm ?? 'Confirm'),
             ),
           ],
         ),
@@ -800,7 +784,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)?.seller_product_edit_options_config ?? 'Options Configuration',
+          AppLocalizations.of(context).seller_product_edit_options_config ?? 'Options Configuration',
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -843,8 +827,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
               child: TextField(
                 controller: optionController,
                 decoration: _lightBorderDecoration.copyWith(
-                  labelText: AppLocalizations.of(context)?.seller_product_edit_new_option ?? 'New Option',
-                  hintText: AppLocalizations.of(context)?.seller_product_edit_option_hint ?? 'Enter option content',
+                  labelText: AppLocalizations.of(context).seller_product_edit_new_option ?? 'New Option',
+                  hintText: AppLocalizations.of(context).seller_product_edit_option_hint ?? 'Enter option content',
                 ),
                 onSubmitted: (value) {
                   if (value.isNotEmpty && !options.contains(value)) {
@@ -886,8 +870,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.isPreviewMode 
-            ? AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview Product' 
-            : (widget.productId == null ? AppLocalizations.of(context)?.product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context)?.product_edit_title_edit ?? 'Edit Product')),
+            ? AppLocalizations.of(context).product_edit_preview_product ?? 'Preview Product' 
+            : (widget.productId == null ? AppLocalizations.of(context).product_edit_publish_product ?? 'Publish Product' : AppLocalizations.of(context).product_edit_title_edit ?? 'Edit Product')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -913,7 +897,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 );
               },
               icon: const Icon(Icons.edit),
-              label: Text(AppLocalizations.of(context)?.product_management_action_edit ?? 'Edit'),
+              label: Text(AppLocalizations.of(context).product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
@@ -939,7 +923,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       IconButton(
                         onPressed: () => _previewProduct(),
                         icon: const Icon(Icons.preview),
-                        tooltip: AppLocalizations.of(context)?.product_edit_preview_product ?? 'Preview',
+                        tooltip: AppLocalizations.of(context).product_edit_preview_product ?? 'Preview',
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -978,8 +962,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                             )
                           : const Icon(Icons.save_alt),
                       label: Text(state.hasUnsavedChanges
-                          ? (AppLocalizations.of(context)?.seller_product_edit_draft_unsaved_label ?? 'Draft*')
-                          : (AppLocalizations.of(context)?.seller_product_edit_draft_label ?? 'Draft')),
+                          ? (AppLocalizations.of(context).seller_product_edit_draft_unsaved_label ?? 'Draft*')
+                          : (AppLocalizations.of(context).seller_product_edit_draft_label ?? 'Draft')),
                       style: TextButton.styleFrom(
                         foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
                       ),
@@ -996,7 +980,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_publish ?? 'Publish'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_publish ?? 'Publish'),
             ),
             const SizedBox(width: 16),
           ],
@@ -1008,7 +992,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               if (state.hasError) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(state.errorMessage ?? (AppLocalizations.of(context)?.seller_product_edit_operation_failed ?? 'Operation failed')),
+                    content: Text(state.errorMessage ?? (AppLocalizations.of(context).seller_product_edit_operation_failed ?? 'Operation failed')),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -1021,7 +1005,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)?.seller_product_edit_draft_saved ?? 'Draft saved successfully'),
+                    content: Text(AppLocalizations.of(context).seller_product_edit_draft_saved ?? 'Draft saved successfully'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -1037,8 +1021,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.isCreateMode
-                      ? (AppLocalizations.of(context)?.seller_product_edit_publish_success ?? 'Service published successfully!')
-                      : (AppLocalizations.of(context)?.seller_product_edit_update_success ?? 'Service updated successfully')),
+                      ? (AppLocalizations.of(context).seller_product_edit_publish_success ?? 'Service published successfully!')
+                      : (AppLocalizations.of(context).seller_product_edit_update_success ?? 'Service updated successfully')),
                     backgroundColor: Colors.green,
                     duration: const Duration(seconds: 2), // 缩短显示时间
                   ),
@@ -1123,7 +1107,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               controller: _nameController,
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
-                hintText: AppLocalizations.of(context)?.seller_product_edit_service_name_hint ?? 'Service Name',
+                hintText: AppLocalizations.of(context).seller_product_edit_service_name_hint ?? 'Service Name',
                 hintStyle: const TextStyle(color: Colors.grey),
                     errorText: _formErrors['name'],
                     errorBorder: OutlineInputBorder(
@@ -1156,7 +1140,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               controller: _descriptionController,
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
-                hintText: AppLocalizations.of(context)?.seller_product_edit_description_hint ?? 'Describe your service details...',
+                hintText: AppLocalizations.of(context).seller_product_edit_description_hint ?? 'Describe your service details...',
                 hintStyle: const TextStyle(color: Colors.grey),
                 errorText: _formErrors['description'],
                 errorBorder: OutlineInputBorder(
@@ -1198,7 +1182,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                AppLocalizations.of(context)?.product_edit_service_tiers ?? 'Service Tier Settings',
+                AppLocalizations.of(context).product_edit_service_tiers ?? 'Service Tier Settings',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1275,7 +1259,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)?.seller_product_edit_faq_title ?? 'FAQ Editor',
+                AppLocalizations.of(context).seller_product_edit_faq_title ?? 'FAQ Editor',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1292,7 +1276,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        AppLocalizations.of(context)?.seller_product_edit_faq_count(_qaList.length) ?? '${_qaList.length} questions',
+                        AppLocalizations.of(context).seller_product_edit_faq_count(_qaList.length) ?? '${_qaList.length} questions',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFFBF7D2A),
@@ -1327,7 +1311,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               child: OutlinedButton.icon(
                 onPressed: _addQAPair,
                 icon: const Icon(Icons.add),
-                label: Text(AppLocalizations.of(context)?.seller_product_edit_add_question ?? 'Add Question'),
+                label: Text(AppLocalizations.of(context).seller_product_edit_add_question ?? 'Add Question'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFBF7D2A),
                   side: const BorderSide(color: Color(0xFFBF7D2A)),
@@ -1362,8 +1346,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   child: TextField(
                     readOnly: widget.isPreviewMode,
                     decoration: _lightBorderDecoration.copyWith(
-                    labelText: AppLocalizations.of(context)?.seller_product_edit_question_label ?? 'Question',
-                    hintText: AppLocalizations.of(context)?.seller_product_edit_question_hint ?? 'Enter a question buyers may ask',
+                    labelText: AppLocalizations.of(context).seller_product_edit_question_label ?? 'Question',
+                    hintText: AppLocalizations.of(context).seller_product_edit_question_hint ?? 'Enter a question buyers may ask',
                     ),
                     controller: _getQAController(index, 'question', qa.question),
                     onChanged: widget.isPreviewMode ? null : (value) {
@@ -1379,7 +1363,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               if (!widget.isPreviewMode) IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () => _removeQAPair(index),
-                tooltip: AppLocalizations.of(context)?.seller_product_edit_delete_question ?? 'Delete Question',
+                tooltip: AppLocalizations.of(context).seller_product_edit_delete_question ?? 'Delete Question',
               ),
             ],
           ),
@@ -1390,8 +1374,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           TextField(
             readOnly: widget.isPreviewMode,
                   decoration: _lightBorderDecoration.copyWith(
-              labelText: AppLocalizations.of(context)?.seller_product_edit_answer_label ?? 'Answer',
-              hintText: AppLocalizations.of(context)?.seller_product_edit_answer_hint ?? 'Enter the answer',
+              labelText: AppLocalizations.of(context).seller_product_edit_answer_label ?? 'Answer',
+              hintText: AppLocalizations.of(context).seller_product_edit_answer_hint ?? 'Enter the answer',
                   ),
             controller: _getQAController(index, 'answer', qa.answer),
             maxLines: 3,
@@ -1429,7 +1413,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-                AppLocalizations.of(context)?.seller_product_edit_buyer_info_title ?? 'Buyer Information Required',
+                AppLocalizations.of(context).seller_product_edit_buyer_info_title ?? 'Buyer Information Required',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -1446,7 +1430,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        AppLocalizations.of(context)?.seller_product_edit_buyer_info_count(_buyerInfoItems.length) ?? '${_buyerInfoItems.length} items',
+                        AppLocalizations.of(context).seller_product_edit_buyer_info_count(_buyerInfoItems.length) ?? '${_buyerInfoItems.length} items',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFFBF7D2A),
@@ -1476,7 +1460,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                AppLocalizations.of(context)?.seller_product_edit_buyer_info_desc ?? 'Select the information types buyers need to provide',
+                AppLocalizations.of(context).seller_product_edit_buyer_info_desc ?? 'Select the information types buyers need to provide',
             style: const TextStyle(
               fontSize: 14,
               color: Colors.grey,
@@ -1495,7 +1479,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             if (_buyerInfoItems.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context)?.seller_product_edit_selected_items ?? 'Selected items:',
+                AppLocalizations.of(context).seller_product_edit_selected_items ?? 'Selected items:',
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 8),
@@ -1605,7 +1589,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
-                          AppLocalizations.of(context)?.seller_product_edit_required ?? 'Required',
+                          AppLocalizations.of(context).seller_product_edit_required ?? 'Required',
                           style: const TextStyle(fontSize: 10, color: Colors.red),
                             ),
                           ),
@@ -1625,12 +1609,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
               IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A)),
                 onPressed: () => _showEditBuyerInfoDialog(index, item),
-                tooltip: AppLocalizations.of(context)?.seller_product_edit_edit_tooltip ?? 'Edit',
+                tooltip: AppLocalizations.of(context).seller_product_edit_edit_tooltip ?? 'Edit',
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: () => _removeBuyerInfoItem(index),
-                tooltip: AppLocalizations.of(context)?.seller_product_edit_delete_tooltip ?? 'Delete',
+                tooltip: AppLocalizations.of(context).seller_product_edit_delete_tooltip ?? 'Delete',
               ),
             ],
           ),
@@ -1649,7 +1633,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_info_title(type.displayName) ?? 'Add ${type.displayName} Info'),
+          title: Text(AppLocalizations.of(context).seller_product_edit_add_info_title(type.displayName) ?? 'Add ${type.displayName} Info'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.5, // 限制最大高度
@@ -1662,8 +1646,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   TextField(
                     controller: labelController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_label ?? 'Info Label',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
+                      labelText: AppLocalizations.of(context).seller_product_edit_info_label ?? 'Info Label',
+                      hintText: AppLocalizations.of(context).seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1671,13 +1655,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     controller: descriptionController,
                     maxLines: 3,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_description ?? 'Detailed Description',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
+                      labelText: AppLocalizations.of(context).seller_product_edit_info_description ?? 'Detailed Description',
+                      hintText: AppLocalizations.of(context).seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
                     ),
                   ),
                   const SizedBox(height: 12),
                   CheckboxListTile(
-                    title: Text(AppLocalizations.of(context)?.seller_product_edit_required_field ?? 'Required Field'),
+                    title: Text(AppLocalizations.of(context).seller_product_edit_required_field ?? 'Required Field'),
                     value: isRequired,
                     onChanged: (value) {
                       setState(() {
@@ -1692,7 +1676,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -1706,7 +1690,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                    SnackBar(content: Text(AppLocalizations.of(context).product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -1714,7 +1698,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
                 ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_add ?? 'Add'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_add ?? 'Add'),
           ),
         ],
         ),
@@ -1732,7 +1716,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.seller_product_edit_edit_info_title(item.type.displayName) ?? 'Edit ${item.type.displayName} Info'),
+          title: Text(AppLocalizations.of(context).seller_product_edit_edit_info_title(item.type.displayName) ?? 'Edit ${item.type.displayName} Info'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.5, // 限制最大高度
@@ -1745,8 +1729,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   TextField(
                     controller: labelController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_label ?? 'Info Label',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
+                      labelText: AppLocalizations.of(context).seller_product_edit_info_label ?? 'Info Label',
+                      hintText: AppLocalizations.of(context).seller_product_edit_info_label_hint ?? 'e.g., Company Logo Design Requirements',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -1754,13 +1738,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     controller: descriptionController,
                     maxLines: 3,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_info_description ?? 'Detailed Description',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
+                      labelText: AppLocalizations.of(context).seller_product_edit_info_description ?? 'Detailed Description',
+                      hintText: AppLocalizations.of(context).seller_product_edit_info_description_hint ?? 'Describe the information buyers need to provide',
                     ),
                   ),
                   const SizedBox(height: 12),
                   CheckboxListTile(
-                    title: Text(AppLocalizations.of(context)?.seller_product_edit_required_field ?? 'Required Field'),
+                    title: Text(AppLocalizations.of(context).seller_product_edit_required_field ?? 'Required Field'),
                     value: isRequired,
                     onChanged: (value) {
                       setState(() {
@@ -1775,7 +1759,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -1789,7 +1773,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_label ?? 'Please enter information label')),
+                    SnackBar(content: Text(AppLocalizations.of(context).product_edit_please_enter_label ?? 'Please enter information label')),
                   );
                 }
               },
@@ -1797,7 +1781,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
                 ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
           ],
         ),
@@ -1818,7 +1802,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)?.product_edit_success_cases ?? 'Success Cases',
+                AppLocalizations.of(context).product_edit_success_cases ?? 'Success Cases',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -1832,7 +1816,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    AppLocalizations.of(context)?.seller_product_edit_cases_count(state.successCases.length) ?? '${state.successCases.length} cases',
+                    AppLocalizations.of(context).seller_product_edit_cases_count(state.successCases.length) ?? '${state.successCases.length} cases',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFFBF7D2A),
@@ -1883,7 +1867,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             const Icon(Icons.add, size: 32, color: Colors.grey),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)?.seller_product_edit_add_case ?? 'Add Case',
+              AppLocalizations.of(context).seller_product_edit_add_case ?? 'Add Case',
               style: const TextStyle(color: Colors.grey),
             ),
           ],
@@ -1905,7 +1889,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             children: [
               const Icon(Icons.broken_image, size: 32, color: Colors.grey),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           );
         },
@@ -1929,7 +1913,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   children: [
                     const Icon(Icons.broken_image, size: 32, color: Colors.grey),
                     const SizedBox(height: 4),
-                    Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ],
                 );
               },
@@ -1940,7 +1924,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             children: [
               const Icon(Icons.broken_image, size: 32, color: Colors.grey),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           );
         },
@@ -1958,7 +1942,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             children: [
               const Icon(Icons.broken_image, size: 32, color: Colors.grey),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context)?.seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           );
         },
@@ -1971,7 +1955,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       children: [
         const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
         const SizedBox(height: 4),
-        Text(AppLocalizations.of(context)?.seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
   }
@@ -2038,11 +2022,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 40),
                 const SizedBox(height: 4),
-                Text(AppLocalizations.of(context)?.seller_product_edit_upload_failed ?? 'Upload Failed', style: const TextStyle(color: Colors.red, fontSize: 12)),
+                Text(AppLocalizations.of(context).seller_product_edit_upload_failed ?? 'Upload Failed', style: const TextStyle(color: Colors.red, fontSize: 12)),
                 if (successCase.canRetry)
                   TextButton(
                     onPressed: () => _bloc.add(RetrySuccessCaseUpload(caseId: successCase.id)),
-                    child: Text(AppLocalizations.of(context)?.seller_product_edit_upload_retry ?? 'Retry', style: const TextStyle(fontSize: 12)),
+                    child: Text(AppLocalizations.of(context).seller_product_edit_upload_retry ?? 'Retry', style: const TextStyle(fontSize: 12)),
                   ),
               ],
             ),
@@ -2219,7 +2203,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.product_edit_add_success_case ?? 'Add Success Case'),
+          title: Text(AppLocalizations.of(context).product_edit_add_success_case ?? 'Add Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2262,7 +2246,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                               children: [
                                 const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
                                 const SizedBox(height: 4),
-                                Text(AppLocalizations.of(context)?.seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                               ],
                             ),
                     ),
@@ -2274,8 +2258,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_title_label ?? 'Case Title',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_title_hint ?? 'Brief description of this case',
+                      labelText: AppLocalizations.of(context).seller_product_edit_case_title_label ?? 'Case Title',
+                      hintText: AppLocalizations.of(context).seller_product_edit_case_title_hint ?? 'Brief description of this case',
                     ),
                   ),
                   
@@ -2286,8 +2270,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     controller: descriptionController,
                     maxLines: 3,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_desc_label ?? 'Case Description',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
+                      labelText: AppLocalizations.of(context).seller_product_edit_case_desc_label ?? 'Case Description',
+                      hintText: AppLocalizations.of(context).seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
                     ),
                   ),
                 ],
@@ -2297,7 +2281,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
                 onPressed: () {
@@ -2310,7 +2294,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)?.seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
+                    SnackBar(content: Text(AppLocalizations.of(context).seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
                   );
                 }
               },
@@ -2318,7 +2302,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
               ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_add ?? 'Add'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_add ?? 'Add'),
             ),
           ],
         ),
@@ -2339,7 +2323,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.product_edit_edit_success_case ?? 'Edit Success Case'),
+          title: Text(AppLocalizations.of(context).product_edit_edit_success_case ?? 'Edit Success Case'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.6, // 限制最大高度为屏幕高度的60%
@@ -2383,8 +2367,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_title_label ?? 'Case Title',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_title_hint ?? 'Brief description of this case',
+                      labelText: AppLocalizations.of(context).seller_product_edit_case_title_label ?? 'Case Title',
+                      hintText: AppLocalizations.of(context).seller_product_edit_case_title_hint ?? 'Brief description of this case',
                     ),
                   ),
                   
@@ -2395,8 +2379,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     controller: descriptionController,
                     maxLines: 3,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_case_desc_label ?? 'Case Description',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
+                      labelText: AppLocalizations.of(context).seller_product_edit_case_desc_label ?? 'Case Description',
+                      hintText: AppLocalizations.of(context).seller_product_edit_case_desc_hint ?? 'Describe the background, process, or results',
                     ),
                   ),
                 ],
@@ -2406,7 +2390,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -2420,7 +2404,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)?.seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
+                    SnackBar(content: Text(AppLocalizations.of(context).seller_product_edit_select_image_and_title ?? 'Please select an image and enter a title')),
                   );
                 }
               },
@@ -2428,7 +2412,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
               ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
           ],
         ),
@@ -2450,7 +2434,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)?.seller_product_edit_cover_image ?? 'Service Cover Image',
+                AppLocalizations.of(context).seller_product_edit_cover_image ?? 'Service Cover Image',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -2472,7 +2456,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                AppLocalizations.of(context)?.seller_product_edit_upload_error(state.errorMessage ?? '') ?? 'Upload error: ${state.errorMessage}',
+                AppLocalizations.of(context).seller_product_edit_upload_error(state.errorMessage ?? '') ?? 'Upload error: ${state.errorMessage}',
                 style: const TextStyle(
                   color: Colors.red,
                   fontSize: 12,
@@ -2484,7 +2468,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Text(
-              AppLocalizations.of(context)?.seller_product_edit_image_format_hint ?? 'Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.',
+              AppLocalizations.of(context).seller_product_edit_image_format_hint ?? 'Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -2518,9 +2502,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(width: 8),
             Text(
-              AppLocalizations.of(context)?.product_edit_uploading_progress != null
-                  ? AppLocalizations.of(context)!.product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount)
-                  : 'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
+              AppLocalizations.of(context).product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.blue[700],
@@ -2542,7 +2524,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             Icon(Icons.check_circle, size: 16, color: Colors.green[700]),
             const SizedBox(width: 8),
             Text(
-              AppLocalizations.of(context)?.seller_product_edit_upload_success ?? 'Upload Successful',
+              AppLocalizations.of(context).seller_product_edit_upload_success ?? 'Upload Successful',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.green[700],
@@ -2564,7 +2546,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             const Icon(Icons.error, size: 16, color: Colors.red),
             const SizedBox(width: 8),
             Text(
-              AppLocalizations.of(context)?.seller_product_edit_upload_failed ?? 'Upload Failed',
+              AppLocalizations.of(context).seller_product_edit_upload_failed ?? 'Upload Failed',
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.red,
@@ -2713,7 +2695,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                AppLocalizations.of(context)?.seller_product_edit_main_image ?? 'Main',
+                AppLocalizations.of(context).seller_product_edit_main_image ?? 'Main',
                 style: const TextStyle(color: Colors.white, fontSize: 10),
               ),
             ),
@@ -2772,7 +2754,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(height: 4),
             Text(
-              isUploading ? (AppLocalizations.of(context)?.product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context)?.product_edit_add_image ?? 'Add Image'),
+              isUploading ? (AppLocalizations.of(context).product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context).product_edit_add_image ?? 'Add Image'),
               style: TextStyle(
                 fontSize: 12,
                 color: canAdd ? Colors.grey[700] : Colors.grey,
@@ -2884,7 +2866,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         color: Colors.black87,
       ),
       decoration: InputDecoration(
-        labelText: AppLocalizations.of(context)?.seller_product_edit_tier_price_label(_selectedTier.displayName) ?? '${_selectedTier.displayName} Price',
+        labelText: AppLocalizations.of(context).seller_product_edit_tier_price_label(_selectedTier.displayName) ?? '${_selectedTier.displayName} Price',
         labelStyle: TextStyle(
           fontSize: 14,
           color: Colors.grey[600],
@@ -2898,7 +2880,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           fontSize: 16,
           color: Colors.black87,
         ),
-        helperText: AppLocalizations.of(context)?.seller_product_edit_max_price('${ValidationConstants.maxPrice}') ?? 'Maximum: ${ValidationConstants.maxPrice}',
+        helperText: AppLocalizations.of(context).seller_product_edit_max_price('${ValidationConstants.maxPrice}') ?? 'Maximum: ${ValidationConstants.maxPrice}',
         helperStyle: TextStyle(
           fontSize: 12,
           color: Colors.grey[500],
@@ -2950,9 +2932,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           
           // 验证价格
           if (price > ValidationConstants.maxPrice) {
-            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_exceed_max('${ValidationConstants.maxPrice}') ?? 'Price cannot exceed ${ValidationConstants.maxPrice}';
+            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context).seller_product_edit_price_exceed_max('${ValidationConstants.maxPrice}') ?? 'Price cannot exceed ${ValidationConstants.maxPrice}';
           } else if (price > 0 && price < 0.01) {
-            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context)?.seller_product_edit_price_min ?? 'Minimum price is 0.01';
+            _formErrors['price_${_selectedTier.name}'] = AppLocalizations.of(context).seller_product_edit_price_min ?? 'Minimum price is 0.01';
           } else {
             _formErrors.remove('price_${_selectedTier.name}');
           }
@@ -2971,9 +2953,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
     
     // 添加系统属性：交付期
     attributeItems.add(_buildFloatingLabelAttribute(
-      labelText: AppLocalizations.of(context)?.seller_product_edit_delivery_period ?? 'Delivery Period',
+      labelText: AppLocalizations.of(context).seller_product_edit_delivery_period ?? 'Delivery Period',
       value: tierConfig.deliveryDay.toString(),
-      suffix: AppLocalizations.of(context)?.seller_product_edit_delivery_days_suffix ?? 'days',
+      suffix: AppLocalizations.of(context).seller_product_edit_delivery_days_suffix ?? 'days',
       isSystem: true,
       keyboardType: TextInputType.number,
       onChanged: (value) {
@@ -2989,9 +2971,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
     
     // 添加系统属性：次数
     attributeItems.add(_buildFloatingLabelAttribute(
-      labelText: AppLocalizations.of(context)?.seller_product_edit_times ?? 'Revisions',
+      labelText: AppLocalizations.of(context).seller_product_edit_times ?? 'Revisions',
       value: tierConfig.editNum.toString(),
-      suffix: AppLocalizations.of(context)?.seller_product_edit_times_suffix ?? 'times',
+      suffix: AppLocalizations.of(context).seller_product_edit_times_suffix ?? 'times',
       isSystem: true,
       keyboardType: TextInputType.number,
       onChanged: (value) {
@@ -3054,7 +3036,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         const Icon(Icons.add, size: 20, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)?.seller_product_edit_input ?? 'Input',
+                          AppLocalizations.of(context).seller_product_edit_input ?? 'Input',
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -3081,7 +3063,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         const Icon(Icons.radio_button_checked, size: 20, color: Colors.grey),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)?.seller_product_edit_radio ?? 'Radio',
+                          AppLocalizations.of(context).seller_product_edit_radio ?? 'Radio',
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -3122,10 +3104,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
     String? helperText;
     
     // 系统属性的验证
-    final deliveryLabel = AppLocalizations.of(context)?.seller_product_edit_delivery_period ?? 'Delivery Period';
-    final deliverySuffix = AppLocalizations.of(context)?.seller_product_edit_delivery_days_suffix ?? 'days';
-    final timesLabel = AppLocalizations.of(context)?.seller_product_edit_times ?? 'Revisions';
-    final timesSuffix = AppLocalizations.of(context)?.seller_product_edit_times_suffix ?? 'times';
+    final deliveryLabel = AppLocalizations.of(context).seller_product_edit_delivery_period ?? 'Delivery Period';
+    final deliverySuffix = AppLocalizations.of(context).seller_product_edit_delivery_days_suffix ?? 'days';
+    final timesLabel = AppLocalizations.of(context).seller_product_edit_times ?? 'Revisions';
+    final timesSuffix = AppLocalizations.of(context).seller_product_edit_times_suffix ?? 'times';
     if (isSystem) {
       if (labelText == deliveryLabel && suffix == deliverySuffix) {
         inputFormatters = [
@@ -3133,14 +3115,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
           LengthLimitingTextInputFormatter(3),
           _MaxValueTextInputFormatter(ValidationConstants.maxDeliveryDays),
         ];
-        helperText = AppLocalizations.of(context)?.seller_product_edit_max_days(ValidationConstants.maxDeliveryDays) ?? 'Max ${ValidationConstants.maxDeliveryDays} days';
+        helperText = AppLocalizations.of(context).seller_product_edit_max_days(ValidationConstants.maxDeliveryDays) ?? 'Max ${ValidationConstants.maxDeliveryDays} days';
       } else if (labelText == timesLabel && suffix == timesSuffix) {
         inputFormatters = [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(2),
           _MaxValueTextInputFormatter(ValidationConstants.maxEditNum),
         ];
-        helperText = AppLocalizations.of(context)?.seller_product_edit_max_times(ValidationConstants.maxEditNum) ?? 'Max ${ValidationConstants.maxEditNum} times';
+        helperText = AppLocalizations.of(context).seller_product_edit_max_times(ValidationConstants.maxEditNum) ?? 'Max ${ValidationConstants.maxEditNum} times';
       }
     } else {
       // 自定义属性的验证 - 属性值最大长度
@@ -3300,7 +3282,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  AppLocalizations.of(context)?.seller_product_edit_yes ?? 'Yes',
+                                  AppLocalizations.of(context).seller_product_edit_yes ?? 'Yes',
                                   style: TextStyle(
                                     color: isTrue ? Colors.blue : Colors.grey[700],
                                     fontWeight: isTrue ? FontWeight.bold : FontWeight.normal,
@@ -3336,7 +3318,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  AppLocalizations.of(context)?.seller_product_edit_no ?? 'No',
+                                  AppLocalizations.of(context).seller_product_edit_no ?? 'No',
                                   style: TextStyle(
                                     color: !isTrue ? Colors.blue : Colors.grey[700],
                                     fontWeight: !isTrue ? FontWeight.bold : FontWeight.normal,
@@ -3434,7 +3416,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.seller_product_edit_add_selection_attribute ?? 'Add Selection Attribute'),
+          title: Text(AppLocalizations.of(context).seller_product_edit_add_selection_attribute ?? 'Add Selection Attribute'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -3442,10 +3424,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 controller: nameController,
                 maxLength: ValidationConstants.maxAttributeNameLength,
                 decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)?.product_edit_attribute_name_hint ?? 'Please enter attribute name',
-                  helperText: AppLocalizations.of(context)?.product_edit_max_characters != null 
-                  ? AppLocalizations.of(context)!.product_edit_max_characters(ValidationConstants.maxAttributeNameLength)
-                  : 'Max ${ValidationConstants.maxAttributeNameLength} characters',
+                  hintText: AppLocalizations.of(context).product_edit_attribute_name_hint ?? 'Please enter attribute name',
+                  helperText: AppLocalizations.of(context).product_edit_max_characters(ValidationConstants.maxAttributeNameLength),
                   errorText: errorText,
                   border: const OutlineInputBorder(),
                   counterText: '${nameController.text.length}/${ValidationConstants.maxAttributeNameLength}',
@@ -3454,7 +3434,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 onChanged: (value) {
                   setDialogState(() {
                     if (value.length > ValidationConstants.maxAttributeNameLength) {
-                      errorText = AppLocalizations.of(context)?.seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
+                      errorText = AppLocalizations.of(context).seller_product_edit_attribute_max_chars(ValidationConstants.maxAttributeNameLength) ?? 'Attribute name max ${ValidationConstants.maxAttributeNameLength} characters';
                     } else {
                       errorText = null;
                     }
@@ -3463,7 +3443,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                AppLocalizations.of(context)?.seller_product_edit_default_options_yes_no ?? 'Default options: Yes/No',
+                AppLocalizations.of(context).seller_product_edit_default_options_yes_no ?? 'Default options: Yes/No',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey[600],
@@ -3474,7 +3454,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -3489,7 +3469,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Navigator.pop(context);
                 }
               },
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_confirm ?? 'Confirm'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_confirm ?? 'Confirm'),
             ),
           ],
         ),
@@ -3663,7 +3643,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       name: _nameController.text,
       description: _descriptionController.text,
       price: variants.isNotEmpty ? variants.first.sellingPrice : 0.0,
-      categoryId: state.formData?.categoryId,
+      categoryId: state.formData.categoryId,
       variants: variants,
       productMaterials: materials, // 使用转换后的materials
       detailContent: '',
@@ -3735,7 +3715,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(AppLocalizations.of(context)?.product_edit_edit_attribute ?? 'Edit Product Attributes'),
+          title: Text(AppLocalizations.of(context).product_edit_edit_attribute ?? 'Edit Product Attributes'),
           content: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7,
@@ -3750,17 +3730,17 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   TextField(
                     controller: nameController,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_attribute_name_label ?? 'Attribute Name *',
-                      hintText: AppLocalizations.of(context)?.seller_product_edit_attribute_name_example ?? 'e.g.: Color, Model, Material, Suitable Age',
+                      labelText: AppLocalizations.of(context).seller_product_edit_attribute_name_label ?? 'Attribute Name *',
+                      hintText: AppLocalizations.of(context).seller_product_edit_attribute_name_example ?? 'e.g.: Color, Model, Material, Suitable Age',
                     ),
                   ),
                   const SizedBox(height: 12),
                   
                   // 属性类型选择
                   DropdownButtonFormField<ProductAttributeType>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: _lightBorderDecoration.copyWith(
-                      labelText: AppLocalizations.of(context)?.seller_product_edit_attribute_type_label ?? 'Attribute Type',
+                      labelText: AppLocalizations.of(context).seller_product_edit_attribute_type_label ?? 'Attribute Type',
                     ),
                     items: ProductAttributeType.values.map((type) => 
                       DropdownMenuItem(
@@ -3792,8 +3772,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     TextField(
                       controller: placeholderController,
                       decoration: _lightBorderDecoration.copyWith(
-                        labelText: AppLocalizations.of(context)?.product_edit_placeholder_label ?? 'Placeholder Text',
-                        hintText: AppLocalizations.of(context)?.product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
+                        labelText: AppLocalizations.of(context).product_edit_placeholder_label ?? 'Placeholder Text',
+                        hintText: AppLocalizations.of(context).product_edit_placeholder_hint ?? 'e.g., Please select color, Please enter model',
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -3811,7 +3791,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                             });
                           },
                         ),
-                        Text(AppLocalizations.of(context)?.seller_product_edit_required_item ?? 'Required'),
+                        Text(AppLocalizations.of(context).seller_product_edit_required_item ?? 'Required'),
                       ],
                     ),
                   ],
@@ -3822,13 +3802,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_cancel ?? 'Cancel'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_cancel ?? 'Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
                 if (nameController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)?.product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
+                    SnackBar(content: Text(AppLocalizations.of(context).product_edit_please_enter_attribute_name ?? 'Please enter attribute name')),
                   );
                   return;
                 }
@@ -3851,7 +3831,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 backgroundColor: const Color(0xFFBF7D2A),
                 foregroundColor: Colors.white,
               ),
-              child: Text(AppLocalizations.of(context)?.seller_product_edit_save ?? 'Save'),
+              child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
           ],
         ),

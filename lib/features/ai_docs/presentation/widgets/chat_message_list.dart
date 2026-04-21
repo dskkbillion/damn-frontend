@@ -6,9 +6,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
 import 'chat_message_bubble.dart';
-import 'animated_text_chunk.dart';
 import 'streaming_message_bubble.dart';
 import 'time_separator.dart'; // 🕐 导入时间分隔符组件
 import 'package:dskk_flutter_refactor/core/utils/smart_time_formatter.dart'; // 🕐 导入智能时间格式化工具
@@ -50,7 +48,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
 
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
-    final threshold = 100.0; // 距离底部100像素时认为在底部附近
+    const threshold = 100.0; // 距离底部100像素时认为在底部附近
 
     // 检查是否接近底部
     final isNearBottom = (maxScroll - currentScroll) <= threshold;
@@ -96,7 +94,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     return BlocListener<AiChatBloc, AiChatState>(
       listenWhen: (previous, current) =>
@@ -158,7 +156,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
                          child: Column(
                            mainAxisSize: MainAxisSize.min,
                            children: [
-                             Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
+                             const Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
                              const SizedBox(height: AppDimensions.spacingLg),
                              Text(
                                appLocalizations.ai_docs_welcome_title,

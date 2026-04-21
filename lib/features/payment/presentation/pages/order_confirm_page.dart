@@ -28,7 +28,7 @@ class OrderConfirmPage extends StatefulWidget {
   final String? imageUrl;
 
   const OrderConfirmPage({
-    Key? key,
+    super.key,
     required this.productId,
     required this.variantId,
     required this.quantity,
@@ -38,7 +38,7 @@ class OrderConfirmPage extends StatefulWidget {
     required this.productName,
     this.displayProductName,
     this.imageUrl,
-  }) : super(key: key);
+  });
 
   @override
   State<OrderConfirmPage> createState() => _OrderConfirmPageState();
@@ -158,8 +158,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                           border: Border.all(color: Colors.orange.withOpacity(0.3)),
                         ),
-                        child: Row(
-                          children: const [
+                        child: const Row(
+                          children: [
                             Icon(Icons.info_outline, size: 16, color: Colors.orange),
                             SizedBox(width: AppDimensions.spacingSm),
                             Expanded(
@@ -173,7 +173,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                       ),
                     if (RegionConfig.currentRegion == RegionType.domestic)
                       const SizedBox(height: AppDimensions.spacingMd),
-                    Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    const Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
                     const SizedBox(height: AppDimensions.spacingLg),
                     // 显示支付URL（截断显示）
                     Container(

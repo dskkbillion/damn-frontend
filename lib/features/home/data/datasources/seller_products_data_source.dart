@@ -65,7 +65,7 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
       );
       
       if (response.statusCode == 200 && response.data['code'] == 200) {
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
         return true;
       } else {
         throw ServerException(
@@ -108,7 +108,7 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
             );
             
             if (deleteResponse.statusCode == 200 && deleteResponse.data['code'] == 200) {
-              await Future.delayed(Duration(milliseconds: 500));
+              await Future.delayed(const Duration(milliseconds: 500));
               return true;
             }
           }

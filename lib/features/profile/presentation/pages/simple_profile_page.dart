@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:get_it/get_it.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
-import '../bloc/profile_bloc.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
 
-  const SimpleProfilePage({Key? key, this.onSwitchMode}) : super(key: key);
+  const SimpleProfilePage({super.key, this.onSwitchMode});
 
   @override
   State<SimpleProfilePage> createState() => _SimpleProfilePageState();
@@ -47,43 +44,43 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             _buildProfileHeader(context),
             _buildProfileSection(
               context,
-              AppLocalizations.of(context)!.profile_my_orders,
+              AppLocalizations.of(context).profile_my_orders,
               _buildOrderStatusList(context)
             ),
             _buildProfileSection(
               context,
-              AppLocalizations.of(context)!.profile_my_dskk_section,
+              AppLocalizations.of(context).profile_my_dskk_section,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.star_border,
-                  title: AppLocalizations.of(context)!.profile_favorites,
+                  title: AppLocalizations.of(context).profile_favorites,
                   onTap: () => context.push('/favorites'),
                 ),
                 MenuItem(
                   icon: Icons.favorite_border,
-                  title: AppLocalizations.of(context)!.profile_liked_stories,
-                  onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_liked_stories),
+                  title: AppLocalizations.of(context).profile_liked_stories,
+                  onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context).profile_liked_stories),
                 ),
               ]),
             ),
             _buildProfileSection(
               context,
-              AppLocalizations.of(context)!.profile_my_wallet,
+              AppLocalizations.of(context).profile_my_wallet,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.account_balance_wallet,
-                  title: AppLocalizations.of(context)!.profile_wallet,
+                  title: AppLocalizations.of(context).profile_wallet,
                   onTap: () => _navigateToWallet(context),
                 ),
               ]),
             ),
             _buildProfileSection(
               context,
-              AppLocalizations.of(context)!.profile_settings,
+              AppLocalizations.of(context).profile_settings,
               _buildMenuList(context, [
                 MenuItem(
                   icon: Icons.security,
-                  title: AppLocalizations.of(context)!.profile_account_security,
+                  title: AppLocalizations.of(context).profile_account_security,
                   onTap: () => _navigateToAccountSecurity(context),
                 ),
               ]),
@@ -96,13 +93,13 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_logout);
+                    _showFeatureNotImplemented(AppLocalizations.of(context).profile_logout);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.red,
                     backgroundColor: Colors.red[50],
                   ),
-                  child: Text(AppLocalizations.of(context)!.profile_logout),
+                  child: Text(AppLocalizations.of(context).profile_logout),
                 ),
               ),
             ),
@@ -139,9 +136,9 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   GestureDetector(
-                    onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_edit_nickname),
+                    onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context).profile_edit_nickname),
                     child: Text(
-                      userName ?? AppLocalizations.of(context)!.profile_user_name_default,
+                      userName ?? AppLocalizations.of(context).profile_user_name_default,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -162,7 +159,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        AppLocalizations.of(context)!.profile_online,
+                        AppLocalizations.of(context).profile_online,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.8),
@@ -188,7 +185,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.profile_buyer_mode,
+                  AppLocalizations.of(context).profile_buyer_mode,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -201,7 +198,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       widget.onSwitchMode!();
                     }
                   },
-                  activeColor: Colors.green,
+                  activeThumbColor: Colors.green,
                 ),
               ],
             ),
@@ -237,7 +234,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   }
 
   Widget _buildOrderStatusList(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final List<OrderStatusItem> items = [
       OrderStatusItem(
         icon: Icons.access_time,
@@ -353,25 +350,25 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
         // 显示提示
         // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_updated_local)),
+          SnackBar(content: Text(AppLocalizations.of(context).profile_avatar_updated_local)),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_error(e.toString()))),
+        SnackBar(content: Text(AppLocalizations.of(context).profile_image_pick_error(e.toString()))),
       );
     }
   }
 
   void _showFeatureNotImplemented(String featureName) {
-    if (featureName == AppLocalizations.of(context)!.profile_my_wallet) {
+    if (featureName == AppLocalizations.of(context).profile_my_wallet) {
       // Navigate to wallet using GoRouter
       context.push('/profile/wallet');
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.profile_feature_not_implemented(featureName))),
+      SnackBar(content: Text(AppLocalizations.of(context).profile_feature_not_implemented(featureName))),
     );
   }
 

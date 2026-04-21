@@ -15,10 +15,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_queue/message_queue_cubit.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 
 /// 文件上传进度对话框
 class _UploadProgressDialog extends StatelessWidget {
@@ -27,19 +24,18 @@ class _UploadProgressDialog extends StatelessWidget {
 
   const _UploadProgressDialog({
     required this.fileName,
-    this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('上传文件'),
+      title: const Text('上传文件'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             fileName,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -52,7 +48,7 @@ class _UploadProgressDialog extends StatelessWidget {
             progress != null 
               ? '${(progress! * 100).toStringAsFixed(1)}%'
               : '准备上传...',
-            style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+            style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
           ),
         ],
       ),
@@ -120,7 +116,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _startRecording() async {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +209,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _stopRecordingAndSend() async {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     _recordingTimer?.cancel();
     try {
@@ -268,7 +264,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     try {
       ImageProcessResult? result;
@@ -288,7 +284,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (dialogContext) => PopScope(
+          builder: (dialogContext) => const PopScope(
             canPop: false,
             child: _UploadProgressDialog(
               fileName: '图片上传中...',
@@ -335,7 +331,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 FocusScope.of(context).unfocus();
 
                 // 显示压缩信息（如果有）
-                if (result!.compressionRatio != null) {
+                if (result.compressionRatio != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('图片已压缩 ${result.compressionRatio!.toStringAsFixed(1)}% 并发送'),
@@ -374,7 +370,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   }
 
   Future<void> _pickFile() async {
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     try {
       // 使用 FilePicker 选择文件
@@ -390,9 +386,9 @@ class _CustomInputBarState extends State<CustomInputBar> {
         final file = result.files.first;
         
         // 检查文件大小（限制10MB）
-        if (file.size != null && file.size! > 10 * 1024 * 1024) {
+        if (file.size > 10 * 1024 * 1024) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('文件大小不能超过10MB')),
+            const SnackBar(content: Text('文件大小不能超过10MB')),
           );
           return;
         }
@@ -497,7 +493,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
         isScrollControlled: false, // 不控制滚动，保持默认行为
         builder: (context) {
           return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.backgroundCard,
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
         ),
@@ -558,13 +554,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
       // Recording UI
       return Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppColors.backgroundCard,
           boxShadow: [
             BoxShadow(
               color: AppColors.borderSecondary,
               blurRadius: 4,
-              offset: const Offset(0, -2),
+              offset: Offset(0, -2),
             ),
           ],
         ),
@@ -572,7 +568,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           children: [
             // Cancel button
             IconButton(
-              icon: Icon(Icons.close, color: AppColors.error),
+              icon: const Icon(Icons.close, color: AppColors.error),
               onPressed: _cancelRecording,
             ),
             
@@ -584,7 +580,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                   Container(
                     width: 12,
                     height: 12,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.error,
                       shape: BoxShape.circle,
                     ),
@@ -603,7 +599,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
             
             // Send button
             IconButton(
-              icon: Icon(Icons.send, color: AppColors.info),
+              icon: const Icon(Icons.send, color: AppColors.info),
               onPressed: _stopRecordingAndSend,
             ),
           ],
@@ -614,13 +610,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
     // Normal input UI
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.backgroundCard,
         boxShadow: [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 4,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -657,7 +653,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                         color: AppColors.backgroundSecondary,
                         borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                       ),
-                      child: Center(
+                      child: const Center(
                         child: Text(
                           '按住说话',
                           style: TextStyle(
@@ -678,7 +674,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                       onSubmitted: (_) => _sendMessage(),
                       decoration: InputDecoration(
                         hintText: '输入消息...',
-                        hintStyle: TextStyle(color: AppColors.textTertiary),
+                        hintStyle: const TextStyle(color: AppColors.textTertiary),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                           borderSide: BorderSide.none,
@@ -697,7 +693,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           // Attachment button
           if (!_isVoiceMode)
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.add_circle_outline,
                 color: AppColors.textSecondary,
               ),

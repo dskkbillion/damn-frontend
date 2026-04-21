@@ -19,7 +19,7 @@ class OrderPaymentInfo extends Equatable {
   });
 
   // Add an empty factory constructor or static constant
-  static final OrderPaymentInfo empty = OrderPaymentInfo(
+  static const OrderPaymentInfo empty = OrderPaymentInfo(
     payStatus: false,
     payTime: null,
     payChannelCode: null,

@@ -21,10 +21,10 @@ class ProfileMenuSection extends StatelessWidget {
   final List<MenuItem> menuItems;
 
   const ProfileMenuSection({
-    Key? key,
+    super.key,
     required this.title,
     required this.menuItems,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +34,11 @@ class ProfileMenuSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 5,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -53,7 +53,7 @@ class ProfileMenuSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...menuItems.map((item) => _buildMenuItem(context, item)).toList(),
+          ...menuItems.map((item) => _buildMenuItem(context, item)),
         ],
       ),
     );
@@ -81,7 +81,7 @@ class ProfileMenuSection extends StatelessWidget {
               ),
             ),
             item.trailing ??
-                Icon(
+                const Icon(
                   Icons.chevron_right,
                   color: AppColors.textTertiary,
                 ),

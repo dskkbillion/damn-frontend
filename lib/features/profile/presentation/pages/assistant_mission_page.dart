@@ -3,11 +3,11 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 小帮手的使命页面
 class AssistantMissionPage extends StatelessWidget {
-  const AssistantMissionPage({Key? key}) : super(key: key);
+  const AssistantMissionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     return Scaffold(
       appBar: AppBar(

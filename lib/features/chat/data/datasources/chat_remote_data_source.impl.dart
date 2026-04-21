@@ -1,17 +1,15 @@
 import 'dart:convert'; // For jsonEncode if needed
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:collection/collection.dart'; // For firstWhereOrNull
+// For firstWhereOrNull
 
-import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart'; // Import Dio
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import ServerException
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 
-import '../../domain/entities/chat_room.dart';
 import '../models/chat_message_dto.dart';
 import '../models/chat_room_dto.dart';
 import 'i_chat_remote_data_source.dart';
-import 'package:injectable/injectable.dart'; // Add injectable import
+// Add injectable import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Create Dio instance with proper base URL from environment

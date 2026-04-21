@@ -71,8 +71,8 @@ class OrderRoutes {
         if (itemId == null) {
           print('Error: Invalid itemId parameter in route: $itemIdStr');
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context)!.order_route_error)),
-            body: Center(child: Text(AppLocalizations.of(context)!.order_route_invalid_item_id(itemIdStr))),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).order_route_error)),
+            body: Center(child: Text(AppLocalizations.of(context).order_route_invalid_item_id(itemIdStr))),
           );
         }
         // Get orderItem from extra if available

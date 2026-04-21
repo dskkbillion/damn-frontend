@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:collection';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 
 /// Service for preloading chat images to improve performance
 class ChatPreloadService {
@@ -94,11 +92,11 @@ class ChatPreloadService {
     
     for (final room in chatRooms) {
       // Add participant avatars
-      if (room.participant1?.avatar != null && room.participant1!.avatar!.isNotEmpty) {
-        avatarUrls.add(room.participant1!.avatar!);
+      if (room.participant1.avatar != null && room.participant1.avatar!.isNotEmpty) {
+        avatarUrls.add(room.participant1.avatar!);
       }
-      if (room.participant2?.avatar != null && room.participant2!.avatar!.isNotEmpty) {
-        avatarUrls.add(room.participant2!.avatar!);
+      if (room.participant2.avatar != null && room.participant2.avatar!.isNotEmpty) {
+        avatarUrls.add(room.participant2.avatar!);
       }
       
       // Limit the number of avatars to preload

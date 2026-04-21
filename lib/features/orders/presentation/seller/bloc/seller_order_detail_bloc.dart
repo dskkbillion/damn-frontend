@@ -124,7 +124,7 @@ class SellerOrderDetailBloc extends Bloc<SellerOrderDetailEvent, SellerOrderDeta
     Emitter<SellerOrderDetailState> emit,
   ) async {
      // TODO: Use real delivery params from event/UI later
-     final params = DeliverOrderParams(orderId: event.orderId, content: 'Mock delivery', files: []);
+     final params = DeliverOrderParams(orderId: event.orderId, content: 'Mock delivery', files: const []);
      await _handleAction(
        event.orderId,
        emit,

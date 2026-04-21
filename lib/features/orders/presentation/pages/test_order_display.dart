@@ -44,11 +44,11 @@ class TestOrderDisplayPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       '订单信息',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text('ID: ${order.id}'),
                     Text('编号: ${order.orderSn}'),
                     Text('状态: ${order.state}'),
@@ -57,7 +57,7 @@ class TestOrderDisplayPage extends StatelessWidget {
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // 商品信息
               Container(
@@ -71,23 +71,23 @@ class TestOrderDisplayPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       '商品信息',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     if (order.items.isNotEmpty) ...[
                       Text('商品名称: ${order.items.first.productName}'),
                       Text('SKU: ${order.items.first.skuName}'),
                       Text('数量: ${order.items.first.quantity}'),
                       Text('单价: ${RegionConfig.currencySymbol}${order.items.first.price}'),
                     ] else
-                      Text('没有商品信息'),
+                      const Text('没有商品信息'),
                   ],
                 ),
               ),
               
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               
               // 用户信息
               Container(
@@ -101,11 +101,11 @@ class TestOrderDisplayPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       '用户信息',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text('买家: ${order.buyer?.nickname ?? "未知"}'),
                     Text('卖家: ${order.tenant?.nickname ?? "未知"}'),
                     if (order.tenant?.shopName != null)
@@ -114,7 +114,7 @@ class TestOrderDisplayPage extends StatelessWidget {
                 ),
               ),
               
-              SizedBox(height: 80), // 底部间距
+              const SizedBox(height: 80), // 底部间距
             ],
           ),
         ),

@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import 'package:get_it/get_it.dart'; // Import GetIt
-import 'package:collection/collection.dart'; // Import collection package
+// Import collection package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
@@ -15,29 +10,18 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 
 // Import Bloc and State/Event files
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/bloc/ai_chat/ai_chat_bloc.dart'; // Use package import
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_widget.dart'; // Use package import
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/animated_allocation_button.dart'; // 导入动画按钮组件
+// Use package import
+// 导入动画按钮组件
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_allocation_buttons.dart'; // 🆕 导入新的分配按钮组件
 
 // Import domain interfaces and usecases (Use package imports)
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
 
 // Import data layer implementations (Use package imports)
-import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/ai_chat_repository_impl.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/data/repositories/file_upload_repository_impl.dart';
 
 // Import Custom Widgets (Use package imports)
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_input_field.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_list.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/service_card.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
@@ -70,11 +54,11 @@ class _ChatPageState extends State<ChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) { // Check if the state is still mounted
         final bloc = context.read<AiChatBloc>();
-        bloc.add(LoadConversations());
+        bloc.add(const LoadConversations());
 
         // 频率限制接口使用 member.id，不是 common_user_id
         try {
-          final storage = const FlutterSecureStorage();
+          const storage = FlutterSecureStorage();
           final memberUserIdString = await storage.read(key: 'user_id');
           final userId = int.tryParse(memberUserIdString ?? '');
 
@@ -102,7 +86,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
       // Add a drawer for the conversation sidebar
@@ -222,7 +206,7 @@ class _ChatPageState extends State<ChatPage> {
 
   void _sendMessage(String message) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     // 检查消息是否为空
     if (message.trim().isNotEmpty) {
@@ -289,13 +273,13 @@ class RecommendationBottomSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     // 移除不需要的BlocListener，不显示SnackBar提示
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.backgroundCard,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusLg)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusLg)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +312,7 @@ class RecommendationBottomSheetContent extends StatelessWidget {
                 ],
               ),
            ),
-            Divider(height: 1, color: AppColors.borderPrimary),
+            const Divider(height: 1, color: AppColors.borderPrimary),
 
             // 内容区域
           Expanded(
@@ -485,16 +469,16 @@ class ServiceGridItem extends StatelessWidget {
   final VoidCallback onEnterChat;
 
   const ServiceGridItem({
-    Key? key,
+    super.key,
     required this.service,
     required this.onTap,
     required this.onEnterChat,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
     return BlocBuilder<AiChatBloc, AiChatState>(
@@ -513,11 +497,11 @@ class ServiceGridItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 3,
-            offset: const Offset(0, 1),
+            offset: Offset(0, 1),
           ),
         ],
       ),

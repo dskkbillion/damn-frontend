@@ -35,11 +35,11 @@ class EventBuffer {
     
     // 如果缓存满了，立即上报
     if (_buffer.length >= _maxBufferSize) {
-      AppLogger.d('[EventBuffer] 缓冲区已满 (${_buffer.length}/${_maxBufferSize})，触发即时上报');
+      AppLogger.d('[EventBuffer] 缓冲区已满 (${_buffer.length}/$_maxBufferSize)，触发即时上报');
       _uploadEvents();
     } else {
       // 否则保存到本地存储
-      AppLogger.d('[EventBuffer] 当前缓冲区事件数: ${_buffer.length}/${_maxBufferSize}');
+      AppLogger.d('[EventBuffer] 当前缓冲区事件数: ${_buffer.length}/$_maxBufferSize');
       _saveCachedEvents();
     }
   }
@@ -178,7 +178,7 @@ class EventBuffer {
         
         // 如果有缓存事件，尝试上报
         if (_buffer.isNotEmpty) {
-          Future.delayed(Duration(seconds: 5), () {
+          Future.delayed(const Duration(seconds: 5), () {
             _uploadEvents();
           });
         }

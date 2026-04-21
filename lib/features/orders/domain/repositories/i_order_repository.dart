@@ -20,7 +20,7 @@ class AddOrderDemandParams extends Equatable { // Make Equatable
   final String? remarks;
   // Add other fields if needed based on API: files, etc.
 
-  AddOrderDemandParams({
+  const AddOrderDemandParams({
     required this.orderId,
     required this.type,
     required this.reasonValue,
@@ -40,7 +40,7 @@ class DeliverOrderParams extends Equatable { // Make Equatable
   final String? deliverySn;
   final String? deliveryCompany;
 
-  DeliverOrderParams({
+  const DeliverOrderParams({
     required this.orderId,
     required this.content,
     required this.files,

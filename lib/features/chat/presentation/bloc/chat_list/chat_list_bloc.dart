@@ -4,7 +4,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dartz/dartz.dart';
-import 'package:injectable/injectable.dart'; // Optional: for DI later
+// Optional: for DI later
 import 'package:flutter/foundation.dart'; // Add this for @immutable in part files
 
 // Use package imports to avoid relative path issues

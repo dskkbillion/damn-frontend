@@ -17,7 +17,7 @@ import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -55,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
-            final appLocalizations = AppLocalizations.of(context)!;
+            final appLocalizations = AppLocalizations.of(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(appLocalizations.profile_avatar_upload_failed),
@@ -68,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
         child: BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, state) {
             // 获取国际化资源
-            final appLocalizations = AppLocalizations.of(context)!;
+            final appLocalizations = AppLocalizations.of(context);
             
             AppLogger.d('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
             
@@ -98,7 +98,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildLoginPrompt(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -130,7 +130,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildMainContent(BuildContext context, ProfileState state) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Scaffold(
       body: SafeArea(
@@ -161,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 用户信息头部
-                ProfileHeader(),
+                const ProfileHeader(),
 
                 // 我的订单
                 const OrderStatusSection(),

@@ -119,7 +119,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           // 返回模拟数据
           AppLogger.d('使用模拟数据 - 认证失败或数据格式不正确');
           return [
-            FavoriteServiceModel(
+            const FavoriteServiceModel(
               id: 1,
               title: '专业清洗服务',
               description: '提供专业的清洗服务，包括家居、办公室等',
@@ -127,7 +127,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
               price: 100.0,
               isFavorite: true,
             ),
-            FavoriteServiceModel(
+            const FavoriteServiceModel(
               id: 2,
               title: '上门维修服务',
               description: '提供各类家电、设备的上门维修服务',
@@ -141,7 +141,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
         // 返回模拟数据
         AppLogger.d('使用模拟数据 - HTTP状态码不是200');
         return [
-          FavoriteServiceModel(
+          const FavoriteServiceModel(
             id: 1,
             title: '专业清洗服务',
             description: '提供专业的清洗服务，包括家居、办公室等',
@@ -149,7 +149,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
             price: 100.0,
             isFavorite: true,
           ),
-          FavoriteServiceModel(
+          const FavoriteServiceModel(
             id: 2,
             title: '上门维修服务',
             description: '提供各类家电、设备的上门维修服务',
@@ -164,7 +164,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
       // 返回模拟数据
       AppLogger.d('使用模拟数据 - 发生异常');
       return [
-        FavoriteServiceModel(
+        const FavoriteServiceModel(
           id: 1,
           title: '专业清洗服务',
           description: '提供专业的清洗服务，包括家居、办公室等',
@@ -172,7 +172,7 @@ class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
           price: 100.0,
           isFavorite: true,
         ),
-        FavoriteServiceModel(
+        const FavoriteServiceModel(
           id: 2,
           title: '上门维修服务',
           description: '提供各类家电、设备的上门维修服务',

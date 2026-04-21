@@ -8,10 +8,10 @@ class MockAfterSaleRepository implements IAfterSaleRepository {
   // --- 控制 getSimpleOrderAfterSaleStatus 的行为 ---
   bool _shouldFail = false;
   // 默认返回 'none' 状态，可以根据订单 ID 模拟不同状态，或提供方法设置
-  Map<String, SimpleAfterSaleStatus> _orderStatuses = {};
+  final Map<String, SimpleAfterSaleStatus> _orderStatuses = {};
   SimpleAfterSaleStatus _defaultStatus = SimpleAfterSaleStatus.none;
   // Removed const because ServerFailure constructor is not const
-  Failure _failureToReturn = ServerFailure(message: 'Mock AfterSale Error: Failed to get status'); // 默认模拟错误
+  Failure _failureToReturn = const ServerFailure(message: 'Mock AfterSale Error: Failed to get status'); // 默认模拟错误
 
   /// 配置 Mock 对象在调用 getSimpleOrderAfterSaleStatus 时是否强制失败。
   void setShouldFail(bool fail) {

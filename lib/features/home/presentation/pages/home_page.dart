@@ -20,12 +20,12 @@ import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 
 /// 首页
 class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     // 注意：在预览应用中，HomeBloc 已经在上层通过 BlocProvider 提供
     return HomeView(title: appLocalizations.home_title);
@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
 class HomeView extends StatefulWidget {
   final String title;
   
-  const HomeView({Key? key, required this.title}) : super(key: key);
+  const HomeView({super.key, required this.title});
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -87,7 +87,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -156,7 +156,7 @@ class _HomeViewState extends State<HomeView> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.explore_outlined,
                                 size: 64,
                                 color: AppColors.textTertiary,
@@ -253,7 +253,7 @@ class _HomeViewState extends State<HomeView> {
                                       const SizedBox(height: 12),
                                       Text(
                                         appLocalizations.home_loading_more,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           color: AppColors.textSecondary,
                                           fontSize: 14,
                                         ),
@@ -291,7 +291,7 @@ class _HomeViewState extends State<HomeView> {
                                     const SizedBox(height: 8),
                                     Text(
                                       appLocalizations.home_back_to_top_refresh,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: AppColors.textSecondary,
                                         fontSize: 14,
                                       ),
@@ -311,7 +311,7 @@ class _HomeViewState extends State<HomeView> {
                 children: [
                   Text(
                     appLocalizations.home_loading_failed(state.message),
-                    style: TextStyle(color: AppColors.error),
+                    style: const TextStyle(color: AppColors.error),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -345,7 +345,7 @@ class _HomeViewState extends State<HomeView> {
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return GestureDetector(
       onTap: () {

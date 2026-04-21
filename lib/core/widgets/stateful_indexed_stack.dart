@@ -8,11 +8,11 @@ class StatefulIndexedStack extends StatefulWidget {
   final bool preloadAll;
   
   const StatefulIndexedStack({
-    Key? key,
+    super.key,
     required this.index,
     required this.children,
     this.preloadAll = false,
-  }) : super(key: key);
+  });
   
   @override
   State<StatefulIndexedStack> createState() => _StatefulIndexedStackState();

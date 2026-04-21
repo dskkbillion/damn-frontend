@@ -7,8 +7,6 @@ import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import cor
 
 // Domain Layer (Interfaces and Entities)
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart'; // 导入LoadHistoryResult

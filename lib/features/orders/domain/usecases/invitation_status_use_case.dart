@@ -69,7 +69,7 @@ class InvitationStatusUseCase {
     final status = await getInvitationStatus(orderId);
     
     if (status.hasReachedTodayLimit) {
-      return Left(ServerFailure(message: '今日邀请次数已达上限（3次），请明天再试'));
+      return const Left(ServerFailure(message: '今日邀请次数已达上限（3次），请明天再试'));
     }
     
     return const Right(true);
@@ -80,7 +80,7 @@ class InvitationStatusUseCase {
     // 先检查是否可以邀请
     final canInviteResult = await canInviteEvaluation(orderId);
     if (canInviteResult.isLeft()) {
-      return canInviteResult.fold((failure) => Left(failure), (_) => Left(ServerFailure(message: '未知错误')));
+      return canInviteResult.fold((failure) => Left(failure), (_) => const Left(ServerFailure(message: '未知错误')));
     }
 
     // 调用API邀请
@@ -92,9 +92,9 @@ class InvitationStatusUseCase {
         if (failure is ServerFailure) {
           final message = failure.message ?? '';
           if (message.contains('已邀请') || message.contains('重复')) {
-            return Left(ServerFailure(message: '今日已邀请过该订单，请勿重复邀请'));
+            return const Left(ServerFailure(message: '今日已邀请过该订单，请勿重复邀请'));
           } else if (message.contains('限制') || message.contains('上限')) {
-            return Left(ServerFailure(message: '邀请次数已达上限，请明天再试'));
+            return const Left(ServerFailure(message: '邀请次数已达上限，请明天再试'));
           }
         }
         return Left(failure);

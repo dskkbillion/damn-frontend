@@ -7,10 +7,10 @@ import 'package:dskk_flutter_refactor/core/rating/repositories/i_rating_reposito
 class MockRatingRepository implements IRatingRepository {
   // --- 控制 canEvaluateOrder 的行为 ---
   bool _shouldFail = false;
-  Map<String, bool> _canEvaluateFlags = {}; // 存储特定订单是否可评价
+  final Map<String, bool> _canEvaluateFlags = {}; // 存储特定订单是否可评价
   bool _defaultCanEvaluate = false; // 默认是否可评价
   // Removed const because ServerFailure constructor is not const
-  Failure _failureToReturn = ServerFailure(message: 'Mock Rating Error: Failed to check evaluation status'); // 默认错误
+  Failure _failureToReturn = const ServerFailure(message: 'Mock Rating Error: Failed to check evaluation status'); // 默认错误
 
   void setShouldFail(bool fail) {
     _shouldFail = fail;

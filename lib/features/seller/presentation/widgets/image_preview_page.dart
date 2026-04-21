@@ -20,13 +20,13 @@ class ImagePreviewPage extends StatefulWidget {
   final Function(int index) onDeleteImage;
 
   const ImagePreviewPage({
-    Key? key,
+    super.key,
     required this.imagePaths,
     required this.initialIndex,
     required this.mainImageIndex,
     required this.onSetMainImage,
     required this.onDeleteImage,
-  }) : super(key: key);
+  });
 
   @override
   State<ImagePreviewPage> createState() => _ImagePreviewPageState();
@@ -131,7 +131,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                           children: [
                             const Icon(Icons.star, color: Colors.white, size: 16),
                             const SizedBox(width: 4),
-                            Text(AppLocalizations.of(context)?.seller_image_preview_main_image ?? 'Main', style: const TextStyle(color: Colors.white)),
+                            Text(AppLocalizations.of(context).seller_image_preview_main_image ?? 'Main', style: const TextStyle(color: Colors.white)),
                           ],
                         ),
                       )
@@ -139,7 +139,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                       ElevatedButton.icon(
                         onPressed: () => _setAsMainImage(),
                         icon: const Icon(Icons.star_border, size: 16),
-                        label: Text(AppLocalizations.of(context)?.seller_image_preview_set_main ?? 'Set as Main'),
+                        label: Text(AppLocalizations.of(context).seller_image_preview_set_main ?? 'Set as Main'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.2),
                           foregroundColor: Colors.white,
@@ -209,7 +209,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               children: [
                 const Icon(Icons.error, color: Colors.white, size: 64),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)?.seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
+                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
               ],
             ),
           );
@@ -227,7 +227,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               children: [
                 const Icon(Icons.error, color: Colors.white, size: 64),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context)?.seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
+                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
               ],
             ),
           );
@@ -247,19 +247,19 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)?.seller_image_preview_delete_title ?? 'Delete Image'),
-        content: Text(AppLocalizations.of(context)?.seller_image_preview_delete_confirm(_currentIndex + 1) ?? 'Delete image ${_currentIndex + 1}?'),
+        title: Text(AppLocalizations.of(context).seller_image_preview_delete_title ?? 'Delete Image'),
+        content: Text(AppLocalizations.of(context).seller_image_preview_delete_confirm(_currentIndex + 1) ?? 'Delete image ${_currentIndex + 1}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)?.seller_common_cancel ?? 'Cancel'),
+            child: Text(AppLocalizations.of(context).seller_common_cancel ?? 'Cancel'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // 关闭对话框
               _deleteCurrentImage();
             },
-            child: Text(AppLocalizations.of(context)?.seller_image_preview_delete ?? 'Delete', style: const TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context).seller_image_preview_delete ?? 'Delete', style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

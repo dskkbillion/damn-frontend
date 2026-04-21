@@ -21,7 +21,7 @@ void main() {
 
     test('should create valid payment request', () {
       // 验证支付请求创建
-      final request = PaymentRequest(
+      const request = PaymentRequest(
         orderId: '123',
         amount: '0.01',
         subject: '测试商品',

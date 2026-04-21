@@ -8,12 +8,10 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/platform/token_validator.dart';
 import '../../../../core/storage/secure_storage_repository.dart';
-import 'package:dskk_flutter_refactor/core/usecases/validate_token_usecase.dart';
 
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_credentials.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/entities/user_info.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
@@ -122,10 +120,10 @@ class AuthRepositoryImpl implements IAuthRepository {
         return Left(CacheFailure(message: e.message ?? 'Storage error'));
       } catch (e) {
         AppLogger.d('Unknown exception in repository: ${e.toString()}');
-        return Left(UnknownFailure(message: 'An unknown error occurred'));
+        return const Left(UnknownFailure(message: 'An unknown error occurred'));
       }
     } else {
-      return Left(NetworkFailure(message: 'No internet connection'));
+      return const Left(NetworkFailure(message: 'No internet connection'));
     }
   }
 
@@ -180,7 +178,7 @@ class AuthRepositoryImpl implements IAuthRepository {
               // 即使存储失败，也更新内存状态，但返回错误
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
-              return Left(CacheFailure(message: 'Login succeeded but failed to save credentials.'));
+              return const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.'));
             }
           },
         );
@@ -240,7 +238,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       // 理论上这里不应出错，除非 currentUser 状态管理有问题
       AppLogger.d('Error getting logged in user sync: $e');
-      return Left(UnknownFailure(message: 'Failed to get current user status'));
+      return const Left(UnknownFailure(message: 'Failed to get current user status'));
     }
   }
 }

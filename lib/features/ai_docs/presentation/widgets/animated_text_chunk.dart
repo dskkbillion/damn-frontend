@@ -10,13 +10,13 @@ class AnimatedTextChunk extends StatefulWidget {
   final Curve animationCurve;
 
   const AnimatedTextChunk({
-    Key? key,
+    super.key,
     required this.text,
     this.isStreaming = false,
     this.textStyle,
     this.animationDuration = const Duration(milliseconds: 400),
     this.animationCurve = Curves.easeInOut,
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedTextChunk> createState() => _AnimatedTextChunkState();
@@ -101,14 +101,14 @@ class StreamingTextDisplay extends StatelessWidget {
   final Curve animationCurve;
 
   const StreamingTextDisplay({
-    Key? key,
+    super.key,
     required this.textChunks,
     this.fullText,
     this.isStreaming = false,
     this.textStyle,
     this.animationDuration = const Duration(milliseconds: 400),
     this.animationCurve = Curves.easeInOut,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

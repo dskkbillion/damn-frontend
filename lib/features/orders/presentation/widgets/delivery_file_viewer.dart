@@ -149,14 +149,14 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
 
   // 下载文件
   Future<void> _downloadFile() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     // 请求存储权限
     if (Platform.isAndroid) {
       final status = await Permission.storage.request();
       if (!status.isGranted) {
         Fluttertoast.showToast(
-          msg: l10n?.storagePermissionDenied ?? 'Storage permission denied',
+          msg: l10n.storagePermissionDenied ?? 'Storage permission denied',
         );
         return;
       }
@@ -199,7 +199,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
       widget.onDownloadComplete?.call();
       
       Fluttertoast.showToast(
-        msg: l10n?.downloadCompleted ?? 'Download completed',
+        msg: l10n.downloadCompleted ?? 'Download completed',
       );
     } catch (e) {
       setState(() {
@@ -213,20 +213,20 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
       }
       
       Fluttertoast.showToast(
-        msg: l10n?.downloadFailed ?? 'Download failed',
+        msg: l10n.downloadFailed ?? 'Download failed',
       );
     }
   }
 
   // 打开文件
   Future<void> _openFile() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     if (_localPath != null) {
       final result = await OpenFile.open(_localPath!);
       if (result.type != ResultType.done) {
         Fluttertoast.showToast(
-          msg: l10n?.openFileFailed ?? 'Failed to open file',
+          msg: l10n.openFileFailed ?? 'Failed to open file',
         );
       }
     } else {
@@ -280,7 +280,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final fileType = _getFileType();
     
     return Card(
@@ -329,10 +329,10 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                     const SizedBox(height: 4),
                     Text(
                       fileType == 'image' 
-                        ? (l10n?.tapToPreview ?? 'Tap to preview')
+                        ? (l10n.tapToPreview ?? 'Tap to preview')
                         : fileType == 'pdf'
-                          ? (l10n?.tapToPreview ?? 'Tap to preview')
-                          : (l10n?.tapToOpen ?? 'Tap to open'),
+                          ? (l10n.tapToPreview ?? 'Tap to preview')
+                          : (l10n.tapToOpen ?? 'Tap to open'),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -371,7 +371,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    l10n?.downloaded ?? 'Downloaded',
+                    l10n.downloaded ?? 'Downloaded',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.green,
@@ -382,7 +382,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                 IconButton(
                   icon: const Icon(Icons.download),
                   onPressed: _downloadFile,
-                  tooltip: l10n?.downloadFile ?? 'Download file',
+                  tooltip: l10n.downloadFile ?? 'Download file',
                 )
               else
                 IconButton(
@@ -394,7 +394,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                       _downloadProgress = 0;
                     });
                   },
-                  tooltip: l10n?.cancelDownload ?? 'Cancel download',
+                  tooltip: l10n.cancelDownload ?? 'Cancel download',
                 ),
             ],
           ),
@@ -464,7 +464,7 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     
     return Scaffold(
       appBar: AppBar(
@@ -496,12 +496,12 @@ class _PdfPreviewPageState extends State<PdfPreviewPage> {
         },
         onError: (error) {
           Fluttertoast.showToast(
-            msg: l10n?.pdfLoadFailed ?? 'Failed to load PDF',
+            msg: l10n.pdfLoadFailed ?? 'Failed to load PDF',
           );
         },
         onPageError: (page, error) {
           Fluttertoast.showToast(
-            msg: '${l10n?.pageLoadFailed ?? "Failed to load page"} ${page! + 1}',
+            msg: '${l10n.pageLoadFailed ?? "Failed to load page"} ${page! + 1}',
           );
         },
         onViewCreated: (PDFViewController controller) {

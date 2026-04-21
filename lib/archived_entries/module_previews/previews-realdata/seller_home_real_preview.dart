@@ -33,7 +33,7 @@ Future<void> _injectTestCredentials(GetIt getIt) async {
 
     // Or use Hardcoded values (LESS SECURE, use only temporarily if needed)
     const userIdStr = '18888888888'; // Replace with actual ID (as String)
-    const authToken = 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NjBiODY2LWU2ZmUtNGYyOS04NjVjLTdmMjJjNDg0YjlmZCJ9.QCfx9k2Bu6H1yONyH5jGm_Pjy0DlPPGl9gP1_0p72c-4KjHwoRPIkxXrnJckC1g_UqudTufgjQvfYUCMGzNd9A'; // Replace with actual token
+    const authToken = 'PLACEHOLDER_TOKEN_FOR_DEV'; // Replace with actual token
     const commonUserId = '1'; // Replace if needed
 
     final userId = int.tryParse(userIdStr);

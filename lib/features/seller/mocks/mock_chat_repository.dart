@@ -46,22 +46,22 @@ class MockChatRepository extends Mock implements IChatRepository {
         id: 1001,
         title: '买家一号',
         userId: userId,
-        createdAt: now.subtract(Duration(days: 2)),
-        updatedAt: now.subtract(Duration(hours: 2)),
+        createdAt: now.subtract(const Duration(days: 2)),
+        updatedAt: now.subtract(const Duration(hours: 2)),
       ),
       ChatSession(
         id: 1002,
         title: '买家二号',
         userId: userId,
-        createdAt: now.subtract(Duration(days: 1)),
-        updatedAt: now.subtract(Duration(hours: 1)),
+        createdAt: now.subtract(const Duration(days: 1)),
+        updatedAt: now.subtract(const Duration(hours: 1)),
       ),
       ChatSession(
         id: 1003,
         title: '客服中心',
         userId: userId,
-        createdAt: now.subtract(Duration(days: 10)),
-        updatedAt: now.subtract(Duration(days: 5)),
+        createdAt: now.subtract(const Duration(days: 10)),
+        updatedAt: now.subtract(const Duration(days: 5)),
       ),
     ]);
   }
@@ -88,7 +88,7 @@ class MockChatRepository extends Mock implements IChatRepository {
         'conversation_id': conversationId,
         'sender_id': 12345, // 卖家ID
         'content': '您好，有什么可以帮您?',
-        'created_at': now.subtract(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
+        'created_at': now.subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
         'is_read': true,
       },
       {
@@ -96,7 +96,7 @@ class MockChatRepository extends Mock implements IChatRepository {
         'conversation_id': conversationId,
         'sender_id': 54321, // 买家ID
         'content': '我想了解一下这个商品的详情',
-        'created_at': now.subtract(Duration(minutes: 55)).millisecondsSinceEpoch ~/ 1000,
+        'created_at': now.subtract(const Duration(minutes: 55)).millisecondsSinceEpoch ~/ 1000,
         'is_read': true,
       },
       {
@@ -104,7 +104,7 @@ class MockChatRepository extends Mock implements IChatRepository {
         'conversation_id': conversationId,
         'sender_id': 12345, // 卖家ID
         'content': '好的，您可以看看商品描述，有任何疑问随时问我',
-        'created_at': now.subtract(Duration(minutes: 50)).millisecondsSinceEpoch ~/ 1000,
+        'created_at': now.subtract(const Duration(minutes: 50)).millisecondsSinceEpoch ~/ 1000,
         'is_read': true,
       },
     ]);

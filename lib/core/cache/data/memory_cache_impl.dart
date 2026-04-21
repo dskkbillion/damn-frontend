@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:collection/collection.dart';
 
 import '../domain/interfaces/i_memory_cache.dart';
 import '../domain/entities/cache_entry.dart';

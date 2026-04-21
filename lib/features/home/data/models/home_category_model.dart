@@ -3,18 +3,12 @@ import '../../domain/entities/home_category.dart';
 /// HomeCategory 模型，用于序列化和反序列化 API 响应
 class HomeCategoryModel extends HomeCategory {
   const HomeCategoryModel({
-    required String id,
-    required String name,
-    required String iconUrl,
-    required String targetType,
-    required String targetValue,
-  }) : super(
-          id: id,
-          name: name,
-          iconUrl: iconUrl,
-          targetType: targetType,
-          targetValue: targetValue,
-        );
+    required super.id,
+    required super.name,
+    required super.iconUrl,
+    required super.targetType,
+    required super.targetValue,
+  });
 
   /// 从 JSON 创建 HomeCategoryModel 实例
   factory HomeCategoryModel.fromJson(Map<String, dynamic> json) {

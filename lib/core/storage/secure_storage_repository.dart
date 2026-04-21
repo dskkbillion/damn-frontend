@@ -1,4 +1,3 @@
-import 'package:injectable/injectable.dart';
 
 /// 安全存储仓库接口
 /// 

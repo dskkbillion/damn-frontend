@@ -1,10 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../app/di/injection_container.dart';
-import '../bloc/payment_bloc.dart';
-import '../pages/order_confirm_page.dart';
 import '../pages/payment_result_page.dart';
 
 /// 定义支付模块的路由

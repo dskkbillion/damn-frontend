@@ -175,7 +175,7 @@ class CreateProductUseCase implements UseCase<bool, CreateProductParams> {
       return _sellerRepository.createProduct(productData);
     } else {
       // 如果没有图片需要上传，返回错误（商品必须有至少一张图片）
-      return Left(ValidationFailure(message: '商品必须至少包含一张图片'));
+      return const Left(ValidationFailure(message: '商品必须至少包含一张图片'));
     }
   }
 } 

@@ -5,28 +5,17 @@ import 'favorite_seller_model.dart';
 class CommonUserModel extends CommonUser {
   /// 构造函数
   const CommonUserModel({
-    int? id,
-    required int referId,
-    String? nickName,
-    String? trueName,
-    String? avatar,
-    String? mobile,
-    String? gender,
-    required String type,
-    String? status,
-    int? tenantId,
-  }) : super(
-          id: id,
-          referId: referId,
-          nickName: nickName,
-          trueName: trueName,
-          avatar: avatar,
-          mobile: mobile,
-          gender: gender,
-          type: type,
-          status: status,
-          tenantId: tenantId,
-        );
+    super.id,
+    required super.referId,
+    super.nickName,
+    super.trueName,
+    super.avatar,
+    super.mobile,
+    super.gender,
+    required super.type,
+    super.status,
+    super.tenantId,
+  });
 
   /// 从JSON创建模型
   factory CommonUserModel.fromJson(Map<String, dynamic> json) {
@@ -61,6 +50,7 @@ class CommonUserModel extends CommonUser {
   }
 
   /// 创建一个新的CommonUserModel实例，并更新指定的字段
+  @override
   CommonUserModel copyWith({
     int? id,
     int? referId,

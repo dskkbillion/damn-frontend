@@ -37,7 +37,7 @@ class OrderPaymentStatusWarning extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.warning_amber, color: AppColors.warning, size: 20),
+            const Icon(Icons.warning_amber, color: AppColors.warning, size: 20),
             const SizedBox(width: AppDimensions.spacingSm),
             Expanded(
               child: Column(

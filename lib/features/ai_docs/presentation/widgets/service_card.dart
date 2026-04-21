@@ -20,11 +20,11 @@ class ServiceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),

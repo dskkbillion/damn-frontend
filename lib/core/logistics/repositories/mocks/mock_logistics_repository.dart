@@ -7,10 +7,10 @@ import 'package:dskk_flutter_refactor/core/logistics/repositories/i_logistics_re
 class MockLogisticsRepository implements ILogisticsRepository {
   // --- 控制 getSimplifiedOrderTrackingInfo 的行为 ---
   bool _shouldFail = false;
-  Map<String, SimplifiedTrackingInfo?> _trackingInfos = {}; // 存储特定订单的追踪信息
+  final Map<String, SimplifiedTrackingInfo?> _trackingInfos = {}; // 存储特定订单的追踪信息
   SimplifiedTrackingInfo? _defaultTrackingInfo; // 默认追踪信息（可能为 null）
   // Removed const because ServerFailure constructor is not const
-  Failure _failureToReturn = ServerFailure(message: 'Mock Logistics Error: Failed to get tracking info'); // 默认错误
+  Failure _failureToReturn = const ServerFailure(message: 'Mock Logistics Error: Failed to get tracking info'); // 默认错误
 
   void setShouldFail(bool fail) {
     _shouldFail = fail;

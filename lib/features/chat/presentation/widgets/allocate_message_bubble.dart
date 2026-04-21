@@ -14,11 +14,11 @@ class AllocateMessageBubble extends StatefulWidget {
   final bool isCurrentUserMessage; // 是否是当前用户发送的消息
   
   const AllocateMessageBubble({
-    Key? key, 
+    super.key, 
     required this.message,
     required this.sellerName,
     required this.isCurrentUserMessage,
-  }) : super(key: key);
+  });
 
   @override
   State<AllocateMessageBubble> createState() => _AllocateMessageBubbleState();
@@ -33,7 +33,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   // 根据当前用户是发送者还是接收者生成不同的标题文本
   String get _titleText {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     if (widget.isCurrentUserMessage) {
       // 当前用户是发送者（买家）
@@ -47,7 +47,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -85,14 +85,13 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                   ),
                 ),
                 // 在标题行右侧添加时间
-                if (widget.message.createTime != null)
-                  Text(
-                    DateFormat('HH:mm').format(widget.message.createTime!),
-                    style: TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12.0,
-                    ),
+                Text(
+                  DateFormat('HH:mm').format(widget.message.createTime),
+                  style: const TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 12.0,
                   ),
+                ),
               ],
             ),
           ),

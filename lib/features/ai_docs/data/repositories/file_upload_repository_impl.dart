@@ -38,10 +38,10 @@ class FileUploadRepositoryImpl implements IFileUploadRepository {
       return Left(ServerFailure(message: e.message ?? '文件上传服务器错误')); 
     } on NetworkException {
       // Corrected: Use NetworkFailure from core
-      return Left(NetworkFailure(message: '网络连接失败，无法上传文件')); 
+      return const Left(NetworkFailure(message: '网络连接失败，无法上传文件')); 
     } on CacheException {
       // Corrected: Add message
-      return Left(CacheFailure(message: '文件上传缓存错误')); 
+      return const Left(CacheFailure(message: '文件上传缓存错误')); 
     } on DataSourceException catch (e) { // Assuming DataSourceException exists in core
       AppLogger.d('DataSourceException in FileUploadRepository: ${e.message}');
       // Corrected: Use GeneralFailure

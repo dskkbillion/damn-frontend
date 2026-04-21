@@ -6,7 +6,6 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
@@ -32,7 +31,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
       child: Builder(
         builder: (innerContext) => Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(innerContext)?.seller_auth_management_title ?? 'Authentication Management'),
+            title: Text(AppLocalizations.of(innerContext).seller_auth_management_title ?? 'Authentication Management'),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
@@ -52,14 +51,14 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
                 return _buildErrorState(blocContext, state.message);
               } else if (state is AuthManagementEmpty) {
                 return EmptyState(
-                  text: AppLocalizations.of(innerContext)?.seller_auth_management_no_items ?? 'No authentication items',
+                  text: AppLocalizations.of(innerContext).seller_auth_management_no_items ?? 'No authentication items',
                   icon: Icons.verified_user_outlined,
                 );
               } else if (state is AuthManagementLoaded) {
                 return RefreshIndicator(
                   onRefresh: () async {
                     blocContext.read<AuthManagementBloc>()
-                      .add(RefreshAuthenticationList());
+                      .add(const RefreshAuthenticationList());
                   },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -79,7 +78,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
               );
               } else {
                 return Center(
-                  child: Text(AppLocalizations.of(innerContext)?.seller_auth_management_unknown_status ?? 'Unknown status'),
+                  child: Text(AppLocalizations.of(innerContext).seller_auth_management_unknown_status ?? 'Unknown status'),
                 );
               }
             },
@@ -100,13 +99,13 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
         Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
           child: Text(
-            AppLocalizations.of(context)!?.seller_auth_management_certified_items ?? 'Certified Items',
+            AppLocalizations.of(context).seller_auth_management_certified_items ?? 'Certified Items',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        ...submittedAuthList.map((auth) => _buildAuthItem(context, auth)).toList(),
+        ...submittedAuthList.map((auth) => _buildAuthItem(context, auth)),
       ],
     );
   }
@@ -122,7 +121,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: Text(
-            AppLocalizations.of(context)!?.seller_auth_management_open_certification ?? 'Available Certifications',
+            AppLocalizations.of(context).seller_auth_management_open_certification ?? 'Available Certifications',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -154,11 +153,11 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -224,7 +223,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
 
   /// 构建状态标签
   Widget _buildStatusTag(BuildContext context, AuthenticationStatus status) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     Color backgroundColor;
     Color textColor;
     String text;
@@ -233,22 +232,22 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
       case AuthenticationStatus.approved:
         backgroundColor = AppColors.success.withValues(alpha: 0.1);
         textColor = AppColors.success;
-        text = l10n?.seller_auth_management_certified ?? 'Certified';
+        text = l10n.seller_auth_management_certified ?? 'Certified';
         break;
       case AuthenticationStatus.pending:
         backgroundColor = AppColors.warning.withValues(alpha: 0.1);
         textColor = AppColors.warning;
-        text = l10n?.seller_auth_management_pending ?? 'Pending';
+        text = l10n.seller_auth_management_pending ?? 'Pending';
         break;
       case AuthenticationStatus.rejected:
         backgroundColor = AppColors.error.withValues(alpha: 0.1);
         textColor = AppColors.error;
-        text = l10n?.seller_auth_management_rejected ?? 'Rejected';
+        text = l10n.seller_auth_management_rejected ?? 'Rejected';
         break;
       default:
         backgroundColor = AppColors.backgroundSecondary;
         textColor = AppColors.textSecondary;
-        text = l10n?.seller_auth_management_not_submitted ?? 'Not Submitted';
+        text = l10n.seller_auth_management_not_submitted ?? 'Not Submitted';
     }
 
     return Container(
@@ -302,7 +301,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
 
   /// 构建错误状态组件
   Widget _buildErrorState(BuildContext context, String errorMessage) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     // 判断错误类型
     bool isTimeoutError = errorMessage.contains('超时') || 
                          errorMessage.contains('timeout') ||
@@ -316,28 +315,28 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
     List<String> suggestions = [];
     
     if (isTimeoutError) {
-      title = l10n?.seller_auth_management_server_timeout ?? 'Server Timeout';
-      subtitle = l10n?.seller_auth_management_server_timeout_desc ?? 'The server is taking too long to respond';
+      title = l10n.seller_auth_management_server_timeout ?? 'Server Timeout';
+      subtitle = l10n.seller_auth_management_server_timeout_desc ?? 'The server is taking too long to respond';
       suggestions = [
-        l10n?.seller_auth_management_check_network ?? 'Check network connection',
-        l10n?.seller_auth_management_wait_retry ?? 'Wait and retry',
-        l10n?.seller_auth_management_contact_support ?? 'Contact support',
+        l10n.seller_auth_management_check_network ?? 'Check network connection',
+        l10n.seller_auth_management_wait_retry ?? 'Wait and retry',
+        l10n.seller_auth_management_contact_support ?? 'Contact support',
       ];
     } else if (isNetworkError) {
-      title = l10n?.seller_auth_management_network_error ?? 'Network Error';
-      subtitle = l10n?.seller_auth_management_network_error_desc ?? 'Unable to connect to the network';
+      title = l10n.seller_auth_management_network_error ?? 'Network Error';
+      subtitle = l10n.seller_auth_management_network_error_desc ?? 'Unable to connect to the network';
       suggestions = [
-        l10n?.seller_auth_management_check_wifi ?? 'Check WiFi connection',
-        l10n?.seller_auth_management_switch_network ?? 'Switch network',
-        l10n?.seller_auth_management_restart_app ?? 'Restart app',
+        l10n.seller_auth_management_check_wifi ?? 'Check WiFi connection',
+        l10n.seller_auth_management_switch_network ?? 'Switch network',
+        l10n.seller_auth_management_restart_app ?? 'Restart app',
       ];
     } else {
-      title = l10n?.seller_auth_management_loading_failed ?? 'Loading Failed';
-      subtitle = errorMessage.isNotEmpty ? errorMessage : (l10n?.seller_auth_management_unknown_error ?? 'Unknown error occurred');
+      title = l10n.seller_auth_management_loading_failed ?? 'Loading Failed';
+      subtitle = errorMessage.isNotEmpty ? errorMessage : (l10n.seller_auth_management_unknown_error ?? 'Unknown error occurred');
       suggestions = [
-        l10n?.seller_auth_management_check_connection ?? 'Check connection',
-        l10n?.seller_auth_management_try_later ?? 'Try again later',
-        l10n?.seller_auth_management_contact_tech ?? 'Contact technical support',
+        l10n.seller_auth_management_check_connection ?? 'Check connection',
+        l10n.seller_auth_management_try_later ?? 'Try again later',
+        l10n.seller_auth_management_contact_tech ?? 'Contact technical support',
       ];
     }
 
@@ -383,7 +382,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n?.seller_auth_management_troubleshooting ?? 'Troubleshooting Steps',
+                    l10n.seller_auth_management_troubleshooting ?? 'Troubleshooting Steps',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -400,7 +399,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                  )).toList(),
+                  )),
                 ],
               ),
             ),
@@ -412,7 +411,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
                   onPressed: () => context.read<AuthManagementBloc>()
                     .add(const LoadAuthenticationList()),
                   icon: const Icon(Icons.refresh),
-                  label: Text(l10n?.seller_auth_management_reload ?? 'Reload'),
+                  label: Text(l10n.seller_auth_management_reload ?? 'Reload'),
                 ),
                 const SizedBox(width: 16),
                 TextButton.icon(
@@ -424,7 +423,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
                     }
                   },
                   icon: const Icon(Icons.arrow_back),
-                  label: Text(l10n?.seller_auth_management_back ?? 'Back'),
+                  label: Text(l10n.seller_auth_management_back ?? 'Back'),
                 ),
               ],
             ),
@@ -454,7 +453,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
         extra: auth,
       ).then((result) {
         if (result == true && context.mounted) {
-          context.read<AuthManagementBloc>().add(RefreshAuthenticationList());
+          context.read<AuthManagementBloc>().add(const RefreshAuthenticationList());
         }
       });
     }

@@ -21,7 +21,7 @@ String formatRelativeTime(DateTime? dateTime, BuildContext context) {
     return DateFormat.Hm(Localizations.localeOf(context).languageCode).format(dateTime);
   } else if (messageDate == yesterday) {
     // Yesterday: Show "昨天"
-    return AppLocalizations.of(context)!.core_yesterday;
+    return AppLocalizations.of(context).core_yesterday;
   } else if (now.difference(dateTime).inDays < 7) {
      // Within the last week: Show weekday name (e.g., "星期三")
      // Ensure intl provides localized weekday names or handle manually

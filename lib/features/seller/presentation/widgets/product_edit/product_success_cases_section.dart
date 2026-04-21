@@ -39,17 +39,17 @@ class ProductSuccessCasesSection extends StatelessWidget {
   InputDecoration get _lightBorderDecoration => InputDecoration(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+          borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+          borderSide: const BorderSide(color: AppColors.borderInput, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
         filled: true,
         fillColor: AppColors.backgroundCard,
@@ -59,8 +59,8 @@ class ProductSuccessCasesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.backgroundCard,
-      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -68,14 +68,14 @@ class ProductSuccessCasesSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context)!?.product_edit_success_cases ?? 'Success Cases',
+                AppLocalizations.of(context).product_edit_success_cases ?? 'Success Cases',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               if (state.successCases.isNotEmpty)
                 Container(
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.spacingSm,
                       vertical: AppDimensions.spacingXs),
                   decoration: BoxDecoration(
@@ -91,7 +91,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                 ),
             ],
           ),
-          SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.spacingLg),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -131,7 +131,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(
-            AppLocalizations.of(context)!?.product_edit_add_success_case ?? 'Add Success Case',
+            AppLocalizations.of(context).product_edit_add_success_case ?? 'Add Success Case',
           ),
           content: ConstrainedBox(
             constraints: BoxConstraints(
@@ -172,9 +172,9 @@ class ProductSuccessCasesSection extends StatelessWidget {
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_photo_alternate,
+                                const Icon(Icons.add_photo_alternate,
                                     size: 32, color: AppColors.textTertiary),
-                                SizedBox(height: AppDimensions.spacingXs),
+                                const SizedBox(height: AppDimensions.spacingXs),
                                 Text(
                                   '点击选择图片',
                                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -185,7 +185,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                             ),
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
@@ -193,7 +193,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       hintText: '简短描述这个案例',
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -239,7 +239,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
     final titleController = TextEditingController(text: successCase.title);
     final descriptionController = TextEditingController(text: successCase.description);
     String? selectedImagePath = successCase.imagePath;
-    final String? currentImageUrl = successCase.imageUrl;
+    final String currentImageUrl = successCase.imageUrl;
     bool imageChanged = false;
 
     showDialog(
@@ -247,7 +247,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
           title: Text(
-            AppLocalizations.of(context)!?.product_edit_edit_success_case ?? 'Edit Success Case',
+            AppLocalizations.of(context).product_edit_edit_success_case ?? 'Edit Success Case',
           ),
           content: ConstrainedBox(
             constraints: BoxConstraints(
@@ -288,7 +288,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: titleController,
                     decoration: _lightBorderDecoration.copyWith(
@@ -296,7 +296,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
                       hintText: '简短描述这个案例',
                     ),
                   ),
-                  SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.spacingMd),
                   TextField(
                     controller: descriptionController,
                     maxLines: 3,
@@ -363,7 +363,7 @@ class _AddSuccessCaseButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           color: AppColors.backgroundSecondary,
         ),
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.add, size: 32, color: AppColors.textTertiary),
@@ -405,7 +405,7 @@ class _SuccessCaseItem extends StatelessWidget {
             child: Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.vertical(
+                  borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(AppDimensions.radiusSm)),
                   child: _SuccessCaseImage(
                     successCase: successCase,
@@ -422,7 +422,7 @@ class _SuccessCaseItem extends StatelessWidget {
                         icon: Icons.edit,
                         onTap: onEdit,
                       ),
-                      SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.spacingXs),
                       _OverlayIconButton(
                         icon: Icons.close,
                         onTap: onRemove,
@@ -436,7 +436,7 @@ class _SuccessCaseItem extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Padding(
-              padding: EdgeInsets.all(AppDimensions.spacingSm),
+              padding: const EdgeInsets.all(AppDimensions.spacingSm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -448,7 +448,7 @@ class _SuccessCaseItem extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.spacingXs),
                   Expanded(
                     child: Text(
                       successCase.description,
@@ -479,7 +479,7 @@ class _OverlayIconButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(AppDimensions.spacingXs),
+        padding: const EdgeInsets.all(AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.6),
           shape: BoxShape.circle,
@@ -517,7 +517,7 @@ class _SuccessCaseImage extends StatelessWidget {
                   backgroundColor: Colors.white30,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
-                SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   '${successCase.uploadProgress.toInt()}%',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -547,8 +547,8 @@ class _SuccessCaseImage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline, color: AppColors.error, size: 40),
-                SizedBox(height: AppDimensions.spacingXs),
+                const Icon(Icons.error_outline, color: AppColors.error, size: 40),
+                const SizedBox(height: AppDimensions.spacingXs),
                 Text(
                   '上传失败',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -605,7 +605,7 @@ class _SuccessCaseImage extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       color: AppColors.borderPrimary,
-      child: Icon(Icons.image, size: 40, color: AppColors.textTertiary),
+      child: const Icon(Icons.image, size: 40, color: AppColors.textTertiary),
     );
   }
 
@@ -613,7 +613,7 @@ class _SuccessCaseImage extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         color: AppColors.borderPrimary,
-        child: Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
+        child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
       );
 }
 
@@ -658,8 +658,8 @@ class _EditDialogImage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textTertiary),
-        SizedBox(height: AppDimensions.spacingXs),
+        const Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textTertiary),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           '点击选择图片',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -674,8 +674,8 @@ class _EditDialogImage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
-        SizedBox(height: AppDimensions.spacingXs),
+        const Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
+        const SizedBox(height: AppDimensions.spacingXs),
         Text(
           '图片加载失败',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(

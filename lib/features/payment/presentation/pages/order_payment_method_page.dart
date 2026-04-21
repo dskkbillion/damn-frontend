@@ -18,9 +18,9 @@ class OrderPaymentMethodPage extends StatefulWidget {
   final Order order;
 
   const OrderPaymentMethodPage({
-    Key? key,
+    super.key,
     required this.order,
-  }) : super(key: key);
+  });
 
   @override
   State<OrderPaymentMethodPage> createState() => _OrderPaymentMethodPageState();

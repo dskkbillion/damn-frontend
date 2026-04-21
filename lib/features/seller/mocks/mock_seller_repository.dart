@@ -1,4 +1,3 @@
-import 'package:mockito/mockito.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
@@ -29,7 +28,7 @@ class MockSellerRepository implements ISellerRepository {
   @override
   Future<Either<Failure, SellerStoreProfile>> getStoreProfile() async {
     AppLogger.d('MockSellerRepository: getStoreProfile called');
-    return Future.value(Right(SellerStoreProfile(
+    return Future.value(const Right(SellerStoreProfile(
       storeId: 'mock_store_123',
       storeName: '模拟卖家店铺',
       logoUrl: 'https://picsum.photos/150', // 使用 Picsum
@@ -116,7 +115,7 @@ class MockSellerRepository implements ISellerRepository {
         remarks: '认证未通过',
       ),
       // 可以添加一个未提交的认证
-      SellerAuthenticationInfo(
+      const SellerAuthenticationInfo(
         authenticationId: 4,
         type: AuthenticationType.profession,
         status: AuthenticationStatus.notSubmitted,
@@ -132,19 +131,19 @@ class MockSellerRepository implements ISellerRepository {
   Future<Either<Failure, SellerDashboardData>> getDashboardData() async {
     AppLogger.d('MockSellerRepository: getDashboardData called');
     // 模拟数据 - 确保创建了正确的实体对象
-    final incomeData = SellerIncomeData(
+    const incomeData = SellerIncomeData(
       total: 10000.0,
       today: 1200.0,
       pending: 3000.0,
     );
-    final ordersData = SellerOrdersData(
+    const ordersData = SellerOrdersData(
       total: 50,
       pending: 10,
       completed: 35,
       canceled: 5,
     );
-    final notificationsData = SellerNotificationsData(unread: 5);
-    final statisticsData = SellerStatistics(
+    const notificationsData = SellerNotificationsData(unread: 5);
+    const statisticsData = SellerStatistics(
       weeklyIncome: [
         WeeklyIncomeItem(date: '2023-11-01', amount: 800.0),
         WeeklyIncomeItem(date: '2023-11-02', amount: 1200.0),
@@ -156,7 +155,7 @@ class MockSellerRepository implements ISellerRepository {
       ],
     );
     
-    final dashboardData = SellerDashboardData(
+    const dashboardData = SellerDashboardData(
       income: incomeData,
       orders: ordersData,
       rating: 4.8,
@@ -164,7 +163,7 @@ class MockSellerRepository implements ISellerRepository {
       statistics: statisticsData,
     );
     
-    return Future.value(Right(dashboardData)); // 返回正确创建的实体
+    return Future.value(const Right(dashboardData)); // 返回正确创建的实体
   }
   
   @override
@@ -184,9 +183,9 @@ class MockSellerRepository implements ISellerRepository {
       createTime: DateTime.now().subtract(Duration(days: index)),
       updateTime: DateTime.now().subtract(Duration(hours: index)),
       sales: 10 + index,
-      category: ProductCategory(id: 10, name: '测试分类'),
+      category: const ProductCategory(id: 10, name: '测试分类'),
       variants: [ProductOptionValue(id: 1, optionName: '规格', optionValue: '默认', price: 100.0 + (index * 10), stock: 50)],
-      productMaterials: [ProductMaterial(id: 1, question: '定制需求?', type: 'TEXT')],
+      productMaterials: const [ProductMaterial(id: 1, question: '定制需求?', type: 'TEXT')],
     ));
     return Future.value(Right(PaginatedList(total: 100, items: items)));
   }
@@ -206,7 +205,7 @@ class MockSellerRepository implements ISellerRepository {
       status: ProductStatus.draft,
       createTime: DateTime.now().subtract(Duration(days: index)),
       updateTime: DateTime.now().subtract(Duration(hours: index)),
-      category: ProductCategory(id: 10, name: '测试分类'),
+      category: const ProductCategory(id: 10, name: '测试分类'),
     ));
     return Future.value(Right(PaginatedList(total: 20, items: items)));
   }
@@ -230,12 +229,12 @@ class MockSellerRepository implements ISellerRepository {
   }
   
   @override
-  Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType}) async {
+  Future<Either<Failure, List<SellerNotification>>> getNotificationList({String? messageType, int pageNum = 1, int pageSize = 10}) async {
     AppLogger.d('MockSellerRepository: getNotificationList called with type: $messageType');
     final now = DateTime.now();
     return Future.value(Right([
-      SellerNotification(notificationId: '1', type: NotificationType.order, title: '新订单', content: '您有新的订单需要处理', isRead: false, createdAt: now.subtract(Duration(hours: 1))),
-      SellerNotification(notificationId: '2', type: NotificationType.system, title: '系统更新', content: '系统将在今晚维护', isRead: true, createdAt: now.subtract(Duration(days: 1))),
+      SellerNotification(notificationId: '1', type: NotificationType.order, title: '新订单', content: '您有新的订单需要处理', isRead: false, createdAt: now.subtract(const Duration(hours: 1))),
+      SellerNotification(notificationId: '2', type: NotificationType.system, title: '系统更新', content: '系统将在今晚维护', isRead: true, createdAt: now.subtract(const Duration(days: 1))),
     ]));
   }
   
@@ -341,13 +340,13 @@ class MockSellerRepository implements ISellerRepository {
       updateTime: DateTime.now().subtract(const Duration(days: 1)),
       sales: 25,
       category: const ProductCategory(id: 10, name: '测试分类'),
-      variants: [
-        const ProductOptionValue(id: 1, optionName: '规格', optionValue: '标准版', price: 150.0, stock: 100),
-        const ProductOptionValue(id: 2, optionName: '规格', optionValue: '豪华版', price: 250.0, stock: 50),
+      variants: const [
+        ProductOptionValue(id: 1, optionName: '规格', optionValue: '标准版', price: 150.0, stock: 100),
+        ProductOptionValue(id: 2, optionName: '规格', optionValue: '豪华版', price: 250.0, stock: 50),
       ],
-      productMaterials: [
-        const ProductMaterial(id: 1, question: '您的需求是什么?', type: 'TEXT'),
-        const ProductMaterial(id: 2, question: '请上传参考资料', type: 'FILE'),
+      productMaterials: const [
+        ProductMaterial(id: 1, question: '您的需求是什么?', type: 'TEXT'),
+        ProductMaterial(id: 2, question: '请上传参考资料', type: 'FILE'),
       ],
     )));
   }

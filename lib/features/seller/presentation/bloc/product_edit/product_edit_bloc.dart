@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/create_product_usecase.dart';
@@ -18,8 +17,6 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_file_upload_repository.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_repository.dart';
-import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
-import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
 /// 产品编辑BLoC
 @injectable
@@ -551,8 +548,8 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       
       // 检查文件大小
       final int fileSize = await imageFile.length();
-      final int maxSize = 5 * 1024 * 1024; // 5MB最大限制
-      final int targetSize = 1 * 1024 * 1024; // 目标1MB
+      const int maxSize = 5 * 1024 * 1024; // 5MB最大限制
+      const int targetSize = 1 * 1024 * 1024; // 目标1MB
       
       // 处理HEIC、HEIF、WebP格式或大于目标大小的图片
       // 注意：WebP格式需要转换，因为后端不支持
@@ -625,7 +622,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
       
       // 检查文件大小是否超过限制 (5MB)
       final fileSize = await file.length();
-      final maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024; // 5MB
       
       if (fileSize > maxSize) {
         add(ProductImageUploadFailure(

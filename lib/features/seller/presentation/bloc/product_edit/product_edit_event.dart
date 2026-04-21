@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 
 /// 商品编辑事件基类
 abstract class ProductEditEvent extends Equatable {

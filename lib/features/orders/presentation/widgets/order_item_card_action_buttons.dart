@@ -35,7 +35,7 @@ class OrderItemCardActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttons = <Widget>[];
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     switch (order.state) {
       case OrderStatus.awaitingPayment:
@@ -90,7 +90,7 @@ class OrderItemCardActionButtons extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final buttonPadding = const EdgeInsets.symmetric(horizontal: 16, vertical: 10);
+    const buttonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 10);
     final buttonTextStyle = textTheme.bodyMedium;
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
     const buttonMinSize = Size(0, 36);

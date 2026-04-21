@@ -5,7 +5,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/common_user.dart';
-import '../../domain/entities/favorite.dart';
 import '../bloc/favorites_bloc.dart';
 import '../bloc/favorites_event.dart';
 import '../bloc/favorites_state.dart';
@@ -19,7 +18,7 @@ import '../../../../core/utils/haptic_utils.dart';
 /// 收藏页面
 class FavoritesPage extends ConsumerStatefulWidget {
   /// 构造函数
-  const FavoritesPage({Key? key}) : super(key: key);
+  const FavoritesPage({super.key});
 
   @override
   ConsumerState<FavoritesPage> createState() => _FavoritesPageState();
@@ -139,7 +138,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     // 读取是否显示开发tab的配置
     final showDevTab = ref.watch(showDevTabProvider);
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     // 根据配置构建导航栏项目
     final List<BottomNavigationBarItem> items = [
@@ -154,7 +153,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(const Color(0xFFD0903D), BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(Color(0xFFD0903D), BlendMode.srcIn),
         ),
         label: s.nav_ai_assistant,
       ),
@@ -199,7 +198,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.favorites_title),
+        title: Text(AppLocalizations.of(context).favorites_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _handleBack,
@@ -207,8 +206,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: AppLocalizations.of(context)!.favorites_tab_services),
-            Tab(text: AppLocalizations.of(context)!.favorites_tab_sellers),
+            Tab(text: AppLocalizations.of(context).favorites_tab_services),
+            Tab(text: AppLocalizations.of(context).favorites_tab_sellers),
           ],
         ),
       ),
@@ -220,7 +219,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
               SnackBar(
                 content: Text(state.errorMessage!),
                 action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.favorites_close,
+                  label: AppLocalizations.of(context).favorites_close,
                   onPressed: () {
                     context.read<FavoritesBloc>().add(ClearErrorEvent());
                   },
@@ -253,7 +252,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.services.isEmpty) {
-      return EmptyFavorites(tabIndex: 0);
+      return const EmptyFavorites(tabIndex: 0);
     }
 
     return RefreshIndicator(
@@ -306,7 +305,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
     }
 
     if (state.sellers.isEmpty) {
-      return EmptyFavorites(tabIndex: 1);
+      return const EmptyFavorites(tabIndex: 1);
     }
 
     return RefreshIndicator(

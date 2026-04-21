@@ -2,7 +2,6 @@ import 'package:dskk_flutter_refactor/features/seller/data/models/notification_d
 import 'package:dskk_flutter_refactor/features/seller/data/models/order_refund_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_dashboard_data.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_store_profile.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 

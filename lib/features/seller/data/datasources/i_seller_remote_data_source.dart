@@ -1,4 +1,3 @@
-import 'package:dskk_flutter_refactor/features/seller/data/models/member_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/notification_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/order_refund_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';

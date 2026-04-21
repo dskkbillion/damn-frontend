@@ -138,7 +138,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
               ? Navigator.of(context).pop() 
               : context.go('/profile'), // 如果不能返回，则导航到个人中心
           ),
-          title: Text(AppLocalizations.of(context)!.order_list_title),
+          title: Text(AppLocalizations.of(context).order_list_title),
           // automaticallyImplyLeading 默认为 true，会自动显示返回按钮
           actions: [
             // 搜索按钮
@@ -181,7 +181,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                       controller: _searchController,
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.order_list_search_hint,
+                        hintText: AppLocalizations.of(context).order_list_search_hint,
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
@@ -197,7 +197,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       textInputAction: TextInputAction.search,
@@ -216,7 +216,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
              if (state is OrderListError) {
                // Optional: Show a Snackbar for errors
                ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text(AppLocalizations.of(context)!.order_list_load_error(state.message))),
+                 SnackBar(content: Text(AppLocalizations.of(context).order_list_load_error(state.message))),
                );
              }
            },
@@ -237,7 +237,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                            ),
                                                         child: Padding(
                                padding: const EdgeInsets.all(48.0),
-                              child: Text(AppLocalizations.of(context)!.order_list_empty, style: Theme.of(context).textTheme.bodyLarge),
+                              child: Text(AppLocalizations.of(context).order_list_empty, style: Theme.of(context).textTheme.bodyLarge),
                              ),
                          ),
                        ),
@@ -318,12 +318,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                               children: [
                                 Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
                                 const SizedBox(height: 16),
-                                Text(AppLocalizations.of(context)!.order_list_load_failed(state.message)),
+                                Text(AppLocalizations.of(context).order_list_load_failed(state.message)),
                                 const SizedBox(height: 16),
                                 ElevatedButton(
                                   // Use the renamed function for retry
                                   onPressed: () => _loadOrdersForStatus(_tabStatuses[_tabController.index]),
-                                  child: Text(AppLocalizations.of(context)!.order_list_retry),
+                                  child: Text(AppLocalizations.of(context).order_list_retry),
                                 )
                               ],
                            ),
@@ -332,7 +332,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      ),
                    );
                 }
-                return Center(child: Text(AppLocalizations.of(context)!.order_list_select_category)); // Initial or empty state
+                return Center(child: Text(AppLocalizations.of(context).order_list_select_category)); // Initial or empty state
            },
         ),
       );
@@ -348,7 +348,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
     }
     
     // Tab标签名称
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final tabLabels = [l10n.order_list_tab_all, l10n.order_list_tab_awaiting_payment, l10n.order_list_tab_awaiting_submission, l10n.order_list_tab_awaiting_start, l10n.order_list_tab_awaiting_delivery, l10n.order_list_tab_awaiting_confirmation, l10n.order_list_tab_awaiting_evaluation, l10n.order_list_tab_after_sale];
     
     return List.generate(_tabStatuses.length, (index) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_cubit.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/bloc/sms_login/sms_login_state.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_input_field.dart';
@@ -34,10 +33,8 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     // 调试：打印当前语言环境
     print('Current locale: ${locale.languageCode}');
     print('AppLocalizations available: ${AppLocalizations.of(context) != null}');
-    if (AppLocalizations.of(context) != null) {
-      print('auth_phone_number: ${AppLocalizations.of(context)!.auth_phone_number}');
+    print('auth_phone_number: ${AppLocalizations.of(context).auth_phone_number}');
     }
-  }
 
   @override
   void dispose() {
@@ -90,7 +87,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
             // 处理副作用，如显示 SnackBar, 导航等
             if (state is SmsLoginFailure) {
               // 检查是否是验证码相关的错误
-              final s = AppLocalizations.of(context)!;
+              final s = AppLocalizations.of(context);
               String errorMessage = state.failure.message;
               if (errorMessage.contains('验证码') ||
                   errorMessage.contains('code') ||
@@ -104,14 +101,14 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
               );
             } else if (state is SmsLoginCodeSendFailure) {
                ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(AppLocalizations.of(context)!.auth_code_send_failed(state.failure.message))),
+                SnackBar(content: Text(AppLocalizations.of(context).auth_code_send_failed(state.failure.message))),
               );
             } else if (state is SmsLoginSuccess) {
               // 导航将由全局 AuthStatus 监听器处理
               // Navigator.of(context).pushReplacementNamed('/home');
               print('Login Success! User ID: ${state.user.id}');
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(AppLocalizations.of(context)!.auth_login_success)),
+                SnackBar(content: Text(AppLocalizations.of(context).auth_login_success)),
               );
             }
           },
@@ -199,7 +196,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                                   strokeWidth: 2.0,
                                 ),
                               )
-                            : Text(AppLocalizations.of(context)!.auth_login),
+                            : Text(AppLocalizations.of(context).auth_login),
                       ),
                       const SizedBox(height: 24),
 
@@ -210,7 +207,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                           TextButton(
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
-                              minimumSize: Size(50, 30),
+                              minimumSize: const Size(50, 30),
                               foregroundColor: linkColor // Explicitly set link color here to override theme
                             ),
                             onPressed: () {
@@ -218,21 +215,21 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                               print("Navigate to Privacy Policy");
                             },
                             child: Text(
-                              AppLocalizations.of(context)!.auth_privacy_policy,
-                              style: TextStyle(fontSize: 12), // Style is now handled by foregroundColor
+                              AppLocalizations.of(context).auth_privacy_policy,
+                              style: const TextStyle(fontSize: 12), // Style is now handled by foregroundColor
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4.0),
                             child: Text(
-                              AppLocalizations.of(context)!.auth_and,
+                              AppLocalizations.of(context).auth_and,
                               style: TextStyle(fontSize: 12, color: linkColor), // Use defined link color
                             ),
                           ),
                           TextButton(
                             style: TextButton.styleFrom(
                               padding: EdgeInsets.zero,
-                              minimumSize: Size(50, 30),
+                              minimumSize: const Size(50, 30),
                               foregroundColor: linkColor // Explicitly set link color here to override theme
                             ),
                             onPressed: () {
@@ -240,8 +237,8 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                               print("Navigate to User Agreement");
                             },
                             child: Text(
-                              AppLocalizations.of(context)!.auth_user_agreement,
-                              style: TextStyle(fontSize: 12), // Style is now handled by foregroundColor
+                              AppLocalizations.of(context).auth_user_agreement,
+                              style: const TextStyle(fontSize: 12), // Style is now handled by foregroundColor
                             ),
                           ),
                         ],

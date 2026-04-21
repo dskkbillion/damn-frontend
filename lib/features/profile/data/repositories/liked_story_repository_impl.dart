@@ -34,7 +34,7 @@ class LikedStoryRepositoryImpl implements ILikedStoryRepository {
         return Left(GeneralFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接'));
+      return const Left(NetworkFailure(message: '无网络连接'));
     }
   }
 }

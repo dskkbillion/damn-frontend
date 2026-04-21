@@ -5,7 +5,6 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../entities/chat_allocation_result_entity.dart';
 import '../repositories/i_ai_chat_repository.dart';
 import '../../../chat/domain/usecases/create_chat_room.dart';
 import '../../../chat/domain/repositories/i_chat_repository.dart';

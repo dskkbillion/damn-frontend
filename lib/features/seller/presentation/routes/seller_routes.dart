@@ -28,6 +28,7 @@ class SellerRoutes {
   static const String storeSettings = '$basePath/settings';
   static const String statistics = '$basePath/statistics';
   static const String wallet = '$basePath/wallet';
+  static const String connectAccount = '$basePath/connect-account';
   
   /// 获取卖家模块路由
   /// 

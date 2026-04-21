@@ -164,7 +164,7 @@ class UnifiedRegionConfig {
     if (!isDevelopment) return null;
     
     return {
-      'userToken': 'eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjllYWQ5YWJjLWMxZmEtNGM3ZC04ODllLWJjM2EzNjg4MDQxNSJ9.GgGSkCr4YG_Hf-stG8NuYFRZeebOO24vkhYQ_i8EVZzvIj9VO3VB7PdnpV6VlM7-TBJydQSdKy1mUI9jwsaKRw',
+      'userToken': 'PLACEHOLDER_TOKEN_FOR_DEV',
       'userId': '13819198810',
       'commonUserId': '10319',
       'referId': '10319',

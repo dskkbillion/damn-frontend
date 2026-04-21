@@ -79,12 +79,12 @@ class StatefulPageWrapper extends ConsumerStatefulWidget {
   final bool saveFormData;
   
   const StatefulPageWrapper({
-    Key? key,
+    super.key,
     required this.pageKey,
     required this.builder,
     this.saveScrollPosition = true,
     this.saveFormData = false,
-  }) : super(key: key);
+  });
   
   @override
   ConsumerState<StatefulPageWrapper> createState() => _StatefulPageWrapperState();
@@ -170,11 +170,11 @@ class CachedIndexedStack extends StatefulWidget {
   final Duration inactiveDuration;
   
   const CachedIndexedStack({
-    Key? key,
+    super.key,
     required this.index,
     required this.children,
     this.inactiveDuration = const Duration(minutes: 5),
-  }) : super(key: key);
+  });
   
   @override
   State<CachedIndexedStack> createState() => _CachedIndexedStackState();

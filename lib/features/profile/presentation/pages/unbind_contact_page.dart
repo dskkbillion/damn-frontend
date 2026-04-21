@@ -194,7 +194,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
+                    const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -236,9 +236,9 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                     const SizedBox(height: 20),
                     const Divider(height: 1),
                     const SizedBox(height: 20),
-                    Text(
+                    const Text(
                       '验证身份',
-                      style: const TextStyle(fontSize: 13, color: AppColors.textTertiary),
+                      style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -286,10 +286,10 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              Center(
+              const Center(
                 child: Text(
                   '解绑操作不可撤销',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                  style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
                 ),
               ),
             ],

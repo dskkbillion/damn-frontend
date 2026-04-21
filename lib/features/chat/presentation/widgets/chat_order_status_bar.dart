@@ -302,7 +302,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                         const SizedBox(height: 4),
                         Text(
                           '最新订单 ${latestOrder.orderSn} · ${PriceFormatter.format(latestOrder.priceSummary.payPrice)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
@@ -318,7 +318,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
                       color: AppColors.textSecondary,
                     )
                   else
-                    Icon(Icons.chevron_right, color: AppColors.textTertiary),
+                    const Icon(Icons.chevron_right, color: AppColors.textTertiary),
                 ],
               ),
             ),
@@ -351,11 +351,11 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 12,
-            offset: const Offset(0, 3),
+            offset: Offset(0, 3),
           ),
         ],
       ),
@@ -405,7 +405,7 @@ class _OrderListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${PriceFormatter.format(order.priceSummary.payPrice)} · ${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -423,7 +423,7 @@ class _OrderListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
+            const Icon(Icons.chevron_right, size: 18, color: AppColors.textTertiary),
           ],
         ),
       ),

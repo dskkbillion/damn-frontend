@@ -25,7 +25,7 @@ class AuthenticatedUserModel {
       );
     } else {
       // 如果 API 响应缺少 token
-      throw FormatException(
+      throw const FormatException(
           'Failed to parse AuthenticatedUserModel from JSON. Expected "token" field.');
     }
   }

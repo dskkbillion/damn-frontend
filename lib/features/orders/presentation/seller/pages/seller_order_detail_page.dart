@@ -11,7 +11,6 @@ import '../../../domain/entities/order.dart';
 // Import the timeline header widget
 import '../../widgets/order_status_timeline_header.dart';
 // Import the status widget
-import '../../widgets/order_status_widget.dart';
 // Import the item tile widget
 import '../../widgets/order_detail_item_tile.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
@@ -21,6 +20,8 @@ import '../widgets/seller_order_detail_actions.dart';
 import '../widgets/seller_dynamic_content_area.dart';
 // Import the materials section widget
 import '../widgets/seller_order_materials_section.dart';
+// Import the fee breakdown widget
+import '../widgets/seller_order_fee_breakdown.dart';
 // Import entities
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
@@ -46,7 +47,7 @@ class SellerOrderDetailPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
-          title: Text(AppLocalizations.of(context)!.order_seller_detail_title(orderId)),
+          title: Text(AppLocalizations.of(context).order_seller_detail_title(orderId)),
         ),
         body: BlocListener<SellerOrderDetailBloc, SellerOrderDetailState>(
           listener: (context, state) {
@@ -86,11 +87,11 @@ class SellerOrderDetailPage extends StatelessWidget {
               // Failure state
               else if (state is SellerOrderDetailLoadFailure && state.failedOrderId == orderId) {
                  // Show error message on load failure
-                return Center(child: Text(AppLocalizations.of(context)!.order_seller_load_failed(state.failedOrderId, state.message)));
+                return Center(child: Text(AppLocalizations.of(context).order_seller_load_failed(state.failedOrderId, state.message)));
               } 
               // Initial state or fallback
               else {
-                return Center(child: Text(AppLocalizations.of(context)!.order_seller_preparing));
+                return Center(child: Text(AppLocalizations.of(context).order_seller_preparing));
               }
             },
           ), // End BlocBuilder
@@ -222,17 +223,19 @@ class SellerOrderDetailPage extends StatelessWidget {
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        _buildPriceRow(context, AppLocalizations.of(context)!.order_price_total_amount, order.priceSummary.totalPrice),
+                        _buildPriceRow(context, AppLocalizations.of(context).order_price_total_amount, order.priceSummary.totalPrice),
                         if (order.priceSummary.deliveryPrice > 0)
-                          _buildPriceRow(context, AppLocalizations.of(context)!.order_price_shipping, order.priceSummary.deliveryPrice),
+                          _buildPriceRow(context, AppLocalizations.of(context).order_price_shipping, order.priceSummary.deliveryPrice),
                         if (order.priceSummary.discountPrice > 0)
-                          _buildPriceRow(context, AppLocalizations.of(context)!.order_price_discount, -order.priceSummary.discountPrice, isDiscount: true),
+                          _buildPriceRow(context, AppLocalizations.of(context).order_price_discount, -order.priceSummary.discountPrice, isDiscount: true),
                         const Divider(height: 16, thickness: 0.5),
-                        _buildPriceRow(context, AppLocalizations.of(context)!.order_price_actual_paid, order.priceSummary.payPrice, isTotal: true),
+                        _buildPriceRow(context, AppLocalizations.of(context).order_price_actual_paid, order.priceSummary.payPrice, isTotal: true),
                       ],
                     ),
                   ),
                 ),
+                // 卖家佣金拆分（仅当后端返回佣金数据时显示）
+                SellerOrderFeeBreakdown(order: order),
                 const SizedBox(height: 16),
               // 5. Time Info Section
                Card(
@@ -247,14 +250,14 @@ class SellerOrderDetailPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow(context, AppLocalizations.of(context)!.order_seller_order_number, order.orderSn ?? 'N/A'),
-                        _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_order_time, order.createdAt),
-                        if (order.paymentInfo?.payTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_pay_time, order.paymentInfo!.payTime),
+                        _buildInfoRow(context, AppLocalizations.of(context).order_seller_order_number, order.orderSn ?? 'N/A'),
+                        _buildTimeRow(context, AppLocalizations.of(context).order_seller_order_time, order.createdAt),
+                        if (order.paymentInfo.payTime != null)
+                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_pay_time, order.paymentInfo.payTime),
                         if (order.completeTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_complete_time, order.completeTime),
+                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_complete_time, order.completeTime),
                         if (order.cancelTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context)!.order_seller_cancel_time, order.cancelTime),
+                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_cancel_time, order.cancelTime),
                       ],
                     ),
                   ),

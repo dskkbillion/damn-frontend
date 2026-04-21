@@ -16,9 +16,9 @@ class ProductReviewsPage extends StatelessWidget {
   final int productId;
   
   const ProductReviewsPage({
-    Key? key,
+    super.key,
     required this.productId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class ProductReviewsPage extends StatelessWidget {
       create: (_) => GetIt.I<ProductReviewsCubit>()..getProductReviews(productId),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.home_reviews_title),
+          title: Text(AppLocalizations.of(context).home_reviews_title),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
             onPressed: () => context.pop(),
@@ -41,13 +41,13 @@ class ProductReviewsPage extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppLocalizations.of(context)!.home_reviews_load_failed(state.message)),
+                    Text(AppLocalizations.of(context).home_reviews_load_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductReviewsCubit>().getProductReviews(productId);
                       },
-                      child: Text(AppLocalizations.of(context)!.retry),
+                      child: Text(AppLocalizations.of(context).retry),
                     ),
                   ],
                 ),
@@ -55,7 +55,7 @@ class ProductReviewsPage extends StatelessWidget {
             } else if (state is ProductReviewsLoaded) {
               return _buildReviewsList(context, state);
             }
-            return Center(child: Text(AppLocalizations.of(context)!.home_reviews_no_reviews));
+            return Center(child: Text(AppLocalizations.of(context).home_reviews_no_reviews));
           },
         ),
       ),
@@ -64,7 +64,7 @@ class ProductReviewsPage extends StatelessWidget {
 
   Widget _buildReviewsList(BuildContext context, ProductReviewsLoaded state) {
     if (state.reviews.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context)!.home_reviews_no_reviews));
+      return Center(child: Text(AppLocalizations.of(context).home_reviews_no_reviews));
     }
     
     return ListView.separated(
@@ -140,7 +140,7 @@ class ProductReviewsPage extends StatelessWidget {
         const SizedBox(height: 12),
         // 显示评论内容
         Text(
-          review.content ?? AppLocalizations.of(context)!.home_reviews_default_content,
+          review.content ?? AppLocalizations.of(context).home_reviews_default_content,
           style: const TextStyle(
             fontSize: 14,
             height: 1.5,
@@ -175,7 +175,7 @@ class ProductReviewsPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        AppLocalizations.of(context)!.home_reviews_seller_reply,
+                        AppLocalizations.of(context).home_reviews_seller_reply,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -268,7 +268,7 @@ class ProductReviewsPage extends StatelessWidget {
 
   String _formatDateTime(BuildContext context, String dateTimeStr) {
     try {
-      final s = AppLocalizations.of(context)!;
+      final s = AppLocalizations.of(context);
       final dateTime = DateTime.parse(dateTimeStr);
       final now = DateTime.now();
       final difference = now.difference(dateTime);

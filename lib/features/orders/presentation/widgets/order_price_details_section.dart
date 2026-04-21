@@ -49,7 +49,7 @@ class OrderPriceDetailsSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_price_title,
+                  AppLocalizations.of(context).order_price_title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -63,17 +63,17 @@ class OrderPriceDetailsSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildPriceRow(context, AppLocalizations.of(context)!.order_price_total, '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
+                _buildPriceRow(context, AppLocalizations.of(context).order_price_total, '¥${order.priceSummary.totalPrice.toStringAsFixed(2)}'),
                 if (order.priceSummary.deliveryPrice > 0)
-                  _buildPriceRow(context, AppLocalizations.of(context)!.order_price_shipping, '¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
+                  _buildPriceRow(context, AppLocalizations.of(context).order_price_shipping, '¥${order.priceSummary.deliveryPrice.toStringAsFixed(2)}'),
                 if (order.priceSummary.discountPrice > 0)
-                  _buildPriceRow(context, AppLocalizations.of(context)!.order_price_discount, '-¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
+                  _buildPriceRow(context, AppLocalizations.of(context).order_price_discount, '-¥${order.priceSummary.discountPrice.toStringAsFixed(2)}'),
                 const Divider(height: 24, thickness: 1),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.order_price_paid,
+                      AppLocalizations.of(context).order_price_paid,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

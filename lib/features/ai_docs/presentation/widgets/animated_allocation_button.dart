@@ -10,11 +10,11 @@ class AnimatedAllocationButton extends StatefulWidget {
   final AllocationStatus status;
 
   const AnimatedAllocationButton({
-    Key? key,
+    super.key,
     required this.status,
     this.onTap,
     this.onEnterChat,
-  }) : super(key: key);
+  });
 
   @override
   State<AnimatedAllocationButton> createState() => _AnimatedAllocationButtonState();
@@ -202,7 +202,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
 
   // 初始状态按钮
   Widget _buildInitialButton() {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     return Container(
       key: const ValueKey('initial'),
@@ -233,7 +233,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
 
   // 加载中状态按钮 - 包含打字机效果和进度条
   Widget _buildLoadingButton() {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     return Container(
       key: const ValueKey('loading'),
@@ -285,7 +285,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
 
   // 成功状态按钮
   Widget _buildSuccessButton() {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     return Container(
       key: const ValueKey('success'),
@@ -316,7 +316,7 @@ class _AnimatedAllocationButtonState extends State<AnimatedAllocationButton> wit
 
   // 失败状态按钮
   Widget _buildFailureButton() {
-    final appLocalizations = AppLocalizations.of(context)!; // 获取国际化资源
+    final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
     return Container(
       key: const ValueKey('failure'),

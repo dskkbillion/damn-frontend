@@ -1,9 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+
+/// Sentinel value for distinguishing "not passed" from "passed null"
+class _Sentinel {
+  const _Sentinel();
+}
 
 /// 文件上传状态
 enum FileUploadStatus {
@@ -39,7 +43,7 @@ class FileUploadItem {
     FileUploadStatus? status,
     double? progress,
     String? uploadedUrl,
-    String? errorMessage,
+    Object? errorMessage = const _Sentinel(),
   }) {
     return FileUploadItem(
       id: id,
@@ -49,7 +53,7 @@ class FileUploadItem {
       status: status ?? this.status,
       progress: progress ?? this.progress,
       uploadedUrl: uploadedUrl ?? this.uploadedUrl,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage is _Sentinel ? this.errorMessage : errorMessage as String?,
     );
   }
 
@@ -68,13 +72,13 @@ class FileUploadItemWidget extends StatefulWidget {
   final VoidCallback? onRetry; // 重试回调
 
   const FileUploadItemWidget({
-    Key? key,
+    super.key,
     required this.item,
     required this.onRemove,
     required this.onUploadSuccess,
     this.maxFileSize = 10 * 1024 * 1024, // 默认10MB
     this.onRetry,
-  }) : super(key: key);
+  });
 
   @override
   State<FileUploadItemWidget> createState() => _FileUploadItemWidgetState();
@@ -96,7 +100,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
       setState(() {
         _item = _item.copyWith(
           status: FileUploadStatus.failed,
-          errorMessage: AppLocalizations.of(context)!.order_upload_size_limit(_formatFileSize(widget.maxFileSize)),
+          errorMessage: AppLocalizations.of(context).order_upload_size_limit(_formatFileSize(widget.maxFileSize)),
         );
       });
     } else if (_item.status == FileUploadStatus.waiting) {
@@ -157,7 +161,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
         setState(() {
           _item = _item.copyWith(
             status: FileUploadStatus.failed,
-            errorMessage: AppLocalizations.of(context)!.order_upload_failed(e.toString()),
+            errorMessage: AppLocalizations.of(context).order_upload_failed(e.toString()),
           );
         });
       }
@@ -290,7 +294,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    AppLocalizations.of(context)!.order_upload_progress((_item.progress * 100).toInt()),
+                    AppLocalizations.of(context).order_upload_progress((_item.progress * 100).toInt()),
                     style: TextStyle(
                       fontSize: 12,
                       color: Theme.of(context).primaryColor,
@@ -325,7 +329,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                 }
               },
               color: Theme.of(context).primaryColor,
-              tooltip: AppLocalizations.of(context)!.order_upload_retry,
+              tooltip: AppLocalizations.of(context).order_upload_retry,
             )
           else if (_item.status != FileUploadStatus.uploading)
             IconButton(

@@ -4,28 +4,17 @@ import '../../domain/entities/favorite_seller.dart';
 class FavoriteSellerModel extends FavoriteSeller {
   /// 构造函数
   const FavoriteSellerModel({
-    required int id,
-    required int referId,
-    required String nickName,
-    String? trueName,
-    String? avatar,
-    String? mobile,
-    String? gender,
-    required String type,
-    String? status,
-    required bool isFavorite,
-  }) : super(
-          id: id,
-          referId: referId,
-          nickName: nickName,
-          trueName: trueName,
-          avatar: avatar,
-          mobile: mobile,
-          gender: gender,
-          type: type,
-          status: status,
-          isFavorite: isFavorite,
-        );
+    required super.id,
+    required super.referId,
+    required super.nickName,
+    super.trueName,
+    super.avatar,
+    super.mobile,
+    super.gender,
+    required super.type,
+    super.status,
+    required super.isFavorite,
+  });
 
   /// 从JSON创建模型
   factory FavoriteSellerModel.fromJson(Map<String, dynamic> json) {
@@ -60,6 +49,7 @@ class FavoriteSellerModel extends FavoriteSeller {
   }
 
   /// 创建一个新的FavoriteSellerModel实例，并更新指定的字段
+  @override
   FavoriteSellerModel copyWith({
     int? id,
     int? referId,

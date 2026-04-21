@@ -7,7 +7,7 @@ class MockAuthRepository extends Mock implements IAuthRepository {
   @override
   Future<Either<Failure, Map<String, dynamic>>> getUserProfile() async {
     // 模拟用户信息，包含卖家需要的字段
-    return Right({
+    return const Right({
       'id': 12345,
       'nickName': '测试卖家',
       'avatar': 'https://example.com/avatar.jpg',
@@ -24,7 +24,7 @@ class MockAuthRepository extends Mock implements IAuthRepository {
   
   @override
   Future<Either<Failure, bool>> updateOnlineStatus(bool isOnline) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
   
   @override
@@ -32,6 +32,6 @@ class MockAuthRepository extends Mock implements IAuthRepository {
     required bool isEnabled, 
     String? content
   }) async {
-    return Right(true); // 操作成功
+    return const Right(true); // 操作成功
   }
 } 

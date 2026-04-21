@@ -71,3 +71,13 @@ class LoadMoreWalletTransactions extends WalletEvent {
   @override
   List<Object?> get props => [pageSize, startDate, endDate, transactionType];
 }
+
+/// 提交提款申请事件
+class SubmitWithdrawal extends WalletEvent {
+  final double amount;
+
+  const SubmitWithdrawal({required this.amount});
+
+  @override
+  List<Object?> get props => [amount];
+}

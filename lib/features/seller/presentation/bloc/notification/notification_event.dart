@@ -1,4 +1,4 @@
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/notification_type.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_notification.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class NotificationEvent extends Equatable {
@@ -9,12 +9,12 @@ abstract class NotificationEvent extends Equatable {
 }
 
 class FetchNotifications extends NotificationEvent {
-  final NotificationType type;
+  final NotificationType? type;
   final bool refresh;
   final bool loadMore;
 
   const FetchNotifications({
-    this.type = NotificationType.all,
+    this.type,
     this.refresh = false,
     this.loadMore = false,
   });
@@ -33,9 +33,9 @@ class MarkNotificationAsRead extends NotificationEvent {
 }
 
 class MarkAllNotificationsAsRead extends NotificationEvent {
-  final NotificationType type;
+  final NotificationType? type;
 
-  const MarkAllNotificationsAsRead({this.type = NotificationType.all});
+  const MarkAllNotificationsAsRead({this.type});
 
   @override
   List<Object?> get props => [type];
@@ -51,9 +51,9 @@ class DeleteNotification extends NotificationEvent {
 }
 
 class DeleteAllNotifications extends NotificationEvent {
-  final NotificationType type;
+  final NotificationType? type;
 
-  const DeleteAllNotifications({this.type = NotificationType.all});
+  const DeleteAllNotifications({this.type});
 
   @override
   List<Object?> get props => [type];

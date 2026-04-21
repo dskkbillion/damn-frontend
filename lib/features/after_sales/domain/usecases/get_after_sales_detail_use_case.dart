@@ -19,7 +19,7 @@ class GetAfterSalesDetailUseCase implements UseCase<AfterSalesApplication, GetAf
     final int? refundId = int.tryParse(params.id);
     if (refundId == null) {
       // Handle parsing error, maybe return a specific Failure type
-      return Left(SimpleFailure('Invalid ID format'));
+      return const Left(SimpleFailure('Invalid ID format'));
     }
     return await repository.getAfterSalesDetail(refundId);
   }

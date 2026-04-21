@@ -1,6 +1,6 @@
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart'; // Needed for toEntity
+// Needed for toEntity
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'chat_message_dto.freezed.dart';

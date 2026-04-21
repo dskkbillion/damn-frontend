@@ -93,13 +93,13 @@ class ConfigValidator {
     final wechatResult = validateWechatConfig();
     final backendResult = validateBackendConfig();
     
-    final allIssues = <String>[]
-      ..addAll(wechatResult.issues)
-      ..addAll(backendResult.issues);
+    final allIssues = <String>[...wechatResult.issues, ...backendResult.issues]
+      
+      ;
     
-    final allWarnings = <String>[]
-      ..addAll(wechatResult.warnings)
-      ..addAll(backendResult.warnings);
+    final allWarnings = <String>[...wechatResult.warnings, ...backendResult.warnings]
+      
+      ;
     
     return OverallValidationResult(
       isValid: allIssues.isEmpty,

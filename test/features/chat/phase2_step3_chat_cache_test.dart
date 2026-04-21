@@ -126,7 +126,7 @@ void main() {
   final cachedRooms = [_makeChatRoom(1), _makeChatRoom(2)];
   final freshRooms = [_makeChatRoom(1), _makeChatRoom(2), _makeChatRoom(3)];
 
-  ChatListBloc _buildBloc({
+  ChatListBloc buildBloc({
     required _FakeGetChatRoomList getChatRoomList,
     required _FakeLocalDataSource localDataSource,
   }) =>
@@ -143,7 +143,7 @@ void main() {
       final local = _FakeLocalDataSource()..seedCache(cachedRooms);
       final remote = _FakeGetChatRoomList()..response = Right(freshRooms);
 
-      final bloc = _buildBloc(getChatRoomList: remote, localDataSource: local);
+      final bloc = buildBloc(getChatRoomList: remote, localDataSource: local);
       final states = <ChatListState>[];
       bloc.stream.listen(states.add);
 
@@ -171,9 +171,9 @@ void main() {
     test('有缓存时远程失败 → 保持缓存数据，isRefreshing 变为 false', () async {
       final local = _FakeLocalDataSource()..seedCache(cachedRooms);
       final remote = _FakeGetChatRoomList()
-        ..response = Left(NetworkFailure(message: 'no connection'));
+        ..response = const Left(NetworkFailure(message: 'no connection'));
 
-      final bloc = _buildBloc(getChatRoomList: remote, localDataSource: local);
+      final bloc = buildBloc(getChatRoomList: remote, localDataSource: local);
       final states = <ChatListState>[];
       bloc.stream.listen(states.add);
 
@@ -203,7 +203,7 @@ void main() {
       final local = _FakeLocalDataSource(); // no cache
       final remote = _FakeGetChatRoomList()..response = Right(freshRooms);
 
-      final bloc = _buildBloc(getChatRoomList: remote, localDataSource: local);
+      final bloc = buildBloc(getChatRoomList: remote, localDataSource: local);
       final states = <ChatListState>[];
       bloc.stream.listen(states.add);
 
@@ -222,9 +222,9 @@ void main() {
     test('无缓存时远程失败 → emit failure state', () async {
       final local = _FakeLocalDataSource(); // no cache
       final remote = _FakeGetChatRoomList()
-        ..response = Left(NetworkFailure(message: 'no connection'));
+        ..response = const Left(NetworkFailure(message: 'no connection'));
 
-      final bloc = _buildBloc(getChatRoomList: remote, localDataSource: local);
+      final bloc = buildBloc(getChatRoomList: remote, localDataSource: local);
       final states = <ChatListState>[];
       bloc.stream.listen(states.add);
 

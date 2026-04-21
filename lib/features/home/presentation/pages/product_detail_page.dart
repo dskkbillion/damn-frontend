@@ -249,13 +249,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppLocalizations.of(context)!.product_detail_loading_failed(state.message)),
+                    Text(AppLocalizations.of(context).product_detail_loading_failed(state.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<ProductDetailCubit>().getProductDetail(widget.productId);
                       },
-                      child: Text(AppLocalizations.of(context)!.product_detail_retry),
+                      child: Text(AppLocalizations.of(context).product_detail_retry),
                     ),
                   ],
                 ),
@@ -272,7 +272,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
 
               return _buildProductDetail(context, product, translation);
             }
-            return Center(child: Text(AppLocalizations.of(context)!.product_detail_please_wait));
+            return Center(child: Text(AppLocalizations.of(context).product_detail_please_wait));
           },
         ),
       ),
@@ -396,7 +396,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                             const Icon(Icons.check_circle, color: AppColors.success, size: 14),
                             const SizedBox(width: 2),
                             Text(
-                              AppLocalizations.of(context)!.product_detail_verified_label,
+                              AppLocalizations.of(context).product_detail_verified_label,
                               style: const TextStyle(
                                 color: AppColors.success,
                                 fontSize: 12,
@@ -438,7 +438,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 children: [
                   const Icon(Icons.chat_bubble_outline, size: 16),
                   const SizedBox(width: 4),
-                  Text(AppLocalizations.of(context)!.product_detail_contact_seller),
+                  Text(AppLocalizations.of(context).product_detail_contact_seller),
                 ],
               ),
             ),
@@ -466,7 +466,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Text(
-              AppLocalizations.of(context)!.product_detail_published_status,
+              AppLocalizations.of(context).product_detail_published_status,
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textPrimary,
@@ -509,8 +509,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     const Spacer(),
                 Text(
                       _isDescriptionExpanded
-                        ? AppLocalizations.of(context)!.product_detail_collapse
-                        : AppLocalizations.of(context)!.product_detail_more,
+                        ? AppLocalizations.of(context).product_detail_collapse
+                        : AppLocalizations.of(context).product_detail_more,
                   style: TextStyle(
                     fontSize: 14,
                     color: Theme.of(context).colorScheme.primary,
@@ -537,11 +537,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   String _getTierDisplayName(String tierName, BuildContext context) {
     switch (tierName) {
       case 'Basic Tier':
-        return AppLocalizations.of(context)!.product_detail_basic_tier;
+        return AppLocalizations.of(context).product_detail_basic_tier;
       case 'Standard Tier':
-        return AppLocalizations.of(context)!.product_detail_standard_tier;
+        return AppLocalizations.of(context).product_detail_standard_tier;
       case 'Premium Tier':
-        return AppLocalizations.of(context)!.product_detail_premium_tier;
+        return AppLocalizations.of(context).product_detail_premium_tier;
       default:
         return tierName;
     }
@@ -596,7 +596,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context)!.product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
+            Text(AppLocalizations.of(context).product_detail_delivery_times, style: const TextStyle(fontSize: 16)),
             Text('${variant.editNum}', style: const TextStyle(fontSize: 16)),
           ],
         ),
@@ -612,7 +612,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context)!.product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
+            Text(AppLocalizations.of(context).product_detail_delivery_period, style: const TextStyle(fontSize: 16)),
             Text('${variant.deliveryDay}', style: const TextStyle(fontSize: 16)),
           ],
         ),
@@ -693,7 +693,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     return ExpansionTile(
       initiallyExpanded: true, // 默认展开
       title: Text(
-                      AppLocalizations.of(context)!.product_detail_faq,
+                      AppLocalizations.of(context).product_detail_faq,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -702,8 +702,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       trailing: const Icon(Icons.keyboard_arrow_down),
       children: faqMaterials.isEmpty
           ? [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
                 child: Text(
                   '暂无常见问题',
                   style: TextStyle(
@@ -753,7 +753,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.product_detail_case_showcase,
+            AppLocalizations.of(context).product_detail_case_showcase,
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -803,7 +803,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.product_detail_reviews(reviewCount),
+                    AppLocalizations.of(context).product_detail_reviews(reviewCount),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -820,7 +820,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(AppLocalizations.of(context)!.product_detail_view_all, style: const TextStyle(color: Colors.grey)),
+                        Text(AppLocalizations.of(context).product_detail_view_all, style: const TextStyle(color: Colors.grey)),
                         const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                       ],
                     ),
@@ -857,7 +857,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
-                            AppLocalizations.of(context)!.product_detail_no_reviews,
+                            AppLocalizations.of(context).product_detail_no_reviews,
                             style: const TextStyle(color: Colors.grey, fontSize: 14),
                           ),
                         ),
@@ -1009,9 +1009,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '需要买家提供',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),

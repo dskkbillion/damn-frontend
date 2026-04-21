@@ -24,7 +24,7 @@ class OrderShippingInfo extends Equatable {
   });
 
   // Add an empty factory constructor or static constant
-  static final OrderShippingInfo empty = OrderShippingInfo(
+  static const OrderShippingInfo empty = OrderShippingInfo(
     logisticsId: null,
     logisticsNo: null,
     deliveryTime: null,

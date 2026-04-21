@@ -1,7 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
-import 'package:dskk_flutter_refactor/core/navigation/services/i_navigation_service.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/services/profile_preloader_service.dart';
@@ -12,9 +11,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_seller
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_store_profile_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_home/seller_home_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 import 'package:injectable/injectable.dart';
-import 'package:equatable/equatable.dart';
 
 /// 卖家主页/仪表盘Bloc
 @injectable

@@ -10,11 +10,11 @@ class PaymentResultPage extends StatelessWidget {
   final String? errorMessage;
 
   const PaymentResultPage({
-    Key? key,
+    super.key,
     required this.success,
     this.orderId,
     this.errorMessage,
-  }) : super(key: key);
+  });
 
   void _exitPaymentFlow(BuildContext context) {
     context.go('/profile/orders');

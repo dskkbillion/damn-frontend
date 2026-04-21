@@ -6,7 +6,6 @@ import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_widget.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/enhanced_order_status_widget.dart';
 // Import the new item card buttons widget
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_item_card_action_buttons.dart';
@@ -24,7 +23,7 @@ class OrderItemCard extends StatelessWidget {
 
   /// 显示删除订单确认对话框
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Order order) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -60,7 +59,7 @@ class OrderItemCard extends StatelessWidget {
 
   /// 执行删除订单操作
   Future<void> _performDeleteOrder(BuildContext context, Order order) async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       // 创建一个临时的 OrderDetailBloc 来处理删除操作
       final orderDetailBloc = getIt<OrderDetailBloc>();
@@ -166,11 +165,11 @@ class OrderItemCard extends StatelessWidget {
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
 
     // Define the callback for navigating to detail page (used by multiple buttons)
-    VoidCallback navigateToDetail = () {
+    void navigateToDetail() {
       if (onTap != null) {
         onTap!(); // Use the main onTap callback passed from the list page
       }
-    };
+    }
 
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
@@ -214,7 +213,7 @@ class OrderItemCard extends StatelessWidget {
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundColor: colorScheme.surfaceVariant,
+                              backgroundColor: colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.store,
                                 size: 16,
@@ -297,7 +296,7 @@ class OrderItemCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          firstItem?.productName ?? AppLocalizations.of(context)!.order_card_product_unknown, // 商品标题
+                          firstItem?.productName ?? AppLocalizations.of(context).order_card_product_unknown, // 商品标题
                           style: textTheme.titleMedium,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -343,7 +342,7 @@ class OrderItemCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          _getInfoText(order, l10n: AppLocalizations.of(context)!),
+                          _getInfoText(order, l10n: AppLocalizations.of(context)),
                           style: textTheme.bodySmall?.copyWith(
                             color: _getInfoColor(order, colorScheme),
                           ),
@@ -398,7 +397,7 @@ class OrderItemCard extends StatelessWidget {
                     onRemindDelivery: () {
                      // Show a snackbar directly
                      ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text(AppLocalizations.of(context)!.order_snackbar_reminded_delivery), duration: const Duration(seconds: 2)),
+                       SnackBar(content: Text(AppLocalizations.of(context).order_snackbar_reminded_delivery), duration: const Duration(seconds: 2)),
                      );
                      print('[OrderItemCard] Remind delivery: ${order.id}');
                    },
@@ -525,7 +524,7 @@ class OrderItemCard extends StatelessWidget {
         // 评价提示使用次要色
         return colorScheme.secondaryContainer.withOpacity(0.3);
       default:
-        return colorScheme.surfaceVariant;
+        return colorScheme.surfaceContainerHighest;
     }
   }
   

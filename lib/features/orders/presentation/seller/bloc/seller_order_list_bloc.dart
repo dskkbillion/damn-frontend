@@ -1,12 +1,11 @@
 import 'package:bloc/bloc.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart' hide Order; // Hide Order from injectable
 import 'package:stream_transform/stream_transform.dart';
 
 import '../../../../../core/error/failures.dart'; // Import Failure types
-import '../../../../../core/usecases/usecase.dart'; // Assuming NoParams is here or adjust path
+// Assuming NoParams is here or adjust path
 import '../../../domain/entities/order.dart';
 import '../../../domain/entities/order_status.dart';
 import '../../../domain/usecases/get_order_list_use_case.dart'; // Use existing UseCase
@@ -94,7 +93,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
         isRefreshing: true,
       ));
     } else {
-      emit(SellerOrderListLoading());
+      emit(const SellerOrderListLoading());
     }
 
     final result = await _getOrderListUseCase(GetOrderListParams(
@@ -339,7 +338,7 @@ class SellerOrderListBloc extends Bloc<SellerOrderListEvent, SellerOrderListStat
 
     // TODO: Construct DeliverOrderParams properly. This needs UI interaction (files, content).
     // For now, use placeholder params for the skeleton call.
-    final params = DeliverOrderParams(orderId: event.orderId, content: 'Mock delivery content', files: []);
+    final params = DeliverOrderParams(orderId: event.orderId, content: 'Mock delivery content', files: const []);
     final result = await _deliverOrderUseCase(params);
     result.fold(
       (failure) {

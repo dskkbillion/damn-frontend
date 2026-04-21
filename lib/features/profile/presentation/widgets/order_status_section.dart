@@ -6,12 +6,12 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 class OrderStatusSection extends StatelessWidget {
-  const OrderStatusSection({Key? key}) : super(key: key);
+  const OrderStatusSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -19,11 +19,11 @@ class OrderStatusSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
             color: AppColors.borderSecondary,
             blurRadius: 5,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -42,7 +42,7 @@ class OrderStatusSection extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () => _navigateToAllOrders(context),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
@@ -52,7 +52,7 @@ class OrderStatusSection extends StatelessWidget {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Icon(
                       Icons.chevron_right,
                       size: 16,
@@ -126,7 +126,7 @@ class OrderStatusSection extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -139,7 +139,7 @@ class OrderStatusSection extends StatelessWidget {
 
   void _navigateToOrders(BuildContext context, String status) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     const String basePath = '/profile/orders';
     final String pathWithQuery = '$basePath?status=$status';
@@ -157,7 +157,7 @@ class OrderStatusSection extends StatelessWidget {
 
   void _navigateToAllOrders(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     const String basePath = '/profile/orders';
 

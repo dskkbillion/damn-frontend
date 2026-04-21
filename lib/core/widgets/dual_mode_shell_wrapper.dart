@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/app_mode.dart';
 import '../../app/widgets/main_shell_page.dart';
+import '../../core/widgets/keep_alive_wrapper.dart';
 import '../../features/seller/presentation/widgets/seller_shell_page.dart';
 
 /// 双模式Shell包装器，用于在买家和卖家模式之间切换时保持页面状态
@@ -13,12 +14,12 @@ class DualModeShellWrapper extends ConsumerStatefulWidget {
   final GoRouterState state;
   
   const DualModeShellWrapper({
-    Key? key,
+    super.key,
     required this.buyerBuilder,
     required this.sellerBuilder,
     required this.navigationShell,
     required this.state,
-  }) : super(key: key);
+  });
   
   @override
   ConsumerState<DualModeShellWrapper> createState() => _DualModeShellWrapperState();
@@ -87,8 +88,8 @@ class ModeAwareShellRoute extends StatefulShellRoute {
   ModeAwareShellRoute({
     required List<StatefulShellBranch> buyerBranches,
     required List<StatefulShellBranch> sellerBranches,
-    GlobalKey<NavigatorState>? parentNavigatorKey,
-    String? restorationScopeId,
+    super.parentNavigatorKey,
+    super.restorationScopeId,
   }) : super.indexedStack(
     builder: (context, state, navigationShell) {
       return Consumer(
@@ -108,7 +109,5 @@ class ModeAwareShellRoute extends StatefulShellRoute {
       ...buyerBranches,
       ...sellerBranches,
     ],
-    parentNavigatorKey: parentNavigatorKey,
-    restorationScopeId: restorationScopeId,
   );
 }

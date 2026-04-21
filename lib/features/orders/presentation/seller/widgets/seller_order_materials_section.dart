@@ -60,7 +60,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_seller_buyer_materials,
+                  AppLocalizations.of(context).order_seller_buyer_materials,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -119,7 +119,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
               const SizedBox(height: 8),
               const Divider(height: 16),
               Text(
-                AppLocalizations.of(context)!.order_seller_attachment_label,
+                AppLocalizations.of(context).order_seller_attachment_label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
@@ -144,7 +144,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
       onTap: () {
         // TODO: 实现文件下载/预览功能
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_view_attachment(fileName))),
+          SnackBar(content: Text(AppLocalizations.of(context).order_seller_view_attachment(fileName))),
         );
       },
       child: Container(

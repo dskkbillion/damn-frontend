@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
@@ -13,7 +12,7 @@ import '../pages/bind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
 class AccountSecurityPage extends StatefulWidget {
-  const AccountSecurityPage({Key? key}) : super(key: key);
+  const AccountSecurityPage({super.key});
 
   @override
   State<AccountSecurityPage> createState() => _AccountSecurityPageState();
@@ -28,7 +27,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     super.initState();
     _profileBloc = GetIt.instance<ProfileBloc>();
     // 立即加载用户资料
-    _profileBloc.add(GetUserProfileEvent());
+    _profileBloc.add(const GetUserProfileEvent());
   }
 
   @override
@@ -63,7 +62,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               if (state is ProfileError) {
                 print('【退出登录】发生错误: ${state.message}');
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.profile_logout_error(state.message))),
+                  SnackBar(content: Text(AppLocalizations.of(context).profile_logout_error(state.message))),
                 );
               }
             },
@@ -91,11 +90,11 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 final errorMessage = state.message.toString();
                 String userFriendlyMessage;
                 if (errorMessage.contains('timeout') || errorMessage.contains('超时')) {
-                  userFriendlyMessage = AppLocalizations.of(context)!.profile_avatar_upload_timeout;
+                  userFriendlyMessage = AppLocalizations.of(context).profile_avatar_upload_timeout;
                 } else if (errorMessage.contains('network') || errorMessage.contains('网络')) {
-                  userFriendlyMessage = AppLocalizations.of(context)!.profile_network_failed;
+                  userFriendlyMessage = AppLocalizations.of(context).profile_network_failed;
                 } else {
-                  userFriendlyMessage = AppLocalizations.of(context)!.profile_avatar_upload_failed;
+                  userFriendlyMessage = AppLocalizations.of(context).profile_avatar_upload_failed;
                 }
                 
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -117,8 +116,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               if (state is ProfileUpdated) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.profile_info_updated),
-                    duration: Duration(seconds: 2),
+                    content: Text(AppLocalizations.of(context).profile_info_updated),
+                    duration: const Duration(seconds: 2),
                   ),
                 );
               }
@@ -146,7 +145,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             
             return Scaffold(
               appBar: AppBar(
-                title: Text(AppLocalizations.of(context)!.profile_account_security),
+                title: Text(AppLocalizations.of(context).profile_account_security),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_ios),
                   onPressed: () => context.pop(),
@@ -177,7 +176,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   Widget _buildProfileAvatar(UserProfile? profile) {
-    final String nickname = profile?.nickName ?? AppLocalizations.of(context)!.profile_default_name;
+    final String nickname = profile?.nickName ?? AppLocalizations.of(context).profile_default_name;
     final String? avatarUrl = profile?.avatarUrl;
     final bool hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
     
@@ -252,7 +251,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           if (result.compressionRatio != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(AppLocalizations.of(context)!.profile_avatar_optimized(result.compressionRatio!.toStringAsFixed(1))),
+                content: Text(AppLocalizations.of(context).profile_avatar_optimized(result.compressionRatio!.toStringAsFixed(1))),
                 backgroundColor: Colors.green,
                 duration: const Duration(seconds: 2),
               ),
@@ -263,13 +262,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           _showAvatarConfirmDialog();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_process_failed(result.error.toString()))),
+            SnackBar(content: Text(AppLocalizations.of(context).profile_avatar_process_failed(result.error.toString()))),
           );
         }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_error(e.toString()))),
+        SnackBar(content: Text(AppLocalizations.of(context).profile_image_pick_error(e.toString()))),
       );
     }
   }
@@ -278,7 +277,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.profile_update_avatar),
+        title: Text(AppLocalizations.of(context).profile_update_avatar),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -292,7 +291,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 ),
               ),
             const SizedBox(height: 16),
-            Text(AppLocalizations.of(context)!.profile_update_avatar_confirm),
+            Text(AppLocalizations.of(context).profile_update_avatar_confirm),
           ],
         ),
         actions: [
@@ -303,14 +302,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               });
               Navigator.pop(context);
             },
-            child: Text(AppLocalizations.of(context)!.profile_cancel),
+            child: Text(AppLocalizations.of(context).profile_cancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _uploadAvatar();
             },
-            child: Text(AppLocalizations.of(context)!.profile_confirm),
+            child: Text(AppLocalizations.of(context).profile_confirm),
           ),
         ],
       ),
@@ -325,7 +324,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
   }
 
   Widget _buildMenuItems(UserProfile? profile) {
-    final String nickname = profile?.nickName ?? AppLocalizations.of(context)!.profile_default_name;
+    final String nickname = profile?.nickName ?? AppLocalizations.of(context).profile_default_name;
     final String phoneNumber = profile?.mobile ?? '';
     
     return Container(
@@ -333,7 +332,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       child: Column(
         children: [
           _buildMenuItem(
-            AppLocalizations.of(context)!.profile_nickname,
+            AppLocalizations.of(context).profile_nickname,
             trailing: Text(
               nickname,
               style: TextStyle(
@@ -345,9 +344,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
-            AppLocalizations.of(context)!.profile_bound_phone,
+            AppLocalizations.of(context).profile_bound_phone,
             trailing: Text(
-              phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : AppLocalizations.of(context)!.profile_not_bound,
+              phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : AppLocalizations.of(context).profile_not_bound,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -357,8 +356,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           ),
           Divider(height: 1, color: Colors.grey.shade200),
           _buildMenuItem(
-            AppLocalizations.of(context)!.profile_account_deletion,
-            onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context)!.profile_account_deletion),
+            AppLocalizations.of(context).profile_account_deletion,
+            onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context).profile_account_deletion),
           ),
         ],
       ),
@@ -396,7 +395,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             foregroundColor: Colors.red,
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
-          child: Text(AppLocalizations.of(context)!.profile_logout),
+          child: Text(AppLocalizations.of(context).profile_logout),
         ),
       ),
     );
@@ -413,7 +412,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       ).toString(),
     );
     if (result == true) {
-      _profileBloc.add(GetUserProfileEvent());
+      _profileBloc.add(const GetUserProfileEvent());
     }
   }
 
@@ -428,7 +427,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       ).toString(),
     );
     if (result == true) {
-      _profileBloc.add(GetUserProfileEvent());
+      _profileBloc.add(const GetUserProfileEvent());
     }
   }
 
@@ -437,7 +436,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => BindContactPage(contactType: BindContactType.phone),
+        builder: (context) => const BindContactPage(contactType: BindContactType.phone),
       ),
     );
   }
@@ -455,13 +454,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     
     // 如果编辑成功，刷新当前页面数据
     if (result == true) {
-      _profileBloc.add(GetUserProfileEvent());
+      _profileBloc.add(const GetUserProfileEvent());
     }
   }
 
   void _showFeatureNotImplemented(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.profile_feature_not_implemented(feature))),
+      SnackBar(content: Text(AppLocalizations.of(context).profile_feature_not_implemented(feature))),
     );
   }
 
@@ -470,12 +469,12 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.profile_confirm_logout),
-          content: Text(AppLocalizations.of(context)!.profile_confirm_logout_message),
+          title: Text(AppLocalizations.of(context).profile_confirm_logout),
+          content: Text(AppLocalizations.of(context).profile_confirm_logout_message),
           actions: [
             TextButton(
               onPressed: () => context.pop(),
-              child: Text(AppLocalizations.of(context)!.profile_cancel),
+              child: Text(AppLocalizations.of(context).profile_cancel),
             ),
             TextButton(
               onPressed: () {
@@ -485,7 +484,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 // 直接使用_profileBloc实例触发登出事件
                 _profileBloc.add(LogoutEvent());
               },
-              child: Text(AppLocalizations.of(context)!.profile_confirm),
+              child: Text(AppLocalizations.of(context).profile_confirm),
             ),
           ],
         );
@@ -505,9 +504,9 @@ class EditNicknamePage extends StatefulWidget {
   final UserProfile? currentProfile; // 添加参数传递当前资料
   
   const EditNicknamePage({
-    Key? key,
+    super.key,
     this.currentProfile,
-  }) : super(key: key);
+  });
 
   @override
   State<EditNicknamePage> createState() => _EditNicknamePageState();
@@ -524,7 +523,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
   /// 返回null表示合法，返回字符串表示错误信息
   String? _validateNickname(String nickname) {
     final trimmed = nickname.trim();
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
 
     // 检查长度
     if (trimmed.isEmpty) {
@@ -597,10 +596,10 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
       
       // 如果昵称格式正确，但与当前昵称相同，显示提示
       if (validationError == null && newNickname == currentNickname) {
-        validationError = AppLocalizations.of(context)!.profile_nickname_unchanged;
+        validationError = AppLocalizations.of(context).profile_nickname_unchanged;
       }
     } else {
-      validationError = AppLocalizations.of(context)!.profile_nickname_empty;
+      validationError = AppLocalizations.of(context).profile_nickname_empty;
     }
     
     // 按钮可用条件：
@@ -645,7 +644,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
             _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_updated)),
+              SnackBar(content: Text(AppLocalizations.of(context).profile_nickname_updated)),
             );
             
             // 返回并刷新父页面
@@ -657,13 +656,13 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
             _updateButtonState(); // 更新按钮状态
             
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_update_failed(state.message))),
+              SnackBar(content: Text(AppLocalizations.of(context).profile_nickname_update_failed(state.message))),
             );
           }
         },
         child: Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!.profile_edit_nickname_title),
+            title: Text(AppLocalizations.of(context).profile_edit_nickname_title),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () => Navigator.pop(context),
@@ -683,7 +682,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                     FilteringTextInputFormatter.allow(RegExp(r'[\u4e00-\u9fa5a-zA-Z0-9_]')),
                   ],
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.profile_nickname_input_hint,
+                    hintText: AppLocalizations.of(context).profile_nickname_input_hint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
                       borderSide: BorderSide(color: Colors.grey.shade300),
@@ -706,7 +705,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    AppLocalizations.of(context)!.profile_nickname_rules,
+                    AppLocalizations.of(context).profile_nickname_rules,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade600,
@@ -770,8 +769,8 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                             ),
                           )
                         : Text(
-                            AppLocalizations.of(context)!.profile_submit_changes,
-                            style: TextStyle(
+                            AppLocalizations.of(context).profile_submit_changes,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
                             ),
@@ -800,7 +799,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
     
     if (newNickname == widget.currentProfile?.nickName) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.profile_nickname_unchanged)),
+        SnackBar(content: Text(AppLocalizations.of(context).profile_nickname_unchanged)),
       );
       return;
     }

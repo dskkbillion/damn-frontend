@@ -42,7 +42,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
         if (cachedRate != null) {
           return Right(cachedRate);
         }
-        return const Left(NetworkFailure('No internet connection and no cached data available'));
+        return const Left(NetworkFailure(message: 'No internet connection and no cached data available'));
       }
       
       // 从远程获取最新汇率
@@ -66,7 +66,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
         return Right(cachedRate);
       }
       
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(message: e.toString()));
     }
   }
   
@@ -94,7 +94,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
         if (cachedRates.isNotEmpty) {
           return Right(cachedRates);
         }
-        return const Left(NetworkFailure('No internet connection and no cached data available'));
+        return const Left(NetworkFailure(message: 'No internet connection and no cached data available'));
       }
       
       // 从远程获取汇率
@@ -110,7 +110,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
       
       return Right(exchangeRates);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ServerFailure(message: e.toString()));
     }
   }
   
@@ -126,7 +126,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
       );
       return Right(cachedRate);
     } catch (e) {
-      return Left(CacheFailure(e.toString()));
+      return Left(CacheFailure(message: e.toString()));
     }
   }
   
@@ -136,7 +136,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
       await _localDataSource.cacheExchangeRate(exchangeRate);
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(e.toString()));
+      return Left(CacheFailure(message: e.toString()));
     }
   }
   
@@ -146,7 +146,7 @@ class ExchangeRateRepositoryImpl implements IExchangeRateRepository {
       await _localDataSource.clearExpiredRates();
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(e.toString()));
+      return Left(CacheFailure(message: e.toString()));
     }
   }
   

@@ -6,8 +6,6 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_sta
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -16,7 +14,7 @@ import '../../../../generated/app_localizations.dart';
 
 /// 卖家数据统计页面
 class SellerStatisticsPage extends ConsumerWidget {
-  const SellerStatisticsPage({Key? key}) : super(key: key);
+  const SellerStatisticsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +39,7 @@ class SellerStatisticsPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.seller_statistics_title,
+                            AppLocalizations.of(context).seller_statistics_title,
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -68,13 +66,13 @@ class SellerStatisticsPage extends ConsumerWidget {
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                     const SizedBox(height: AppDimensions.spacingLg),
-                    Text(AppLocalizations.of(context)!.seller_statistics_loading_failed(state.failure.message)),
+                    Text(AppLocalizations.of(context).seller_statistics_loading_failed(state.failure.message)),
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
                         context.read<SellerStatisticsBloc>().add(const LoadSellerStatistics());
                       },
-                      child: Text(AppLocalizations.of(context)!.seller_statistics_retry),
+                      child: Text(AppLocalizations.of(context).seller_statistics_retry),
                     ),
                   ],
                 ),
@@ -93,7 +91,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.seller_statistics_seller_homepage,
+          AppLocalizations.of(context).seller_statistics_seller_homepage,
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -103,10 +101,10 @@ class SellerStatisticsPage extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_heat_value, stats.heatPercent, AppColors.warning),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_reply_rate, stats.recoverPercent, AppColors.warning),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_completion_rate, stats.completePercent, AppColors.textSecondary),
-            _buildPercentCircle(AppLocalizations.of(context)!.seller_statistics_positive_rate, stats.goodPercent, AppColors.textSecondary),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_heat_value, stats.heatPercent, AppColors.warning),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_reply_rate, stats.recoverPercent, AppColors.warning),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_completion_rate, stats.completePercent, AppColors.textSecondary),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_positive_rate, stats.goodPercent, AppColors.textSecondary),
           ],
         ),
       ],
@@ -164,7 +162,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.seller_statistics_upgrade_to_next_level,
+          AppLocalizations.of(context).seller_statistics_upgrade_to_next_level,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -175,12 +173,12 @@ class SellerStatisticsPage extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
-                offset: const Offset(0, 2),
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -189,17 +187,17 @@ class SellerStatisticsPage extends ConsumerWidget {
             child: Column(
               children: [
                 _buildUpgradeItem(
-                  AppLocalizations.of(context)!.seller_statistics_become_level3_seller(stats.days.toString()),
+                  AppLocalizations.of(context).seller_statistics_become_level3_seller(stats.days.toString()),
                   '${stats.totalDays}/${stats.days}',
                 ),
                 const Divider(height: 24, thickness: 0.5),
                 _buildUpgradeItem(
-                  AppLocalizations.of(context)!.seller_statistics_complete_orders(stats.orderNum.toString()),
+                  AppLocalizations.of(context).seller_statistics_complete_orders(stats.orderNum.toString()),
                   '${stats.totalOrderNum}/${stats.orderNum}',
                 ),
                 const Divider(height: 24, thickness: 0.5),
                 _buildUpgradeItem(
-                  AppLocalizations.of(context)!.seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
+                  AppLocalizations.of(context).seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
                   '${stats.totalOrderPrice.toStringAsFixed(2)}/${stats.orderPrice.toStringAsFixed(2)}',
                 ),
               ],
@@ -239,7 +237,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.seller_statistics_indicators,
+          AppLocalizations.of(context).seller_statistics_indicators,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -250,12 +248,12 @@ class SellerStatisticsPage extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
-                offset: const Offset(0, 2),
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -266,10 +264,10 @@ class SellerStatisticsPage extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context)!.seller_statistics_total_earnings, stats.totalEarnings.toInt().toString()),
+                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_earnings, stats.totalEarnings.toInt().toString()),
                     ),
                     Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context)!.seller_statistics_monthly_earnings, stats.thisMonthTotalEarnings.toInt().toString()),
+                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_monthly_earnings, stats.thisMonthTotalEarnings.toInt().toString()),
                     ),
                   ],
                 ),
@@ -277,10 +275,10 @@ class SellerStatisticsPage extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context)!.seller_statistics_total_orders, stats.totalOrderNum.toString()),
+                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_orders, stats.totalOrderNum.toString()),
                     ),
                     Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context)!.seller_statistics_active_orders, stats.activeOrderNum.toString()),
+                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_active_orders, stats.activeOrderNum.toString()),
                     ),
                   ],
                 ),
@@ -298,7 +296,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       children: [
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
             color: AppColors.warning,
@@ -319,7 +317,7 @@ class SellerStatisticsPage extends ConsumerWidget {
   /// 构建待处理部分（未完成订单数、距离下次邀交日）
   Widget _buildPendingSection(BuildContext context, SellerIndexStatistics stats) {
     String earlyTimeText = stats.earlyTime > 0 
-        ? '${stats.earlyTime} (${AppLocalizations.of(context)!.seller_statistics_earliest})' 
+        ? '${stats.earlyTime} (${AppLocalizations.of(context).seller_statistics_earliest})' 
         : 'N/A';
     
     String latenessTimeText = stats.latenessTime > 0 
@@ -330,7 +328,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocalizations.of(context)!.seller_statistics_pending,
+          AppLocalizations.of(context).seller_statistics_pending,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -341,12 +339,12 @@ class SellerStatisticsPage extends ConsumerWidget {
           decoration: BoxDecoration(
             color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: AppColors.borderSecondary,
                 spreadRadius: 1,
                 blurRadius: 6,
-                offset: const Offset(0, 2),
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -355,12 +353,12 @@ class SellerStatisticsPage extends ConsumerWidget {
             child: Column(
               children: [
                 _buildPendingItem(
-                  AppLocalizations.of(context)!.seller_statistics_incomplete_orders,
-                  '${stats.pendingOrderNum} (${AppLocalizations.of(context)!.seller_statistics_pending_completion}) / ${stats.receiptOrderNum} (${AppLocalizations.of(context)!.seller_statistics_receipt})',
+                  AppLocalizations.of(context).seller_statistics_incomplete_orders,
+                  '${stats.pendingOrderNum} (${AppLocalizations.of(context).seller_statistics_pending_completion}) / ${stats.receiptOrderNum} (${AppLocalizations.of(context).seller_statistics_receipt})',
                 ),
                 const Divider(height: 30, thickness: 0.5),
                 _buildPendingItem(
-                  AppLocalizations.of(context)!.seller_statistics_next_delivery_date,
+                  AppLocalizations.of(context).seller_statistics_next_delivery_date,
                   '$earlyTimeText / $latenessTimeText',
                 ),
               ],

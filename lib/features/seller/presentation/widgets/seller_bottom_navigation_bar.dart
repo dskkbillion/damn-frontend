@@ -8,14 +8,14 @@ import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入�
 class SellerBottomNavigationBar extends ConsumerWidget {
   final StatefulNavigationShell navigationShell; // <--- 接收 navigationShell
 
-  const SellerBottomNavigationBar({Key? key, required this.navigationShell}) : super(key: key);
+  const SellerBottomNavigationBar({super.key, required this.navigationShell});
 
   // 移除 _calculateSelectedIndex 方法
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, 

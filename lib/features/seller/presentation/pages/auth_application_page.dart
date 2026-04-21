@@ -19,10 +19,10 @@ class AuthApplicationPage extends StatefulWidget {
   
   /// 构造函数
   const AuthApplicationPage({
-    Key? key,
+    super.key,
     required this.type,
     this.authInfo,
-  }) : super(key: key);
+  });
 
   @override
   State<AuthApplicationPage> createState() => _AuthApplicationPageState();
@@ -89,8 +89,8 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _fieldErrors.clear();
             _fieldErrors.addAll(state.fieldErrors);
           });
-          final l10n = AppLocalizations.of(context)!;
-          _showErrorSnackBar(l10n?.seller_auth_application_check_form ?? 'Please check the form');
+          final l10n = AppLocalizations.of(context);
+          _showErrorSnackBar(l10n.seller_auth_application_check_form ?? 'Please check the form');
         } else if (state is AuthApplicationFailure) {
           _showErrorSnackBar(state.message);
         } else if (state is AuthApplicationSuccess) {
@@ -102,7 +102,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           final l10n = AppLocalizations.of(innerContext);
           return Scaffold(
             appBar: AppBar(
-              title: Text(l10n?.seller_auth_application_title?.call(
+              title: Text(l10n.seller_auth_application_title.call(
                 _getAuthenticationTypeName(_authenticationType)
               ) ?? 'Authentication Application'),
             ),
@@ -134,7 +134,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                           
                           // 上传证明材料
                           Text(
-                            AppLocalizations.of(innerContext)?.seller_auth_application_upload_materials ?? 'Upload Materials',
+                            AppLocalizations.of(innerContext).seller_auth_application_upload_materials ?? 'Upload Materials',
                             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -167,7 +167,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
                               ),
                               child: isSubmitting
                                 ? const CircularProgressIndicator()
-                                : Text(AppLocalizations.of(innerContext)?.seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
+                                : Text(AppLocalizations.of(innerContext).seller_auth_application_submit ?? 'Submit', style: const TextStyle(fontSize: 16)),
                             ),
                           ),
                           // 键盘遮挡保护：确保提交按钮可滚动到键盘上方
@@ -199,7 +199,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            (AppLocalizations.of(context)!?.seller_auth_application_desc?.call(
+            (AppLocalizations.of(context).seller_auth_application_desc.call(
               _getAuthenticationTypeName(_authenticationType)
             ) ?? 'Please prepare the following materials'),
             style: const TextStyle(
@@ -217,7 +217,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!?.seller_auth_application_review_time ?? 'Review time: 1-3 business days',
+            AppLocalizations.of(context).seller_auth_application_review_time ?? 'Review time: 1-3 business days',
             style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -239,7 +239,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         children: [
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)!?.seller_auth_application_basic_info ?? 'Basic Information',
+            AppLocalizations.of(context).seller_auth_application_basic_info ?? 'Basic Information',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -468,7 +468,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             _buildUploadButton(),
             const SizedBox(width: 16),
             if (_selectedFiles.isNotEmpty) ...[
-              Text(_l10n?.seller_auth_application_selected_files?.call(_selectedFiles.length) ?? '${_selectedFiles.length} files selected', style: const TextStyle(color: AppColors.success)),
+              Text(_l10n?.seller_auth_application_selected_files.call(_selectedFiles.length) ?? '${_selectedFiles.length} files selected', style: const TextStyle(color: AppColors.success)),
             ],
           ],
         ),
@@ -490,7 +490,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
             ),
           ),
           const SizedBox(height: 8),
-          Container(
+          SizedBox(
             height: 120,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -703,7 +703,7 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
         });
       }
     } catch (e) {
-      _showErrorSnackBar(_l10n?.seller_auth_application_select_file_failed?.call(e.toString()) ?? 'Failed to select file: $e');
+      _showErrorSnackBar(_l10n?.seller_auth_application_select_file_failed.call(e.toString()) ?? 'Failed to select file: $e');
     }
   }
   
@@ -763,18 +763,18 @@ class _AuthApplicationPageState extends State<AuthApplicationPage> {
   
   /// 获取上传提示文字
   String _getUploadHint(AuthenticationType type) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (type) {
       case AuthenticationType.idCard:
-        return l10n?.seller_auth_application_id_upload_hint ?? 'Please upload ID card photos';
+        return l10n.seller_auth_application_id_upload_hint ?? 'Please upload ID card photos';
       case AuthenticationType.education:
-        return l10n?.seller_auth_application_education_upload_hint ?? 'Please upload education certificates';
+        return l10n.seller_auth_application_education_upload_hint ?? 'Please upload education certificates';
       case AuthenticationType.profession:
-        return l10n?.seller_auth_application_profession_upload_hint ?? 'Please upload professional certificates';
+        return l10n.seller_auth_application_profession_upload_hint ?? 'Please upload professional certificates';
       case AuthenticationType.company:
-        return l10n?.seller_auth_application_company_upload_hint ?? 'Please upload business license';
+        return l10n.seller_auth_application_company_upload_hint ?? 'Please upload business license';
       default:
-        return l10n?.seller_auth_application_default_upload_hint ?? 'Please upload related materials';
+        return l10n.seller_auth_application_default_upload_hint ?? 'Please upload related materials';
     }
   }
   

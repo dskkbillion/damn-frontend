@@ -25,14 +25,14 @@ class ProductImagesCarousel extends StatefulWidget {
   final String? heroTag;
 
   const ProductImagesCarousel({
-    Key? key,
+    super.key,
     required this.images,
     this.onImageClicked,
     this.height = 300.0,
     this.autoPlay = true,
     this.autoPlayInterval = const Duration(seconds: 4),
     this.heroTag,
-  }) : super(key: key);
+  });
 
   @override
   State<ProductImagesCarousel> createState() => _ProductImagesCarouselState();
@@ -89,7 +89,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
     if (widget.images.isEmpty) {
       return SizedBox(
         height: widget.height,
-        child: Center(
+        child: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -98,7 +98,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
                 color: AppColors.textTertiary,
                 size: 50,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              SizedBox(height: AppDimensions.spacingMd),
               Text(
                 '暂无图片',
                 style: TextStyle(
@@ -162,7 +162,7 @@ class _ProductImagesCarouselState extends State<ProductImagesCarousel> {
                     color: _currentIndex == index
                         ? Theme.of(context).colorScheme.primary
                         : Colors.white.withOpacity(0.7),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: AppColors.borderSecondary,
                         blurRadius: 2,

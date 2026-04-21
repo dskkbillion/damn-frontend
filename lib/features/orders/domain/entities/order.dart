@@ -80,6 +80,15 @@ class Order extends Equatable {
   /// 关联的售后单 ID（如果存在）
   final int? refundId;
 
+  /// 平台佣金（仅卖家视角，买家侧为 null）
+  final double? platformFee;
+
+  /// 卖家实收金额（仅卖家视角，买家侧为 null）
+  final double? sellerIncome;
+
+  /// 佣金费率（例如 0.10 表示 10%，仅卖家视角）
+  final double? feeRate;
+
   // 注意：不包含 actions 字段，因为允许的操作应由 Presentation 层
   // 根据当前 state 和业务规则动态推断。
 
@@ -108,6 +117,9 @@ class Order extends Equatable {
     this.evaluate,
     this.evaluateDetail,
     this.refundId,
+    this.platformFee,
+    this.sellerIncome,
+    this.feeRate,
   });
 
   Order copyWith({
@@ -134,6 +146,9 @@ class Order extends Equatable {
     bool? evaluate,
     OrderEvaluationDetail? evaluateDetail,
     int? refundId,
+    double? platformFee,
+    double? sellerIncome,
+    double? feeRate,
   }) {
     return Order(
       id: id ?? this.id,
@@ -159,6 +174,9 @@ class Order extends Equatable {
       evaluate: evaluate ?? this.evaluate,
       evaluateDetail: evaluateDetail ?? this.evaluateDetail,
       refundId: refundId ?? this.refundId,
+      platformFee: platformFee ?? this.platformFee,
+      sellerIncome: sellerIncome ?? this.sellerIncome,
+      feeRate: feeRate ?? this.feeRate,
     );
   }
 
@@ -187,5 +205,8 @@ class Order extends Equatable {
         evaluate,
         evaluateDetail,
         refundId,
+        platformFee,
+        sellerIncome,
+        feeRate,
       ];
 }

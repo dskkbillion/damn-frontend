@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -90,7 +89,7 @@ class WechatConfig {
               description: '安全便捷的移动支付',
             ),
             appConfig: WechatAppConfig(
-              appId: envAppId!,
+              appId: envAppId,
               universalLink: envUniversalLink ?? '', // Android平台可以为空
             ),
             paymentScenes: ['order', 'vip', 'wallet'],

@@ -38,7 +38,7 @@ class HomeFeedList extends StatefulWidget {
   final bool showRecommendButton;
 
   const HomeFeedList({
-    Key? key,
+    super.key,
     required this.feedItems,
     this.onProductCardClicked,
     this.onRecommendClicked,
@@ -49,7 +49,7 @@ class HomeFeedList extends StatefulWidget {
     this.spacing = 10.0,
     this.runSpacing = 16.0,
     this.showRecommendButton = false, // 默认不显示"让ta看看"按钮
-  }) : super(key: key);
+  });
 
   @override
   State<HomeFeedList> createState() => _HomeFeedListState();
@@ -89,7 +89,7 @@ class _HomeFeedListState extends State<HomeFeedList> {
   Widget build(BuildContext context) {
     if (widget.feedItems.isEmpty) {
       return Center(
-        child: Text(AppLocalizations.of(context)!.home_no_data),
+        child: Text(AppLocalizations.of(context).home_no_data),
       );
     }
 
@@ -139,7 +139,7 @@ class _HomeFeedListState extends State<HomeFeedList> {
             padding: const EdgeInsets.all(16.0),
             child: Center(
               child: Text(
-                AppLocalizations.of(context)!.home_reached_end,
+                AppLocalizations.of(context).home_reached_end,
                 style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 14,

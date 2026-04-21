@@ -61,10 +61,9 @@ class _CustomChatListState extends State<CustomChatList> {
   
   bool _shouldShowTimestampSeparator(domain.ChatMessage currentMessage, domain.ChatMessage? previousMessage) {
     if (previousMessage == null) return true;
-    if (currentMessage.createTime == null || previousMessage.createTime == null) return false;
     
-    final currentTime = currentMessage.createTime!;
-    final previousTime = previousMessage.createTime!;
+    final currentTime = currentMessage.createTime;
+    final previousTime = previousMessage.createTime;
     
     // Show timestamp if messages are more than 5 minutes apart
     return currentTime.difference(previousTime).inMinutes.abs() > 5;
@@ -102,7 +101,7 @@ class _CustomChatListState extends State<CustomChatList> {
           ),
           child: Text(
             displayString,
-            style: TextStyle(
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12.0,
             ),
@@ -115,7 +114,7 @@ class _CustomChatListState extends State<CustomChatList> {
   @override
   Widget build(BuildContext context) {
     if (widget.messages.isEmpty) {
-      return Center(
+      return const Center(
         child: Text(
           '暂无消息',
           style: TextStyle(color: AppColors.textTertiary),
@@ -158,24 +157,13 @@ class _CustomChatListState extends State<CustomChatList> {
         
         final bool isFirstInList = index == 0;
         
-        if (currentMessage.createTime == null) {
-          return RepaintBoundary(
-            child: ChatMessageBubble(
-              key: ValueKey(currentMessage.id),
-              message: currentMessage,
-              currentUserParticipantId: widget.currentUserParticipantId,
-              opponent: widget.opponent,
-            ),
-          );
-        }
-        
         final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
         
         return RepaintBoundary(
           child: Column(
             children: [
               if (showTimestamp)
-                _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
+                _buildTimestampSeparator(currentMessage.createTime, isFirstInList),
               
               ChatMessageBubble(
                 key: ValueKey(currentMessage.id),

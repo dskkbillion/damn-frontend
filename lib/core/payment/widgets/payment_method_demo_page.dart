@@ -5,7 +5,6 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../config/region_config.dart';
 import '../models/payment_models.dart';
 import '../services/payment_service_factory.dart';
-import '../services/i_payment_service.dart';
 
 class PaymentMethodDemoPage extends StatefulWidget {
   const PaymentMethodDemoPage({super.key});
@@ -20,8 +19,8 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
   bool _isLoading = false;
   
   // 缓存支付方式信息
-  Map<String, Map<String, dynamic>> _paymentMethodInfos = {};
-  Map<String, bool> _serviceAvailability = {};
+  final Map<String, Map<String, dynamic>> _paymentMethodInfos = {};
+  final Map<String, bool> _serviceAvailability = {};
   bool _infoLoaded = false;
 
   @override
@@ -52,7 +51,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.payment_method_test_title),
@@ -70,7 +69,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
   }
 
   Widget _buildContent() {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final supportedMethods = RegionConfig.supportedPaymentMethods;
 
     return Padding(
@@ -248,7 +247,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isAvailable ? AppLocalizations.of(context)!.payment_available : AppLocalizations.of(context)!.payment_unavailable,
+                    isAvailable ? AppLocalizations.of(context).payment_available : AppLocalizations.of(context).payment_unavailable,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -260,7 +259,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.payment_method_label(displayName),
+              AppLocalizations.of(context).payment_method_label(displayName),
               style: TextStyle(
                 fontSize: 13,
                 color: Colors.grey.shade700,
@@ -275,7 +274,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  AppLocalizations.of(context)!.payment_mock_mode,
+                  AppLocalizations.of(context).payment_mock_mode,
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.orange.shade700,
@@ -287,7 +286,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             if (methodInfo['error'] != null) ...[
               const SizedBox(height: 8),
               Text(
-                AppLocalizations.of(context)!.payment_error_label(methodInfo['error'].toString()),
+                AppLocalizations.of(context).payment_error_label(methodInfo['error'].toString()),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.red.shade600,
@@ -309,7 +308,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
     try {
       final service = await _paymentFactory.getPaymentService(method);
       
-      _updateResult('✓ 获取到${method}服务\n');
+      _updateResult('✓ 获取到$method服务\n');
       _updateResult('状态：${service.isAvailable ? "可用" : "不可用"}\n');
 
       if (!service.isAvailable) {
@@ -321,7 +320,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         (pm) => pm.code == method,
         orElse: () => PaymentMethod.alipay,
       );
-      final l10n = AppLocalizations.of(context)!;
+      final l10n = AppLocalizations.of(context);
       final request = PaymentRequest(
         orderId: 'test_${DateTime.now().millisecondsSinceEpoch}',
         amount: '0.01',

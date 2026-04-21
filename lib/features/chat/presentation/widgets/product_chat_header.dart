@@ -12,12 +12,12 @@ class ProductChatHeader extends StatelessWidget {
   final String? actionText;
 
   const ProductChatHeader({
-    Key? key,
+    super.key,
     required this.chatRoom,
     this.onProductTap,
     this.onActionTap,
     this.actionText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class ProductChatHeader extends StatelessWidget {
                     children: [
                       // 商品名称
                       Text(
-                        chatRoom.productName ?? AppLocalizations.of(context)!.chat_product_default,
+                        chatRoom.productName ?? AppLocalizations.of(context).chat_product_default,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -121,7 +121,7 @@ class ProductChatHeader extends StatelessWidget {
                       
                       // 额外信息（可以根据需要添加）
                       Text(
-                        AppLocalizations.of(context)!.chat_tap_to_view_product,
+                        AppLocalizations.of(context).chat_tap_to_view_product,
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],

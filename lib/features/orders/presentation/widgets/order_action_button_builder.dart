@@ -120,7 +120,7 @@ class OrderActionButtonBuilder {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Define common style elements
-    final buttonPadding = const EdgeInsets.symmetric(horizontal: 12, vertical: 10);
+    const buttonPadding = EdgeInsets.symmetric(horizontal: 12, vertical: 10);
     final buttonTextStyle = textTheme.bodySmall;
     final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
     const buttonMinSize = Size(0, 36);

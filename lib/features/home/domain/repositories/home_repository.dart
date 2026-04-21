@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../../core/error/failures.dart';
-import '../entities/banner.dart';
 import '../entities/home_feed_item.dart';
 import '../entities/home_page_data.dart';
 import '../entities/product_detail.dart';

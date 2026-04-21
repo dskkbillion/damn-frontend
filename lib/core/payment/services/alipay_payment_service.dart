@@ -425,11 +425,10 @@ class AlipayPaymentService implements IPaymentService {
   }
 
   @override
-  Future<PaymentResult> pay(String orderInfo) async {
+  Future<models.PaymentResult> pay(String orderInfo) async {
     // 暂时禁用支付宝SDK
-    return PaymentResult(
-      success: false,
-      errorMessage: '支付宝支付暂不可用，请使用其他支付方式（Stripe）',
+    return models.PaymentResult.failure(
+      message: '支付宝支付暂不可用，请使用其他支付方式（Stripe）',
     );
     /* 原支付宝SDK实现，暂时注释
     try {
@@ -452,21 +451,20 @@ class AlipayPaymentService implements IPaymentService {
             : {};
         }
 
-        return PaymentResult(
-          success: true,
-          orderId: response['out_trade_no']?.toString(),
+        return models.PaymentResult.success(
+          orderId: response['out_trade_no']?.toString() ?? '',
+          tradeNo: '',
+          amount: '',
         );
       } else {
         // 支付失败
-        return PaymentResult(
-          success: false,
-          errorMessage: _getPaymentErrorMsg(resultStatus),
+        return models.PaymentResult.failure(
+          message: _getPaymentErrorMsg(resultStatus),
         );
       }
     } catch (e) {
-      return PaymentResult(
-        success: false,
-        errorMessage: '支付异常: $e',
+      return models.PaymentResult.failure(
+        message: '支付异常: $e',
       );
     }
     */

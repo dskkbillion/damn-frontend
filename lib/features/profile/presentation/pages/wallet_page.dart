@@ -17,7 +17,7 @@ final GetIt sl = GetIt.instance;
 
 /// 钱包页面
 class WalletPage extends StatefulWidget {
-  const WalletPage({Key? key}) : super(key: key);
+  const WalletPage({super.key});
 
   @override
   State<WalletPage> createState() => _WalletPageState();
@@ -124,7 +124,7 @@ class _WalletPageState extends State<WalletPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.profile_wallet_title),
+        title: Text(AppLocalizations.of(context).profile_wallet_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _safeGoBack,
@@ -146,7 +146,20 @@ class _WalletPageState extends State<WalletPage> {
             _loadTransactions();
           } else if (state is WalletError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!.profile_wallet_error(state.message))),
+              SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_error(state.message))),
+            );
+          } else if (state is WithdrawalSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('提现申请已提交，请耐心等待处理'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // 刷新余额
+            context.read<WalletBloc>().add(const RefreshWalletSummary());
+          } else if (state is WithdrawalFailed) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('提现失败：${state.message}')),
             );
           }
         },
@@ -158,13 +171,13 @@ class _WalletPageState extends State<WalletPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppLocalizations.of(context)!.profile_wallet_occurred_error(state.message)),
+                  Text(AppLocalizations.of(context).profile_wallet_occurred_error(state.message)),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
                       context.read<WalletBloc>().add(const FetchWalletSummary());
                     },
-                    child: Text(AppLocalizations.of(context)!.profile_wallet_retry),
+                    child: Text(AppLocalizations.of(context).profile_wallet_retry),
                   ),
                 ],
               ),
@@ -213,9 +226,9 @@ class _WalletPageState extends State<WalletPage> {
                         isExpanded: true,
                         value: _transactionType,
                         items: [
-                          DropdownMenuItem(value: 'all', child: Text(AppLocalizations.of(context)!.profile_wallet_filter_all)),
-                          DropdownMenuItem(value: 'income', child: Text(AppLocalizations.of(context)!.profile_wallet_filter_income)),
-                          DropdownMenuItem(value: 'outcome', child: Text(AppLocalizations.of(context)!.profile_wallet_filter_expense)),
+                          DropdownMenuItem(value: 'all', child: Text(AppLocalizations.of(context).profile_wallet_filter_all)),
+                          DropdownMenuItem(value: 'income', child: Text(AppLocalizations.of(context).profile_wallet_filter_income)),
+                          DropdownMenuItem(value: 'outcome', child: Text(AppLocalizations.of(context).profile_wallet_filter_expense)),
                         ],
                         onChanged: (value) {
                           if (value != null && value != _transactionType) {
@@ -262,11 +275,11 @@ class _WalletPageState extends State<WalletPage> {
                               children: [
                                 const Icon(Icons.receipt_long, size: 48, color: Colors.grey),
                                 const SizedBox(height: 16),
-                                Text(AppLocalizations.of(context)!.profile_wallet_no_transactions, style: const TextStyle(color: Colors.grey)),
+                                Text(AppLocalizations.of(context).profile_wallet_no_transactions, style: const TextStyle(color: Colors.grey)),
                                 if (loadMoreError != null) const SizedBox(height: 8),
                                 if (loadMoreError != null)
                                   Text(
-                                    AppLocalizations.of(context)!.profile_wallet_load_failed(loadMoreError!),
+                                    AppLocalizations.of(context).profile_wallet_load_failed(loadMoreError),
                                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                                     textAlign: TextAlign.center,
                                     maxLines: 3,
@@ -276,7 +289,7 @@ class _WalletPageState extends State<WalletPage> {
                                 if (loadMoreError != null)
                                   ElevatedButton(
                                     onPressed: _loadTransactions,
-                                    child: Text(AppLocalizations.of(context)!.profile_wallet_retry),
+                                    child: Text(AppLocalizations.of(context).profile_wallet_retry),
                                   ),
                                 const SizedBox(height: 8),
                               ],
@@ -301,7 +314,7 @@ class _WalletPageState extends State<WalletPage> {
                               child: Center(
                                 child: Column(
                                   children: [
-                                    Text(AppLocalizations.of(context)!.profile_wallet_load_more_failed(loadMoreError!)),
+                                    Text(AppLocalizations.of(context).profile_wallet_load_more_failed(loadMoreError)),
                                     TextButton(
                                       onPressed: () {
                                         context.read<WalletBloc>().add(LoadMoreWalletTransactions(
@@ -310,7 +323,7 @@ class _WalletPageState extends State<WalletPage> {
                                               endDate: _endDate?.toString().split(' ')[0],
                                             ));
                                       },
-                                      child: Text(AppLocalizations.of(context)!.profile_wallet_retry),
+                                      child: Text(AppLocalizations.of(context).profile_wallet_retry),
                                     ),
                                   ],
                                 ),
@@ -341,14 +354,14 @@ class _WalletPageState extends State<WalletPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.profile_wallet_account_balance,
+                  AppLocalizations.of(context).profile_wallet_account_balance,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  '¥${summary.balance.toStringAsFixed(2)}',
+                  '${RegionConfig.currencySymbol}${summary.balance.toStringAsFixed(2)}',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -361,7 +374,7 @@ class _WalletPageState extends State<WalletPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(AppLocalizations.of(context)!.profile_wallet_pending_amount),
+                Text(AppLocalizations.of(context).profile_wallet_pending_amount),
                 Text('${RegionConfig.currencySymbol}${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
               ],
             ),
@@ -369,7 +382,7 @@ class _WalletPageState extends State<WalletPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(AppLocalizations.of(context)!.profile_wallet_total_income),
+                Text(AppLocalizations.of(context).profile_wallet_total_income),
                 Text('${RegionConfig.currencySymbol}${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
               ],
             ),
@@ -382,7 +395,7 @@ class _WalletPageState extends State<WalletPage> {
                   _showWithdrawDialog(summary.balance);
                 } : null,
                 icon: const Icon(Icons.account_balance),
-                label: Text(AppLocalizations.of(context)!.profile_wallet_withdraw),
+                label: Text(AppLocalizations.of(context).profile_wallet_withdraw),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -502,7 +515,7 @@ class _WalletPageState extends State<WalletPage> {
 
   // 获取状态文本
   String _getStatusText(String status) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     switch (status) {
       case 'completed':
         return s.profile_wallet_status_completed;
@@ -528,22 +541,22 @@ class _WalletPageState extends State<WalletPage> {
             children: [
               Center(
                 child: Text(
-                  AppLocalizations.of(context)!.profile_wallet_transaction_details,
+                  AppLocalizations.of(context).profile_wallet_transaction_details,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
               const Divider(),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_id, transaction.id),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_type, transaction.type == 'income' ? AppLocalizations.of(context)!.profile_wallet_transaction_type_income : AppLocalizations.of(context)!.profile_wallet_transaction_type_expense),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_amount, '¥${transaction.amount.abs().toStringAsFixed(2)}'),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_description, transaction.description),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_date, _dateFormat.format(transaction.date)),
-              _buildDetailRow(AppLocalizations.of(context)!.profile_wallet_transaction_status, _getStatusText(transaction.status)),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_id, transaction.id),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_type, transaction.type == 'income' ? AppLocalizations.of(context).profile_wallet_transaction_type_income : AppLocalizations.of(context).profile_wallet_transaction_type_expense),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_amount, '${RegionConfig.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}'),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_description, transaction.description),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_date, _dateFormat.format(transaction.date)),
+              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_status, _getStatusText(transaction.status)),
               const SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context)!.profile_wallet_close),
+                  child: Text(AppLocalizations.of(context).profile_wallet_close),
                 ),
               ),
             ],
@@ -581,22 +594,23 @@ class _WalletPageState extends State<WalletPage> {
   // 显示提现对话框
   void _showWithdrawDialog(double availableBalance) {
     final TextEditingController amountController = TextEditingController();
-    
+    final walletBloc = context.read<WalletBloc>();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.profile_wallet_withdraw),
+        title: Text(AppLocalizations.of(context).profile_wallet_withdraw),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context)!.profile_wallet_available_balance(RegionConfig.currencySymbol, availableBalance.toStringAsFixed(2))),
+            Text(AppLocalizations.of(context).profile_wallet_available_balance(RegionConfig.currencySymbol, availableBalance.toStringAsFixed(2))),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.profile_wallet_withdraw_amount,
-                hintText: AppLocalizations.of(context)!.profile_wallet_withdraw_hint,
+                labelText: AppLocalizations.of(context).profile_wallet_withdraw_amount,
+                hintText: AppLocalizations.of(context).profile_wallet_withdraw_hint,
                 border: const OutlineInputBorder(),
                 prefixText: '${RegionConfig.currencySymbol} ',
               ),
@@ -604,8 +618,8 @@ class _WalletPageState extends State<WalletPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              AppLocalizations.of(context)!.profile_wallet_withdraw_time,
-              style: TextStyle(
+              AppLocalizations.of(context).profile_wallet_withdraw_time,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
               ),
@@ -615,34 +629,28 @@ class _WalletPageState extends State<WalletPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.profile_cancel),
+            child: Text(AppLocalizations.of(context).profile_cancel),
           ),
           ElevatedButton(
             onPressed: () {
               final amount = double.tryParse(amountController.text);
               if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.profile_wallet_invalid_amount)),
+                  SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_invalid_amount)),
                 );
                 return;
               }
               if (amount > availableBalance) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.profile_wallet_exceed_balance)),
+                  SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_exceed_balance)),
                 );
                 return;
               }
 
               Navigator.pop(context);
-              // TODO: 实现真实的提现逻辑
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppLocalizations.of(context)!.profile_wallet_withdraw_submitted(RegionConfig.currencySymbol, amount.toStringAsFixed(2))),
-                  backgroundColor: Colors.green,
-                ),
-              );
+              walletBloc.add(SubmitWithdrawal(amount: amount));
             },
-            child: Text(AppLocalizations.of(context)!.profile_wallet_confirm_withdraw),
+            child: Text(AppLocalizations.of(context).profile_wallet_confirm_withdraw),
           ),
         ],
       ),
@@ -653,8 +661,8 @@ class _WalletPageState extends State<WalletPage> {
   void _showNotImplemented() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.profile_wallet_not_implemented),
-        duration: Duration(seconds: 1),
+        content: Text(AppLocalizations.of(context).profile_wallet_not_implemented),
+        duration: const Duration(seconds: 1),
       ),
     );
   }

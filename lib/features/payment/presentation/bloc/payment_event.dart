@@ -50,14 +50,18 @@ class CreateOrderAndPayEvent extends PaymentEvent {
 class DirectPayEvent extends PaymentEvent {
   final String orderId;
   final String paymentMethod;
+  final String amount;
+  final String? subject;
 
   const DirectPayEvent({
     required this.orderId,
+    required this.amount,
+    this.subject,
     this.paymentMethod = 'alipay',
   });
 
   @override
-  List<Object?> get props => [orderId, paymentMethod];
+  List<Object?> get props => [orderId, paymentMethod, amount, subject];
 }
 
 /// 重置支付状态事件

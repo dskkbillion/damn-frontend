@@ -37,9 +37,9 @@ class AiDocsFileUploadRepositoryImpl implements IFileUploadRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(message: e.message ?? '文件上传服务器错误')); 
     } on NetworkException {
-      return Left(NetworkFailure(message: '网络连接失败，无法上传文件')); 
+      return const Left(NetworkFailure(message: '网络连接失败，无法上传文件')); 
     } on CacheException {
-      return Left(CacheFailure(message: '文件上传缓存错误')); 
+      return const Left(CacheFailure(message: '文件上传缓存错误')); 
     } on ds_exceptions.ServerException catch (e) {
       AppLogger.d('[AiDocs] 服务器异常: ${e.message}');
       return Left(ServerFailure(message: e.message ?? '文件上传服务器错误', code: e.statusCode?.toString())); 

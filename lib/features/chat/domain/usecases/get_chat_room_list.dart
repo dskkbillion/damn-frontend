@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:injectable/injectable.dart'; // Optional: for DI later
+// Optional: for DI later
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart'; // For Base UseCase & NoParams

@@ -16,11 +16,11 @@ class FavoriteSellerItem extends StatelessWidget {
 
   /// 构造函数
   const FavoriteSellerItem({
-    Key? key,
+    super.key,
     required this.seller,
     this.onTap,
     this.onUnfollow,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +132,7 @@ class FavoriteSellerItem extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onUnfollow,
                   icon: const Icon(Icons.person_remove),
-                  label: Text(AppLocalizations.of(context)!.favorites_unfollow),
+                  label: Text(AppLocalizations.of(context).favorites_unfollow),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.grey[700],
                   ),
@@ -146,7 +146,7 @@ class FavoriteSellerItem extends StatelessWidget {
 
   /// 获取卖家类型文本
   String _getSellerTypeText(BuildContext context, String type) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     switch (type) {
       case 'MEMBER':
         return s.favorites_seller_type_member;
@@ -161,7 +161,7 @@ class FavoriteSellerItem extends StatelessWidget {
 
   /// 获取状态文本
   String _getStatusText(BuildContext context, String status) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     switch (status) {
       case 'ACTIVE':
         return s.favorites_seller_status_active;

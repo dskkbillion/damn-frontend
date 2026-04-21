@@ -59,7 +59,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_platform_intervention_title,
+                  AppLocalizations.of(context).order_platform_intervention_title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.blue[600],
@@ -69,7 +69,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.order_platform_intervention_desc,
+              AppLocalizations.of(context).order_platform_intervention_desc,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Colors.grey[600],
               ),
@@ -80,7 +80,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onApplyIntervention,
                 icon: const Icon(Icons.report_problem, size: 18),
-                label: Text(AppLocalizations.of(context)!.order_platform_intervention_apply),
+                label: Text(AppLocalizations.of(context).order_platform_intervention_apply),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.blue[600],
                   side: BorderSide(color: Colors.blue[300]!),
@@ -112,7 +112,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.order_platform_intervention_in_progress,
+                  AppLocalizations.of(context).order_platform_intervention_in_progress,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.orange[700],
@@ -126,7 +126,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    AppLocalizations.of(context)!.order_platform_intervention_processing,
+                    AppLocalizations.of(context).order_platform_intervention_processing,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.orange[800],
                       fontWeight: FontWeight.bold,
@@ -137,7 +137,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.order_platform_intervention_processing_msg,
+              AppLocalizations.of(context).order_platform_intervention_processing_msg,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Colors.orange[700],
               ),
@@ -145,22 +145,22 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             const SizedBox(height: 12),
             _buildTimelineStep(
               context,
-              AppLocalizations.of(context)!.order_platform_intervention_step1,
-              AppLocalizations.of(context)!.order_platform_intervention_step1_desc,
+              AppLocalizations.of(context).order_platform_intervention_step1,
+              AppLocalizations.of(context).order_platform_intervention_step1_desc,
               true,
               Colors.orange,
             ),
             _buildTimelineStep(
               context,
-              AppLocalizations.of(context)!.order_platform_intervention_step2,
-              AppLocalizations.of(context)!.order_platform_intervention_step2_desc,
+              AppLocalizations.of(context).order_platform_intervention_step2,
+              AppLocalizations.of(context).order_platform_intervention_step2_desc,
               false,
               Colors.grey,
             ),
             _buildTimelineStep(
               context,
-              AppLocalizations.of(context)!.order_platform_intervention_step3,
-              AppLocalizations.of(context)!.order_platform_intervention_step3_desc,
+              AppLocalizations.of(context).order_platform_intervention_step3,
+              AppLocalizations.of(context).order_platform_intervention_step3_desc,
               false,
               Colors.grey,
             ),
@@ -194,7 +194,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               ),
             ),
             child: isCompleted
-                ? Icon(
+                ? const Icon(
                     Icons.check,
                     size: 8,
                     color: Colors.white,

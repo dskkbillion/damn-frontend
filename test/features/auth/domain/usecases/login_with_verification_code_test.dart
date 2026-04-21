@@ -44,13 +44,13 @@ void main() {
     'should return failure from the repository when login fails',
     () async {
       // arrange
-      final tFailure = ServerFailure(message: 'Login Failed');
+      const tFailure = ServerFailure(message: 'Login Failed');
       when(mockAuthRepository.loginWithVerificationCode(any))
-          .thenAnswer((_) async => Left(tFailure));
+          .thenAnswer((_) async => const Left(tFailure));
       // act
       final result = await usecase(tCredentials);
       // assert
-      expect(result, Left(tFailure));
+      expect(result, const Left(tFailure));
       verify(mockAuthRepository.loginWithVerificationCode(tCredentials));
       verifyNoMoreInteractions(mockAuthRepository);
     },

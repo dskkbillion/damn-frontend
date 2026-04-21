@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/common_user.dart';
 import '../../domain/entities/favorite_service.dart';
 import '../../domain/entities/favorite_seller.dart';
 import '../../domain/usecases/add_to_favorites_usecase.dart';

@@ -191,7 +191,7 @@ Future<void> _injectTestUserCredentials() async {
     final storage = getIt<FlutterSecureStorage>();
     
     // ==================== 测试用户账号 ====================
-    const userToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjllYWQ5YWJjLWMxZmEtNGM3ZC04ODllLWJjM2EzNjg4MDQxNSJ9.GgGSkCr4YG_Hf-stG8NuYFRZeebOO24vkhYQ_i8EVZzvIj9VO3VB7PdnpV6VlM7-TBJydQSdKy1mUI9jwsaKRw";
+    const userToken = "PLACEHOLDER_TOKEN_FOR_DEV";
     const userId = "13819198810";
     const commonUserId = "10319";
     const referId = "10319";

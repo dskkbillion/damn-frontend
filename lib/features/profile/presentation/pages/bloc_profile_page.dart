@@ -8,8 +8,6 @@ import '../../domain/entities/user_profile.dart';
 import '../bloc/profile_bloc.dart';
 import '../widgets/profile_header.dart';
 import '../../../seller/presentation/pages/seller_profile_page.dart';
-  import '../../../../core/navigation/navigation_helper.dart';
-  import '../../../../core/animations/page_transitions.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -39,18 +37,18 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           );
         } else if (state is ProfileAvatarUploaded) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.profile_avatar_uploaded)),
+            SnackBar(content: Text(AppLocalizations.of(context).profile_avatar_uploaded)),
           );
           // 更新上传头像后获取最新用户信息
-          context.read<ProfileBloc>().add(GetUserProfileEvent());
+          context.read<ProfileBloc>().add(const GetUserProfileEvent());
         } else if (state is ProfileUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.profile_updated)),
+            SnackBar(content: Text(AppLocalizations.of(context).profile_updated)),
           );
         } else if (state is ProfileAuthStatusLoaded) {
           if (state.isAuthenticated) {
             // 如果已登录，获取用户信息
-            context.read<ProfileBloc>().add(GetUserProfileEvent());
+            context.read<ProfileBloc>().add(const GetUserProfileEvent());
           } else {
             // 如果未登录，可以导航到登录页面
             // Navigator.pushReplacementNamed(context, '/login');
@@ -104,7 +102,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           // 🔄 卖家→买家：翻转动画（绕垂直轴）
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => BlocProfilePage(),
+              pageBuilder: (context, animation, secondaryAnimation) => const BlocProfilePage(),
               transitionDuration: const Duration(milliseconds: 600),
               reverseTransitionDuration: const Duration(milliseconds: 600),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -146,7 +144,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       builder: (context, state) {
         if (state is ProfileLoading || state is ProfileInitial) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context)!.profile_personal_center)),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).profile_personal_center)),
             body: const Center(child: CircularProgressIndicator()),
           );
         } else if (state is ProfileLoaded || state is ProfileUpdated || state is ProfileAvatarUploaded) {
@@ -161,13 +159,13 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
         } else {
           // 默认内容
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context)!.profile_personal_center)),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).profile_personal_center)),
             body: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  context.read<ProfileBloc>().add(GetUserProfileEvent());
+                  context.read<ProfileBloc>().add(const GetUserProfileEvent());
                 },
-                child: Text(AppLocalizations.of(context)!.profile_reload),
+                child: Text(AppLocalizations.of(context).profile_reload),
               ),
             ),
           );
@@ -179,7 +177,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   Widget _buildUserProfilePage(BuildContext context, UserProfile profile) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.profile_personal_center),
+        title: Text(AppLocalizations.of(context).profile_personal_center),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -192,14 +190,14 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          context.read<ProfileBloc>().add(GetUserProfileEvent());
+          context.read<ProfileBloc>().add(const GetUserProfileEvent());
         },
         child: SingleChildScrollView(
           child: Column(
             children: [
               BlocBuilder<ProfileBloc, ProfileState>(
                 builder: (context, state) {
-                  return ProfileHeader();
+                  return const ProfileHeader();
                 },
               ),
               const SizedBox(height: 16),
@@ -239,7 +237,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.profile_my_wallet,
+                        AppLocalizations.of(context).profile_my_wallet,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -273,7 +271,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(AppLocalizations.of(context)!.profile_account_balance),
+                        Text(AppLocalizations.of(context).profile_account_balance),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -281,7 +279,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(AppLocalizations.of(context)!.profile_pending_settlement),
+                                Text(AppLocalizations.of(context).profile_pending_settlement),
                                 const SizedBox(height: 4),
                                 Text('${RegionConfig.currencySymbol} ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
@@ -289,7 +287,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(AppLocalizations.of(context)!.profile_total_income),
+                                Text(AppLocalizations.of(context).profile_total_income),
                                 const SizedBox(height: 4),
                                 Text('${RegionConfig.currencySymbol} ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
                               ],
@@ -303,7 +301,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     Center(
                       child: TextButton(
                         onPressed: () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
-                        child: Text(AppLocalizations.of(context)!.profile_load_wallet),
+                        child: Text(AppLocalizations.of(context).profile_load_wallet),
                       ),
                     ),
                 ],
@@ -338,7 +336,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  AppLocalizations.of(context)!.profile_my_orders,
+                  AppLocalizations.of(context).profile_my_orders,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -351,8 +349,8 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   },
                   child: Row(
                     children: [
-                      Text(AppLocalizations.of(context)!.profile_all_orders, style: const TextStyle(color: Colors.grey)),
-                      Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                      Text(AppLocalizations.of(context).profile_all_orders, style: const TextStyle(color: Colors.grey)),
+                      const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
                     ],
                   ),
                 ),
@@ -365,11 +363,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildOrderStatusItem(icon: Icons.payment, label: AppLocalizations.of(context)!.profile_awaiting_payment, badge: 2),
-                _buildOrderStatusItem(icon: Icons.local_shipping, label: AppLocalizations.of(context)!.profile_awaiting_shipment),
-                _buildOrderStatusItem(icon: Icons.inventory, label: AppLocalizations.of(context)!.profile_awaiting_receipt, badge: 1),
-                _buildOrderStatusItem(icon: Icons.star_border, label: AppLocalizations.of(context)!.profile_awaiting_review),
-                _buildOrderStatusItem(icon: Icons.undo, label: AppLocalizations.of(context)!.profile_refund_after_sales),
+                _buildOrderStatusItem(icon: Icons.payment, label: AppLocalizations.of(context).profile_awaiting_payment, badge: 2),
+                _buildOrderStatusItem(icon: Icons.local_shipping, label: AppLocalizations.of(context).profile_awaiting_shipment),
+                _buildOrderStatusItem(icon: Icons.inventory, label: AppLocalizations.of(context).profile_awaiting_receipt, badge: 1),
+                _buildOrderStatusItem(icon: Icons.star_border, label: AppLocalizations.of(context).profile_awaiting_review),
+                _buildOrderStatusItem(icon: Icons.undo, label: AppLocalizations.of(context).profile_refund_after_sales),
               ],
             ),
           ),
@@ -429,7 +427,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   }
 
   Widget _buildMenuSection(BuildContext context) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     final List<Map<String, dynamic>> menuItems = [
       {'icon': Icons.location_on, 'title': s.profile_shipping_address, 'route': '/address'},
       {'icon': Icons.favorite, 'title': s.profile_favorites, 'route': '/favorites'},
@@ -485,7 +483,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   Widget _buildSellerModeButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.read<ProfileBloc>().add(SwitchToSellerModeEvent());
+        context.read<ProfileBloc>().add(const SwitchToSellerModeEvent());
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -500,7 +498,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             Icon(Icons.storefront, color: Theme.of(context).primaryColor),
             const SizedBox(width: 8),
             Text(
-              AppLocalizations.of(context)!.profile_switch_to_seller_mode,
+              AppLocalizations.of(context).profile_switch_to_seller_mode,
               style: TextStyle(
                 color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
@@ -521,7 +519,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera),
-              title: Text(AppLocalizations.of(context)!.profile_take_photo),
+              title: Text(AppLocalizations.of(context).profile_take_photo),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -529,7 +527,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: Text(AppLocalizations.of(context)!.profile_choose_from_album),
+              title: Text(AppLocalizations.of(context).profile_choose_from_album),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -556,7 +554,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.profile_image_pick_failed(e.toString()))),
+        SnackBar(content: Text(AppLocalizations.of(context).profile_image_pick_failed(e.toString()))),
       );
     }
   }
@@ -568,20 +566,20 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.profile_edit_profile),
+        title: Text(AppLocalizations.of(context).profile_edit_profile),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nickNameController,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context)!.profile_nickname,
+                labelText: AppLocalizations.of(context).profile_nickname,
               ),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                Text(AppLocalizations.of(context)!.profile_online_status),
+                Text(AppLocalizations.of(context).profile_online_status),
                 const Spacer(),
                 Switch(
                   value: onlineFlag,
@@ -596,7 +594,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.profile_cancel),
+            child: Text(AppLocalizations.of(context).profile_cancel),
           ),
           TextButton(
             onPressed: () {
@@ -608,7 +606,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     ),
                   );
             },
-            child: Text(AppLocalizations.of(context)!.profile_save),
+            child: Text(AppLocalizations.of(context).profile_save),
           ),
         ],
       ),

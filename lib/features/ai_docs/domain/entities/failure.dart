@@ -35,5 +35,5 @@ class NetworkFailure extends Failure {
 /// Represents a failure due to invalid input data.
 class InvalidInputFailure extends Failure {
   /// Creates an invalid input failure with a specific error [message].
-  const InvalidInputFailure({required String message}) : super(message: message);
+  const InvalidInputFailure({required super.message});
 } 

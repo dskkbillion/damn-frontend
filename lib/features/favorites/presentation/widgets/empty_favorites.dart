@@ -8,9 +8,9 @@ class EmptyFavorites extends StatelessWidget {
 
   /// 构造函数
   const EmptyFavorites({
-    Key? key,
+    super.key,
     required this.tabIndex,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class EmptyFavorites extends StatelessWidget {
           const SizedBox(height: 16),
           // 空状态文本
           Text(
-            tabIndex == 0 ? AppLocalizations.of(context)!.favorites_empty_services : AppLocalizations.of(context)!.favorites_empty_sellers,
+            tabIndex == 0 ? AppLocalizations.of(context).favorites_empty_services : AppLocalizations.of(context).favorites_empty_sellers,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
@@ -38,8 +38,8 @@ class EmptyFavorites extends StatelessWidget {
           // 空状态提示
           Text(
             tabIndex == 0
-                ? AppLocalizations.of(context)!.favorites_empty_services_hint
-                : AppLocalizations.of(context)!.favorites_empty_sellers_hint,
+                ? AppLocalizations.of(context).favorites_empty_services_hint
+                : AppLocalizations.of(context).favorites_empty_sellers_hint,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],

@@ -131,14 +131,11 @@ class SellerHomeLoading extends SellerHomeState {
 class SellerHomeLoaded extends SellerHomeState {
   /// 构造函数
   const SellerHomeLoaded({
-    SellerDashboardData? dashboardData,
-    SellerStoreProfile? storeProfile,
-    String? currentNavPath,
+    super.dashboardData,
+    super.storeProfile,
+    super.currentNavPath,
   }) : super(
     isLoading: false,
-    dashboardData: dashboardData,
-    storeProfile: storeProfile,
-    currentNavPath: currentNavPath,
   );
 }
 
@@ -150,12 +147,11 @@ class SellerHomeError extends SellerHomeState {
   /// 构造函数
   SellerHomeError({
     required this.failure,
-    String? currentNavPath,
+    super.currentNavPath,
   }) : super(
     isLoading: false,
     hasError: true,
     errorMessage: failure.message,
-    currentNavPath: currentNavPath,
   );
   
   @override

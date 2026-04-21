@@ -280,6 +280,7 @@ class CoreWebSocketServiceImpl implements ICoreWebSocketService {
   }
 
   // Optional: Add a dispose method if the service needs cleanup when DI removes it
+  @override
   @disposeMethod // Import dispose_method from injectable if using this
   void dispose() {
     AppLogger.d("[CoreWebSocket] Disposing service...");

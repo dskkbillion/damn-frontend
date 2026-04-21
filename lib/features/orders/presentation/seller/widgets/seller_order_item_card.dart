@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter
+// Import GoRouter
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
@@ -33,7 +33,7 @@ class SellerOrderItemCard extends StatelessWidget {
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
 
     // Define the callback for navigating to detail page (used by multiple buttons)
-    VoidCallback navigateToDetail = () {
+    void navigateToDetail() {
       if (onTap != null) {
         onTap!(); // Use the main onTap callback passed from the list page
       } else {
@@ -41,7 +41,7 @@ class SellerOrderItemCard extends StatelessWidget {
          // context.go('/seller/orders/${order.id}');
          AppLogger.d('[SellerOrderItemCard] Navigate to seller detail for order ${order.id}');
       }
-    };
+    }
 
     return Card(
       // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
@@ -85,7 +85,7 @@ class SellerOrderItemCard extends StatelessWidget {
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundColor: colorScheme.surfaceVariant,
+                              backgroundColor: colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.person,
                                 size: 16,
@@ -161,13 +161,13 @@ class SellerOrderItemCard extends StatelessWidget {
                            return Container(
                              width: 80, height: 80,
                              color: AppColors.backgroundSecondary,
-                             child: Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                             child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                            );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
                           width: 80, height: 80,
                           color: AppColors.backgroundSecondary,
-                          child: Icon(Icons.broken_image, color: AppColors.textTertiary),
+                          child: const Icon(Icons.broken_image, color: AppColors.textTertiary),
                         ),
                       ),
                     )
@@ -175,7 +175,7 @@ class SellerOrderItemCard extends StatelessWidget {
                      Container(
                           width: 80, height: 80,
                           color: AppColors.backgroundSecondary,
-                          child: Icon(Icons.image, color: AppColors.textTertiary),
+                          child: const Icon(Icons.image, color: AppColors.textTertiary),
                         ),
                   const SizedBox(width: 12.0),
                   // 商品详情
@@ -209,7 +209,7 @@ class SellerOrderItemCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12.0),
-              Divider(height: 1, color: AppColors.borderPrimary), // 分隔线
+              const Divider(height: 1, color: AppColors.borderPrimary), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
               Align(

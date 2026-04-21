@@ -84,13 +84,13 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
           PaymentNavigationService.handlePaymentResult(context, navResponse);
         }
       } else {
-        throw Exception(response.message ?? AppLocalizations.of(context)!.payment_create_order_failed);
+        throw Exception(response.message ?? AppLocalizations.of(context).payment_create_order_failed);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.payment_failed_message(e.toString())),
+            content: Text(AppLocalizations.of(context).payment_failed_message(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -105,7 +105,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   }
 
   Widget _buildPaymentMethodTile(models.PaymentMethod method) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     IconData iconData;
     Color iconColor;
     Color bgColor;
@@ -158,7 +158,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Column(
       children: [
         // 支付金额显示

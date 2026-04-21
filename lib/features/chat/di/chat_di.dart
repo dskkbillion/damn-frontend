@@ -2,7 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dio/dio.dart';
-import 'package:dskk_flutter_refactor/core/network/network_info.dart'; // Import NetworkInfo
+// Import NetworkInfo
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart'; // Import IAuthRepository
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -55,7 +55,6 @@ import '../data/data_sources/local/chat_local_data_source.dart' as database;
 import '../presentation/services/chat_preload_service.dart';
 
 // Adapters
-import '../presentation/adapters/chat_message_adapter.dart';
 
 // SharedPreferences
 import 'package:shared_preferences/shared_preferences.dart';
@@ -105,7 +104,7 @@ class ChatUserRepositoryImpl implements IUserRepository {
       AppLogger.d('[ChatUserRepository] authToken存在: ${authToken != null}');
       
       if (userId == null) {
-        return Left(AuthFailure(message: '未找到用户ID'));
+        return const Left(AuthFailure(message: '未找到用户ID'));
       }
       
       // 修改：使用commonUserId作为User对象的id字段，而不是userId

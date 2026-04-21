@@ -25,14 +25,14 @@ class CategoryList extends StatelessWidget {
   final double runSpacing;
 
   const CategoryList({
-    Key? key,
+    super.key,
     required this.categories,
     this.onCategoryClicked,
     this.itemsPerRow = 5,
     this.itemHeight = 80.0,
     this.spacing = 10.0,
     this.runSpacing = 16.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +84,7 @@ class CategoryList extends StatelessWidget {
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: AppColors.borderInput,
-                      child: Icon(
+                      child: const Icon(
                         Icons.category,
                         color: AppColors.textTertiary,
                         size: 24,

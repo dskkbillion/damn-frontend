@@ -77,7 +77,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.after_sales_detail_title),
+          title: Text(AppLocalizations.of(context).after_sales_detail_title),
         ),
         body: BlocBuilder<AfterSalesBloc, AfterSalesState>(
           builder: (context, state) {
@@ -93,7 +93,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(AppLocalizations.of(context)!.after_sales_detail_load_failed(state.errorMessage ?? '')), // Use errorMessage
+                    Text(AppLocalizations.of(context).after_sales_detail_load_failed(state.errorMessage ?? '')), // Use errorMessage
                     const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
@@ -104,7 +104,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                           context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
                         }
                       },
-                      child: Text(AppLocalizations.of(context)!.retry),
+                      child: Text(AppLocalizations.of(context).retry),
                     )
                   ],
                 ),
@@ -130,7 +130,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
             }
 
             // Default/Initial state or unexpected state
-            return Center(child: Text(AppLocalizations.of(context)!.after_sales_detail_initializing));
+            return Center(child: Text(AppLocalizations.of(context).after_sales_detail_initializing));
           },
         ),
         bottomNavigationBar: BlocBuilder<AfterSalesBloc, AfterSalesState>(
@@ -212,7 +212,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   String _getStatusTitle(String status) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     switch (status) {
       case 'wait_audit':
         return s.after_sales_status_wait_audit;
@@ -230,7 +230,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   String? _getStatusSubtitle(String status) {
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     switch (status) {
       case 'wait_audit':
         return s.after_sales_subtitle_wait_audit;
@@ -268,19 +268,19 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.after_sales_info_title,
+            AppLocalizations.of(context).after_sales_info_title,
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
-          _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_order_number, application.refundSn ?? '-', textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_apply_time, _formatDateTime(application.createTime), textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_refund_amount, '¥${application.refundPrice?.toStringAsFixed(2) ?? '0.00'}', textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_reason, application.refundReason ?? '-', textTheme, colorScheme),
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_order_number, application.refundSn ?? '-', textTheme, colorScheme),
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_apply_time, _formatDateTime(application.createTime), textTheme, colorScheme),
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_refund_amount, '¥${application.refundPrice?.toStringAsFixed(2) ?? '0.00'}', textTheme, colorScheme),
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_reason, application.refundReason ?? '-', textTheme, colorScheme),
           if (application.refundExplain?.isNotEmpty == true)
-            _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_description, application.refundExplain!, textTheme, colorScheme),
+            _buildDetailRow(AppLocalizations.of(context).after_sales_info_description, application.refundExplain!, textTheme, colorScheme),
           if (application.auditRemark?.isNotEmpty == true) ...[
             const Divider(height: 24),
-            _buildDetailRow(AppLocalizations.of(context)!.after_sales_info_audit_remark, application.auditRemark!, textTheme, colorScheme),
+            _buildDetailRow(AppLocalizations.of(context).after_sales_info_audit_remark, application.auditRemark!, textTheme, colorScheme),
           ],
         ],
       ),
@@ -394,7 +394,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.after_sales_product_info,
+            AppLocalizations.of(context).after_sales_product_info,
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16.0),
@@ -428,7 +428,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      application.productName ?? AppLocalizations.of(context)!.after_sales_product_unknown,
+                      application.productName ?? AppLocalizations.of(context).after_sales_product_unknown,
                       style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -436,13 +436,13 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                     const SizedBox(height: 6.0),
                     if (application.variantName != null && application.variantName!.isNotEmpty) ...[
                       Text(
-                        AppLocalizations.of(context)!.after_sales_spec(application.variantName!),
+                        AppLocalizations.of(context).after_sales_spec(application.variantName!),
                         style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4.0),
                     ],
                     Text(
-                      AppLocalizations.of(context)!.after_sales_quantity(application.refundNumber ?? 1),
+                      AppLocalizations.of(context).after_sales_quantity(application.refundNumber ?? 1),
                       style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
@@ -466,12 +466,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
          actionButtons.add(
             OutlinedButton(
                onPressed: () { /* TODO: Implement cancel */ print('Cancel clicked'); },
-               child: Text(AppLocalizations.of(context)!.after_sales_revoke),
                 style: OutlinedButton.styleFrom(
                  side: BorderSide(color: colorScheme.outline),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                  textStyle: Theme.of(context).textTheme.labelMedium,
                ),
+               child: Text(AppLocalizations.of(context).after_sales_revoke),
             ),
          );
          actionButtons.add(const SizedBox(width: 8));
@@ -480,13 +480,13 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           actionButtons.add(
              ElevatedButton(
                onPressed: () { /* TODO: Implement modify */ print('Modify clicked'); },
-               child: Text(AppLocalizations.of(context)!.after_sales_modify),
                style: ElevatedButton.styleFrom(
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   textStyle: Theme.of(context).textTheme.labelMedium,
                ),
+               child: Text(AppLocalizations.of(context).after_sales_modify),
             ),
           );
        } else {
@@ -494,12 +494,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
            actionButtons.add(
              OutlinedButton(
                onPressed: () { /* TODO: Implement platform intervention */ print('Platform clicked'); },
-               child: Text(AppLocalizations.of(context)!.after_sales_platform_intervention),
                style: OutlinedButton.styleFrom(
                  side: BorderSide(color: colorScheme.outline),
                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                  textStyle: Theme.of(context).textTheme.labelMedium,
                ),
+               child: Text(AppLocalizations.of(context).after_sales_platform_intervention),
              ),
            );
        }

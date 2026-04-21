@@ -84,7 +84,7 @@ class MockAuthRepository implements IAuthRepository {
       final token = await _getToken();
       yield Authenticated(AuthenticatedUser(id: userId, token: token));
     } catch (e) {
-      yield Unauthenticated();
+      yield const Unauthenticated();
       AppLogger.d('[MockAuthRepository] authStatus生成Unauthenticated: $e');
     }
   }
@@ -103,7 +103,7 @@ class MockAuthRepository implements IAuthRepository {
     _updateCachedValuesOrEmitError();
     
     // 返回失败，因为我们需要异步加载数据
-    return Left(AuthFailure(message: '用户数据尚未加载完成，请稍后再试'));
+    return const Left(AuthFailure(message: '用户数据尚未加载完成，请稍后再试'));
   }
   
   // 异步更新缓存的值，出错时不使用默认值

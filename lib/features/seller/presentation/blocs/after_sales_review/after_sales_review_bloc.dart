@@ -36,7 +36,7 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
   ) async {
     emit(AfterSalesReviewLoading());
     
-    final result = await _getTenantAuditListUseCase(GetTenantAuditListParams(
+    final result = await _getTenantAuditListUseCase(const GetTenantAuditListParams(
       pageNum: 1,
       pageSize: 10,
     ));
@@ -84,7 +84,7 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
   ) async {
     emit(AfterSalesReviewLoading());
     
-    final result = await _getTenantAuditListUseCase(GetTenantAuditListParams(
+    final result = await _getTenantAuditListUseCase(const GetTenantAuditListParams(
       pageNum: 1,
       pageSize: 10,
     ));
@@ -132,7 +132,7 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
       )),
       (paginatedList) {
         final refunds = paginatedList.items ?? [];
-        final hasMore = (paginatedList.items?.length ?? 0) >= 10;
+        final hasMore = (paginatedList.items.length ?? 0) >= 10;
         final newList = isFirstPage ? refunds : [...currentRefunds, ...refunds];
         
         if (newList.isEmpty) {

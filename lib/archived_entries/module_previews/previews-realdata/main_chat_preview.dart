@@ -555,7 +555,7 @@ void main() async {
     }
     final storage = sl<FlutterSecureStorage>();
     // Use the same credentials as main_dev_preview or define specific ones
-    const testToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6Ijk1NjBiODY2LWU2ZmUtNGYyOS04NjVjLTdmMjJjNDg0YjlmZCJ9.QCfx9k2Bu6H1yONyH5jGm_Pjy0DlPPGl9gP1_0p72c-4KjHwoRPIkxXrnJckC1g_UqudTufgjQvfYUCMGzNd9A"; // Example Buyer/General Token
+    const testToken = "PLACEHOLDER_TOKEN_FOR_DEV"; // Example Buyer/General Token
     const testUserId = "18888888888"; // Example Buyer/General ID as String
     const testCommonUserId = "1"; // Example Common User ID
 

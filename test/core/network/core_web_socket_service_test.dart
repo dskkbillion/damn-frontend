@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dskk_flutter_refactor/core/network/i_core_web_socket_service.dart';
@@ -97,7 +96,7 @@ void main() {
 
   group('CoreConnectionStatus 枚举', () {
     test('包含 connected、disconnected、connecting、error', () {
-      final values = CoreConnectionStatus.values;
+      const values = CoreConnectionStatus.values;
       expect(values, contains(CoreConnectionStatus.connected));
       expect(values, contains(CoreConnectionStatus.disconnected));
       expect(values, contains(CoreConnectionStatus.connecting));

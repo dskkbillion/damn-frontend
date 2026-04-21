@@ -26,4 +26,7 @@ abstract class IWalletRepository {
     String? endDate,
     required String transactionType,
   });
+
+  /// 提交提款申请
+  Future<Either<Failure, void>> submitWithdrawal({required double amount});
 }

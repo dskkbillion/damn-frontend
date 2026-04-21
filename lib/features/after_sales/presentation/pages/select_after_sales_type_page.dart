@@ -20,7 +20,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.after_sales_select_type_title),
+        title: Text(AppLocalizations.of(context).after_sales_select_type_title),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -42,7 +42,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   Widget _buildOrderItemInfo(BuildContext context, OrderItem item) {
     return Card(
       elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -56,7 +56,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
                      borderRadius: BorderRadius.circular(4.0), // Add slight rounding
                      child: Image.network(item.imageUrl, fit: BoxFit.cover,
                        errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image, color: Colors.grey[500]),
-                       loadingBuilder: (context, child, progress) => progress == null ? child : Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
+                       loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
                      ),
                    )
                  : Icon(Icons.image, color: Colors.grey[500]),
@@ -85,7 +85,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   Widget _buildTypeSelectionList(BuildContext context) {
     // Get item ID from the widget's orderItem property
     final currentItemId = orderItem.id;
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     return Column(
       children: [
         _buildTypeTile(

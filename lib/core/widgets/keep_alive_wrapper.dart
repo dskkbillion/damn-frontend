@@ -9,10 +9,10 @@ class KeepAliveWrapper extends StatefulWidget {
   final bool keepAlive;
   
   const KeepAliveWrapper({
-    Key? key,
+    super.key,
     required this.child,
     this.keepAlive = true,
-  }) : super(key: key);
+  });
   
   @override
   State<KeepAliveWrapper> createState() => _KeepAliveWrapperState();

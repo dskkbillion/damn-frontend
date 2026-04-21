@@ -34,7 +34,7 @@ class ProductCard extends StatelessWidget {
   final bool showRecommendButton;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.item,
     this.onCardClicked,
     this.onRecommendClicked,
@@ -43,7 +43,7 @@ class ProductCard extends StatelessWidget {
     this.imageHeight = 150.0,
     this.aspectRatio = 1.0,
     this.showRecommendButton = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,12 +55,12 @@ class ProductCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.backgroundCard,
           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
               color: AppColors.borderSecondary,
               spreadRadius: 1,
               blurRadius: 5,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -149,7 +149,7 @@ class ProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                             ),
                             child: Text(
-                              AppLocalizations.of(context)!.product_recommend_button,
+                              AppLocalizations.of(context).product_recommend_button,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Theme.of(context).colorScheme.primary,
                               ),
@@ -170,7 +170,7 @@ class ProductCard extends StatelessWidget {
   /// 构建图片组件
   Widget _buildImage(BuildContext context) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     // 检查是否有图片URL
     if (item.images.isNotEmpty) {
@@ -187,7 +187,7 @@ class ProductCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.shopping_bag,
                 color: AppColors.textTertiary,
                 size: 40,

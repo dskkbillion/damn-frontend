@@ -1,16 +1,14 @@
 import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dartz/dartz.dart';
 import 'dart:convert';
 import 'dart:async';
-import 'dart:io'; // Needed for File type if using local file upload later
+// Needed for File type if using local file upload later
 
 import 'package:http/http.dart' as http; // Assuming we might need this for SSE later, keep for context
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
+// Import dotenv
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 
 import '../../../../core/network/i_http_client.dart';
-import '../../../../core/error/failures.dart';
 // import '../../../../core/error/exceptions.dart'; // Using DataSource specific exceptions
 import '../models/ai_conversation_model.dart';
 import '../models/ai_chat_message_model.dart';
@@ -74,7 +72,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token - 添加手动获取token的代码
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -116,7 +114,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         };
       } else if (data != null && data is List) {
         // 处理直接返回对话列表的格式（向后兼容）
-        conversations = (data as List)
+        conversations = (data)
             .map((convJson) => AiConversationModel.fromJson(convJson))
             .toList();
         
@@ -175,7 +173,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 加载历史记录，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -204,7 +202,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       if (data != null && data is List) { 
         AppLogger.d("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
-        messages = (data as List).map((msgJson) {
+        messages = (data).map((msgJson) {
           AppLogger.d("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
            if (msgJson is Map<String, dynamic>) { 
              AppLogger.d("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
@@ -293,7 +291,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     if (title != null) requestData['title'] = title;
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 创建会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -345,7 +343,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     };
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 删除会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -434,7 +432,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = storage.read(key: 'auth_token').then((token) {
         AppLogger.d("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
         
@@ -442,7 +440,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         final String baseUrl = _getModelBaseUrl();
         String fullUrl = baseUrl.endsWith('/') ? baseUrl + path.substring(1) : baseUrl + path;
         if (!fullUrl.startsWith('http')) {
-          fullUrl = 'http://' + fullUrl;
+          fullUrl = 'http://$fullUrl';
         }
         AppLogger.d("[AiDocs] 完整URL: $fullUrl");
         
@@ -642,7 +640,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 获取相关服务，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -730,7 +728,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     AppLogger.d("Fetching rate limit status using path: $path");
     
     try {
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -780,7 +778,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     }
     
     try {
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -819,7 +817,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     AppLogger.d("Fetching rate limit config using path: $path");
     
     try {
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -869,7 +867,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 分发资源，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -915,7 +913,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     if (userId != null) requestData['user_id'] = userId;
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -969,7 +967,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -1028,7 +1026,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       
@@ -1082,7 +1080,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     
     try {
       // 获取token
-      final storage = const FlutterSecureStorage();
+      const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
       AppLogger.d("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
       

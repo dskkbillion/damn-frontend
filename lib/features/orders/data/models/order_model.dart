@@ -52,6 +52,10 @@ class OrderModel {
   final bool? evaluate;
   final OrderEvaluationDetailModel? evaluateDetail;
   final int? refundId;
+  // 平台佣金相关字段（卖家视角）
+  final double? platformFee;
+  final double? sellerIncome;
+  final double? feeRate;
 
   const OrderModel({
     required this.id,
@@ -84,6 +88,9 @@ class OrderModel {
     this.evaluate,
     this.evaluateDetail,
     this.refundId,
+    this.platformFee,
+    this.sellerIncome,
+    this.feeRate,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -180,6 +187,9 @@ class OrderModel {
       evaluate: json['evaluate'] as bool?,
       evaluateDetail: parsedEvaluateDetail,
       refundId: json['refundId'] as int?,
+      platformFee: (json['platformFee'] as num?)?.toDouble(),
+      sellerIncome: (json['sellerIncome'] as num?)?.toDouble(),
+      feeRate: (json['feeRate'] as num?)?.toDouble(),
     );
   }
 
@@ -232,6 +242,9 @@ class OrderModel {
       evaluate: evaluate,
       evaluateDetail: evaluateDetail?.toEntity(),
       refundId: refundId,
+      platformFee: platformFee,
+      sellerIncome: sellerIncome,
+      feeRate: feeRate,
     );
   }
 

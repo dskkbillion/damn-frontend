@@ -153,7 +153,7 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
        return Right(application);
     } catch (e) {
        AppLogger.d('[MockAfterSalesRepository] Application not found for ID: $refundId');
-       return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
+       return const Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
     }
   }
 
@@ -170,10 +170,10 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
         return const Right(null);
      } else if (index != -1) {
         AppLogger.d('[MockAfterSalesRepository] Cannot cancel refund ID: $refundId in state ${_mockApplications[index].refundState}');
-        return Left(ServerFailure(message: 'Mock Error: Cannot cancel refund in the current state.'));
+        return const Left(ServerFailure(message: 'Mock Error: Cannot cancel refund in the current state.'));
      } else {
         AppLogger.d('[MockAfterSalesRepository] Refund ID: $refundId not found for cancellation.');
-        return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
+        return const Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
      }
   }
 
@@ -184,12 +184,12 @@ class MockAfterSalesRepository implements IAfterSalesRepository {
 
     final index = _mockApplications.indexWhere((app) => app.id == refundId);
     if (index == -1) {
-      return Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
+      return const Left(ServerFailure(message: 'Mock Error: Refund application not found.'));
     }
 
     final current = _mockApplications[index];
     if (current.refundState != 'AUDIT_REFUSED') {
-      return Left(ServerFailure(message: 'Mock Error: Current refund state does not allow mediation.'));
+      return const Left(ServerFailure(message: 'Mock Error: Current refund state does not allow mediation.'));
     }
 
     _mockApplications[index] = _createMockApplication(

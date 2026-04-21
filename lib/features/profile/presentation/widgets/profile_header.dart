@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
@@ -13,19 +11,19 @@ import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
-import 'package:dskk_flutter_refactor/features/seller/presentation/pages/seller_home_page.dart'; // 导入卖家主页
+// 导入卖家主页
 import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
 
 
 class ProfileHeader extends ConsumerWidget {
   const ProfileHeader({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
     
     return BlocBuilder<ProfileBloc, ProfileState>(
       builder: (context, state) {
@@ -68,11 +66,11 @@ class ProfileHeader extends ConsumerWidget {
                 Theme.of(context).primaryColor.withOpacity(0.6),
               ],
             ),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: AppColors.borderSecondary,
                 blurRadius: 5,
-                offset: const Offset(0, 2),
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -233,7 +231,7 @@ class ProfileHeader extends ConsumerWidget {
 
   void _showEditNicknameDialog(BuildContext context, String? currentNickname) {
     // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context)!;
+    final appLocalizations = AppLocalizations.of(context);
 
     // 在创建 Dialog 前先获取 ProfileBloc 的引用，避免 Dialog 内部 Context 作用域问题
     final profileBloc = context.read<ProfileBloc>();

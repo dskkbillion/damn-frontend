@@ -109,13 +109,13 @@ class DeliveryConfirmationArea extends StatelessWidget {
               print('Show delivery issue options');
                _showDeliveryIssueOptions(context);
             },
-            child: Text(AppLocalizations.of(context)!.order_delivery_not_satisfied),
+            child: Text(AppLocalizations.of(context).order_delivery_not_satisfied),
           ),
         ),
          const SizedBox(height: 8),
         Center(
           child: Text(
-            AppLocalizations.of(context)!.order_delivery_communicate_tip, // From prototype
+            AppLocalizations.of(context).order_delivery_communicate_tip, // From prototype
              style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
              textAlign: TextAlign.center,
           ),
@@ -129,7 +129,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
   Widget _buildFileRow(BuildContext context, Map<String, dynamic> fileData) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final fileName = fileData['name'] as String? ?? AppLocalizations.of(context)!.order_delivery_unknown_file;
+    final fileName = fileData['name'] as String? ?? AppLocalizations.of(context).order_delivery_unknown_file;
     final fileSize = fileData['size'] as String?;
 
     return Padding(
@@ -203,7 +203,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                  runSpacing: 16,
                 children: <Widget>[
                   ElevatedButton(
-                    child: Text(AppLocalizations.of(context)!.order_delivery_supplement),
+                    child: Text(AppLocalizations.of(context).order_delivery_supplement),
                     onPressed: () {
                        // TODO: Navigate or trigger 'request revision' flow
                        Navigator.pop(context);
@@ -211,7 +211,7 @@ class DeliveryConfirmationArea extends StatelessWidget {
                     }
                   ),
                    ElevatedButton(
-                    child: Text(AppLocalizations.of(context)!.order_delivery_remake),
+                    child: Text(AppLocalizations.of(context).order_delivery_remake),
                      onPressed: () {
                        // TODO: Navigate or trigger 'request remake' flow
                         Navigator.pop(context);
@@ -219,13 +219,13 @@ class DeliveryConfirmationArea extends StatelessWidget {
                     }
                   ),
                    ElevatedButton(
-                    child: Text(AppLocalizations.of(context)!.order_delivery_refund),
                     style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.errorContainer),
                      onPressed: () {
                         // TODO: Navigate to AfterSale application or trigger refund flow
                          Navigator.pop(context);
                          print('Request Refund');
-                    }
+                    },
+                    child: Text(AppLocalizations.of(context).order_delivery_refund)
                   ),
                 ],
               ),

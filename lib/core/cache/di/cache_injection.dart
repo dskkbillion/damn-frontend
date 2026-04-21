@@ -31,66 +31,66 @@ class CacheInjection {
   
   /// 创建默认配置
   static CacheConfig _createDefaultConfig() {
-    return CacheConfig(
+    return const CacheConfig(
       maxMemorySize: 50 * 1024 * 1024,  // 50MB
       maxItemsPerGroup: 100,
-      defaultTTL: const Duration(minutes: 30),
-      cleanupInterval: const Duration(minutes: 5),
+      defaultTTL: Duration(minutes: 30),
+      cleanupInterval: Duration(minutes: 5),
       enableHttpCache: true,
       maxHttpCacheSize: 100 * 1024 * 1024,  // 100MB
-      httpCacheDuration: const Duration(hours: 1),
+      httpCacheDuration: Duration(hours: 1),
       evictionPolicy: CacheEvictionPolicy.lru,
       enableStats: true,
       enableLogging: false, // 生产环境建议关闭
       groupConfigs: {
         // 用户相关缓存配置
-        CacheGroups.user: const GroupConfig(
+        CacheGroups.user: GroupConfig(
           defaultTTL: Duration(hours: 2),
           maxItems: 50,
           persistent: false,
         ),
         
         // 商品缓存配置
-        CacheGroups.product: const GroupConfig(
+        CacheGroups.product: GroupConfig(
           maxItems: 200,
           defaultTTL: Duration(minutes: 15),
           maxSizeBytes: 10 * 1024 * 1024, // 10MB
         ),
         
         // 分类缓存配置（长时间缓存）
-        CacheGroups.category: const GroupConfig(
+        CacheGroups.category: GroupConfig(
           defaultTTL: Duration(hours: 24),
           persistent: true,
           maxItems: 50,
         ),
         
         // 搜索结果缓存（短时间）
-        CacheGroups.search: const GroupConfig(
+        CacheGroups.search: GroupConfig(
           defaultTTL: Duration(minutes: 5),
           maxItems: 30,
         ),
         
         // 配置缓存（长时间）
-        CacheGroups.config: const GroupConfig(
+        CacheGroups.config: GroupConfig(
           defaultTTL: Duration(hours: 12),
           persistent: true,
         ),
         
         // 临时缓存（短时间）
-        CacheGroups.temporary: const GroupConfig(
+        CacheGroups.temporary: GroupConfig(
           defaultTTL: Duration(minutes: 5),
           maxItems: 20,
         ),
         
         // HTTP响应缓存
-        CacheGroups.http: const GroupConfig(
+        CacheGroups.http: GroupConfig(
           defaultTTL: Duration(minutes: 10),
           maxItems: 100,
           maxSizeBytes: 20 * 1024 * 1024, // 20MB
         ),
         
         // AI相关缓存
-        CacheGroups.ai: const GroupConfig(
+        CacheGroups.ai: GroupConfig(
           defaultTTL: Duration(minutes: 2),
           maxItems: 20,
         ),

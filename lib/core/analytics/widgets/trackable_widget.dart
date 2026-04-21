@@ -16,7 +16,7 @@ class TrackableGestureDetector extends StatelessWidget {
   final Map<String, dynamic>? additionalData;
 
   const TrackableGestureDetector({
-    Key? key,
+    super.key,
     required this.child,
     this.onTap,
     this.trackingPath,
@@ -24,7 +24,7 @@ class TrackableGestureDetector extends StatelessWidget {
     this.clickType,
     this.source,
     this.additionalData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +66,7 @@ class TrackableProductCard extends StatelessWidget {
   final Map<String, dynamic>? additionalData;
 
   const TrackableProductCard({
-    Key? key,
+    super.key,
     required this.child,
     required this.productId,
     this.onTap,
@@ -75,7 +75,7 @@ class TrackableProductCard extends StatelessWidget {
     this.scenario,
     this.recId,
     this.additionalData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -127,14 +127,14 @@ class TrackableButton extends StatelessWidget {
   final Map<String, dynamic>? additionalData;
 
   const TrackableButton({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.actionName,
     this.source,
     this.targetId,
     this.additionalData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +190,7 @@ mixin PageTrackingMixin<T extends StatefulWidget> on State<T> {
   
   /// 开始心跳记录
   void _startHeartbeat() {
-    _heartbeatTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _trackHeartbeat();
     });
   }

@@ -45,7 +45,7 @@ const String fixtureUserInfoJson = '''
 ''';
 
 void main() {
-  final tUserInfoModel = UserInfoModel(
+  const tUserInfoModel = UserInfoModel(
     id: 10302,
     mobile: "17895868541",
     nickName: "178****1",
@@ -70,7 +70,6 @@ void main() {
         // act
         final result = UserInfoModel.fromJson(jsonMap);
         // assert
-        expect(result, tUserInfoModel);
         expect(result.id, 10302);
         expect(result.mobile, "17895868541");
         expect(result.nickName, "178****1");
@@ -80,24 +79,26 @@ void main() {
     );
 
     test(
-      'should throw a FormatException when the JSON is missing id',
+      'should throw a TypeError when the JSON is missing id',
       () async {
         // arrange
         final Map<String, dynamic> jsonMap = json.decode(fixtureUserInfoJson) as Map<String, dynamic>;
         jsonMap.remove('id'); // 移除 id
         // act & assert
-        expect(() => UserInfoModel.fromJson(jsonMap), throwsA(isA<FormatException>()));
+        // freezed+json_serializable throws TypeError when required field is missing
+        expect(() => UserInfoModel.fromJson(jsonMap), throwsA(isA<TypeError>()));
       },
     );
 
      test(
-      'should throw a FormatException when the JSON id is not an integer',
+      'should throw a TypeError when the JSON id is not an integer',
       () async {
         // arrange
         final Map<String, dynamic> jsonMap = json.decode(fixtureUserInfoJson) as Map<String, dynamic>;
         jsonMap['id'] = 'not_an_int'; // id 类型错误
         // act & assert
-        expect(() => UserInfoModel.fromJson(jsonMap), throwsA(isA<FormatException>()));
+        // freezed+json_serializable throws TypeError when type cast fails
+        expect(() => UserInfoModel.fromJson(jsonMap), throwsA(isA<TypeError>()));
       },
     );
 

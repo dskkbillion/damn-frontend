@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Assuming Failure is needed
-import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_entity.dart'; // Import the Order entity
+import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart'; // Import the Order entity
 
 // Define the possible statuses for loading the order detail
 enum OrderDetailStatus { initial, loading, success, failure }
@@ -12,7 +12,7 @@ enum OrderActionStatus { idle, loading, success, failure }
 class OrderDetailState extends Equatable {
   final OrderDetailStatus status;
   final OrderActionStatus actionStatus;
-  final OrderEntity? order; // The loaded order detail
+  final Order? order; // The loaded order detail
   final Failure? failure; // Failure object if status is failure
   final Failure? actionFailure; // Failure object if actionStatus is failure
 
@@ -28,7 +28,7 @@ class OrderDetailState extends Equatable {
   OrderDetailState copyWith({
     OrderDetailStatus? status,
     OrderActionStatus? actionStatus,
-    OrderEntity? order,
+    Order? order,
     Failure? failure,
     Failure? actionFailure,
     bool clearFailure = false, // Flag to explicitly clear failure

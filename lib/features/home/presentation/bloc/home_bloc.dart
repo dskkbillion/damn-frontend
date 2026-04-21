@@ -71,7 +71,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       )).toList();
       emit(HomeLoaded(
         banners: cachedBanners,
-        categories: [],
+        categories: const [],
         feedItems: cachedFeedItems,
         hasReachedMax: cachedFeedItems.length < defaultLimit,
         isRefreshing: true,

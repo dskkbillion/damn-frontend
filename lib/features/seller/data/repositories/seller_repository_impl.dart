@@ -7,7 +7,6 @@ import 'package:dskk_flutter_refactor/features/seller/data/datasources/i_seller_
 import 'package:dskk_flutter_refactor/features/seller/data/models/order_refund_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/models/seller_managed_product_dto.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply_settings.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_dashboard_data.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_managed_product.dart';
@@ -52,10 +51,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localData != null) {
           return Right(localData);
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -82,7 +81,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         
         // 缓存结果
         await _localDataSource.cacheProductList(
-          result.records?.cast<Map<String, dynamic>>() ?? [],
+          result.records.cast<Map<String, dynamic>>() ?? [],
           state,
         );
         
@@ -108,10 +107,10 @@ class SellerRepositoryImpl implements ISellerRepository {
             items: products,
           ));
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -150,7 +149,7 @@ class SellerRepositoryImpl implements ISellerRepository {
     } else {
       // 草稿通常不进行离线缓存，直接返回网络错误
       // 如果需要支持离线查看草稿，则需要添加本地缓存逻辑
-      return Left(NetworkFailure(message: '无网络连接，无法获取草稿列表'));
+      return const Left(NetworkFailure(message: '无网络连接，无法获取草稿列表'));
     }
   }
 
@@ -179,10 +178,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localProduct != null) {
           return Right(_mapToSellerManagedProduct(localProduct));
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -200,7 +199,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法更新商品状态'));
+      return const Left(NetworkFailure(message: '无网络连接，无法更新商品状态'));
     }
   }
 
@@ -217,7 +216,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法创建商品'));
+      return const Left(NetworkFailure(message: '无网络连接，无法创建商品'));
     }
   }
 
@@ -234,7 +233,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法更新商品'));
+      return const Left(NetworkFailure(message: '无网络连接，无法更新商品'));
     }
   }
 
@@ -251,7 +250,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法删除商品'));
+      return const Left(NetworkFailure(message: '无网络连接，无法删除商品'));
     }
   }
 
@@ -274,10 +273,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localProfile != null) {
           return Right(localProfile);
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -295,7 +294,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法更新店铺资料'));
+      return const Left(NetworkFailure(message: '无网络连接，无法更新店铺资料'));
     }
   }
 
@@ -312,7 +311,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法更新在线状态'));
+      return const Left(NetworkFailure(message: '无网络连接，无法更新在线状态'));
     }
   }
 
@@ -335,10 +334,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localSettings != null) {
           return Right(localSettings);
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -356,7 +355,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法设置自动回复'));
+      return const Left(NetworkFailure(message: '无网络连接，无法设置自动回复'));
     }
   }
 
@@ -379,10 +378,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localSettings != null) {
           return Right(localSettings);
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -400,7 +399,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法更新时间设置'));
+      return const Left(NetworkFailure(message: '无网络连接，无法更新时间设置'));
     }
   }
 
@@ -437,10 +436,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localNotifications != null) {
           return Right(localNotifications.map((dto) => dto.toEntity()).toList());
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -458,7 +457,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法标记通知为已读'));
+      return const Left(NetworkFailure(message: '无网络连接，无法标记通知为已读'));
     }
   }
 
@@ -475,7 +474,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法标记所有通知为已读'));
+      return const Left(NetworkFailure(message: '无网络连接，无法标记所有通知为已读'));
     }
   }
 
@@ -492,7 +491,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法获取未读通知数量'));
+      return const Left(NetworkFailure(message: '无网络连接，无法获取未读通知数量'));
     }
   }
 
@@ -510,7 +509,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '网络连接失败，请检查网络设置'));
+      return const Left(NetworkFailure(message: '网络连接失败，请检查网络设置'));
     }
   }
 
@@ -527,7 +526,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法提交认证申请'));
+      return const Left(NetworkFailure(message: '无网络连接，无法提交认证申请'));
     }
   }
 
@@ -546,12 +545,12 @@ class SellerRepositoryImpl implements ISellerRepository {
         
         // 将DTO转换为Domain实体
         final refunds = (result.records ?? [])
-            .map((dto) => (dto as OrderRefundDto).toEntity())
+            .map((dto) => (dto).toEntity())
             .toList();
         
         // 缓存结果
         await _localDataSource.cacheTenantAuditList(
-          result.records?.cast<OrderRefundDto>() ?? [],
+          result.records.cast<OrderRefundDto>() ?? [],
         );
         
         return Right(PaginatedList(
@@ -573,10 +572,10 @@ class SellerRepositoryImpl implements ISellerRepository {
             items: refunds,
           ));
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -602,7 +601,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法审核售后申请'));
+      return const Left(NetworkFailure(message: '无网络连接，无法审核售后申请'));
     }
   }
 
@@ -628,10 +627,10 @@ class SellerRepositoryImpl implements ISellerRepository {
         if (localRefund != null) {
           return Right(localRefund.toEntity());
         } else {
-          return Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
+          return const Left(NetworkFailure(message: '无网络连接，且无本地缓存数据'));
         }
       } on CacheException {
-        return Left(CacheFailure(message: '本地缓存读取失败'));
+        return const Left(CacheFailure(message: '本地缓存读取失败'));
       }
     }
   }
@@ -657,7 +656,7 @@ class SellerRepositoryImpl implements ISellerRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接，无法提交订单交付'));
+      return const Left(NetworkFailure(message: '无网络连接，无法提交订单交付'));
     }
   }
 

@@ -28,7 +28,7 @@ class PaymentNavigationService {
         _navigateToOrdersWithMessage(
           context,
           orderId,
-          AppLocalizations.of(context)!.payment_nav_cancel_continue,
+          AppLocalizations.of(context).payment_nav_cancel_continue,
           OrderStatus.awaitingPayment,
         );
         break;
@@ -48,7 +48,7 @@ class PaymentNavigationService {
         _navigateToOrdersWithMessage(
           context,
           orderId,
-          AppLocalizations.of(context)!.payment_nav_processing,
+          AppLocalizations.of(context).payment_nav_processing,
           OrderStatus.awaitingPayment,
         );
         break;
@@ -67,7 +67,7 @@ class PaymentNavigationService {
     PaymentResponse response,
   ) {
     // 显示支付成功提示
-    _showSuccessSnackBar(context, response.message ?? AppLocalizations.of(context)!.payment_nav_success);
+    _showSuccessSnackBar(context, response.message ?? AppLocalizations.of(context).payment_nav_success);
     
     // 如果当前已经在订单详情页，触发数据刷新而不是导航
     final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
@@ -92,7 +92,7 @@ class PaymentNavigationService {
     PaymentResponse response,
   ) {
     // 显示失败提示
-    _showErrorSnackBar(context, response.message ?? AppLocalizations.of(context)!.payment_nav_failed);
+    _showErrorSnackBar(context, response.message ?? AppLocalizations.of(context).payment_nav_failed);
     
     // 如果当前在订单详情页，只需返回即可
     final currentRoute = GoRouter.of(context).routeInformationProvider.value.uri.toString();
@@ -132,7 +132,7 @@ class PaymentNavigationService {
     BuildContext context,
     PaymentResponse response,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -165,7 +165,7 @@ class PaymentNavigationService {
     BuildContext context,
     PaymentResponse response,
   ) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -195,7 +195,7 @@ class PaymentNavigationService {
   
   /// 重试支付逻辑
   static void _retryPayment(BuildContext context, String? orderId) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (orderId != null) {
       // 重新跳转到支付页面或触发支付流程
       // 这里需要根据实际的支付流程来实现
@@ -210,7 +210,7 @@ class PaymentNavigationService {
 
   /// 查询支付状态
   static void _queryPaymentStatus(BuildContext context, String? orderId) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     if (orderId != null) {
       // 触发支付状态查询
       _showInfoSnackBar(context, l10n.payment_nav_querying);

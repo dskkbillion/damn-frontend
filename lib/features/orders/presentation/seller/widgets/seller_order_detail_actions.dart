@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -10,7 +8,6 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/repositories/i_order_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
 import '../bloc/seller_order_detail_bloc.dart'; // Import Detail Bloc
 
 // 移除邀请评价状态类
@@ -237,7 +234,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              final Map<String, String?>? reasonInfo = await _showRejectReasonDialog(context);
 
              if (reasonInfo != null) {
-                final String reasonLabel = reasonInfo['reasonLabel'] ?? AppLocalizations.of(context)!.order_seller_reject_order; // Default if somehow null
+                final String reasonLabel = reasonInfo['reasonLabel'] ?? AppLocalizations.of(context).order_seller_reject_order; // Default if somehow null
                 final String? remarks = reasonInfo['remarks'];
 
                 // Basic validation: reason cannot be empty if dialog confirmed
@@ -254,23 +251,23 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                     bloc.add(SellerRejectRequested(params: params)); 
                 } else {
                      ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_reject_reason_required), backgroundColor: Colors.orange),
+                       SnackBar(content: Text(AppLocalizations.of(context).order_seller_reject_reason_required), backgroundColor: Colors.orange),
                     );
                 }
              } // User cancelled dialog
           }, 
           style: outlineStyle, 
-          child: Text(AppLocalizations.of(context)!.order_seller_reject_order)
+          child: Text(AppLocalizations.of(context).order_seller_reject_order)
         ));
         buttons.add(ElevatedButton(
            onPressed: () async {
-            final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_accept_title, content: AppLocalizations.of(context)!.order_seller_confirm_accept_content);
+            final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context).order_seller_confirm_accept_title, content: AppLocalizations.of(context).order_seller_confirm_accept_content);
             if (confirmed == true) {
               bloc.add(SellerConfirmAcceptanceRequested(orderId: widget.order.id));
             }
            }, 
            style: filledStyle, 
-           child: Text(AppLocalizations.of(context)!.order_seller_confirm_order)
+           child: Text(AppLocalizations.of(context).order_seller_confirm_order)
           ));
         break;
       case OrderStatus.awaitingDelivery:
@@ -279,7 +276,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              final buyerId = widget.order.buyer?.id;
              if (buyerId == null) {
                ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_contact_buyer)),
+                 SnackBar(content: Text(AppLocalizations.of(context).order_seller_contact_buyer)),
                );
                return;
              }
@@ -301,7 +298,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
              );
            },
            style: outlineStyle,
-           child: Text(AppLocalizations.of(context)!.order_seller_contact_buyer)
+           child: Text(AppLocalizations.of(context).order_seller_contact_buyer)
          ));
          buttons.add(ElevatedButton(
           onPressed: () async {
@@ -322,42 +319,42 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                } else {
                  // Content was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text(AppLocalizations.of(context)!.order_seller_delivery_desc_required), backgroundColor: Colors.orange),
+                   SnackBar(content: Text(AppLocalizations.of(context).order_seller_delivery_desc_required), backgroundColor: Colors.orange),
                  );
                }
              } // If deliveryInfo is null, user canceled dialog - do nothing
             }, 
             style: filledStyle, 
-            child: Text(AppLocalizations.of(context)!.order_seller_go_deliver)
+            child: Text(AppLocalizations.of(context).order_seller_go_deliver)
             ));
         break;
       case OrderStatus.awaitingConfirmation:
-         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show delivery details */ }, style: outlineStyle, child: Text(AppLocalizations.of(context)!.order_seller_view_delivery_content)));
-         buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: Text(AppLocalizations.of(context)!.order_seller_remind_buyer)));
+         buttons.add(OutlinedButton(onPressed: () { /* TODO: Show delivery details */ }, style: outlineStyle, child: Text(AppLocalizations.of(context).order_seller_view_delivery_content)));
+         buttons.add(ElevatedButton(onPressed: () { /* TODO: Remind buyer */ }, style: filledStyle, child: Text(AppLocalizations.of(context).order_seller_remind_buyer)));
         break;
       case OrderStatus.orderCompleted:
         buttons.add(OutlinedButton(
           onPressed: () async {
-             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_delete_title, content: AppLocalizations.of(context)!.order_seller_confirm_delete_content);
+             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context).order_seller_confirm_delete_title, content: AppLocalizations.of(context).order_seller_confirm_delete_content);
              if (confirmed == true) {
                bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
              }
           },
           style: outlineStyle,
-          child: Text(AppLocalizations.of(context)!.order_seller_delete_record)
+          child: Text(AppLocalizations.of(context).order_seller_delete_record)
           ));
         // 移除邀请评价按钮
         break;
       case OrderStatus.canceled:
           buttons.add(OutlinedButton(
            onPressed: () async {
-             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context)!.order_seller_confirm_delete_title, content: AppLocalizations.of(context)!.order_seller_confirm_delete_canceled_content);
+             final confirmed = await _showConfirmationDialog(context, title: AppLocalizations.of(context).order_seller_confirm_delete_title, content: AppLocalizations.of(context).order_seller_confirm_delete_canceled_content);
              if (confirmed == true) {
                 bloc.add(SellerDeleteRecordRequested(orderId: widget.order.id));
               }
             },
             style: outlineStyle,
-            child: Text(AppLocalizations.of(context)!.order_seller_delete_record)
+            child: Text(AppLocalizations.of(context).order_seller_delete_record)
            ));
         break;
       // TODO: Add buttons for other relevant seller states
@@ -379,7 +376,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        final l10n = AppLocalizations.of(context)!;
+        final l10n = AppLocalizations.of(context);
         return AlertDialog(
           title: Text(l10n.order_seller_reject_dialog_title),
           content: Form(
@@ -445,11 +442,11 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
           content: Text(content),
           actions: <Widget>[
             TextButton(
-              child: Text(AppLocalizations.of(context)!.order_dialog_cancel),
+              child: Text(AppLocalizations.of(context).order_dialog_cancel),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             TextButton(
-              child: Text(confirmText ?? AppLocalizations.of(context)!.order_seller_confirm_btn),
+              child: Text(confirmText ?? AppLocalizations.of(context).order_seller_confirm_btn),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -468,7 +465,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        final l10n = AppLocalizations.of(context)!;
+        final l10n = AppLocalizations.of(context);
         return AlertDialog(
           title: Text(l10n.order_seller_delivery_dialog_title),
           content: SingleChildScrollView(
@@ -566,7 +563,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                         ),
                                       ],
                                     ),
-                                  )).toList(),
+                                  )),
                                 const SizedBox(height: 12),
                                 OutlinedButton.icon(
                                   onPressed: () {
@@ -575,7 +572,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(l10n.order_seller_delivery_file_select_soon),
-                                        duration: Duration(seconds: 2),
+                                        duration: const Duration(seconds: 2),
                                       ),
                                     );
                                   },

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 // Import currency modules
-import '../domain/entities/currency.dart';
 import '../presentation/cubit/currency_cubit.dart';
 import '../presentation/widgets/price_display_widget.dart';
 import '../presentation/widgets/currency_picker_widget.dart';
@@ -83,16 +82,16 @@ class CurrencyExamplesContent extends StatelessWidget {
             // 带转换指示器的示例
             _buildSection(
               title: '带转换指示器',
-              child: Column(
-                crossAxisors: CrossAxisAlignment.start,
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Text('原价: '),
+                      Text('原价: '),
                       PriceDisplayWidget(
                         price: 199.99,
                         showConversionIndicator: true,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

@@ -46,7 +46,7 @@ class OrderRepositoryImpl implements IOrderRepository {
       Future<T> Function() apiCall) async {
     // 可选：检查网络连接
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '网络未连接'));
+      return const Left(NetworkFailure(message: '网络未连接'));
     }
     try {
       final result = await apiCall();
@@ -293,7 +293,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   @override
   Future<Either<Failure, void>> submitRequirements(SubmitRequirementsParams params) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '网络未连接'));
+      return const Left(NetworkFailure(message: '网络未连接'));
     }
 
     try {
@@ -390,7 +390,7 @@ class OrderRepositoryImpl implements IOrderRepository {
     int? chatRoomId,
   }) async {
     if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: '网络未连接'));
+      return const Left(NetworkFailure(message: '网络未连接'));
     }
     
     try {

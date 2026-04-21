@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 // Removed INavigationService import as it might not be needed for direct navigation
@@ -242,36 +241,30 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      }
 
     // --- Handle UseCase Result (Confirm, Cancel, Delete) ---
-    if (result != null) {
-      result.fold(
-        (failure) {
-          AppLogger.d('[OrderDetailBloc] Action [${event.action}] failed: ${failure.toString()}');
-          // Ensure correct construction of OrderDetailActionFailure
-          emit(OrderDetailActionFailure(
-            message: _mapFailureToMessage(failure), // Use helper function
-            previousState: currentState, // Show previous state on failure
-          ));
-        },
-        (_) {
-          AppLogger.d('[OrderDetailBloc] Action [${event.action}] succeeded.');
-          // Emit success state FIRST (for SnackBar/UI feedback)
-          // We will add actionType to the State definition next.
-          emit(OrderDetailActionSuccess(
-              message: successMessage,
-              updatedState: currentState, // Can keep showing old state until reload/nav
-              actionType: event.action // Provide the action type
-              ));
+    result.fold(
+      (failure) {
+        AppLogger.d('[OrderDetailBloc] Action [${event.action}] failed: ${failure.toString()}');
+        // Ensure correct construction of OrderDetailActionFailure
+        emit(OrderDetailActionFailure(
+          message: _mapFailureToMessage(failure), // Use helper function
+          previousState: currentState, // Show previous state on failure
+        ));
+      },
+      (_) {
+        AppLogger.d('[OrderDetailBloc] Action [${event.action}] succeeded.');
+        // Emit success state FIRST (for SnackBar/UI feedback)
+        // We will add actionType to the State definition next.
+        emit(OrderDetailActionSuccess(
+            message: successMessage,
+            updatedState: currentState, // Can keep showing old state until reload/nav
+            actionType: event.action // Provide the action type
+            ));
 
-          // The UI layer (BlocListener) should handle the actual reload/navigation
-          // based on the presence of OrderDetailActionSuccess and potentially the actionType.
-        },
-      );
-    } else {
-       // This case might happen if goToPayment was the action
-       AppLogger.d('[OrderDetailBloc] Action [${event.action}] had null result or was handled directly.');
-       // State was already reverted or handled
+        // The UI layer (BlocListener) should handle the actual reload/navigation
+        // based on the presence of OrderDetailActionSuccess and potentially the actionType.
+      },
+    );
     }
-  }
 
   Future<void> _onSubmitRequirementsSubmitted(
     SubmitRequirementsSubmitted event,
@@ -356,7 +349,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
           }
 
           // Emit success state FIRST (for SnackBar)
-          emit(OrderDetailActionSuccess(
+          emit(const OrderDetailActionSuccess(
             message: '评价提交成功!',
             actionType: OrderAction.submitEvaluation,
           ));

@@ -79,12 +79,12 @@ class SellerDynamicContentArea extends StatelessWidget {
                 children: [
                   Icon(Icons.task_alt_outlined, size: 20, color: colorScheme.primary),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.order_seller_dynamic_delivered, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context).order_seller_dynamic_delivered, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(height: 12),
                Text(
-                 AppLocalizations.of(context)!.order_seller_dynamic_delivered_msg,
+                 AppLocalizations.of(context).order_seller_dynamic_delivered_msg,
                  style: textTheme.bodyMedium,
                ),
               // TODO: 后续版本可以添加交付内容的详情显示
@@ -116,7 +116,7 @@ class SellerDynamicContentArea extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context)!.order_seller_dynamic_completed,
+                  AppLocalizations.of(context).order_seller_dynamic_completed,
                   style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)
                 ),
               ),
@@ -150,7 +150,7 @@ class SellerDynamicContentArea extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  AppLocalizations.of(context)!.order_seller_dynamic_canceled,
+                  AppLocalizations.of(context).order_seller_dynamic_canceled,
                   style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: colorScheme.onErrorContainer)
                 ),
               ),
@@ -175,7 +175,7 @@ class SellerDynamicContentArea extends StatelessWidget {
          borderRadius: BorderRadius.circular(12.0),
          side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
        ),
-       color: colorScheme.surfaceVariant.withOpacity(0.3), // Neutral background
+       color: colorScheme.surfaceContainerHighest.withOpacity(0.3), // Neutral background
        child: Padding(
          padding: const EdgeInsets.all(16.0),
          child: Row(
@@ -186,10 +186,10 @@ class SellerDynamicContentArea extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Text(AppLocalizations.of(context)!.order_seller_dynamic_refused, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                     Text(AppLocalizations.of(context).order_seller_dynamic_refused, style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                      const SizedBox(height: 4),
                      Text(
-                      AppLocalizations.of(context)!.order_seller_dynamic_refused_msg,
+                      AppLocalizations.of(context).order_seller_dynamic_refused_msg,
                       style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)
                     ),
                     // TODO: If API/Order entity provides refusal reason/remarks, display here.

@@ -153,15 +153,15 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     }
     
     // 检查是否跨天
-    final currentDate = DateTime(current.createTime!.year, current.createTime!.month, current.createTime!.day);
-    final previousDate = DateTime(previous.createTime!.year, previous.createTime!.month, previous.createTime!.day);
+    final currentDate = DateTime(current.createTime.year, current.createTime.month, current.createTime.day);
+    final previousDate = DateTime(previous.createTime.year, previous.createTime.month, previous.createTime.day);
     
     if (!currentDate.isAtSameMomentAs(previousDate)) {
       return true; // 跨天时显示时间分隔符
     }
     
     // 同一天内，检查时间间隔是否超过5分钟
-    final difference = previous.createTime!.difference(current.createTime!).abs(); 
+    final difference = previous.createTime.difference(current.createTime).abs(); 
     return difference.inMinutes >= 5;
   }
 
@@ -178,7 +178,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       formattedTime = DateFormat('HH:mm').format(timestamp);
     } else if (messageDate.isAtSameMomentAs(yesterday)) {
       // 昨天的消息
-      formattedTime = AppLocalizations.of(context)!.chat_yesterday_time(DateFormat('HH:mm').format(timestamp));
+      formattedTime = AppLocalizations.of(context).chat_yesterday_time(DateFormat('HH:mm').format(timestamp));
     } else if (timestamp.year == now.year) {
       // 今年的消息显示月日和时间
       formattedTime = DateFormat.MMMd(Intl.getCurrentLocale()).add_Hm().format(timestamp);
@@ -210,7 +210,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   @override
   Widget build(BuildContext context) {
     // 获取国际化资源
-    final s = AppLocalizations.of(context)!;
+    final s = AppLocalizations.of(context);
     
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // Set background color here
@@ -367,7 +367,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   builder: (context, state) {
                     if (state is ChatMessagesLoading && state is! ChatMessagesLoaded) {
                       // 显示加载中
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     } else if (state is ChatMessagesLoaded) {
                       if (state.messages.isEmpty) {
                         return Center(child: Text(s.chat_no_messages));
@@ -385,9 +385,9 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                             itemBuilder: (context, index) {
                               // 底部加载更多指示器（在reverse模式下显示在顶部）
                               if (index == state.messages.length && _isLoadingMore) {
-                                return Center(
+                                return const Center(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: EdgeInsets.all(8.0),
                                     child: CircularProgressIndicator(strokeWidth: 2),
                                   ),
                                 );
@@ -416,22 +416,12 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 
                               final bool isFirstInList = messageIndex == 0;
 
-                              if (currentMessage.createTime == null) {
-                                print('Error: Message ID ${currentMessage.id} has null createTime.');
-                                return ChatMessageBubble(
-                                  key: ValueKey(currentMessage.id), 
-                                  message: currentMessage,
-                                  currentUserParticipantId: state.currentUserParticipantId,
-                                  opponent: state.opponent,
-                                );
-                              }
-
                               final bool showTimestamp = _shouldShowTimestampSeparator(currentMessage, previousMessage);
 
                               return Column(
                                 children: [
                                   if (showTimestamp) 
-                                    _buildTimestampSeparator(currentMessage.createTime!, isFirstInList),
+                                    _buildTimestampSeparator(currentMessage.createTime, isFirstInList),
                                   
                                   ChatMessageBubble(
                                     key: ValueKey(currentMessage.id), 

@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../domain/repositories/i_wallet_repository.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/wallet_summary.dart';
 import '../../domain/usecases/get_wallet_summary.dart';
@@ -15,15 +16,18 @@ import 'wallet_state.dart';
 class WalletBloc extends Bloc<WalletEvent, WalletState> {
   final GetWalletSummary getWalletSummary;
   final GetWalletTransactions getWalletTransactions;
+  final IWalletRepository? walletRepository;
 
   WalletBloc({
     required this.getWalletSummary,
     required this.getWalletTransactions,
+    this.walletRepository,
   }) : super(const WalletInitial()) {
     on<FetchWalletSummary>(_onFetchWalletSummary);
     on<RefreshWalletSummary>(_onRefreshWalletSummary);
     on<FetchWalletTransactions>(_onFetchWalletTransactions);
     on<LoadMoreWalletTransactions>(_onLoadMoreWalletTransactions);
+    on<SubmitWithdrawal>(_onSubmitWithdrawal);
   }
 
   /// 处理获取钱包摘要信息事件
@@ -64,7 +68,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   ) async {
     if (state is WalletSummaryLoaded) {
       final walletSummary = (state as WalletSummaryLoaded).walletSummary;
-      emit(WalletTransactionsLoading(walletSummary, []));
+      emit(WalletTransactionsLoading(walletSummary, const []));
 
       final result = await getWalletTransactions(TransactionsParams(
         page: 1,
@@ -80,7 +84,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
           AppLogger.d('获取交易记录失败: ${failure.toString()}');
           emit(WalletLoaded(
             walletSummary,
-            [], // 空交易记录列表
+            const [], // 空交易记录列表
             1,
             false,
             loadMoreError: failure.toString(),
@@ -129,7 +133,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
         },
         (walletSummary) async {
           // 如果获取摘要成功，再获取交易记录
-          emit(WalletTransactionsLoading(walletSummary, []));
+          emit(WalletTransactionsLoading(walletSummary, const []));
           
           final transactionsResult = await getWalletTransactions(TransactionsParams(
             page: 1,
@@ -145,7 +149,7 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
               AppLogger.d('获取交易记录失败: ${failure.toString()}');
               emit(WalletLoaded(
                 walletSummary,
-                [], // 空交易记录列表
+                const [], // 空交易记录列表
                 1,
                 false,
                 loadMoreError: failure.toString(),
@@ -256,6 +260,23 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
           ));
         }
       },
+    );
+  }
+
+  /// 处理提交提款事件
+  Future<void> _onSubmitWithdrawal(
+    SubmitWithdrawal event,
+    Emitter<WalletState> emit,
+  ) async {
+    if (walletRepository == null) {
+      emit(const WithdrawalFailed('提款服务不可用'));
+      return;
+    }
+    emit(const WithdrawalSubmitting());
+    final result = await walletRepository!.submitWithdrawal(amount: event.amount);
+    result.fold(
+      (failure) => emit(WithdrawalFailed(_mapFailureToMessage(failure))),
+      (_) => emit(const WithdrawalSuccess()),
     );
   }
 

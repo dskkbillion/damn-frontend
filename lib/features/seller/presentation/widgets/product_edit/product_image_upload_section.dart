@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/product_status.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../image_preview_page.dart';
@@ -31,8 +30,8 @@ class ProductImageUploadSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: AppColors.backgroundCard,
-      margin: EdgeInsets.only(top: AppDimensions.spacingMd),
-      padding: EdgeInsets.all(AppDimensions.spacingLg),
+      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,7 +48,7 @@ class ProductImageUploadSection extends StatelessWidget {
               _UploadStatusIndicator(state: state),
             ],
           ),
-          SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.spacingMd),
           _ImageGrid(
             state: state,
             onPickImages: onPickImages,
@@ -67,7 +66,7 @@ class ProductImageUploadSection extends StatelessWidget {
               ),
             ),
           Padding(
-            padding: EdgeInsets.only(top: AppDimensions.spacingMd),
+            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
             child: Text(
               '支持jpg、png、jpeg格式，单张不超过5MB，最多可上传9张图片',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -93,7 +92,7 @@ class _UploadStatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     if (state.uploadStatus == UploadStatus.uploading) {
       return Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.info.withOpacity(0.1),
@@ -111,7 +110,7 @@ class _UploadStatusIndicator extends StatelessWidget {
                     Theme.of(context).colorScheme.primary),
               ),
             ),
-            SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.spacingSm),
             Text(
               'Uploading ${state.uploadedCount}/${state.totalUploadCount}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -125,7 +124,7 @@ class _UploadStatusIndicator extends StatelessWidget {
 
     if (state.uploadStatus == UploadStatus.success && state.uploadedImageUrls.isNotEmpty) {
       return Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.success.withOpacity(0.1),
@@ -134,8 +133,8 @@ class _UploadStatusIndicator extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, size: 16, color: AppColors.success),
-            SizedBox(width: AppDimensions.spacingSm),
+            const Icon(Icons.check_circle, size: 16, color: AppColors.success),
+            const SizedBox(width: AppDimensions.spacingSm),
             Text(
               '上传成功',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -149,7 +148,7 @@ class _UploadStatusIndicator extends StatelessWidget {
 
     if (state.uploadStatus == UploadStatus.failure) {
       return Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs),
         decoration: BoxDecoration(
           color: AppColors.error.withOpacity(0.1),
@@ -158,8 +157,8 @@ class _UploadStatusIndicator extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error, size: 16, color: AppColors.error),
-            SizedBox(width: AppDimensions.spacingSm),
+            const Icon(Icons.error, size: 16, color: AppColors.error),
+            const SizedBox(width: AppDimensions.spacingSm),
             Text(
               '上传失败',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -297,7 +296,7 @@ class _ImageItem extends StatelessWidget {
             child: GestureDetector(
               onTap: onRemove,
               child: Container(
-                padding: EdgeInsets.all(AppDimensions.spacingXs),
+                padding: const EdgeInsets.all(AppDimensions.spacingXs),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.6),
                   shape: BoxShape.circle,
@@ -311,7 +310,7 @@ class _ImageItem extends StatelessWidget {
               bottom: AppDimensions.spacingXs,
               left: AppDimensions.spacingXs,
               child: Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                     horizontal: AppDimensions.spacingXs + 2,
                     vertical: 2),
                 decoration: BoxDecoration(
@@ -360,10 +359,10 @@ class _ImageItem extends StatelessWidget {
           );
         },
         errorBuilder: (_, __, ___) =>
-            Center(child: Icon(Icons.image_not_supported, color: AppColors.textTertiary)),
+            const Center(child: Icon(Icons.image_not_supported, color: AppColors.textTertiary)),
       );
     }
-    return Center(
+    return const Center(
       child: Icon(Icons.image_not_supported, size: 40, color: AppColors.textTertiary),
     );
   }
@@ -422,7 +421,7 @@ class _AddImageButton extends StatelessWidget {
                     : AppColors.textTertiary,
                 size: 28,
               ),
-            SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.spacingXs),
             Text(
               isUploading ? 'Uploading...' : 'Add Image',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(

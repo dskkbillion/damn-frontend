@@ -8,16 +8,8 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/repositories/i_user_profile_repository.dart';
 import '../datasources/profile_local_data_source.dart';
-import '../datasources/profile_remote_data_source.dart';
-
-class CacheException implements Exception {}
-
-class ServerException implements Exception {
-  final String message;
-  final int? statusCode;
-
-  ServerException({required this.message, this.statusCode});
-}
+import '../datasources/profile_remote_data_source.dart'
+    show ProfileRemoteDataSource, ServerException;
 
 /// 用户个人资料仓库实现
 @Injectable(as: IUserProfileRepository)
@@ -49,7 +41,7 @@ class UserProfileRepositoryImpl implements IUserProfileRepository {
         final localUserProfile = await localDataSource.getLastUserProfile();
         return Right(localUserProfile.toEntity());
       } on CacheException {
-        return Left(CacheFailure(message: '没有缓存的用户资料'));
+        return const Left(CacheFailure(message: '未能从本地缓存加载用户资料'));
       } catch (e) {
         return Left(GeneralFailure(message: e.toString()));
       }
@@ -73,7 +65,7 @@ class UserProfileRepositoryImpl implements IUserProfileRepository {
         return Left(GeneralFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接'));
+      return const Left(NetworkFailure(message: '无网络连接'));
     }
   }
 
@@ -91,7 +83,7 @@ class UserProfileRepositoryImpl implements IUserProfileRepository {
         return Left(GeneralFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '无网络连接'));
+      return const Left(NetworkFailure(message: '无网络连接'));
     }
   }
 }

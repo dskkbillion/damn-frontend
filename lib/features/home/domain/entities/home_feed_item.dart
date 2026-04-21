@@ -61,9 +61,9 @@ class HomeFeedItem extends Equatable {
     this.translatedDescription,
     this.translationSourceLang,
   }) :
-    this.title = title ?? name,
-    this.imageUrl = imageUrl ?? (images.isNotEmpty ? images[0] : ''),
-    this.price = price ?? sellingPrice;
+    title = title ?? name,
+    imageUrl = imageUrl ?? (images.isNotEmpty ? images[0] : ''),
+    price = price ?? sellingPrice;
 
   /// 获取展示用名称：优先使用翻译名称
   String get displayName =>

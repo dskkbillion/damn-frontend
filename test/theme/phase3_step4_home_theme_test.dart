@@ -47,21 +47,27 @@ void main() {
     test('Color(0xFF333333) residual < 5', () {
       final files = getHomePresentationFiles();
       int count = 0;
-      for (final f in files) count += RegExp(r'Color\(0xFF333333\)').allMatches(f.readAsStringSync()).length;
+      for (final f in files) {
+        count += RegExp(r'Color\(0xFF333333\)').allMatches(f.readAsStringSync()).length;
+      }
       expect(count, lessThan(5));
     });
 
     test('Colors.grey.shade residual < 5', () {
       final files = getHomePresentationFiles();
       int count = 0;
-      for (final f in files) count += RegExp(r'Colors\.grey\.shade').allMatches(f.readAsStringSync()).length;
+      for (final f in files) {
+        count += RegExp(r'Colors\.grey\.shade').allMatches(f.readAsStringSync()).length;
+      }
       expect(count, lessThan(5));
     });
 
     test('AppDimensions.radius is used', () {
       final files = getHomePresentationFiles();
       int count = 0;
-      for (final f in files) count += RegExp(r'AppDimensions\.radius').allMatches(f.readAsStringSync()).length;
+      for (final f in files) {
+        count += RegExp(r'AppDimensions\.radius').allMatches(f.readAsStringSync()).length;
+      }
       expect(count, greaterThan(0));
     });
   });

@@ -102,6 +102,7 @@ class ProfileRoutes {
               final walletBloc = WalletBloc(
                 getWalletSummary: getWalletSummary,
                 getWalletTransactions: getWalletTransactions,
+                walletRepository: walletRepository,
               );
               
               AppLogger.d('Successfully created WalletBloc with app dependencies');

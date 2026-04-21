@@ -329,11 +329,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                    width: 200,
                    height: 150,
                    color: AppColors.borderPrimary,
-                   child: Column(
+                   child: const Column(
                      mainAxisAlignment: MainAxisAlignment.center,
                      children: [
                        Icon(Icons.error_outline, color: AppColors.textTertiary),
-                       const SizedBox(height: AppDimensions.spacingSm),
+                       SizedBox(height: AppDimensions.spacingSm),
                        Text('图片加载失败', style: TextStyle(color: AppColors.textSecondary)),
                      ],
                    ),
@@ -377,7 +377,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
          ],
        );
      } else {
-       return Text("图片链接缺失");
+       return const Text("图片链接缺失");
      }
   }
 

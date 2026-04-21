@@ -1,5 +1,6 @@
 /// 服务档位相关的数据模型
 /// 从product_edit_page.dart中提取出来以减少代码复杂度
+library;
 
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';

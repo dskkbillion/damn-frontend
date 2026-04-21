@@ -30,7 +30,7 @@ class ProductReviewsRepositoryImpl implements ProductReviewsRepository {
         return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      return Left(NetworkFailure(message: '网络连接失败'));
+      return const Left(NetworkFailure(message: '网络连接失败'));
     }
   }
 } 

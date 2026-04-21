@@ -7,9 +7,9 @@ class TimeSeparator extends StatelessWidget {
   final DateTime timestamp;
 
   const TimeSeparator({
-    Key? key,
+    super.key,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../presentation/bloc/payment_bloc.dart';
@@ -11,7 +10,6 @@ import '../../../core/payment/services/payment_service_factory.dart';
 import '../../../core/api/api_client.dart';
 import '../../../features/orders/domain/usecases/create_order_use_case.dart';
 import '../../../features/orders/domain/repositories/i_order_repository.dart';
-import '../../../core/network/network_info.dart';
 
 /// 支付模块依赖注入
 class PaymentDI {

@@ -202,7 +202,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
               ),
               if (orders.last != order) Divider(height: 1, color: Colors.grey[200]),
             ],
-          )).toList(),
+          )),
         ],
       ),
     );

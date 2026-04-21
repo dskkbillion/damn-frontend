@@ -1,15 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
-import 'package:dartz/dartz.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
-import '../../core/error/failures.dart';
 import '../../core/network/network_info.dart';
-import '../../core/network/mock_network_info.dart';
 import '../../core/services/image_compress_service.dart';
 import 'data/datasources/profile_local_data_source.dart';
 import 'data/datasources/profile_remote_data_source.dart';
@@ -131,6 +129,6 @@ Future<void> initProfileDependencies(GetIt locator) async {
   }
 
   if (!locator.isRegistered<Dio>()) {
-    locator.registerLazySingleton(() => Dio());
+    locator.registerLazySingleton(() => locator<CoreDioClient>().dio);
   }
 }

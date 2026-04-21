@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../app/app_mode.dart';
 
 /// 保持模式切换时页面状态的 Shell 包装器
@@ -9,10 +8,10 @@ class ModePreservedShell extends ConsumerStatefulWidget {
   final Widget sellerShell;
   
   const ModePreservedShell({
-    Key? key,
+    super.key,
     required this.buyerShell,
     required this.sellerShell,
-  }) : super(key: key);
+  });
   
   @override
   ConsumerState<ModePreservedShell> createState() => _ModePreservedShellState();
@@ -55,10 +54,10 @@ class KeepAlive extends StatefulWidget {
   final bool keepAlive;
   
   const KeepAlive({
-    Key? key,
+    super.key,
     required this.child,
     this.keepAlive = true,
-  }) : super(key: key);
+  });
   
   @override
   State<KeepAlive> createState() => _KeepAliveState();

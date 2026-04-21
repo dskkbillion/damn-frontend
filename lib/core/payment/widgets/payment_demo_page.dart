@@ -4,12 +4,11 @@ import 'package:get_it/get_it.dart';
 import '../../config/region_config.dart';
 import '../services/payment_service_factory.dart';
 import '../models/payment_models.dart';
-import '../services/payment_navigation_service.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 支付功能演示页面
 class PaymentDemoPage extends StatefulWidget {
-  const PaymentDemoPage({Key? key}) : super(key: key);
+  const PaymentDemoPage({super.key});
 
   @override
   State<PaymentDemoPage> createState() => _PaymentDemoPageState();
@@ -32,7 +31,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
     // 设置默认选中的支付方式
     _selectedMethod = _availablePaymentMethods.isNotEmpty 
         ? _availablePaymentMethods.first 
-        : PaymentMethod.wallet;
+        : PaymentMethod.alipay;
   }
   
   @override
@@ -50,7 +49,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
       _isProcessing = true;
     });
 
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
 
     try {
       final factory = GetIt.instance<PaymentServiceFactory>();
@@ -105,7 +104,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
   }
 
   Future<void> _checkPaymentAvailability() async {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     try {
       final factory = GetIt.instance<PaymentServiceFactory>();
 
@@ -179,7 +178,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.payment_test_title),
@@ -335,7 +334,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
   }
   
   Widget _buildPaymentMethodOption(PaymentMethod method) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     IconData iconData;
     Color iconColor;
     String name;
@@ -355,11 +354,6 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
         iconData = Icons.credit_card;
         iconColor = Colors.purple;
         name = l10n.payment_credit_card;
-        break;
-      case PaymentMethod.wallet:
-        iconData = Icons.account_balance_wallet;
-        iconColor = Colors.orange;
-        name = l10n.payment_wallet_balance;
         break;
     }
 
@@ -430,13 +424,10 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
     switch (_selectedMethod) {
       case PaymentMethod.wechat:
         return Colors.green;
-      case PaymentMethod.wallet:
-        return Colors.orange;
+      case PaymentMethod.alipay:
+        return Colors.blue;
       case PaymentMethod.stripe:
         return Colors.purple;
-      case PaymentMethod.alipay:
-      default:
-        return Colors.blue;
     }
   }
 } 

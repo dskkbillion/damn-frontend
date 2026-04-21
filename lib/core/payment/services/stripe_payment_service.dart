@@ -47,7 +47,7 @@ class StripePaymentService implements IPaymentService {
 
       // 2. 在WebView中打开Stripe支付页面
       final paymentUrl = response.data;
-      AppLogger.d('[StripePaymentService] 准备在WebView中打开支付URL: $paymentUrl');
+      AppLogger.d('[StripePaymentService] 准备在WebView中打开支付页面');
 
       if (paymentUrl != null && paymentUrl.isNotEmpty) {
         // 打开WebView并等待结果
@@ -60,7 +60,9 @@ class StripePaymentService implements IPaymentService {
         AppLogger.d('[StripePaymentService] WebView返回结果: $result');
 
         if (result != null && result['result'] == PaymentWebViewResult.success) {
-          // 支付成功
+          // TODO: 待后端确认 /api/payment/status/:orderId 端点可用后，
+          // 在此处调用 queryPaymentStatus(request.orderId) 进行服务端二次确认，
+          // 避免仅依赖客户端URL回调判断支付结果。
           return models.PaymentResponse(
             success: true,
             data: paymentUrl,
@@ -167,14 +169,14 @@ class StripePaymentService implements IPaymentService {
 
     AppLogger.d('[StripePaymentService] 发送支付请求: $requestData');
     final response = await _apiClient.dio.post('/api/payment', data: requestData);
-    AppLogger.d('[StripePaymentService] 收到响应: ${response.data}');
+    AppLogger.d('[StripePaymentService] 收到响应: code=${response.data['code']}, msg=${response.data['msg']}');
 
     // 后端返回格式: {"msg":"支付成功","code":200,"data":{"url":"https://checkout.stripe.com/..."}}
     if (response.statusCode == 200 && response.data['code'] == 200) {
       // 从data对象中获取url字段
       final data = response.data['data'];
       final stripeUrl = data is Map ? data['url'] : data;
-      AppLogger.d('[StripePaymentService] 解析出的URL: $stripeUrl');
+      AppLogger.d('[StripePaymentService] 成功解析支付URL');
       if (stripeUrl != null && stripeUrl.toString().startsWith('http')) {
         return models.PaymentResponse.success(
           data: stripeUrl,
@@ -205,7 +207,7 @@ class StripePaymentService implements IPaymentService {
     required String orderId,
   }) async {
     try {
-      AppLogger.d('[StripePaymentService] 打开WebView - URL: $paymentUrl');
+      AppLogger.d('[StripePaymentService] 打开WebView - orderId: $orderId');
 
       final result = await Navigator.of(context).push<Map<String, dynamic>>(
         MaterialPageRoute(
@@ -374,12 +376,11 @@ class StripePaymentService implements IPaymentService {
   }
 
   @override
-  Future<PaymentResult> pay(String orderInfo) async {
+  Future<models.PaymentResult> pay(String orderInfo) async {
     try {
       if (_context == null) {
-        return PaymentResult(
-          success: false,
-          errorMessage: 'Context未设置，无法打开支付页面',
+        return models.PaymentResult.failure(
+          message: 'Context未设置，无法打开支付页面',
         );
       }
 
@@ -400,25 +401,24 @@ class StripePaymentService implements IPaymentService {
       );
 
       if (result != null && result['result'] == PaymentWebViewResult.success) {
-        return PaymentResult(
-          success: true,
-          errorMessage: null,
+        return models.PaymentResult.success(
+          orderId: orderId,
+          tradeNo: '',
+          amount: '',
         );
       } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
-        return PaymentResult(
-          success: false,
-          errorMessage: '用户取消支付',
+        return models.PaymentResult.cancelled(
+          orderId: orderId,
         );
       } else {
-        return PaymentResult(
-          success: false,
-          errorMessage: '支付失败',
+        return models.PaymentResult.failure(
+          orderId: orderId,
+          message: '支付失败',
         );
       }
     } catch (e) {
-      return PaymentResult(
-        success: false,
-        errorMessage: '打开支付页面失败: $e',
+      return models.PaymentResult.failure(
+        message: '打开支付页面失败: $e',
       );
     }
   }

@@ -39,7 +39,7 @@ class SendMessageImpl implements SendMessage {
       final fileUrl = uploadResult.getOrElse(() => ''); // Should always have a value if isRight()
       AppLogger.d('[SendMessage] File uploaded successfully. URL: $fileUrl');
       if (fileUrl.isEmpty) {
-        return Left(GeneralFailure(message: '发送消息失败，参数无效'));
+        return const Left(GeneralFailure(message: '发送消息失败，参数无效'));
       }
        // Important: Create a *new* instance with the updated context
       messageToSend = messageToSend.copyWith(context: fileUrl);
@@ -47,8 +47,8 @@ class SendMessageImpl implements SendMessage {
       // 如果是文件类型（包括图片、音频、文档）且没有提供文件，检查 context 是否已包含 URL 或 JSON
       // 如果 context 已经包含 URL 或 JSON（说明文件已经上传），则继续发送
       AppLogger.d('[SendMessage] File type message without file. Context: ${messageToSend.context}');
-      if (messageToSend.context == null || messageToSend.context!.isEmpty) {
-        return Left(GeneralFailure(message: '发送消息失败，参数无效'));
+      if (messageToSend.context.isEmpty) {
+        return const Left(GeneralFailure(message: '发送消息失败，参数无效'));
       }
       // 如果 context 有内容（URL 或 JSON），继续发送
     }

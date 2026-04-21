@@ -37,7 +37,7 @@ class PaymentPromptBubble extends StatelessWidget {
               color: AppColors.backgroundSecondary,
               borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
@@ -45,7 +45,7 @@ class PaymentPromptBubble extends StatelessWidget {
                   size: 16,
                   color: AppColors.textSecondary,
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 Text(
                   '系统提示',
                   style: TextStyle(
@@ -75,7 +75,7 @@ class PaymentPromptBubble extends StatelessWidget {
                 // Content text
                 Text(
                   content,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textPrimary,
                     height: 1.5,
@@ -95,7 +95,7 @@ class PaymentPromptBubble extends StatelessWidget {
                       color: AppColors.success.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -103,7 +103,7 @@ class PaymentPromptBubble extends StatelessWidget {
                           size: 16,
                           color: AppColors.success,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           '已发送付费提示',
                           style: TextStyle(

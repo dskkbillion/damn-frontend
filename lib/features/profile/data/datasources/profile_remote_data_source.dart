@@ -12,11 +12,7 @@ import '../models/user_profile_dto.dart';
 import '../models/wallet_summary_dto.dart';
 import '../models/saved_item_dto.dart';
 import '../models/liked_story_dto.dart';
-import '../../domain/repositories/i_user_profile_repository.dart';
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/image_compress_service.dart';
-import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/wallet_summary.dart';
 
 /// 远程数据源抽象接口
 abstract class ProfileRemoteDataSource {
@@ -93,6 +89,9 @@ abstract class ProfileRemoteDataSource {
     int page = 1,
     int pageSize = 20,
   });
+
+  /// 提交提款申请
+  Future<void> submitWithdrawal({required double amount});
 }
 
 class ServerException implements Exception {
@@ -118,7 +117,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<UserProfileDto> getUserProfile() async {
     try {
-      final path = '/api/member/info';
+      const path = '/api/member/info';
       AppLogger.d('Requesting user profile from: $path');
 
       final response = await dio.get(path);
@@ -436,5 +435,26 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     int pageSize = 20,
   }) async {
     throw UnimplementedError('getLikedStories API尚未实现');
+  }
+
+  @override
+  Future<void> submitWithdrawal({required double amount}) async {
+    try {
+      final response = await dio.post('/api/wallet/seller/withdraw', data: {
+        'amount': amount,
+      });
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['code'] == 200) {
+        return;
+      }
+      throw ServerException(message: response.data?['msg'] ?? '提现失败');
+    } on DioException catch (e) {
+      final message = e.response?.data?['msg'] ?? e.message ?? '网络错误';
+      throw ServerException(message: message);
+    } catch (e) {
+      if (e is ServerException) rethrow;
+      throw ServerException(message: '提现失败: ${e.toString()}');
+    }
   }
 }

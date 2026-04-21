@@ -30,14 +30,14 @@ class ProductCard extends StatelessWidget {
   
   /// 构造函数
   const ProductCard({
-    Key? key,
+    super.key,
     required this.product,
     required this.onEdit,
     this.onDelete,
     this.onToggleStatus,
     this.onPublish,
     this.onView,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class ProductCard extends StatelessWidget {
     final statusTag = _buildStatusTag();
     
     return Card(
-      margin: EdgeInsets.symmetric(vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingLg),
+      margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingLg),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
@@ -97,7 +97,7 @@ class ProductCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                                                   '¥${product.price.toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 18,
                           color: AppColors.primary,
                           fontWeight: FontWeight.bold,
@@ -106,8 +106,8 @@ class ProductCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       if (product.sales != null)
                         Text(
-                          AppLocalizations.of(context)?.seller_product_card_sales(product.sales!) ?? 'Sales: ${product.sales}',
-                          style: TextStyle(
+                          AppLocalizations.of(context).seller_product_card_sales(product.sales!) ?? 'Sales: ${product.sales}',
+                          style: const TextStyle(
                             fontSize: 12,
                             color: AppColors.textSecondary,
                           ),
@@ -165,7 +165,7 @@ class ProductCard extends StatelessWidget {
             minimumSize: const Size(60, 36),
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
-          child: Text(l10n?.seller_product_card_view ?? 'View'),
+          child: Text(l10n.seller_product_card_view ?? 'View'),
         ),
       );
       buttons.add(const SizedBox(width: 8));
@@ -179,7 +179,7 @@ class ProductCard extends StatelessWidget {
           minimumSize: const Size(60, 36),
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
-        child: Text(l10n?.product_management_action_edit ?? 'Edit'),
+        child: Text(l10n.product_management_action_edit ?? 'Edit'),
       ),
     );
 
@@ -196,8 +196,8 @@ class ProductCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
           child: Text(isEnabled
-              ? (l10n?.product_management_action_off_shelf ?? 'Off Shelf')
-              : (l10n?.product_management_action_on_shelf ?? 'On Shelf')),
+              ? (l10n.product_management_action_off_shelf ?? 'Off Shelf')
+              : (l10n.product_management_action_on_shelf ?? 'On Shelf')),
         ),
       );
     }
@@ -212,7 +212,7 @@ class ProductCard extends StatelessWidget {
             minimumSize: const Size(60, 36),
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
-          child: Text(l10n?.product_management_action_publish ?? 'Publish'),
+          child: Text(l10n.product_management_action_publish ?? 'Publish'),
         ),
       );
     }
@@ -228,7 +228,7 @@ class ProductCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8),
             foregroundColor: AppColors.error,
           ),
-          child: Text(l10n?.product_management_action_delete ?? 'Delete'),
+          child: Text(l10n.product_management_action_delete ?? 'Delete'),
         ),
       );
     }

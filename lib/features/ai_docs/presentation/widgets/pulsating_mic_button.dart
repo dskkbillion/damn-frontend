@@ -11,14 +11,14 @@ class PulsatingMicButton extends StatelessWidget {
   final double size;
 
   const PulsatingMicButton({
-    Key? key,
+    super.key,
     required this.isRecording,
     required this.onPressed,
     this.isEnabled = true,
     this.primaryColor,
     this.recordingColor,
     this.size = 56.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,10 +83,10 @@ class VoiceRecordingIndicator extends StatefulWidget {
   final Duration recordingDuration;
 
   const VoiceRecordingIndicator({
-    Key? key,
+    super.key,
     required this.isRecording,
     required this.recordingDuration,
-  }) : super(key: key);
+  });
 
   @override
   State<VoiceRecordingIndicator> createState() => _VoiceRecordingIndicatorState();

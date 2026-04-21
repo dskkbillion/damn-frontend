@@ -107,7 +107,7 @@ class AuthRepositoryAdapter implements core_auth.IAuthRepository {
       if (userId != null && userId.isNotEmpty) {
         return Right(userId);
       } else {
-        return Left(AnalyticsAuthFailure());
+        return const Left(AnalyticsAuthFailure());
       }
     } catch (e) {
       AppLogger.d('[AuthRepositoryAdapter] 获取用户ID失败: $e');
@@ -118,5 +118,5 @@ class AuthRepositoryAdapter implements core_auth.IAuthRepository {
 
 /// 分析模块的认证失败类
 class AnalyticsAuthFailure extends AuthFailure {
-  const AnalyticsAuthFailure({String message = '用户未认证'}) : super(message: message);
+  const AnalyticsAuthFailure({super.message = '用户未认证'});
 } 

@@ -4,7 +4,6 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/entities/authenticated_user.dart';
 
 /// 检查认证状态的用例
 @lazySingleton

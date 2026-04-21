@@ -53,7 +53,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     this._cancelAfterSalesUseCase,
     this._deleteAfterSalesUseCase,
     this._getRefundIdByOrderIdUseCase,
-  ) : super(AfterSalesInitial()) {
+  ) : super(const AfterSalesInitial()) {
     // Register event handlers
     on<LoadAfterSalesListRequested>(
       _onLoadAfterSalesListRequested,
@@ -93,7 +93,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
 
     // Emit Loading state
     if (isInitialLoad) {
-      emit(AfterSalesListLoading());
+      emit(const AfterSalesListLoading());
     }
     // For subsequent pages, we might show a bottom indicator, but don't change the main state to Loading
     // The UI layer can handle showing a loading indicator at the end of the list
@@ -201,7 +201,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     Emitter<AfterSalesState> emit,
   ) async {
     // Use the new Action States
-    emit(AfterSalesActionLoading());
+    emit(const AfterSalesActionLoading());
 
     // TODO: Implement actual image upload here if needed before submitting paths
     // For mock, we assume paths are sufficient or handled by UseCase/Repository
@@ -240,7 +240,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
     ApplyMediationRequested event,
     Emitter<AfterSalesState> emit,
   ) async {
-    emit(AfterSalesActionLoading());
+    emit(const AfterSalesActionLoading());
 
     final result = await _applyMediationUseCase(event.refundId);
 
@@ -257,7 +257,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
   ) async {
      // TODO: Fix this handler's emit logic
      // emit(state.copyWith(actionStatus: AfterSalesActionStatus.loading, clearActionFailure: true));
-     emit(AfterSalesActionLoading()); // Placeholder
+     emit(const AfterSalesActionLoading()); // Placeholder
 
      final result = await _cancelAfterSalesUseCase(event.refundId);
 
@@ -274,13 +274,13 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
   ) async {
      // TODO: Fix this handler's emit logic
      // emit(state.copyWith(actionStatus: AfterSalesActionStatus.loading, clearActionFailure: true));
-     emit(AfterSalesActionLoading()); // Placeholder
+     emit(const AfterSalesActionLoading()); // Placeholder
 
      final result = await _deleteAfterSalesUseCase(event.refundIds);
 
       result.fold(
       (failure) => emit(AfterSalesActionError(_mapFailureToMessage(failure))), // Placeholder
-      (_) => emit(AfterSalesActionSuccess()), // Placeholder
+      (_) => emit(const AfterSalesActionSuccess()), // Placeholder
     );
   }
 

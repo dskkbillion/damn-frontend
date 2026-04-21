@@ -6,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../../core/payment/services/payment_service_factory.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
-import '../../../../core/payment/services/payment_navigation_service.dart';
 import '../../../orders/domain/usecases/create_order_use_case.dart';
 import 'payment_event.dart';
 import 'payment_state.dart';
@@ -160,9 +159,9 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       // 创建支付请求
       final paymentRequest = payment_models.PaymentRequest(
         orderId: event.orderId,
-        amount: '0.01', // 这里需要从订单获取实际金额
-        subject: '订单支付',
-        description: '订单支付',
+        amount: event.amount,
+        subject: event.subject ?? '订单支付',
+        description: event.subject ?? '订单支付',
         method: _getPaymentMethod(event.paymentMethod),
         scene: payment_models.PaymentScene.order,
       );

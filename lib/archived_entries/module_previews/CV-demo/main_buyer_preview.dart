@@ -138,7 +138,7 @@ Future<void> main() async {
   try {
     final storage = getIt<FlutterSecureStorage>(); 
     // 使用买家测试账号
-    const buyerToken = "eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjllYWQ5YWJjLWMxZmEtNGM3ZC04ODllLWJjM2EzNjg4MDQxNSJ9.GgGSkCr4YG_Hf-stG8NuYFRZeebOO24vkhYQ_i8EVZzvIj9VO3VB7PdnpV6VlM7-TBJydQSdKy1mUI9jwsaKRw"; // 买家Token
+    const buyerToken = "PLACEHOLDER_TOKEN_FOR_DEV"; // 买家Token
     const buyerUserId = "13819198810"; // 买家ID
     const buyerCommonUserId = "10319"; // 买家通用ID
     const buyerReferId = "10319"; // 买家referId，用于聊天模块数据匹配（对应API返回的member.referId）

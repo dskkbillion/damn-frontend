@@ -13,7 +13,7 @@ class AutoReplyPage extends StatelessWidget {
   static const routeName = '/seller/profile/auto-reply';
 
   /// 构造函数
-  const AutoReplyPage({Key? key}) : super(key: key);
+  const AutoReplyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class AutoReplyPage extends StatelessWidget {
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context)!?.auto_reply_title ?? 'Auto Reply Settings'),
+            title: Text(AppLocalizations.of(context).auto_reply_title ?? 'Auto Reply Settings'),
           ),
           body: const AutoReplyBody(),
         ),
@@ -38,7 +38,7 @@ class AutoReplyPage extends StatelessWidget {
 /// 自动回复设置页面主体
 class AutoReplyBody extends StatefulWidget {
   /// 构造函数
-  const AutoReplyBody({Key? key}) : super(key: key);
+  const AutoReplyBody({super.key});
 
   @override
   State<AutoReplyBody> createState() => _AutoReplyBodyState();
@@ -73,7 +73,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           });
         } else if (state is AutoReplySaveSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
+            SnackBar(content: Text(AppLocalizations.of(context).auto_reply_settings_saved ?? 'Settings Saved')),
           );
         } else if (state is AutoReplyLoaded) {
           // 更新文本控制器和状态
@@ -104,7 +104,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           return _buildContent(context, state.previousSettings!, false);
         }
 
-        return Center(child: Text(AppLocalizations.of(context)!?.auto_reply_load_failed ?? 'Load failed, please try again'));
+        return Center(child: Text(AppLocalizations.of(context).auto_reply_load_failed ?? 'Load failed, please try again'));
       },
     );
   }
@@ -145,7 +145,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              AppLocalizations.of(context)!?.auto_reply_enable ?? 'Auto Reply',
+              AppLocalizations.of(context).auto_reply_enable ?? 'Auto Reply',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -153,7 +153,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
             Switch(
               value: settings.isEnabled,
-              activeColor: AppColors.success,
+              activeThumbColor: AppColors.success,
               onChanged: isUpdating 
                   ? null 
                   : (value) {
@@ -177,7 +177,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!?.auto_reply_content ?? 'Reply Content',
+              AppLocalizations.of(context).auto_reply_content ?? 'Reply Content',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -191,7 +191,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
               controller: _contentController,
               enabled: !isUpdating,
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!?.auto_reply_content_hint ?? 'Please enter auto reply content',
+                hintText: AppLocalizations.of(context).auto_reply_content_hint ?? 'Please enter auto reply content',
                 border: const OutlineInputBorder(),
               ),
               maxLines: 5,
@@ -206,7 +206,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             const SizedBox(height: 12),
             
             Text(
-              AppLocalizations.of(context)!?.auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
+              AppLocalizations.of(context).auto_reply_content_description ?? 'When customers send messages, the system will automatically reply with this content',
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textTertiary,
@@ -227,7 +227,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
           final content = _contentController.text.trim();
           if (content.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_content_required ?? 'Reply content cannot be empty')),
+              SnackBar(content: Text(AppLocalizations.of(context).auto_reply_content_required ?? 'Reply content cannot be empty')),
             );
             return;
           }
@@ -237,7 +237,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         } else {
           // 如果内容没有变化，显示提示
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!?.auto_reply_settings_saved ?? 'Settings Saved')),
+            SnackBar(content: Text(AppLocalizations.of(context).auto_reply_settings_saved ?? 'Settings Saved')),
           );
         }
       },
@@ -247,7 +247,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         disabledBackgroundColor: AppColors.success.withValues(alpha: 0.5),
       ),
       child: Text(
-        AppLocalizations.of(context)!?.auto_reply_save_settings ?? 'Save Settings',
+        AppLocalizations.of(context).auto_reply_save_settings ?? 'Save Settings',
         style: const TextStyle(
           fontSize: 16,
           color: Colors.white,

@@ -22,6 +22,7 @@ class DeleteOrderUseCase implements UseCase<void, int> {
 
 /// [DeleteOrderUseCase] 的默认实现。
 class DeleteOrderUseCaseImpl implements DeleteOrderUseCase {
+  @override
   final IOrderRepository repository;
 
   DeleteOrderUseCaseImpl({required this.repository});
