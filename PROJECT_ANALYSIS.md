@@ -365,7 +365,7 @@ UI Event → BLoC Event → Use Case → Repository → DataSource → API/DB
 
 ### 问题排查
 - 查看 `docs/` 目录下的相关文档
-- 检查 `.cursor/rules/` 下的开发规则
+- 检查 `CLAUDE.md` 的 "API / Backend Contract" 章节
 - 参考 React Native 原代码和 HTML 原型
 
 ---

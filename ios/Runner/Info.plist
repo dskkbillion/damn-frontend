@@ -22,10 +22,43 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>alipay</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dskkapp</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>wechat</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wx8647007008f7b74d</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>wechat</string>
+		<string>weixin</string>
+		<string>alipay</string>
+		<string>alipays</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>该应用需要访问您的相机以便您可以拍摄照片</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -34,6 +67,27 @@
 	<string>该应用需要访问您的麦克风以便录制音频</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>该应用需要访问您的照片库以便您可以选择和上传图片</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -53,47 +107,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- 网络配置 -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	
-	<!-- 微信支付配置 -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<!-- 支付宝URL Scheme -->
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>alipay</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>dskkapp</string>
-			</array>
-		</dict>
-		<!-- 微信URL Scheme -->
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>wechat</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>wx8647007008f7b74d</string>
-			</array>
-		</dict>
-	</array>
-	
-	<!-- 微信白名单 -->
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>wechat</string>
-		<string>weixin</string>
-		<string>alipay</string>
-		<string>alipays</string>
-	</array>
-	
-	<!-- App Store 加密设置 -->
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 </dict>
 </plist>
