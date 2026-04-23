@@ -158,9 +158,17 @@ class _WalletPageState extends State<WalletPage> {
             // 刷新余额
             context.read<WalletBloc>().add(const RefreshWalletSummary());
           } else if (state is WithdrawalFailed) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('提现失败：${state.message}')),
-            );
+            if (state.message.contains('绑定收款账户')) {
+              // 未绑定收款账户，跳转到 Stripe Connect 绑定页面
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('请先绑定收款账户，即将跳转...')),
+              );
+              context.push('/seller/connect-account');
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('提现失败：${state.message}')),
+              );
+            }
           }
         },
         builder: (context, state) {

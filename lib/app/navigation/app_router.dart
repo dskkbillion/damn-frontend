@@ -902,8 +902,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       
       bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
-      bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) && 
-          !location.startsWith(sellerPublicProfilePathPrefix); // 简化检查逻辑
+      // 允许 buyer 模式访问收款账户绑定页面（提现时需要）
+      bool isSellerShellLocation = sellerPaths.any((p) => location.startsWith(p)) &&
+          !location.startsWith(sellerPublicProfilePathPrefix) &&
+          !location.startsWith(SellerRoutes.connectAccount);
       
       if (currentMode == AppMode.buyer && isSellerShellLocation) {
         print('Redirect: In Buyer Mode, tried to access Seller Shell ($location) -> ${HomeRoutes.homePath}');

@@ -283,8 +283,8 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
   /// 将Failure映射为用户友好的错误消息
   String _mapFailureToMessage(Failure failure) {
     switch (failure) {
-      case ServerFailure _:
-        return '服务器错误，请稍后再试';
+      case ServerFailure s:
+        return s.message ?? '服务器错误，请稍后再试';
       case NetworkFailure _:
         return '网络连接失败，请检查网络设置';
       case CacheFailure _:

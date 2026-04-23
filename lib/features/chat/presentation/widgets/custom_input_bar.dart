@@ -24,6 +24,7 @@ class _UploadProgressDialog extends StatelessWidget {
 
   const _UploadProgressDialog({
     required this.fileName,
+    this.progress,
   });
 
   @override

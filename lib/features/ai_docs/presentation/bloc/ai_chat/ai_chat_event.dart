@@ -180,7 +180,7 @@ class _ReceiveStreamChunk extends AiChatEvent {
   final String chunk;
   final bool isDone; // Flag to indicate the stream has finished
 
-  const _ReceiveStreamChunk(this.chunk);
+  const _ReceiveStreamChunk(this.chunk, {this.isDone = false});
 
   @override
   List<Object?> get props => [chunk, isDone];
