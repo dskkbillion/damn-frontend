@@ -169,6 +169,8 @@ class _WalletPageState extends State<WalletPage> {
                 SnackBar(content: Text('提现失败：${state.message}')),
               );
             }
+            // 提现失败后刷新钱包摘要，恢复余额卡片显示
+            context.read<WalletBloc>().add(const FetchWalletSummary());
           }
         },
         builder: (context, state) {
