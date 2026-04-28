@@ -867,18 +867,21 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         
         _chatStreamSubscription = contentStream.listen(
           (chunk) {
+            if (isClosed) return;
             AppLogger.d("[Bloc] Received stream chunk: '$chunk'");
-            add(_ReceiveStreamChunk(chunk)); 
+            add(_ReceiveStreamChunk(chunk));
           },
           onError: (error) {
+            if (isClosed) return;
             AppLogger.d("[Bloc] Stream error: $error");
             add(_HandleStreamError(error.toString()));
-            _chatStreamSubscription = null; 
+            _chatStreamSubscription = null;
           },
           onDone: () {
+            if (isClosed) return;
             AppLogger.d("[Bloc] Stream completed");
-            add(const _HandleStreamDone()); 
-             _chatStreamSubscription = null; 
+            add(const _HandleStreamDone());
+             _chatStreamSubscription = null;
           },
         );
       },
@@ -1118,9 +1121,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         emit(state.copyWith(status: AiChatStatus.streamingResponse));
         
         _chatStreamSubscription = contentStream.listen(
-          (chunk) => add(_ReceiveStreamChunk(chunk)),
-          onError: (error) => add(_HandleStreamError(error.toString())),
-          onDone: () => add(const _HandleStreamDone()),
+          (chunk) { if (!isClosed) add(_ReceiveStreamChunk(chunk)); },
+          onError: (error) { if (!isClosed) add(_HandleStreamError(error.toString())); },
+          onDone: () { if (!isClosed) add(const _HandleStreamDone()); },
         );
       },
     );

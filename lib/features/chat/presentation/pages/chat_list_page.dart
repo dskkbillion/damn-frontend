@@ -146,9 +146,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
     
-    // 保持currentUserId用于界面显示
-    const int currentUserId = 10307; // 用于界面显示的用户ID
-
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED),
       appBar: AppBar(
@@ -176,7 +173,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             return Center(child: Text(s.chat_user_refer_id_not_found));
           }
           
-          print('[ChatListPage] Using referId: $referId for data matching, currentUserId: $currentUserId for UI, appMode: $currentAppMode');
+          print('[ChatListPage] Using referId(commonUserId): $referId, appMode: $currentAppMode');
           
           return BlocListener<ChatListBloc, ChatListState>(
             listener: (context, state) {
@@ -204,12 +201,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
                   return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
                 } else if (state.status == ChatListStatus.failure) {
-                  return _buildSystemItemsOnly(context, currentUserId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
+                  return _buildSystemItemsOnly(context, referId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
                   // 使用referId和应用模式进行数据匹配
                   final filteredRooms = _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
                   
-                  return _buildChatListView(context, filteredRooms, currentAppMode, currentUserId);
+                  return _buildChatListView(context, filteredRooms, currentAppMode, referId);
                 } else {
                   // 真正的加载状态
                   return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
@@ -255,16 +252,18 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       // 检查当前用户是否是这个聊天室的参与者（不管是participant1还是participant2）
       bool isParticipant = false;
       
-      if (room.participant1.referId == referId) {
+      // participant.id = CommonUser.id = commonUserId（后端保证）
+      // referId 变量存的是 commonUserId（从 SecureStorage 的 refer_id 键读取）
+      if (room.participant1.id == referId) {
         isParticipant = true;
         _currentUserType = room.participant1.type; // 记录当前用户类型
         print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant1.type}, opponent: ${room.participant2.nickName}");
-      } else if (room.participant2.referId == referId) {
+      } else if (room.participant2.id == referId) {
         isParticipant = true;
         _currentUserType = room.participant2.type; // 记录当前用户类型
         print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant2.type}, opponent: ${room.participant1.nickName}");
       } else {
-        print("[ChatListPage] ❌ No match for referId $referId in room ${room.id}");
+        print("[ChatListPage] ❌ No match for commonUserId $referId in room ${room.id}");
       }
       
       if (isParticipant) {

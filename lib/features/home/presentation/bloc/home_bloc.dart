@@ -36,6 +36,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }) : super(const HomeInitial()) {
     // 监听语言切换事件，自动刷新首页数据
     _localeChangedSubscription = EventBus().localeChangedStream.listen((event) {
+      if (isClosed) return;
       AppLogger.d('HomeBloc: Locale changed to ${event.languageCode}, refreshing home data');
       add(const RefreshHomeData());
     });

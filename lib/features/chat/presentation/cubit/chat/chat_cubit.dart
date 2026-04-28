@@ -93,8 +93,8 @@ class ChatCubit extends Cubit<ChatState> {
       if (currentState is _Ready) {
         // Convert DTO to entity with required parameters
         final message = dto.toEntity(
-          currentUserId: 0, // Should come from auth context
-          senderId: dto.memberId ?? dto.doctorId ?? 0,
+          currentUserId: 0, // 参数未被 toEntity 使用，保留接口兼容
+          senderId: dto.memberId!, // memberId = 发送者的 CommonUser.id（后端保证非空）
         );
         AppLogger.d('[ChatCubit] Converted to entity: type=${message.type}, id=${message.id}');
         // Emit new message received event

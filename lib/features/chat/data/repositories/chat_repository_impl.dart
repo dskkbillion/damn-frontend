@@ -67,29 +67,14 @@ class ChatRepositoryImpl implements IChatRepository {
          (user) async {
            try {
              final messageDtos = await remoteDataSource.getMessages(chatId, pageNum: pageNum, pageSize: pageSize);
-             
-             // 首先获取聊天室详情以获取参与者信息
-             final roomDto = await remoteDataSource.getRoomDetails(chatId);
-             final room = roomDto.toEntity(currentUserId: user.id);
-             
+
              final messages = messageDtos.map((dto) {
-               // 根据后端分析：
-               // ChatMessage中：memberId = 发送者的外部ID，doctorId = 接收者的外部ID
-               // 所以判断逻辑很简单：memberId == 当前用户ID 就是我发的
-               
-               AppLogger.d("[Repository] 消息${dto.id} 判断逻辑:");
-               AppLogger.d("[Repository]   消息数据 - memberId: ${dto.memberId}, doctorId: ${dto.doctorId}");
-               AppLogger.d("[Repository]   当前用户common_user_id: ${user.id}");
-               
-               // 极简判断：memberId是发送者
-               int senderId;
-               if (dto.memberId != null) {
-                 senderId = dto.memberId!;
-                 AppLogger.d("[Repository]   判定：senderId = memberId = $senderId");
-               } else {
-                 throw Exception("[Repository] 错误：消息没有memberId！messageId=${dto.id}");
+               // 后端契约：memberId = 发送者的 CommonUser.id，doctorId = 接收者的 CommonUser.id
+               // 两个字段每条消息都有值，无需 fallback
+               if (dto.memberId == null) {
+                 throw ServerException(message: "消息 ${dto.id} 缺少 memberId，违反后端契约");
                }
-               
+               final senderId = dto.memberId!;
                return dto.toEntity(currentUserId: user.id, senderId: senderId);
              }).toList();
              return Right(messages);

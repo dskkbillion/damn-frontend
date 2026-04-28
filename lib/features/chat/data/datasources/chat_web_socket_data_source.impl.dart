@@ -262,33 +262,29 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     try {
       final currentUserId = int.tryParse(_commonUserId ?? '0') ?? 0;
 
-      // 聊天室中，memberId 和 doctorId 分别代表聊天的两方
-      // 判断消息是否是别人发的：如果当前用户既不是 memberId 也不是 doctorId，说明不是这个聊天室的参与者
-      // 如果当前用户是参与者之一，则对方就是另一个 ID
+      // ID 契约：memberId = 发送者的 CommonUser.id，doctorId = 接收者的 CommonUser.id。
+      // _commonUserId 也是 CommonUser.id，三者同体系，可直接比较。
+      //   memberId == currentUserId → 这条消息是自己发的
+      //   doctorId == currentUserId → 自己是接收者（对方发的）
       final isParticipant = (messageDto.memberId == currentUserId || messageDto.doctorId == currentUserId);
 
-      // 获取对方的 ID（发送者）
-      final senderId = (messageDto.memberId == currentUserId)
-          ? messageDto.doctorId?.toString() ?? "0"  // 如果我是 member，对方是 doctor
-          : messageDto.memberId?.toString() ?? "0";  // 如果我是 doctor，对方是 member
+      // 对方的 ID：若自己是发送者(memberId)，则对方是接收者(doctorId)，反之亦然
+      final otherParticipantId = (messageDto.memberId == currentUserId)
+          ? messageDto.doctorId?.toString() ?? "0"
+          : messageDto.memberId?.toString() ?? "0";
 
-      // 注意：WebSocket 推送的消息可能包括自己发的和别人发的
-      // 简单判断：如果我们在这个聊天室中，就处理所有消息（包括自己发的）
-      // 前端 UI 会自动过滤显示
-      AppLogger.d("[WebSocket] 🔔 Message check: currentUserId=$currentUserId, memberId=${messageDto.memberId}, doctorId=${messageDto.doctorId}, isParticipant=$isParticipant, senderId=$senderId");
+      AppLogger.d("[WebSocket] Message check: currentUserId=$currentUserId, memberId=${messageDto.memberId}, doctorId=${messageDto.doctorId}, isParticipant=$isParticipant, otherParticipantId=$otherParticipantId");
 
       if (isParticipant) {
-        // 我们是聊天室参与者，触发更新（包括自己发的消息，用于多设备同步）
-
-        String senderName = "新消息";  // 没有名称字段，使用默认值
+        // 参与者收到消息（含自己发的，支持多设备同步），统一触发事件
+        String senderName = "新消息";
         String content = messageDto.context;
         String chatId = messageDto.chatId.toString();
 
-        // 创建消息事件并触发
         final chatEvent = ChatMessageEvent(
           senderName: senderName,
           content: content,
-          senderId: senderId,
+          senderId: otherParticipantId,
           chatId: chatId,
         );
 

@@ -40,16 +40,15 @@ class ChatRoutes {
     GoRoute(
       path: '/chat', // Path for the chat list page
       name: 'chatList', // Optional name for navigation
-      builder: (context, state) => BlocProvider(
-        // Create a new instance instead of using singleton to avoid "Cannot add new events after calling close" error
-        create: (_) => ChatListBloc(
-          getChatRoomList: sl(),
-          createChatRoom: sl(),
-          deleteChatRoom: sl(),
-          localDataSource: sl(),
-        )..add(LoadChatRoomList()), // Create Bloc and load initial data
-        child: const ChatListPage(),
-      ),
+      builder: (context, state) {
+        // 使用 GetIt singleton，避免每次创建新实例导致旧实例 close 后仍收到事件
+        final chatListBloc = sl<ChatListBloc>();
+        chatListBloc.add(LoadChatRoomList());
+        return BlocProvider.value(
+          value: chatListBloc,
+          child: const ChatListPage(),
+        );
+      },
       // Define nested routes starting from /chat
       routes: [
         GoRoute(

@@ -47,49 +47,42 @@ class ChatRoomDto with _$ChatRoomDto {
        }
      }
 
-    // FIX: Determine sender participant ID for the last message before calling its toEntity
+    // memberId = 发送者的 CommonUser.id（后端保证非空）
     int? lastMessageSenderId;
     if (chatMessageNewVo != null) {
-        lastMessageSenderId = chatMessageNewVo!.memberId ?? chatMessageNewVo!.doctorId ?? 0;
+        if (chatMessageNewVo!.memberId == null) {
+          throw Exception(
+            "lastMessage in room $id has no memberId, violating backend contract. "
+            "doctorId: ${chatMessageNewVo!.doctorId}",
+          );
+        }
+        lastMessageSenderId = chatMessageNewVo!.memberId!;
     }
 
     // 转换DTO为实体
     final memberEntity = member.toEntity();
     final doctorEntity = doctor.toEntity();
-    
+
     Participant currentUserParticipant;
     Participant opponentParticipant;
-    
-    // 根据API数据结构：member是买家，doctor是卖家
-    // 确保participant1总是当前用户，participant2总是对方
-    // 首先尝试使用id进行匹配（participant内部ID）
+
+    // ID 契约（后端保证）：
+    // - participant.id = CommonUser.id = commonUserId（前端 SecureStorage 中存储的值）
+    // - participant.referId = Member.id（原始用户表主键，聊天模块不使用）
+    // - 匹配当前用户只需比较 participant.id == currentUserId
+    // - 无 fallback 分支，匹配失败直接抛异常暴露问题
     if (memberEntity.id == currentUserId) {
-      // 当前用户是买家(member)
-      currentUserParticipant = memberEntity;
-      opponentParticipant = doctorEntity; // 对方是卖家(doctor)
-      // AppLogger.d("[ChatRoomDto] Current user (by id) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
-    } else if (doctorEntity.id == currentUserId) {
-      // 当前用户是卖家(doctor)
-      currentUserParticipant = doctorEntity;
-      opponentParticipant = memberEntity; // 对方是买家(member)
-      // AppLogger.d("[ChatRoomDto] Current user (by id) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
-    } else if (memberEntity.referId == currentUserId) {
-      // 尝试使用referId进行匹配（外部引用ID）
       currentUserParticipant = memberEntity;
       opponentParticipant = doctorEntity;
-      // AppLogger.d("[ChatRoomDto] Current user (by referId) is MEMBER (buyer), opponent is DOCTOR (seller): ${doctorEntity.nickName}");
-    } else if (doctorEntity.referId == currentUserId) {
+    } else if (doctorEntity.id == currentUserId) {
       currentUserParticipant = doctorEntity;
       opponentParticipant = memberEntity;
-      // AppLogger.d("[ChatRoomDto] Current user (by referId) is DOCTOR (seller), opponent is MEMBER (buyer): ${memberEntity.nickName}");
     } else {
-      // 无法确定当前用户身份，这是一个严重错误
-      AppLogger.d("[ChatRoomDto] ERROR: Cannot determine current user identity!");
-      AppLogger.d("[ChatRoomDto] currentUserId: $currentUserId");
-      AppLogger.d("[ChatRoomDto] member.id: ${memberEntity.id}, member.referId: ${memberEntity.referId}");
-      AppLogger.d("[ChatRoomDto] doctor.id: ${doctorEntity.id}, doctor.referId: ${doctorEntity.referId}");
-      // 抛出异常，让问题暴露出来而不是隐藏
-      throw Exception("Cannot determine current user identity in chat room $id. CurrentUserId: $currentUserId doesn't match any participant.");
+      throw Exception(
+        "Cannot determine current user in chat room $id. "
+        "currentUserId(commonUserId): $currentUserId, "
+        "member.id: ${memberEntity.id}, doctor.id: ${doctorEntity.id}",
+      );
     }
 
     return ChatRoom(

@@ -286,14 +286,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // 直接定义卖家聊天列表路由
   final sellerChatRoute = GoRoute(
       path: '/seller/chat', // 使用聊天路径
-      pageBuilder: (context, state) => state.buildSmartPage(
-        BlocProvider(
-        create: (_) => GetIt.I<ChatListBloc>()..add(LoadChatRoomList()), // 使用ChatListBloc
-        child: const ChatListPage(), // 使用ChatListPage
-        ),
-        name: 'sellerChat',
-        source: 'app_navigation_seller_shell',
-      ), 
+      pageBuilder: (context, state) {
+        // 使用 BlocProvider.value 避免 dispose 时 close singleton
+        final chatListBloc = GetIt.I<ChatListBloc>()..add(LoadChatRoomList());
+        return state.buildSmartPage(
+          BlocProvider.value(
+            value: chatListBloc,
+            child: const ChatListPage(),
+          ),
+          name: 'sellerChat',
+          source: 'app_navigation_seller_shell',
+        );
+      },
   );
   
   // 定义卖家主页路由

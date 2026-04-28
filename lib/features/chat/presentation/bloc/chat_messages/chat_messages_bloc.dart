@@ -180,8 +180,10 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       await messageResult.fold(
         (failure) async => emit(ChatMessagesError('Failed to load messages: ${failure.message}')),
         (messages) async {
-          // 过滤掉撤回的消息
-          final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != 'revoke').toList();
+          // 过滤掉撤回的消息，并按时间升序排列（最旧在前）
+          // 与 _removeDuplicateMessages 和 chat_room_page 的 reverse+手动反转索引逻辑一致
+          final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != 'revoke').toList()
+            ..sort((a, b) => a.createTime.compareTo(b.createTime));
           
           AppLogger.d("[ChatMessagesBloc] =====消息列表调试=====");
           AppLogger.d("[ChatMessagesBloc] 收到${filteredMessages.length}条消息");
@@ -300,24 +302,13 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     }
 
     // 1. Create optimistic message
-    AppLogger.d("[ChatMessagesBloc] =====发送消息调试=====");
-    AppLogger.d("[ChatMessagesBloc] 消息类型: ${event.type}");
-    AppLogger.d("[ChatMessagesBloc] 文件是否存在: ${event.file != null}");
-    if (event.file != null) {
-      AppLogger.d("[ChatMessagesBloc] 文件路径: ${event.file!.path}");
-    }
-    AppLogger.d("[ChatMessagesBloc] 当前用户类型: ${_currentUser!.type}");
-    AppLogger.d("[ChatMessagesBloc] 当前用户referId(外部): ${_currentUser!.id}");
-    AppLogger.d("[ChatMessagesBloc] 当前用户participantId(内部): ${loadedState.currentUserParticipantId}");
-    AppLogger.d("[ChatMessagesBloc] 对手 participantId(内部): ${loadedState.opponent.id}");
-    AppLogger.d("[ChatMessagesBloc] 对手 referId(外部): ${loadedState.opponent.referId}");
-    
     final optimisticMessage = ChatMessage(
       id: Random().nextInt(1000000) + 1000000,
       chatId: chatId,
       senderId: loadedState.currentUserParticipantId, // Use participant ID for sender
-      memberId: _currentUser!.type == 'MEMBER' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
-      doctorId: _currentUser!.type == 'DOCTOR' ? loadedState.currentUserParticipantId : loadedState.opponent.id,
+      // 后端契约：memberId = 发送者，doctorId = 接收者
+      memberId: loadedState.currentUserParticipantId,
+      doctorId: loadedState.opponent.id,
       context: event.type == 'text' ? event.text! : '', // 对于文件类型，context留空，等待上传后填充URL
       type: event.type,
       createTime: DateTime.now(),
@@ -325,13 +316,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       status: MessageStatus.sending,
     );
     
-    AppLogger.d("[ChatMessagesBloc] 创建的消息:");
-    AppLogger.d("[ChatMessagesBloc]   senderId: ${optimisticMessage.senderId}");
-    AppLogger.d("[ChatMessagesBloc]   memberId: ${optimisticMessage.memberId}");
-    AppLogger.d("[ChatMessagesBloc]   doctorId: ${optimisticMessage.doctorId}");
-    AppLogger.d("[ChatMessagesBloc]   内容: ${optimisticMessage.context.substring(0, optimisticMessage.context.length > 30 ? 30 : optimisticMessage.context.length)}...");
-    AppLogger.d("[ChatMessagesBloc] ========================");
-
     // 2. Emit state with optimistic message ADDED TO THE END
     emit(loadedState.copyWith(
       messages: [...loadedState.messages, optimisticMessage], // Append new message
@@ -340,9 +324,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     ));
 
     // 3. Prepare Use Case parameters
-    AppLogger.d("[ChatMessagesBloc] 准备发送参数:");
-    AppLogger.d("[ChatMessagesBloc]   message.context: ${optimisticMessage.context}");
-    AppLogger.d("[ChatMessagesBloc]   file: ${event.file}");
     final params = SendMessageParams(
       message: optimisticMessage.copyWith(id: 0),
       file: event.file,
@@ -401,45 +382,14 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       final currentState = state as ChatMessagesLoaded;
       final ChatMessageDto messageDto = event.messageDto;
 
-      AppLogger.d("[Bloc] =====WebSocket消息接收调试=====");
-      AppLogger.d("[Bloc] 接收到WebSocket消息ID: ${messageDto.id}");
-      AppLogger.d("[Bloc] 消息内容: ${messageDto.context.substring(0, messageDto.context.length > 30 ? 30 : messageDto.context.length)}...");
-      AppLogger.d("[Bloc] DTO中的ID信息:");
-      AppLogger.d("[Bloc]   memberId: ${messageDto.memberId}");
-      AppLogger.d("[Bloc]   doctorId: ${messageDto.doctorId}");
-
       try {
-        // 根据memberId和doctorId判断发送者
-        // memberId有值说明是买家（participant1）发送的
-        // doctorId有值说明是卖家（participant2）发送的
-        int senderParticipantId;
-        
-        if (messageDto.memberId != null && messageDto.doctorId == null) {
-          // 买家发送的消息，使用participant1的内部ID
-          senderParticipantId = _currentRoom!.participant1.id;
-          AppLogger.d("[Bloc] WebSocket消息: memberId=${messageDto.memberId}, 买家(participant1)发送, senderId=$senderParticipantId");
-        } else if (messageDto.doctorId != null && messageDto.memberId == null) {
-          // 卖家发送的消息，使用participant2的内部ID
-          senderParticipantId = _currentRoom!.participant2.id;
-          AppLogger.d("[Bloc] WebSocket消息: doctorId=${messageDto.doctorId}, 卖家(participant2)发送, senderId=$senderParticipantId");
-        } else if (messageDto.memberId != null && messageDto.doctorId != null) {
-          // 两者都有值，根据当前用户类型判断
-          if (_currentUser!.type == 'MEMBER') {
-            senderParticipantId = _currentRoom!.participant1.id;
-            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是买家，使用participant1.id作为senderId=$senderParticipantId");
-          } else {
-            senderParticipantId = _currentRoom!.participant2.id;
-            AppLogger.d("[Bloc] WebSocket消息: 两者都有值，当前用户是卖家，使用participant2.id作为senderId=$senderParticipantId");
-          }
-        } else {
-          AppLogger.d("[Bloc] 错误: 消息DTO既没有memberId也没有doctorId. DTO: ${messageDto.toJson()}");
-          emit(currentState.copyWith(error: () => "Received invalid message data from WebSocket"));
+        // 后端契约：memberId = 发送者的 CommonUser.id，两字段每条消息都有值
+        if (messageDto.memberId == null) {
+          AppLogger.d("[Bloc] 错误: 消息 DTO 缺少 memberId，违反后端契约. DTO: ${messageDto.toJson()}");
+          emit(currentState.copyWith(error: () => "收到无效消息数据"));
           return;
         }
-        
-        AppLogger.d("[Bloc] 确定的senderId(内部): $senderParticipantId");
-        AppLogger.d("[Bloc] 当前用户participantId(内部): ${currentState.currentUserParticipantId}");
-        AppLogger.d("[Bloc] 是当前用户发送的吗? ${senderParticipantId == currentState.currentUserParticipantId}");
+        final senderParticipantId = messageDto.memberId!;
 
         // Convert DTO to Entity
         final newMessage = messageDto.toEntity(
@@ -625,8 +575,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
      // Subscribe to the messages stream
      _messageSubscription = webSocketDataSource.messageStream.listen(
        (messageDto) {
-         // Ensure DTO is not null before adding event
- 
+         if (isClosed) return;
+
            add(_MessageReceived(messageDto));
               },
        onError: (error) {

@@ -48,6 +48,7 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
 
     // 监听聊天列表更新事件
     _chatListUpdateSubscription = _eventBus.chatListUpdateStream.listen((event) {
+      if (isClosed) return;
       AppLogger.d('[ChatListBloc] Received ChatListUpdateEvent for chatId: ${event.chatId}');
       add(_HandleChatListUpdate(event));
     });
