@@ -45,6 +45,11 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
       add(FetchAccountSession());
     } catch (e) {
       AppLogger.d('[ConnectAccountBloc] 创建账户失败: $e');
+      // 已绑定时直接检查状态（会自动进入 onboarding 流程）
+      if (e.toString().contains('已绑定')) {
+        add(CheckConnectAccountStatus());
+        return;
+      }
       emit(const ConnectAccountError(message: '创建收款账户失败'));
     }
   }

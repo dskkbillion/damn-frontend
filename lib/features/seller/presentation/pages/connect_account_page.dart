@@ -10,8 +10,19 @@ import 'stripe_connect_webview_page.dart';
 import 'stripe_connect_embedded_page.dart';
 
 /// 卖家收款账户绑定页面
-class ConnectAccountPage extends StatelessWidget {
+class ConnectAccountPage extends StatefulWidget {
   const ConnectAccountPage({super.key});
+
+  @override
+  State<ConnectAccountPage> createState() => _ConnectAccountPageState();
+}
+
+class _ConnectAccountPageState extends State<ConnectAccountPage> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ConnectAccountBloc>().add(CheckConnectAccountStatus());
+  }
 
   @override
   Widget build(BuildContext context) {

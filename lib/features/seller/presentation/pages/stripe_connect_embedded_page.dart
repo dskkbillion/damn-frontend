@@ -18,6 +18,7 @@ class _StripeConnectEmbeddedPageState extends State<StripeConnectEmbeddedPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
   bool _isHandlingResult = false;
+  late final String _backendHost;
 
   /// 嵌入式 Onboarding 域名白名单
   bool _isAllowedDomain(String host) {
@@ -25,6 +26,8 @@ class _StripeConnectEmbeddedPageState extends State<StripeConnectEmbeddedPage> {
         host == 'stripe.com' ||
         host.endsWith('.duoshaokankan.com') ||
         host == 'duoshaokankan.com' ||
+        // 后端域名（动态，支持 staging/prod）
+        host == _backendHost ||
         // Stripe KYC 第三方验证服务
         host.endsWith('.veriff.com') ||
         host.endsWith('.jumio.com') ||
@@ -39,6 +42,7 @@ class _StripeConnectEmbeddedPageState extends State<StripeConnectEmbeddedPage> {
 
   void _initializeWebView() {
     final backendBaseUrl = dotenv.env['BACKEND_BASE_URL'] ?? '';
+    _backendHost = Uri.tryParse(backendBaseUrl)?.host ?? '';
     final url = '$backendBaseUrl/api/stripe-connect/onboarding-page'
         '?secret=${Uri.encodeComponent(widget.clientSecret)}';
 
