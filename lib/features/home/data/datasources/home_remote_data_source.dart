@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -76,12 +78,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   /// 获取请求头
   Future<Map<String, String>> _getHeaders() async {
     final token = await getToken();
+    // http 包不走全局 Dio 拦截器链，必须手动设置 Accept-Language
+    final prefs = await SharedPreferences.getInstance();
+    final appLanguage = prefs.getString('app_language');
+    final language = appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
     return {
       'Content-Type': 'application/json',
       'Authorization': token,
       'clienttype': '1',
       'client': 'android',
       'version': '100',
+      'Accept-Language': language,
     };
   }
 
