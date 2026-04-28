@@ -399,7 +399,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
             onPressed: _isSubmitting ? null : _onVerifyOldContact,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onPrimary,
               disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
@@ -410,7 +410,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
                     width: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                     ),
                   )
                 : const Text('下一步', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
@@ -478,7 +478,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
               onPressed: _isSubmitting ? null : _onChangeContact,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 disabledBackgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
@@ -489,7 +489,7 @@ class _ChangeContactPageState extends State<ChangeContactPage> {
                       width: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                       ),
                     )
                   : const Text('确认换绑', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),

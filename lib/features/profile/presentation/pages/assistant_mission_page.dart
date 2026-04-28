@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 小帮手的使命页面
 class AssistantMissionPage extends StatelessWidget {
@@ -13,7 +14,7 @@ class AssistantMissionPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(s.profile_assistant_mission),
         backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.onPrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -122,7 +123,7 @@ class AssistantMissionPage extends StatelessWidget {
                   Text(
                     s.profile_mission_listening,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -138,7 +139,7 @@ class AssistantMissionPage extends StatelessWidget {
                     label: Text(s.profile_mission_contact_us),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onPrimary,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
@@ -162,11 +163,11 @@ class AssistantMissionPage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: AppColors.borderPrimary.withValues(alpha: 0.5),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -198,7 +199,7 @@ class AssistantMissionPage extends StatelessWidget {
             content,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               height: 1.6,
-              color: Colors.grey[700],
+              color: AppColors.textPrimary,
             ),
           ),
         ],

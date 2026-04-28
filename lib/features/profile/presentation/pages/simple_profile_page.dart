@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
@@ -96,8 +97,8 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                     _showFeatureNotImplemented(AppLocalizations.of(context).profile_logout);
                   },
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.red,
-                    backgroundColor: Colors.red[50],
+                    foregroundColor: AppColors.error,
+                    backgroundColor: AppColors.error.withValues(alpha: 0.1),
                   ),
                   child: Text(AppLocalizations.of(context).profile_logout),
                 ),
@@ -126,7 +127,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                   radius: 40,
                   backgroundColor: Theme.of(context).primaryColorLight,
                   backgroundImage: avatarFile != null ? FileImage(avatarFile!) : null,
-                  child: avatarFile == null ? const Icon(Icons.person, size: 40, color: Colors.white) : null,
+                  child: avatarFile == null ? const Icon(Icons.person, size: 40, color: AppColors.onPrimary) : null,
                 ),
               ),
               const SizedBox(width: 16),
@@ -142,7 +143,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                       ),
                     ),
                   ),
@@ -153,7 +154,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: Colors.green,
+                          color: AppColors.success,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -162,7 +163,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                         AppLocalizations.of(context).profile_online,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
+                          color: AppColors.onPrimary.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -188,7 +189,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                   AppLocalizations.of(context).profile_buyer_mode,
                   style: const TextStyle(
                     fontSize: 16,
-                    color: Colors.white,
+                    color: AppColors.onPrimary,
                   ),
                 ),
                 Switch(
@@ -198,7 +199,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       widget.onSwitchMode!();
                     }
                   },
-                  activeThumbColor: Colors.green,
+                  activeThumbColor: AppColors.success,
                 ),
               ],
             ),
@@ -213,7 +214,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -291,7 +292,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[700],
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -319,7 +320,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
           children: [
             Icon(
               icon,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -330,7 +331,7 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.grey[400],
+              color: AppColors.textTertiary,
             ),
           ],
         ),

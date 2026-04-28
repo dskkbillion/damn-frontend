@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart'; // 导入Flutter Material包
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
 import '../pages/profile_page.dart'; // 引入 ProfilePage
 import '../pages/account_security_page.dart'; // 引入账号与安全页面
@@ -123,7 +124,7 @@ class ProfileRoutes {
                     children: [
                       const Text('初始化钱包页面失败'),
                       const SizedBox(height: 16),
-                      Text('错误: $e', style: const TextStyle(fontSize: 12, color: Colors.red)),
+                      Text('错误: $e', style: const TextStyle(fontSize: 12, color: AppColors.error)),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => Navigator.pop(context),

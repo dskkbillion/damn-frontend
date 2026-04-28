@@ -222,7 +222,7 @@ class _BindContactPageState extends State<BindContactPage> {
                           onPressed: isBinding ? null : _onBind,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppColors.onPrimary,
                             disabledBackgroundColor:
                                 Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
                             padding: const EdgeInsets.symmetric(vertical: 14),
@@ -237,7 +237,7 @@ class _BindContactPageState extends State<BindContactPage> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white),
+                                        AppColors.onPrimary),
                                   ),
                                 )
                               : const Text(

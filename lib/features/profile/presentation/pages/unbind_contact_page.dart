@@ -215,7 +215,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                   borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha:0.04),
+                      color: AppColors.overlay.withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -267,7 +267,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                   onPressed: _isSubmitting ? null : _onUnbind,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.error,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                     disabledBackgroundColor: AppColors.error.withValues(alpha: 0.5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
@@ -279,7 +279,7 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                           ),
                         )
                       : const Text('确认解绑', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),

@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import '../pages/bind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
@@ -100,7 +101,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(userFriendlyMessage),
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                     duration: const Duration(seconds: 3),
                   ),
                 );
@@ -182,7 +183,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     
     return Container(
       width: double.infinity,
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       padding: const EdgeInsets.symmetric(vertical: 30),
       child: Column(
         children: [
@@ -192,7 +193,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               child: Container(
                 width: 100,
                 height: 100,
-                color: Colors.grey.shade300,
+                color: AppColors.borderInput,
                 child: avatarResult != null
                   ? Image.file(
                       avatarResult!.finalFile,
@@ -206,13 +207,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                         errorWidget: (context, url, error) => const Icon(
                           Icons.person,
                           size: 60,
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                         ),
                     )
                   : const Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                     ),
               ),
             ),
@@ -223,7 +224,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF333333),
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -252,7 +253,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(AppLocalizations.of(context).profile_avatar_optimized(result.compressionRatio!.toStringAsFixed(1))),
-                backgroundColor: Colors.green,
+                backgroundColor: AppColors.success,
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -328,7 +329,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     final String phoneNumber = profile?.mobile ?? '';
     
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       child: Column(
         children: [
           _buildMenuItem(
@@ -337,24 +338,24 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               nickname,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary,
               ),
             ),
             onTap: () => _navigateToEditNickname(profile),
           ),
-          Divider(height: 1, color: Colors.grey.shade200),
+          Divider(height: 1, color: AppColors.backgroundSecondary),
           _buildMenuItem(
             AppLocalizations.of(context).profile_bound_phone,
             trailing: Text(
               phoneNumber.isNotEmpty ? _maskPhoneNumber(phoneNumber) : AppLocalizations.of(context).profile_not_bound,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey.shade600,
+                color: AppColors.textSecondary,
               ),
             ),
             onTap: () => _navigateToBindContact(),
           ),
-          Divider(height: 1, color: Colors.grey.shade200),
+          Divider(height: 1, color: AppColors.backgroundSecondary),
           _buildMenuItem(
             AppLocalizations.of(context).profile_account_deletion,
             onTap: () => _showFeatureNotImplemented(AppLocalizations.of(context).profile_account_deletion),
@@ -370,14 +371,14 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
         title,
         style: const TextStyle(
           fontSize: 16,
-          color: Color(0xFF333333),
+          color: AppColors.textPrimary,
         ),
       ),
       trailing: trailing ??
           Icon(
             Icons.arrow_forward_ios,
             size: 16,
-            color: Colors.grey.shade400,
+            color: AppColors.textTertiary,
           ),
       onTap: onTap,
     );
@@ -391,8 +392,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
       child: ElevatedButton(
         onPressed: () => _showLogoutConfirmation(context),
         style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[50],
-            foregroundColor: Colors.red,
+            backgroundColor: AppColors.error.withValues(alpha: 0.1),
+            foregroundColor: AppColors.error,
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
           child: Text(AppLocalizations.of(context).profile_logout),
@@ -685,7 +686,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                     hintText: AppLocalizations.of(context).profile_nickname_input_hint,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: AppColors.borderInput),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
@@ -693,11 +694,11 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
-                      borderSide: const BorderSide(color: Colors.red),
+                      borderSide: const BorderSide(color: AppColors.error),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(4),
-                      borderSide: const BorderSide(color: Colors.red),
+                      borderSide: const BorderSide(color: AppColors.error),
                     ),
                   ),
                   maxLength: 20,
@@ -708,7 +709,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                     AppLocalizations.of(context).profile_nickname_rules,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -722,7 +723,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                         Icon(
                           Icons.error_outline,
                           size: 16,
-                          color: Colors.red.shade600,
+                          color: AppColors.error,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -730,7 +731,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                             _validationError!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.red.shade600,
+                              color: AppColors.error,
                             ),
                           ),
                         ),
@@ -744,20 +745,20 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                   child: ElevatedButton(
                     onPressed: _isButtonEnabled ? _submitNickname : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _isButtonEnabled 
-                          ? const Color(0xFF1976D2) // 使用蓝色表示可用状态
-                          : Colors.grey.shade300,
-                      foregroundColor: _isButtonEnabled 
-                          ? Colors.white 
-                          : Colors.grey.shade500,
+                      backgroundColor: _isButtonEnabled
+                          ? AppColors.primary
+                          : AppColors.borderInput,
+                      foregroundColor: _isButtonEnabled
+                          ? AppColors.onPrimary
+                          : AppColors.textSecondary,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
                       elevation: _isButtonEnabled ? 2 : 0,
                       // 确保按钮状态变化时能正确更新
-                      disabledBackgroundColor: Colors.grey.shade300,
-                      disabledForegroundColor: Colors.grey.shade500,
+                      disabledBackgroundColor: AppColors.borderInput,
+                      disabledForegroundColor: AppColors.textSecondary,
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -765,7 +766,7 @@ class _EditNicknamePageState extends State<EditNicknamePage> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                             ),
                           )
                         : Text(

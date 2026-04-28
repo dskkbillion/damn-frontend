@@ -115,7 +115,7 @@ class ProfileHeader extends ConsumerWidget {
         children: [
           CircleAvatar(
             radius: 35,
-            backgroundColor: Colors.white.withOpacity(0.8),
+            backgroundColor: AppColors.onPrimary.withValues(alpha: 0.8),
             backgroundImage: hasUrl ? NetworkImage(imageUrl) : null,
             // 只有在没有URL时才显示默认用户图标，有URL时不显示任何图标
             child: !hasUrl
@@ -134,7 +134,7 @@ class ProfileHeader extends ConsumerWidget {
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       strokeWidth: 2,
                     ),
                   ),
@@ -158,7 +158,7 @@ class ProfileHeader extends ConsumerWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.onPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -187,7 +187,7 @@ class ProfileHeader extends ConsumerWidget {
                 profile?.onlineFlag == true ? appLocalizations.profile_online : appLocalizations.profile_offline,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withOpacity(0.9),
+                  color: AppColors.onPrimary.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -219,7 +219,7 @@ class ProfileHeader extends ConsumerWidget {
         },
         style: ElevatedButton.styleFrom(
           foregroundColor: Theme.of(context).primaryColor,
-          backgroundColor: Colors.white.withOpacity(0.9),
+          backgroundColor: AppColors.onPrimary.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           ),

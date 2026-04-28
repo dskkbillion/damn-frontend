@@ -10,6 +10,7 @@ import '../widgets/profile_header.dart';
 import '../../../seller/presentation/pages/seller_profile_page.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -317,11 +318,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: AppColors.borderPrimary.withValues(alpha: 0.5),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -349,8 +350,8 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   },
                   child: Row(
                     children: [
-                      Text(AppLocalizations.of(context).profile_all_orders, style: const TextStyle(color: Colors.grey)),
-                      const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                      Text(AppLocalizations.of(context).profile_all_orders, style: const TextStyle(color: AppColors.textTertiary)),
+                      const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.textTertiary),
                     ],
                   ),
                 ),
@@ -399,7 +400,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.red,
+                      color: AppColors.error,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     constraints: const BoxConstraints(
@@ -409,7 +410,7 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                     child: Text(
                       badge.toString(),
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -440,11 +441,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: AppColors.borderPrimary.withValues(alpha: 0.5),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
