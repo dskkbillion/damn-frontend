@@ -83,8 +83,14 @@ class AppColors {
   static const Color divider = Color(0xFFE2E8F0);
 
   // ==================== 覆盖层颜色 ====================
-  /// 遮罩层颜色
+  /// 遮罩层颜色 (50% 透明度)
   static const Color overlay = Color(0x80000000);
+
+  /// 轻覆盖层颜色 (30% 透明度)
+  static const Color overlayLight = Color(0x4D000000);
+
+  /// 重覆盖层颜色 (60% 透明度)
+  static const Color overlayHeavy = Color(0x99000000);
 
   /// 禁用覆盖层颜色
   static const Color overlayDisabled = Color(0x61000000);
@@ -116,6 +122,17 @@ class AppColors {
   /// 勿扰状态
   static const Color statusDoNotDisturb = error;
 
+  // ==================== 卖家模块强调色 ====================
+  /// 卖家强调色 - 琥珀金
+  static const Color sellerAccent = Color(0xFFBF7D2A);
+
+  /// 卖家强调色 - 浅底 (10% 透明度)
+  static const Color sellerAccentLight = Color(0x1ABF7D2A);
+
+  // ==================== 聊天模块颜色 ====================
+  /// 聊天发送方气泡色
+  static const Color chatBubbleSent = Color(0xFFC9E6FF);
+
   // ==================== 强调色 ====================
   /// 强调色 - 亮 sky-400
   static const Color accentLight = Color(0xFF38BDF8);
@@ -140,6 +157,10 @@ class AppColors {
   static const Color nodeIdle = Color(0xFF94A3B8);
 
   // ==================== 常用颜色组合 ====================
+  /// 主色上的前景色（const 兼容）
+  static const Color onPrimary = Color(0xFFFFFFFF);
+
+  @Deprecated('Use AppColors.onPrimary instead')
   static Color getOnPrimaryColor() => Colors.white;
   static Color getOnErrorColor() => Colors.white;
   static Color getOnSuccessColor() => Colors.white;
@@ -246,11 +267,28 @@ class AppColorsDark {
   static const Color warning = Color(0xFFD29922);
   static const Color info = Color(0xFF58A6FF);
 
+  // ==================== 卖家模块强调色（暗色） ====================
+  /// 卖家强调色 - 暗色模式琥珀金（略亮）
+  static const Color sellerAccent = Color(0xFFD4A04A);
+
+  /// 卖家强调色 - 暗色浅底 (10% 透明度)
+  static const Color sellerAccentLight = Color(0x1AD4A04A);
+
+  // ==================== 聊天模块颜色（暗色） ====================
+  /// 聊天发送方气泡色 - 暗色模式
+  static const Color chatBubbleSent = Color(0xFF1A3A5C);
+
   // ==================== 分隔线 ====================
   static const Color divider = Color(0xFF21262D);
 
   // ==================== 覆盖层 ====================
   static const Color overlay = Color(0xCC000000);
+
+  /// 轻覆盖层颜色 (30% 透明度)
+  static const Color overlayLight = Color(0x4D000000);
+
+  /// 重覆盖层颜色 (60% 透明度)
+  static const Color overlayHeavy = Color(0x99000000);
 
   // ==================== 节点色（暗色） ====================
   static const Color nodeHuman = Color(0xFFA78BFA); // violet-400

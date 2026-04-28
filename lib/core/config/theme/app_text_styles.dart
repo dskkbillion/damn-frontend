@@ -252,7 +252,7 @@ class AppTextStyles {
     fontSize: _fontSize14,
     fontWeight: FontWeight.w500,
     height: _lineHeight1_4,
-    color: AppColors.getOnPrimaryColor(),
+    color: AppColors.onPrimary,
     fontFamily: bodyFont,
     fontFamilyFallback: _bodyFallback,
   );

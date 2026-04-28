@@ -24,8 +24,8 @@ class AppTheme {
       secondaryContainer: AppColors.primaryLight,
       surface: AppColors.backgroundCard,
       error: AppColors.error,
-      onPrimary: AppColors.getOnPrimaryColor(),
-      onSecondary: AppColors.getOnPrimaryColor(),
+      onPrimary: AppColors.onPrimary,
+      onSecondary: AppColors.onPrimary,
       onSurface: AppColors.textPrimary,
       onError: AppColors.getOnErrorColor(),
       outline: AppColors.borderPrimary,
@@ -82,7 +82,7 @@ class AppTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.getOnPrimaryColor(),
+        foregroundColor: AppColors.onPrimary,
         elevation: 0,
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
@@ -111,7 +111,7 @@ class AppTheme {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.getOnPrimaryColor(),
+        foregroundColor: AppColors.onPrimary,
         elevation: 0,
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
