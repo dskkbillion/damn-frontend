@@ -1,8 +1,10 @@
 import 'dart:io' show Platform;
+import 'dart:ui' show PlatformDispatcher;
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dio/dio.dart';
 // import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart'; // Temporarily removed
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import FlutterSecureStorage directly
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HeaderInterceptor extends Interceptor {
   // Temporary: Directly use FlutterSecureStorage
@@ -21,6 +23,12 @@ class HeaderInterceptor extends Interceptor {
     options.headers['clienttype'] = '1';       // 固定值
     options.headers['client'] = Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown');   // 根据平台动态设置
     options.headers['version'] = '100';      // 固定版本号
+
+    // 获取语言设置：优先使用 App 内语言设置，否则跟随系统语言
+    final prefs = await SharedPreferences.getInstance();
+    final appLanguage = prefs.getString('app_language');
+    final language = appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
+    options.headers['Accept-Language'] = language;
 
     // 检查是否已存在Authorization头，避免重复添加
     if (!options.headers.containsKey('Authorization')) {

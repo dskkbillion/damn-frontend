@@ -1,6 +1,4 @@
-import 'dart:ui' show PlatformDispatcher;
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:dskk_flutter_refactor/features/home/data/models/seller_products_response.dart';
@@ -21,15 +19,9 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
   @override
   Future<SellerProductsResponse> getSellerProducts(int sellerId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final appLanguage = prefs.getString('app_language');
-      final language = appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
       final response = await dio.post(
         '/api/shop/product/list',
         data: {'tenantId': sellerId},
-        options: Options(headers: {
-          'Accept-Language': language,
-        }),
       );
 
       if (response.statusCode == 200 && response.data['code'] == 200) {
