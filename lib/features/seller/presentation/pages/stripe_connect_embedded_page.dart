@@ -24,6 +24,8 @@ class _StripeConnectEmbeddedPageState extends State<StripeConnectEmbeddedPage> {
   bool _isAllowedDomain(String host) {
     return host.endsWith('.stripe.com') ||
         host == 'stripe.com' ||
+        host.endsWith('.stripe.network') ||
+        host == 'stripe.network' ||
         host.endsWith('.duoshaokankan.com') ||
         host == 'duoshaokankan.com' ||
         // 后端域名（动态，支持 staging/prod）
@@ -78,11 +80,14 @@ class _StripeConnectEmbeddedPageState extends State<StripeConnectEmbeddedPage> {
             final uri = Uri.tryParse(request.url);
             if (uri == null) return NavigationDecision.prevent;
 
+            AppLogger.d(
+                '[EmbeddedOnboarding] 导航请求: ${uri.host}${uri.path} (isMainFrame=${request.isMainFrame})');
+
             // 1. localhost 允许任意 scheme（本地调试）
             if (uri.host == 'localhost') {
               return NavigationDecision.navigate;
             }
-            // 2. 非 HTTPS 一律阻止
+            // 2. 非 HTTPS 一律阻止（仅主框架）
             if (uri.scheme != 'https') {
               AppLogger.d(
                   '[EmbeddedOnboarding] 阻止非 HTTPS: ${uri.scheme}://${uri.host}');

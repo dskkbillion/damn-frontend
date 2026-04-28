@@ -32,8 +32,15 @@ class _StripeConnectWebViewPageState extends State<StripeConnectWebViewPage> {
   bool _isAllowedDomain(String host) {
     return host.endsWith('.stripe.com') ||
         host == 'stripe.com' ||
+        host.endsWith('.stripe.network') ||
+        host == 'stripe.network' ||
+        host.endsWith('.stripecdn.com') ||
+        host == 'stripecdn.com' ||
         host.endsWith('.duoshaokankan.com') ||
         host == 'duoshaokankan.com' ||
+        // Stripe 人机验证
+        host.endsWith('.hcaptcha.com') ||
+        host == 'hcaptcha.com' ||
         // Stripe KYC 第三方验证服务
         host.endsWith('.veriff.com') ||
         host.endsWith('.jumio.com') ||

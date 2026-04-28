@@ -41,8 +41,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
       final status = await _dataSource.createConnectAccount();
       AppLogger.d('[ConnectAccountBloc] 账户创建成功，状态: ${status.status}');
 
-      // 创建成功后走嵌入式路径（自动降级到跳转式）
-      add(FetchAccountSession());
+      // 创建成功后走跳转式 Onboarding
+      add(FetchOnboardingLink());
     } catch (e) {
       AppLogger.d('[ConnectAccountBloc] 创建账户失败: $e');
       // 已绑定时直接检查状态（会自动进入 onboarding 流程）
@@ -102,8 +102,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
       case ConnectStatus.notCreated:
         emit(ConnectAccountUnlinked());
       case ConnectStatus.pendingOnboarding:
-        // 需要继续 onboarding，优先嵌入式（失败自动降级）
-        add(FetchAccountSession());
+        // 跳转式 Onboarding（嵌入式在 WKWebView 中兼容性不足，暂用跳转式）
+        add(FetchOnboardingLink());
       case ConnectStatus.pendingVerification:
         emit(ConnectAccountPendingVerification(accountStatus: status));
       case ConnectStatus.active:
