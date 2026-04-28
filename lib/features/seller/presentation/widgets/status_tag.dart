@@ -115,7 +115,7 @@ class StatusTag extends StatelessWidget {
   Color _getTextColor(BuildContext context) {
     switch (type) {
       case StatusTagType.primary:
-        return AppColors.getOnPrimaryColor();
+        return AppColors.onPrimary;
       case StatusTagType.success:
         return AppColors.getOnSuccessColor();
       case StatusTagType.warning:
@@ -125,7 +125,7 @@ class StatusTag extends StatelessWidget {
       case StatusTagType.info:
         return AppColors.getOnInfoColor();
       case StatusTagType.defaultTag:
-        return AppColors.getOnPrimaryColor();
+        return AppColors.onPrimary;
     }
   }
 }

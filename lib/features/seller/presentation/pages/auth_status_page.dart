@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 
@@ -60,11 +61,11 @@ class AuthStatusPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.overlay.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -129,14 +130,14 @@ class AuthStatusPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: AppColors.backgroundSecondary,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: AppColors.borderInput),
             ),
             child: Center(
               child: Text(
                 AppLocalizations.of(context).seller_auth_status_no_materials ?? 'No certification materials',
-                style: const TextStyle(color: Colors.grey),
+                style: const TextStyle(color: AppColors.textTertiary),
               ),
             ),
           )
@@ -156,17 +157,17 @@ class AuthStatusPage extends StatelessWidget {
                     width: 100,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: AppColors.borderInput),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: Image.network(
                       imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey[200],
+                        color: AppColors.backgroundSecondary,
                         child: const Icon(
                           Icons.broken_image,
-                          color: Colors.grey,
+                          color: AppColors.textTertiary,
                           size: 40,
                         ),
                       ),
@@ -197,11 +198,11 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: AppColors.overlay.withValues(alpha: 0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -218,9 +219,9 @@ class AuthStatusPage extends StatelessWidget {
                       width: 100,
                       child: Text(
                         '${entry.key}：',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[700],
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -257,11 +258,11 @@ class AuthStatusPage extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.backgroundCard,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: AppColors.overlay.withValues(alpha: 0.05),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -296,9 +297,9 @@ class AuthStatusPage extends StatelessWidget {
                               children: [
                                 Text(
                                   item['time'] ?? '',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[600],
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -350,18 +351,18 @@ class AuthStatusPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: AppColors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.green[200]!),
+              border: Border.all(color: AppColors.success.withValues(alpha: 0.4)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.green),
+                const Icon(Icons.check_circle, color: AppColors.success),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     AppLocalizations.of(context).seller_auth_status_approved_hint ?? 'Certification approved, no need to resubmit',
-                    style: const TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                    style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -372,18 +373,18 @@ class AuthStatusPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.orange[50],
+              color: AppColors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.orange[200]!),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.hourglass_top, color: Colors.orange),
+                const Icon(Icons.hourglass_top, color: AppColors.warning),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     AppLocalizations.of(context).seller_auth_status_pending_hint ?? 'Certification under review, please wait',
-                    style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w500),
+                    style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -404,26 +405,26 @@ class AuthStatusPage extends StatelessWidget {
 
     switch (status) {
       case AuthenticationStatus.approved:
-        backgroundColor = Colors.green[50]!;
-        textColor = Colors.green[800]!;
+        backgroundColor = AppColors.success.withValues(alpha: 0.1);
+        textColor = AppColors.success;
         text = l10n.seller_auth_status_tag_approved ?? 'Certified';
         icon = Icons.check_circle;
         break;
       case AuthenticationStatus.pending:
-        backgroundColor = Colors.orange[50]!;
-        textColor = Colors.orange[800]!;
+        backgroundColor = AppColors.warning.withValues(alpha: 0.1);
+        textColor = AppColors.warning;
         text = l10n.seller_auth_status_tag_pending ?? 'Under Review';
         icon = Icons.hourglass_top;
         break;
       case AuthenticationStatus.rejected:
-        backgroundColor = Colors.red[50]!;
-        textColor = Colors.red[800]!;
+        backgroundColor = AppColors.error.withValues(alpha: 0.1);
+        textColor = AppColors.error;
         text = l10n.seller_auth_status_tag_rejected ?? 'Rejected';
         icon = Icons.cancel;
         break;
       default:
-        backgroundColor = Colors.grey[50]!;
-        textColor = Colors.grey[800]!;
+        backgroundColor = AppColors.backgroundSecondary;
+        textColor = AppColors.textPrimary;
         text = l10n.seller_auth_status_tag_not_submitted ?? 'Not Submitted';
         icon = Icons.circle_outlined;
     }
@@ -470,7 +471,7 @@ class AuthStatusPage extends StatelessWidget {
                 errorBuilder: (_, __, ___) => const Center(
                   child: Icon(
                     Icons.broken_image,
-                    color: Colors.grey,
+                    color: AppColors.textTertiary,
                     size: 80,
                   ),
                 ),
@@ -480,7 +481,7 @@ class AuthStatusPage extends StatelessWidget {
               top: 40,
               right: 20,
               child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                icon: const Icon(Icons.close, color: AppColors.onPrimary, size: 30),
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'dart:io';
 
@@ -58,18 +59,18 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: AppColors.onPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           '${_currentIndex + 1} / ${widget.imagePaths.length}',
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: AppColors.onPrimary),
         ),
         centerTitle: true,
         actions: [
           // 删除按钮
           IconButton(
-            icon: const Icon(Icons.delete, color: Colors.white),
+            icon: const Icon(Icons.delete, color: AppColors.onPrimary),
             onPressed: () => _showDeleteConfirmDialog(),
           ),
         ],
@@ -109,7 +110,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.8),
+                    AppColors.overlay.withValues(alpha: 0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -129,9 +130,9 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, color: Colors.white, size: 16),
+                            const Icon(Icons.star, color: AppColors.onPrimary, size: 16),
                             const SizedBox(width: 4),
-                            Text(AppLocalizations.of(context).seller_image_preview_main_image ?? 'Main', style: const TextStyle(color: Colors.white)),
+                            Text(AppLocalizations.of(context).seller_image_preview_main_image ?? 'Main', style: const TextStyle(color: AppColors.onPrimary)),
                           ],
                         ),
                       )
@@ -141,8 +142,8 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                         icon: const Icon(Icons.star_border, size: 16),
                         label: Text(AppLocalizations.of(context).seller_image_preview_set_main ?? 'Set as Main'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppColors.onPrimary.withValues(alpha: 0.2),
+                          foregroundColor: AppColors.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -153,7 +154,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
+                        color: AppColors.overlay,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -167,8 +168,8 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: index == _currentIndex
-                                  ? Colors.white
-                                  : Colors.white.withOpacity(0.3),
+                                  ? AppColors.onPrimary
+                                  : AppColors.onPrimary.withValues(alpha: 0.3),
                             ),
                           ),
                         ),
@@ -198,7 +199,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                   : null,
-              color: Colors.white,
+              color: AppColors.onPrimary,
             ),
           );
         },
@@ -207,9 +208,9 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, color: Colors.white, size: 64),
+                const Icon(Icons.error, color: AppColors.onPrimary, size: 64),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
+                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: AppColors.onPrimary)),
               ],
             ),
           );
@@ -225,9 +226,9 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error, color: Colors.white, size: 64),
+                const Icon(Icons.error, color: AppColors.onPrimary, size: 64),
                 const SizedBox(height: 16),
-                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.white)),
+                Text(AppLocalizations.of(context).seller_image_preview_load_failed ?? 'Image load failed', style: const TextStyle(color: AppColors.onPrimary)),
               ],
             ),
           );
@@ -259,7 +260,7 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
               Navigator.of(context).pop(); // 关闭对话框
               _deleteCurrentImage();
             },
-            child: Text(AppLocalizations.of(context).seller_image_preview_delete ?? 'Delete', style: const TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context).seller_image_preview_delete ?? 'Delete', style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),

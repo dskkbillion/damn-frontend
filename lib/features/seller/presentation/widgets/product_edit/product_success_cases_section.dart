@@ -224,7 +224,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: const Text('添加'),
             ),
@@ -334,7 +334,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: const Text('保存'),
             ),
@@ -481,10 +481,10 @@ class _OverlayIconButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppDimensions.spacingXs),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
+          color: AppColors.overlayHeavy,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: Colors.white, size: 16),
+        child: Icon(icon, color: AppColors.onPrimary, size: 16),
       ),
     );
   }
@@ -507,21 +507,21 @@ class _SuccessCaseImage extends StatelessWidget {
               height: double.infinity,
               fit: BoxFit.cover,
             ),
-          Container(color: Colors.black.withOpacity(0.3)),
+          Container(color: AppColors.overlayLight),
           Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 CircularProgressIndicator(
                   value: successCase.uploadProgress / 100,
-                  backgroundColor: Colors.white30,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  backgroundColor: AppColors.onPrimary.withValues(alpha: 0.3),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                 ),
                 const SizedBox(height: AppDimensions.spacingSm),
                 Text(
                   '${successCase.uploadProgress.toInt()}%',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                       ),
                 ),
               ],
@@ -540,7 +540,7 @@ class _SuccessCaseImage extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               fit: BoxFit.cover,
-              color: Colors.grey, // TODO(reskin): review this color (blend mode effect)
+              color: AppColors.textTertiary, // blend mode desaturation overlay
               colorBlendMode: BlendMode.saturation,
             ),
           Center(

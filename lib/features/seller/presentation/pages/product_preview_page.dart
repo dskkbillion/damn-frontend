@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
@@ -205,10 +206,10 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).seller_product_preview_title ?? 'Product Preview'),
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundCard,
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
@@ -220,7 +221,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
             icon: const Icon(Icons.edit),
             label: Text(AppLocalizations.of(context).seller_product_preview_back_to_edit ?? 'Back to Edit'),
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFBF7D2A),
+              foregroundColor: AppColors.sellerAccent,
             ),
           ),
           const SizedBox(width: 16),
@@ -240,11 +241,11 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const Icon(Icons.error_outline, size: 48, color: AppColors.error),
                         const SizedBox(height: 16),
                         Text(
                           state.errorMessage ?? (AppLocalizations.of(context).seller_product_preview_load_failed ?? 'Failed to load product info'),
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(color: AppColors.error),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
@@ -395,19 +396,19 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.1),
+        color: AppColors.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.amber),
+        border: Border.all(color: AppColors.warning),
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: Colors.amber),
+          const Icon(Icons.info_outline, color: AppColors.warning),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               AppLocalizations.of(context).seller_product_preview_hint ?? 'This is preview mode. Buyers will see a similar interface.',
               style: TextStyle(
-                color: Colors.amber[800],
+                color: AppColors.warning,
                 fontSize: 14,
               ),
             ),

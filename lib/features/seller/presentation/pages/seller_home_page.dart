@@ -182,7 +182,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       },
                       child: CircleAvatar(
                         radius: 32,
-                        backgroundColor: Colors.white,
+                        backgroundColor: AppColors.backgroundCard,
                         backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
                             ? NetworkImage(profile.logoUrl!)
                             : null,
@@ -210,7 +210,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -230,7 +230,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                     children: [
                                       Icon(
                                         isOnline ? Icons.circle : Icons.circle_outlined,
-                                        color: Colors.white,
+                                        color: AppColors.onPrimary,
                                         size: 12,
                                       ),
                                       const SizedBox(width: 4),
@@ -238,7 +238,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                                         isOnline ? AppLocalizations.of(context).seller_home_online : AppLocalizations.of(context).seller_home_offline,
                                         style: const TextStyle(
                                           fontSize: 12,
-                                          color: Colors.white,
+                                          color: AppColors.onPrimary,
                                         ),
                                       ),
                                     ],
@@ -254,25 +254,25 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                           Row(
                             children: [
                               if (profile.averageRating != null) ...[
-                                const Icon(Icons.star, color: Colors.amber, size: 16),
+                                const Icon(Icons.star, color: AppColors.warning, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
                                   profile.averageRating!.toStringAsFixed(1),
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     fontSize: 14,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
                               ],
-                              
+
                               if (profile.completionRate != null) ...[
-                                const Icon(Icons.check_circle_outline, color: Colors.white, size: 16),
+                                const Icon(Icons.check_circle_outline, color: AppColors.onPrimary, size: 16),
                                 const SizedBox(width: 4),
                                 Text(
                                   AppLocalizations.of(context).seller_home_completion_rate(profile.completionRate!.toStringAsFixed(1)),
                                   style: const TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.onPrimary,
                                     fontSize: 14,
                                   ),
                                 ),
@@ -335,7 +335,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     style: ElevatedButton.styleFrom(
                       // 样式参考 ProfileHeader 的按钮，可以调整
                       foregroundColor: Theme.of(context).primaryColorDark, 
-                      backgroundColor: Colors.white.withOpacity(0.9), 
+                      backgroundColor: AppColors.onPrimary.withValues(alpha: 0.9),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),

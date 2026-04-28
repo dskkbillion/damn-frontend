@@ -298,10 +298,10 @@ class _ImageItem extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(AppDimensions.spacingXs),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
+                  color: AppColors.overlayHeavy,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, color: Colors.white, size: 16),
+                child: const Icon(Icons.close, color: AppColors.onPrimary, size: 16),
               ),
             ),
           ),
@@ -320,7 +320,7 @@ class _ImageItem extends StatelessWidget {
                 child: Text(
                   '主图',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         fontSize: 10,
                       ),
                 ),

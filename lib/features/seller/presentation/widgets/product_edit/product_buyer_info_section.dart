@@ -224,7 +224,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: const Text('添加'),
             ),
@@ -304,7 +304,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: const Text('保存'),
             ),

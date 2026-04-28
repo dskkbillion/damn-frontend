@@ -19,6 +19,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // 输入验证常量
@@ -160,19 +161,19 @@ class _ProductEditPageState extends State<ProductEditPage> {
   InputDecoration get _lightBorderDecoration => InputDecoration(
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+      borderSide: BorderSide(color: AppColors.borderInput, width: 1),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
+      borderSide: BorderSide(color: AppColors.borderInput, width: 1),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Color(0xFFBF7D2A), width: 1.5),
+      borderSide: const BorderSide(color: AppColors.sellerAccent, width: 1.5),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: AppColors.backgroundCard,
   );
 
   /// 添加表单验证错误状态变量
@@ -492,8 +493,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFBF7D2A),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.sellerAccent,
+              foregroundColor: AppColors.onPrimary,
             ),
             child: Text(AppLocalizations.of(context).product_edit_save_draft ?? 'Save Draft'),
           ),
@@ -628,7 +629,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).seller_product_edit_max_images ?? 'Maximum 9 images allowed'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
           _bloc.add(SelectProductImages(imagePaths: combinedPaths.sublist(0, 9)));
@@ -673,7 +674,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).product_edit_at_least_one_image ?? 'Please upload at least one product image'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       isValid = false;
@@ -696,7 +697,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).seller_product_edit_form_incomplete ?? 'Form data incomplete. Please check highlighted fields.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -800,14 +801,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
             margin: const EdgeInsets.only(bottom: 4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: AppColors.borderInput),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Row(
               children: [
                 Expanded(child: Text(option)),
                 IconButton(
-                  icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
+                  icon: const Icon(Icons.remove_circle, color: AppColors.error, size: 20),
                   onPressed: () {
                     setState(() {
                       options.removeAt(index);
@@ -842,7 +843,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.add_circle, color: Color(0xFFBF7D2A)),
+              icon: const Icon(Icons.add_circle, color: AppColors.sellerAccent),
               onPressed: () {
                 final value = optionController.text.trim();
                 if (value.isNotEmpty && !options.contains(value)) {
@@ -899,8 +900,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
               icon: const Icon(Icons.edit),
               label: Text(AppLocalizations.of(context).product_management_action_edit ?? 'Edit'),
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
             ),
@@ -965,7 +966,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           ? (AppLocalizations.of(context).seller_product_edit_draft_unsaved_label ?? 'Draft*')
                           : (AppLocalizations.of(context).seller_product_edit_draft_label ?? 'Draft')),
                       style: TextButton.styleFrom(
-                        foregroundColor: state.hasUnsavedChanges ? Colors.orange : Colors.grey,
+                        foregroundColor: state.hasUnsavedChanges ? AppColors.warning : AppColors.textTertiary,
                       ),
                     ),
                   ],
@@ -976,8 +977,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
             TextButton(
               onPressed: _submitForm,
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               child: Text(AppLocalizations.of(context).seller_product_edit_publish ?? 'Publish'),
@@ -993,7 +994,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(state.errorMessage ?? (AppLocalizations.of(context).seller_product_edit_operation_failed ?? 'Operation failed')),
-                    backgroundColor: Colors.red,
+                    backgroundColor: AppColors.error,
                   ),
                 );
               } else if (state.isDraftSaveSuccess && !_isReturning) {
@@ -1006,7 +1007,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context).seller_product_edit_draft_saved ?? 'Draft saved successfully'),
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                   ),
                 );
                 // 通知父页面刷新草稿列表
@@ -1023,7 +1024,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     content: Text(state.isCreateMode
                       ? (AppLocalizations.of(context).seller_product_edit_publish_success ?? 'Service published successfully!')
                       : (AppLocalizations.of(context).seller_product_edit_update_success ?? 'Service updated successfully')),
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.success,
                     duration: const Duration(seconds: 2), // 缩短显示时间
                   ),
                 );
@@ -1092,7 +1093,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建基本信息表单
   Widget _buildBasicInfoForm(ProductEditState state) {
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1108,15 +1109,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: AppLocalizations.of(context).seller_product_edit_service_name_hint ?? 'Service Name',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: AppColors.textTertiary),
                     errorText: _formErrors['name'],
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.red, width: 1),
+                      borderSide: const BorderSide(color: AppColors.error, width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                      borderSide: const BorderSide(color: AppColors.error, width: 1.5),
                     ),
               ),
               onChanged: (value) {
@@ -1141,15 +1142,15 @@ class _ProductEditPageState extends State<ProductEditPage> {
               readOnly: widget.isPreviewMode,
               decoration: _lightBorderDecoration.copyWith(
                 hintText: AppLocalizations.of(context).seller_product_edit_description_hint ?? 'Describe your service details...',
-                hintStyle: const TextStyle(color: Colors.grey),
+                hintStyle: const TextStyle(color: AppColors.textTertiary),
                 errorText: _formErrors['description'],
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 1),
+                  borderSide: const BorderSide(color: AppColors.error, width: 1),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.red, width: 1.5),
+                  borderSide: const BorderSide(color: AppColors.error, width: 1.5),
                 ),
               ),
               maxLines: 3,
@@ -1172,7 +1173,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建服务档位设置区域
   Widget _buildServiceTiersSection() {
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
@@ -1219,7 +1220,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: AppColors.borderInput),
               borderRadius: BorderRadius.circular(8),
             ),
             child: _buildTierAttributesList(),
@@ -1240,7 +1241,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建常见问题部分
   Widget _buildCommonQuestionsSection(ProductEditState state) {
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -1272,14 +1273,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                        color: AppColors.sellerAccentLight,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         AppLocalizations.of(context).seller_product_edit_faq_count(_qaList.length) ?? '${_qaList.length} questions',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFFBF7D2A),
+                          color: AppColors.sellerAccent,
                         ),
                       ),
                     ),
@@ -1287,7 +1288,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       // 展开/折叠图标
                       Icon(
                         _isQAExpanded ? Icons.expand_less : Icons.expand_more,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                   ),
                 ],
               ),
@@ -1313,8 +1314,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 icon: const Icon(Icons.add),
                 label: Text(AppLocalizations.of(context).seller_product_edit_add_question ?? 'Add Question'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFBF7D2A),
-                  side: const BorderSide(color: Color(0xFFBF7D2A)),
+                  foregroundColor: AppColors.sellerAccent,
+                  side: const BorderSide(color: AppColors.sellerAccent),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
@@ -1333,7 +1334,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: AppColors.borderInput),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1361,7 +1362,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               const SizedBox(width: 8),
               // 删除按钮 - 预览模式下隐藏
               if (!widget.isPreviewMode) IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
                 onPressed: () => _removeQAPair(index),
                 tooltip: AppLocalizations.of(context).seller_product_edit_delete_question ?? 'Delete Question',
               ),
@@ -1394,7 +1395,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建买家需要提供的信息部分
   Widget _buildBuyerInfoSection(ProductEditState state) {
     return Container(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -1426,14 +1427,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                        color: AppColors.sellerAccentLight,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         AppLocalizations.of(context).seller_product_edit_buyer_info_count(_buyerInfoItems.length) ?? '${_buyerInfoItems.length} items',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFFBF7D2A),
+                          color: AppColors.sellerAccent,
                         ),
                       ),
                     ),
@@ -1441,7 +1442,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       // 展开/折叠图标
                       Icon(
                         _isBuyerInfoExpanded ? Icons.expand_less : Icons.expand_more,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                   ),
                 ],
               ),
@@ -1456,14 +1457,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: AppColors.borderInput),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 AppLocalizations.of(context).seller_product_edit_buyer_info_desc ?? 'Select the information types buyers need to provide',
             style: const TextStyle(
               fontSize: 14,
-              color: Colors.grey,
+              color: AppColors.textTertiary,
                 ),
             ),
           ),
@@ -1519,13 +1520,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Container(
         padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-          border: Border.all(color: const Color(0xFFBF7D2A)),
+          border: Border.all(color: AppColors.sellerAccent),
                 borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
+          color: AppColors.backgroundCard,
         ),
         child: Row(
           children: [
-            Icon(_getIconForInfoType(type), color: const Color(0xFFBF7D2A)),
+            Icon(_getIconForInfoType(type), color: AppColors.sellerAccent),
             const SizedBox(width: 8),
             Expanded(
                 child: Text(
@@ -1563,12 +1564,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: AppColors.borderInput),
                 borderRadius: BorderRadius.circular(8),
               ),
       child: Row(
                       children: [
-          Icon(_getIconForInfoType(item.type), size: 20, color: const Color(0xFFBF7D2A)),
+          Icon(_getIconForInfoType(item.type), size: 20, color: AppColors.sellerAccent),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1585,12 +1586,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
                             margin: const EdgeInsets.only(left: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                          color: Colors.red[50],
+                          color: AppColors.error.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                           AppLocalizations.of(context).seller_product_edit_required ?? 'Required',
-                          style: const TextStyle(fontSize: 10, color: Colors.red),
+                          style: TextStyle(fontSize: 10, color: AppColors.error),
                             ),
                           ),
                       ],
@@ -1598,7 +1599,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 if (item.description.isNotEmpty)
                   Text(
                     item.description,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
                   ),
               ],
             ),
@@ -1607,12 +1608,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Color(0xFFBF7D2A)),
+                icon: const Icon(Icons.edit_outlined, color: AppColors.sellerAccent),
                 onPressed: () => _showEditBuyerInfoDialog(index, item),
                 tooltip: AppLocalizations.of(context).seller_product_edit_edit_tooltip ?? 'Edit',
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                icon: const Icon(Icons.delete_outline, color: AppColors.error),
                 onPressed: () => _removeBuyerInfoItem(index),
                 tooltip: AppLocalizations.of(context).seller_product_edit_delete_tooltip ?? 'Delete',
               ),
@@ -1695,8 +1696,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
                 ),
               child: Text(AppLocalizations.of(context).seller_product_edit_add ?? 'Add'),
           ),
@@ -1778,8 +1779,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
                 ),
               child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
@@ -1792,7 +1793,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建成功案例部分
   Widget _buildSuccessCasesSection(ProductEditState state) {
     return Container(
-      color: Colors.white,
+      color: AppColors.onPrimary,
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -1812,14 +1813,14 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFBF7D2A).withOpacity(0.1),
+                    color: AppColors.sellerAccentLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     AppLocalizations.of(context).seller_product_edit_cases_count(state.successCases.length) ?? '${state.successCases.length} cases',
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFFBF7D2A),
+                      color: AppColors.sellerAccent,
                     ),
                   ),
                 ),
@@ -1857,18 +1858,18 @@ class _ProductEditPageState extends State<ProductEditPage> {
       onTap: _showAddSuccessCaseDialog,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+          border: Border.all(color: AppColors.borderInput, style: BorderStyle.solid),
           borderRadius: BorderRadius.circular(8),
-          color: Colors.grey[50],
+          color: AppColors.backgroundSecondary,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.add, size: 32, color: Colors.grey),
+            Icon(Icons.add, size: 32, color: AppColors.textTertiary),
             const SizedBox(height: 8),
             Text(
               AppLocalizations.of(context).seller_product_edit_add_case ?? 'Add Case',
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: AppColors.textTertiary),
             ),
           ],
         ),
@@ -1887,9 +1888,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
             ],
           );
         },
@@ -1911,9 +1912,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+                    Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
                     const SizedBox(height: 4),
-                    Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
                   ],
                 );
               },
@@ -1922,9 +1923,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
             ],
           );
         },
@@ -1940,9 +1941,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
               const SizedBox(height: 4),
-              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
             ],
           );
         },
@@ -1953,9 +1954,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
+        Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textTertiary),
         const SizedBox(height: 4),
-        Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
       ],
     );
   }
@@ -1979,7 +1980,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             ),
           // 半透明遮罩
           Container(
-            color: Colors.black.withOpacity(0.3),
+            color: AppColors.overlayLight,
           ),
           // 进度指示器
           Center(
@@ -1988,13 +1989,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
               children: [
                 CircularProgressIndicator(
                   value: successCase.uploadProgress / 100,
-                  backgroundColor: Colors.white30,
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                  backgroundColor: AppColors.onPrimary.withValues(alpha: 0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   '${successCase.uploadProgress.toInt()}%',
-                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(color: AppColors.onPrimary, fontSize: 12),
                 ),
               ],
             ),
@@ -2012,7 +2013,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               width: double.infinity,
               height: double.infinity,
               fit: BoxFit.cover,
-              color: Colors.grey,
+              color: AppColors.textTertiary,
               colorBlendMode: BlendMode.saturation,
             ),
           // 错误图标
@@ -2020,9 +2021,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 40),
+                Icon(Icons.error_outline, color: AppColors.error, size: 40),
                 const SizedBox(height: 4),
-                Text(AppLocalizations.of(context).seller_product_edit_upload_failed ?? 'Upload Failed', style: const TextStyle(color: Colors.red, fontSize: 12)),
+                Text(AppLocalizations.of(context).seller_product_edit_upload_failed ?? 'Upload Failed', style: TextStyle(color: AppColors.error, fontSize: 12)),
                 if (successCase.canRetry)
                   TextButton(
                     onPressed: () => _bloc.add(RetrySuccessCaseUpload(caseId: successCase.id)),
@@ -2052,8 +2053,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 return Container(
                   width: double.infinity,
                   height: double.infinity,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+                  color: AppColors.backgroundSecondary,
+                  child: Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
                 );
               },
             );
@@ -2061,8 +2062,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.grey[200],
-            child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+            color: AppColors.backgroundSecondary,
+            child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
           );
         },
       );
@@ -2077,8 +2078,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
           return Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.grey[200],
-            child: const Icon(Icons.broken_image, size: 40, color: Colors.grey),
+            color: AppColors.backgroundSecondary,
+            child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
           );
         },
       );
@@ -2087,8 +2088,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
       imageWidget = Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.grey[200],
-        child: const Icon(Icons.image, size: 40, color: Colors.grey),
+        color: AppColors.backgroundSecondary,
+        child: Icon(Icons.image, size: 40, color: AppColors.textTertiary),
       );
     }
     
@@ -2101,7 +2102,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
     
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: AppColors.borderInput),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -2129,10 +2130,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: AppColors.overlayHeavy,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.edit, color: Colors.white, size: 16),
+                          child: Icon(Icons.edit, color: AppColors.onPrimary, size: 16),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -2142,10 +2143,10 @@ class _ProductEditPageState extends State<ProductEditPage> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: AppColors.overlayHeavy,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                          child: Icon(Icons.close, color: AppColors.onPrimary, size: 16),
                         ),
                       ),
                     ],
@@ -2176,9 +2177,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   Expanded(
                     child: Text(
                       successCase.description,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                color: Colors.grey,
+                color: AppColors.textTertiary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -2230,7 +2231,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       height: 100, // 减小图片预览高度
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: AppColors.borderInput),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: selectedImagePath != null
@@ -2244,9 +2245,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.add_photo_alternate, size: 32, color: Colors.grey),
+                                Icon(Icons.add_photo_alternate, size: 32, color: AppColors.textTertiary),
                                 const SizedBox(height: 4),
-                                Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(AppLocalizations.of(context).seller_product_edit_click_select_image ?? 'Click to select image', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
                               ],
                             ),
                     ),
@@ -2299,8 +2300,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: Text(AppLocalizations.of(context).seller_product_edit_add ?? 'Add'),
             ),
@@ -2351,7 +2352,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                       height: 100, // 减小图片预览高度
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
+                        border: Border.all(color: AppColors.borderInput),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ClipRRect(
@@ -2409,8 +2410,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
@@ -2423,7 +2424,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 构建商品图片上传部分
   Widget _buildImageUploadSection(ProductEditState state) {
     return Container(
-      color: Colors.white,
+      color: AppColors.onPrimary,
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -2438,7 +2439,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  color: AppColors.textPrimary,
                 ),
               ),
               // 上传状态指示器
@@ -2458,7 +2459,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               child: Text(
                 AppLocalizations.of(context).seller_product_edit_upload_error(state.errorMessage ?? '') ?? 'Upload error: ${state.errorMessage}',
                 style: const TextStyle(
-                  color: Colors.red,
+                  color: AppColors.error,
                   fontSize: 12,
                 ),
               ),
@@ -2471,7 +2472,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               AppLocalizations.of(context).seller_product_edit_image_format_hint ?? 'Supports jpg, png, jpeg formats. Max 5MB per image, up to 9 images.',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -2486,7 +2487,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: AppColors.primaryWithOpacity05,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -2505,7 +2506,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               AppLocalizations.of(context).product_edit_uploading_progress(state.uploadedCount, state.totalUploadCount),
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.blue[700],
+                color: AppColors.primary,
               ),
             ),
           ],
@@ -2515,19 +2516,19 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.green[50],
+          color: AppColors.success.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, size: 16, color: Colors.green[700]),
+            Icon(Icons.check_circle, size: 16, color: AppColors.success),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).seller_product_edit_upload_success ?? 'Upload Successful',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.green[700],
+                color: AppColors.success,
               ),
             ),
           ],
@@ -2537,19 +2538,19 @@ class _ProductEditPageState extends State<ProductEditPage> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.red[50],
+          color: AppColors.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error, size: 16, color: Colors.red),
+            const Icon(Icons.error, size: 16, color: AppColors.error),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context).seller_product_edit_upload_failed ?? 'Upload Failed',
               style: const TextStyle(
                 fontSize: 12,
-                color: Colors.red,
+                color: AppColors.error,
               ),
             ),
           ],
@@ -2620,7 +2621,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         // 图片容器
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
+            border: Border.all(color: AppColors.borderInput),
             borderRadius: BorderRadius.circular(8),
           ),
           child: ClipRRect(
@@ -2650,11 +2651,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           );
                         },
                         errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.image_not_supported, color: Colors.grey),
+                          child: Icon(Icons.image_not_supported, color: AppColors.textTertiary),
                         ),
                       )
                     : const Center(
-                        child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                        child: Icon(Icons.image_not_supported, size: 40, color: AppColors.textTertiary),
                       ),
           ),
         ),
@@ -2671,12 +2672,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: AppColors.overlayHeavy,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.close,
-                color: Colors.white,
+                color: AppColors.onPrimary,
                 size: 16,
               ),
             ),
@@ -2696,7 +2697,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               ),
               child: Text(
                 AppLocalizations.of(context).seller_product_edit_main_image ?? 'Main',
-                style: const TextStyle(color: Colors.white, fontSize: 10),
+                style: const TextStyle(color: AppColors.onPrimary, fontSize: 10),
               ),
             ),
           ),
@@ -2717,11 +2718,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: canAdd ? Colors.grey[300]! : Colors.grey[200]!,
+            color: canAdd ? AppColors.borderInput : AppColors.backgroundSecondary,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(8),
-          color: canAdd ? Colors.white : Colors.grey[100],
+          color: canAdd ? AppColors.backgroundCard : AppColors.backgroundSecondary,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -2749,7 +2750,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             else
             Icon(
               Icons.add_photo_alternate_outlined,
-              color: canAdd ? Theme.of(context).primaryColor : Colors.grey,
+              color: canAdd ? Theme.of(context).primaryColor : AppColors.textTertiary,
               size: 28,
             ),
             const SizedBox(height: 4),
@@ -2757,7 +2758,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               isUploading ? (AppLocalizations.of(context).product_edit_uploading ?? 'Uploading...') : (AppLocalizations.of(context).product_edit_add_image ?? 'Add Image'),
               style: TextStyle(
                 fontSize: 12,
-                color: canAdd ? Colors.grey[700] : Colors.grey,
+                color: canAdd ? AppColors.textPrimary : AppColors.textTertiary,
               ),
             ),
           ],
@@ -2817,11 +2818,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey[300]!,
+              color: isSelected ? AppColors.primary : AppColors.borderInput,
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(8),
-            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.white,
+            color: isSelected ? AppColors.primaryWithOpacity10 : AppColors.backgroundCard,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2831,7 +2832,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? Colors.blue : Colors.grey[700],
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
                 ),
               ),
               if (hasPrice) ...[
@@ -2841,7 +2842,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.normal,
-                    color: isSelected ? Colors.blue : Colors.grey[600],
+                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -2863,55 +2864,55 @@ class _ProductEditPageState extends State<ProductEditPage> {
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: Colors.black87,
+        color: AppColors.textPrimary,
       ),
       decoration: InputDecoration(
         labelText: AppLocalizations.of(context).seller_product_edit_tier_price_label(_selectedTier.displayName) ?? '${_selectedTier.displayName} Price',
         labelStyle: TextStyle(
           fontSize: 14,
-          color: Colors.grey[600],
+          color: AppColors.textSecondary,
         ),
         floatingLabelStyle: const TextStyle(
           fontSize: 12,
-          color: Colors.blue,
+          color: AppColors.primary,
         ),
         prefixText: RegionConfig.currencySymbol,
         prefixStyle: const TextStyle(
           fontSize: 16,
-          color: Colors.black87,
+          color: AppColors.textPrimary,
         ),
         helperText: AppLocalizations.of(context).seller_product_edit_max_price('${ValidationConstants.maxPrice}') ?? 'Maximum: ${ValidationConstants.maxPrice}',
         helperStyle: TextStyle(
           fontSize: 12,
-          color: Colors.grey[500],
+          color: AppColors.textSecondary,
         ),
         errorText: _formErrors['price_${_selectedTier.name}'],
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: AppColors.borderInput),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: AppColors.borderInput),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(
-            color: Colors.blue,
+            color: AppColors.primary,
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
+          borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.backgroundCard,
       ),
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
@@ -3020,7 +3021,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: Colors.grey[300]!),
+              top: BorderSide(color: AppColors.borderInput),
             ),
           ),
           child: Row(
@@ -3033,12 +3034,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.add, size: 20, color: Colors.grey),
+                        const Icon(Icons.add, size: 20, color: AppColors.textTertiary),
                         const SizedBox(width: 4),
                         Text(
                           AppLocalizations.of(context).seller_product_edit_input ?? 'Input',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             fontSize: 14,
                           ),
                         ),
@@ -3050,7 +3051,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.grey[300],
+                color: AppColors.borderInput,
               ),
               Expanded(
                 child: InkWell(
@@ -3060,12 +3061,12 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.radio_button_checked, size: 20, color: Colors.grey),
+                        const Icon(Icons.radio_button_checked, size: 20, color: AppColors.textTertiary),
                         const SizedBox(width: 4),
                         Text(
                           AppLocalizations.of(context).seller_product_edit_radio ?? 'Radio',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             fontSize: 14,
                           ),
                         ),
@@ -3144,46 +3145,46 @@ class _ProductEditPageState extends State<ProductEditPage> {
               inputFormatters: inputFormatters,
               style: const TextStyle(
                 fontSize: 16,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
               decoration: InputDecoration(
                 labelText: labelText,
                 labelStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 floatingLabelStyle: const TextStyle(
                   fontSize: 12,
-                  color: Colors.blue,
+                  color: AppColors.primary,
                 ),
                 suffixText: suffix,
                 suffixStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
                 helperText: helperText,
                 helperStyle: const TextStyle(
                   fontSize: 12,
-                  color: Colors.grey,
+                  color: AppColors.textTertiary,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: AppColors.borderInput),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
+                  borderSide: BorderSide(color: AppColors.borderInput),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(
-                    color: Colors.blue,
+                    color: AppColors.primary,
                     width: 2,
                   ),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.backgroundCard,
               ),
               onChanged: (newValue) {
                 // 对于系统属性，直接更新值，inputFormatters已经处理了验证
@@ -3214,7 +3215,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
               onPressed: () => _removeProductAttribute(attributeId),
               icon: const Icon(
                 Icons.delete_outline,
-                color: Colors.red,
+                color: AppColors.error,
                 size: 20,
               ),
               padding: const EdgeInsets.all(8),
@@ -3241,9 +3242,9 @@ class _ProductEditPageState extends State<ProductEditPage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: AppColors.borderInput),
                 borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
+                color: AppColors.onPrimary,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -3252,7 +3253,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                     attribute.name,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -3269,7 +3270,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              color: isTrue ? AppColors.primaryWithOpacity10 : Colors.transparent,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
@@ -3278,13 +3279,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                                 Icon(
                                   isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: isTrue ? Colors.blue : Colors.grey,
+                                  color: isTrue ? AppColors.primary : AppColors.textTertiary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   AppLocalizations.of(context).seller_product_edit_yes ?? 'Yes',
                                   style: TextStyle(
-                                    color: isTrue ? Colors.blue : Colors.grey[700],
+                                    color: isTrue ? AppColors.primary : AppColors.textPrimary,
                                     fontWeight: isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -3305,7 +3306,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
-                              color: !isTrue ? Colors.blue.withOpacity(0.1) : Colors.transparent,
+                              color: !isTrue ? AppColors.primaryWithOpacity10 : Colors.transparent,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
@@ -3314,13 +3315,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
                                 Icon(
                                   !isTrue ? Icons.radio_button_checked : Icons.radio_button_unchecked,
                                   size: 20,
-                                  color: !isTrue ? Colors.blue : Colors.grey,
+                                  color: !isTrue ? AppColors.primary : AppColors.textTertiary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   AppLocalizations.of(context).seller_product_edit_no ?? 'No',
                                   style: TextStyle(
-                                    color: !isTrue ? Colors.blue : Colors.grey[700],
+                                    color: !isTrue ? AppColors.primary : AppColors.textPrimary,
                                     fontWeight: !isTrue ? FontWeight.bold : FontWeight.normal,
                                   ),
                                 ),
@@ -3341,7 +3342,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             onPressed: () => _removeProductAttribute(attribute.id),
             icon: const Icon(
               Icons.delete_outline,
-              color: Colors.red,
+              color: AppColors.error,
               size: 20,
             ),
             padding: const EdgeInsets.all(8),
@@ -3446,7 +3447,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 AppLocalizations.of(context).seller_product_edit_default_options_yes_no ?? 'Default options: Yes/No',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -3828,8 +3829,8 @@ class _ProductEditPageState extends State<ProductEditPage> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFBF7D2A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.sellerAccent,
+                foregroundColor: AppColors.onPrimary,
               ),
               child: Text(AppLocalizations.of(context).seller_product_edit_save ?? 'Save'),
             ),
