@@ -16,5 +16,8 @@ class CreateConnectAccount extends ConnectAccountEvent {}
 /// 获取 Onboarding 链接
 class FetchOnboardingLink extends ConnectAccountEvent {}
 
+/// 获取 Account Session（用于嵌入式 Onboarding）
+class FetchAccountSession extends ConnectAccountEvent {}
+
 /// 刷新账户状态（Onboarding 完成后）
 class RefreshConnectAccountStatus extends ConnectAccountEvent {}

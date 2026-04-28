@@ -72,8 +72,11 @@ abstract class IStripeConnectRemoteDataSource {
   /// 获取 Onboarding 链接
   Future<String> getOnboardingLink();
 
-  /// 查询账户状态
-  Future<ConnectAccountStatus> getAccountStatus();
+  /// 查询账户状态（可选主动刷新）
+  Future<ConnectAccountStatus> getAccountStatus({bool refresh = false});
+
+  /// 创建 Account Session（用于嵌入式 Onboarding）
+  Future<String> createAccountSession();
 }
 
 /// Stripe Connect 远程数据源实现
@@ -123,10 +126,13 @@ class StripeConnectRemoteDataSourceImpl implements IStripeConnectRemoteDataSourc
   }
 
   @override
-  Future<ConnectAccountStatus> getAccountStatus() async {
+  Future<ConnectAccountStatus> getAccountStatus({bool refresh = false}) async {
     try {
-      AppLogger.d('[StripeConnect] 查询账户状态');
-      final response = await _dio.get('/api/stripe-connect/account-status');
+      AppLogger.d('[StripeConnect] 查询账户状态 (refresh=$refresh)');
+      final response = await _dio.get(
+        '/api/stripe-connect/account-status',
+        queryParameters: refresh ? {'refresh': 'true'} : null,
+      );
       _checkResponse(response);
 
       final data = response.data['data'];
@@ -146,13 +152,33 @@ class StripeConnectRemoteDataSourceImpl implements IStripeConnectRemoteDataSourc
     }
   }
 
+  @override
+  Future<String> createAccountSession() async {
+    try {
+      AppLogger.d('[StripeConnect] 创建 Account Session');
+      final response = await _dio.post('/api/stripe-connect/account-session');
+      _checkResponse(response);
+
+      final data = response.data['data'];
+      final clientSecret = data is Map ? data['clientSecret'] : null;
+      if (clientSecret == null || clientSecret.toString().isEmpty) {
+        throw ServerException(message: '未获取到 Account Session');
+      }
+
+      return clientSecret.toString();
+    } catch (e) {
+      _handleError(e);
+      rethrow;
+    }
+  }
+
   void _checkResponse(Response response) {
     final data = response.data;
     if (data == null) {
       throw ServerException(message: '服务器返回空数据');
     }
     final int? code = data['code'];
-    if (code != 200 && code != 0) {
+    if (code != 200) {
       final String message = data['msg'] ?? '未知错误';
       throw ServerException(message: message);
     }

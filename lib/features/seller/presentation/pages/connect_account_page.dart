@@ -7,6 +7,7 @@ import '../bloc/connect_account/connect_account_bloc.dart';
 import '../bloc/connect_account/connect_account_event.dart';
 import '../bloc/connect_account/connect_account_state.dart';
 import 'stripe_connect_webview_page.dart';
+import 'stripe_connect_embedded_page.dart';
 
 /// 卖家收款账户绑定页面
 class ConnectAccountPage extends StatelessWidget {
@@ -20,7 +21,10 @@ class ConnectAccountPage extends StatelessWidget {
       ),
       body: BlocConsumer<ConnectAccountBloc, ConnectAccountState>(
         listener: (context, state) {
-          if (state is ConnectAccountOnboardingReady) {
+          if (state is ConnectAccountSessionReady) {
+            _openEmbeddedOnboarding(context, state.clientSecret);
+          } else if (state is ConnectAccountOnboardingReady) {
+            // fallback: 跳转式 Onboarding
             _openOnboardingWebView(context, state.onboardingUrl);
           }
           if (state is ConnectAccountError) {
@@ -276,7 +280,24 @@ class ConnectAccountPage extends StatelessWidget {
     );
   }
 
-  /// 打开 Onboarding WebView
+  /// 打开嵌入式 Onboarding WebView
+  Future<void> _openEmbeddedOnboarding(BuildContext context, String clientSecret) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => StripeConnectEmbeddedPage(clientSecret: clientSecret),
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    // 无论用户是完成还是中途退出，都刷新状态（refresh: true 会查 Stripe API）
+    if (result == true) {
+      context.read<ConnectAccountBloc>().add(RefreshConnectAccountStatus());
+    }
+    // result == false 或 null — 用户主动关闭，不刷新
+  }
+
+  /// 打开 Onboarding WebView（fallback 跳转式）
   Future<void> _openOnboardingWebView(BuildContext context, String url) async {
     final result = await Navigator.of(context).push<ConnectWebViewResult>(
       MaterialPageRoute(

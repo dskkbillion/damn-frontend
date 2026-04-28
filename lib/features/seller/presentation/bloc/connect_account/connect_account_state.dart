@@ -27,6 +27,16 @@ class ConnectAccountOnboardingReady extends ConnectAccountState {
   List<Object?> get props => [onboardingUrl];
 }
 
+/// Account Session 已就绪，可以打开嵌入式 Onboarding
+class ConnectAccountSessionReady extends ConnectAccountState {
+  final String clientSecret;
+
+  const ConnectAccountSessionReady({required this.clientSecret});
+
+  @override
+  List<Object?> get props => [clientSecret];
+}
+
 /// 等待 Stripe 审核
 class ConnectAccountPendingVerification extends ConnectAccountState {
   final ConnectAccountStatus accountStatus;

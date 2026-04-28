@@ -14,6 +14,7 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
     on<CheckConnectAccountStatus>(_onCheckStatus);
     on<CreateConnectAccount>(_onCreateAccount);
     on<FetchOnboardingLink>(_onFetchOnboardingLink);
+    on<FetchAccountSession>(_onFetchAccountSession);
     on<RefreshConnectAccountStatus>(_onRefreshStatus);
   }
 
@@ -40,9 +41,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
       final status = await _dataSource.createConnectAccount();
       AppLogger.d('[ConnectAccountBloc] 账户创建成功，状态: ${status.status}');
 
-      // 创建成功后自动获取 onboarding 链接
-      final url = await _dataSource.getOnboardingLink();
-      emit(ConnectAccountOnboardingReady(onboardingUrl: url));
+      // 创建成功后走嵌入式路径（自动降级到跳转式）
+      add(FetchAccountSession());
     } catch (e) {
       AppLogger.d('[ConnectAccountBloc] 创建账户失败: $e');
       emit(const ConnectAccountError(message: '创建收款账户失败'));
@@ -63,13 +63,28 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
     }
   }
 
+  Future<void> _onFetchAccountSession(
+    FetchAccountSession event,
+    Emitter<ConnectAccountState> emit,
+  ) async {
+    emit(ConnectAccountLoading());
+    try {
+      final clientSecret = await _dataSource.createAccountSession();
+      emit(ConnectAccountSessionReady(clientSecret: clientSecret));
+    } catch (e) {
+      // 嵌入式失败，自动降级到跳转式 Onboarding
+      AppLogger.d('[ConnectAccountBloc] AccountSession 失败，降级到 Hosted: $e');
+      add(FetchOnboardingLink());
+    }
+  }
+
   Future<void> _onRefreshStatus(
     RefreshConnectAccountStatus event,
     Emitter<ConnectAccountState> emit,
   ) async {
     emit(ConnectAccountLoading());
     try {
-      final status = await _dataSource.getAccountStatus();
+      final status = await _dataSource.getAccountStatus(refresh: true);
       _emitStateFromStatus(status, emit);
     } catch (e) {
       AppLogger.d('[ConnectAccountBloc] 刷新账户状态失败: $e');
@@ -82,8 +97,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
       case ConnectStatus.notCreated:
         emit(ConnectAccountUnlinked());
       case ConnectStatus.pendingOnboarding:
-        // 需要继续 onboarding，自动获取链接
-        add(FetchOnboardingLink());
+        // 需要继续 onboarding，优先嵌入式（失败自动降级）
+        add(FetchAccountSession());
       case ConnectStatus.pendingVerification:
         emit(ConnectAccountPendingVerification(accountStatus: status));
       case ConnectStatus.active:
