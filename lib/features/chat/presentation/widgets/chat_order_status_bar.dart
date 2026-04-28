@@ -204,14 +204,14 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
         context,
         child: Row(
           children: [
-            const Icon(Icons.error_outline, size: 16, color: Colors.orange),
+            const Icon(Icons.error_outline, size: 16, color: AppColors.warning),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 _errorMessage!,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.orange[800],
+                  color: AppColors.warning,
                 ),
               ),
             ),

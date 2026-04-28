@@ -215,14 +215,14 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    Platform.isAndroid 
+                    Platform.isAndroid
                       ? '您可以在手机的"文件管理器"应用中找到此文件'
                       : Platform.isIOS
                         ? '您可以在"文件"应用中找到此文件'
                         : '文件已保存到系统下载目录',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -270,26 +270,26 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           children: [
             Text(
               widget.fileName,
-              style: const TextStyle(fontSize: 16, color: Colors.white),
+              style: const TextStyle(fontSize: 16, color: AppColors.onPrimary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             if (_totalPages > 0 && widget.fileExtension.toLowerCase() == 'pdf')
               Text(
                 '${_currentPage + 1} / $_totalPages',
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
+                style: const TextStyle(fontSize: 12, color: AppColors.onPrimary),
               ),
           ],
         ),
         actions: [
           if (_localPath != null)
             IconButton(
-              icon: const Icon(Icons.open_in_new, color: Colors.white),
+              icon: const Icon(Icons.open_in_new, color: AppColors.onPrimary),
               onPressed: _openWithSystemApp,
               tooltip: '使用其他应用打开',
             ),
           IconButton(
-            icon: const Icon(Icons.download, color: Colors.white),
+            icon: const Icon(Icons.download, color: AppColors.onPrimary),
             onPressed: () => _downloadFile(),
             tooltip: '保存文件',
           ),
@@ -307,14 +307,14 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           children: [
             CircularProgressIndicator(
               value: _downloadProgress > 0 ? _downloadProgress : null,
-              color: Colors.white,
+              color: AppColors.onPrimary,
             ),
             const SizedBox(height: 20),
             Text(
-              _downloadProgress > 0 
+              _downloadProgress > 0
                   ? '下载中: ${(_downloadProgress * 100).toStringAsFixed(1)}%'
                   : '加载中...',
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.onPrimary),
             ),
           ],
         ),
@@ -330,7 +330,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             const SizedBox(height: 20),
             Text(
               _errorMessage!,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.onPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
@@ -354,7 +354,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
       return const Center(
         child: Text(
           '无法加载文件',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: AppColors.onPrimary),
         ),
       );
     }
@@ -438,11 +438,11 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             return const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.broken_image, color: Colors.white, size: 60),
+                Icon(Icons.broken_image, color: AppColors.onPrimary, size: 60),
                 SizedBox(height: 20),
                 Text(
                   '无法加载图片',
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(color: AppColors.onPrimary),
                 ),
               ],
             );
@@ -461,17 +461,17 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           return Center(
             child: Text(
               '无法读取文件内容: ${snapshot.error}',
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.onPrimary),
             ),
           );
         }
-        
+
         if (!snapshot.hasData) {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: CircularProgressIndicator(color: AppColors.onPrimary),
           );
         }
-        
+
         return Container(
           color: AppColors.textPrimary,
           child: SingleChildScrollView(
@@ -479,7 +479,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             child: SelectableText(
               snapshot.data!,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.onPrimary,
                 fontFamily: 'monospace',
                 fontSize: 14,
               ),
@@ -498,14 +498,14 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
         children: [
           Icon(
             _getFileIcon(widget.fileExtension),
-            color: Colors.white,
+            color: AppColors.onPrimary,
             size: 80,
           ),
           const SizedBox(height: 20),
           Text(
             widget.fileName,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.onPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -514,12 +514,12 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
           const SizedBox(height: 10),
           Text(
             '文件类型: ${widget.fileExtension.toUpperCase()}',
-            style: const TextStyle(color: Colors.white70),
+            style: const TextStyle(color: AppColors.onPrimary),
           ),
           const SizedBox(height: 30),
           const Text(
             '该文件类型不支持预览',
-            style: TextStyle(color: Colors.white60),
+            style: TextStyle(color: AppColors.onPrimary),
           ),
           const SizedBox(height: 20),
           ElevatedButton.icon(
@@ -527,7 +527,7 @@ class _FilePreviewPageState extends State<FilePreviewPage> {
             icon: const Icon(Icons.open_in_new),
             label: const Text('使用其他应用打开'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: AppColors.primary,
             ),
           ),
         ],

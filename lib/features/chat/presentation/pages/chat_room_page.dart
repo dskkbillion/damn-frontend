@@ -1,3 +1,4 @@
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -192,13 +193,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
         margin: const EdgeInsets.symmetric(vertical: 12.0),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(12.0),
         ),
         child: Text(
           formattedTime,
           style: TextStyle(
-            color: Colors.grey[600],
+            color: AppColors.textSecondary,
             fontSize: 12.0,
             fontWeight: FontWeight.w500,
           ),
@@ -215,10 +216,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFEDEDED), // Set background color here
       appBar: AppBar(
-        backgroundColor: Colors.white,    // Set AppBar background
-        foregroundColor: Colors.black,    // Set AppBar foreground (text/icons)
+        backgroundColor: AppColors.backgroundCard,    // Set AppBar background
+        foregroundColor: AppColors.textPrimary,    // Set AppBar foreground (text/icons)
         elevation: 0.5,                 // Add subtle elevation
-        shadowColor: Colors.grey[300],    // Set shadow color
+        shadowColor: AppColors.borderInput,    // Set shadow color
         centerTitle: true,              // Center the title
         // Add custom leading to control back button behavior
         leading: BackButton(
@@ -454,10 +455,10 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
               bottom: 80.0, // 距离底部80像素，避免与输入栏重合
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.backgroundCard,
                 elevation: 4.0,
                 onPressed: _scrollToBottom,
-                child: const Icon(Icons.arrow_downward, color: Colors.grey),
+                child: const Icon(Icons.arrow_downward, color: AppColors.textTertiary),
               ),
             ),
         ],

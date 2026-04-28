@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart'; // Import permissio
 import 'package:path_provider/path_provider.dart'; // Import path_provider
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 
@@ -355,7 +356,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.chat_images_processed_success(successCount, avgCompression.toStringAsFixed(1))),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -364,7 +365,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(s.chat_images_process_failed_count(errorCount)),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
         }
@@ -429,9 +430,9 @@ class _MessageInputBarState extends State<MessageInputBar> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         color: uploadState.status == FileUploadStatus.uploading
-                            ? Colors.black.withOpacity(0.5)
+                            ? AppColors.overlay
                             : uploadState.status == FileUploadStatus.failure
-                                ? Colors.red.withOpacity(0.6)
+                                ? AppColors.overlayHeavy
                                 : Colors.transparent,
                       ),
                       child: Center(
@@ -448,12 +449,12 @@ class _MessageInputBarState extends State<MessageInputBar> {
                     onTap: () => _removeFile(index),
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Colors.black54,
+                        color: AppColors.overlay,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.close,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         size: 16,
                       ),
                     ),
@@ -486,7 +487,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       return Container(
         width: 64,
         height: 64,
-        color: Colors.grey[300],
+        color: AppColors.borderInput,
         child: const Icon(Icons.insert_drive_file, size: 32),
       );
     }
@@ -500,19 +501,19 @@ class _MessageInputBarState extends State<MessageInputBar> {
           height: 20,
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            color: Colors.white,
+            color: AppColors.onPrimary,
           ),
         );
       case FileUploadStatus.success:
         return const Icon(
           Icons.check_circle,
-          color: Colors.green,
+          color: AppColors.success,
           size: 24,
         );
       case FileUploadStatus.failure:
         return const Icon(
           Icons.error_outline,
-          color: Colors.white,
+          color: AppColors.onPrimary,
           size: 24,
         );
     }
@@ -630,14 +631,14 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
         if (_isVoiceMode) FocusScope.of(context).unfocus();
       },
       tooltip: _isVoiceMode ? s.chat_switch_to_text : s.chat_switch_to_voice,
-      color: Colors.grey[700],
+      color: AppColors.textPrimary,
     );
   }
 
   Widget _buildTextField() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     return TextField(
       controller: _controller,
       maxLines: 5, // Allow multi-line input
@@ -646,7 +647,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
       decoration: InputDecoration(
         hintText: s.chat_enter_message,
         filled: true,
-        fillColor: Colors.grey[100],
+        fillColor: AppColors.backgroundSecondary,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25.0),
@@ -669,7 +670,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
     // 获取国际化资源
     final s = AppLocalizations.of(context);
     
-    Color buttonColor = _isRecording ? Colors.red : Theme.of(context).primaryColor;
+    Color buttonColor = _isRecording ? AppColors.error : Theme.of(context).primaryColor;
     String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
 
     return GestureDetector(
@@ -717,7 +718,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
       tooltip: s.chat_attach,
-      color: Colors.grey[700],
+      color: AppColors.textPrimary,
     );
   }
 
@@ -740,9 +741,9 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[50], // Lighter background for the bar
-        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 0.5)), // Top border
+      decoration: const BoxDecoration(
+        color: AppColors.backgroundSecondary, // Lighter background for the bar
+        border: Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)), // Top border
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(

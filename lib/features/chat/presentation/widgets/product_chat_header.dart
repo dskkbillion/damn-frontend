@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import '../../domain/entities/chat_room.dart';
 
 /// 商品聊天头部组件
@@ -29,11 +30,11 @@ class ProductChatHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.overlayLight.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -61,10 +62,10 @@ class ProductChatHeader extends StatelessWidget {
                             return Container(
                               width: 60,
                               height: 60,
-                              color: Colors.grey[200],
+                              color: AppColors.backgroundSecondary,
                               child: const Icon(
                                 Icons.shopping_bag,
-                                color: Colors.grey,
+                                color: AppColors.textTertiary,
                                 size: 30,
                               ),
                             );
@@ -74,12 +75,12 @@ class ProductChatHeader extends StatelessWidget {
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: AppColors.backgroundSecondary,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
                             Icons.shopping_bag,
-                            color: Colors.grey,
+                            color: AppColors.textTertiary,
                             size: 30,
                           ),
                         ),
@@ -98,45 +99,45 @@ class ProductChatHeader extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                          color: AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // 商品价格
                       if (chatRoom.productPrice != null)
                         Text(
                           '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.red[600],
+                            color: AppColors.error,
                           ),
                         ),
-                      
+
                       const SizedBox(height: 4),
-                      
+
                       // 额外信息（可以根据需要添加）
                       Text(
                         AppLocalizations.of(context).chat_tap_to_view_product,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 // 操作按钮
                 if (actionText != null && onActionTap != null)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.orange,
+                      color: AppColors.warning,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: InkWell(
@@ -144,7 +145,7 @@ class ProductChatHeader extends StatelessWidget {
                       child: Text(
                         actionText!,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),

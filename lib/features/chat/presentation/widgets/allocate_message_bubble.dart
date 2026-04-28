@@ -67,11 +67,11 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                   width: 40,
                   height: 40,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFFFA500), // 黄色圆形
+                    color: AppColors.warning, // 黄色圆形
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.warning_amber_rounded, color: Colors.white),
+                    child: Icon(Icons.warning_amber_rounded, color: AppColors.onPrimary),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -107,7 +107,7 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                   // 未展开状态显示截断的普通文本
                   Text(
                     "${widget.message.context.substring(0, maxCharCount)}...",
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
                   )
                 else
                   // 展开状态或短消息使用Markdown渲染
@@ -115,8 +115,8 @@ class _AllocateMessageBubbleState extends State<AllocateMessageBubble> {
                     data: widget.message.context,
                     selectable: true,
                     styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(
-                      context, 
-                      const Color(0xFF212121), // 黑色文本
+                      context,
+                      AppColors.textPrimary,
                     ),
                     onTapLink: (text, href, title) {
                       if (href != null) {

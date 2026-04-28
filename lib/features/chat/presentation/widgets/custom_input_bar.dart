@@ -504,7 +504,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                leading: const Icon(Icons.camera_alt, color: AppColors.primary),
                 title: const Text('拍照'),
                 onTap: () {
                   Navigator.pop(context);
@@ -512,7 +512,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Colors.green),
+                leading: const Icon(Icons.photo_library, color: AppColors.success),
                 title: const Text('从相册选择'),
                 onTap: () {
                   Navigator.pop(context);
@@ -520,7 +520,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.attach_file, color: Colors.orange),
+                leading: const Icon(Icons.attach_file, color: AppColors.warning),
                 title: const Text('文件'),
                 onTap: () {
                   Navigator.pop(context);

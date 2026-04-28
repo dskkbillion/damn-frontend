@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 聊天测试入口页面
 /// 用于快速测试新旧聊天实现
@@ -18,7 +19,7 @@ class ChatTestEntry extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Card(
-              color: Colors.blue.shade50,
+              color: AppColors.primaryWithOpacity05,
               child: const Padding(
                 padding: EdgeInsets.all(16.0),
                 child: Column(
@@ -34,7 +35,7 @@ class ChatTestEntry extends StatelessWidget {
                     SizedBox(height: 8),
                     Text(
                       '新版本使用 flutter_chat_ui 组件库',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: AppColors.textTertiary),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -110,7 +111,7 @@ class ChatTestEntry extends StatelessWidget {
             
             // 测试说明
             Card(
-              color: Colors.amber.shade50,
+              color: AppColors.warning.withValues(alpha: 0.1),
               child: const Padding(
                 padding: EdgeInsets.all(12.0),
                 child: Column(
@@ -147,17 +148,17 @@ class ChatTestEntry extends StatelessWidget {
       elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isNew ? Colors.green : Colors.grey,
+          backgroundColor: isNew ? AppColors.success : AppColors.textTertiary,
           child: const Icon(
             Icons.chat,
-            color: Colors.white,
+            color: AppColors.onPrimary,
           ),
         ),
         title: Text(title),
         subtitle: Text(subtitle),
         trailing: Chip(
           label: Text(isNew ? '新版' : '旧版'),
-          backgroundColor: isNew ? Colors.green.shade100 : Colors.grey.shade200,
+          backgroundColor: isNew ? AppColors.success : AppColors.backgroundSecondary,
         ),
         onTap: () {
           // 导航到聊天页面

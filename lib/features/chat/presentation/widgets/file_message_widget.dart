@@ -194,7 +194,7 @@ class FileMessageWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: isMe ? Theme.of(context).primaryColor : Colors.black87,
+                      color: isMe ? Theme.of(context).primaryColor : AppColors.textPrimary,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -202,9 +202,9 @@ class FileMessageWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _formatFileSize(fileSize),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -213,7 +213,7 @@ class FileMessageWidget extends StatelessWidget {
             // 下载图标
             Icon(
               Icons.download,
-              color: isMe ? Theme.of(context).primaryColor : Colors.grey[600],
+              color: isMe ? Theme.of(context).primaryColor : AppColors.textSecondary,
               size: 20,
             ),
           ],
@@ -302,7 +302,7 @@ class ImageMessageWidget extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   width: 250,
                   height: 200,
-                  color: Colors.grey[200],
+                  color: AppColors.backgroundSecondary,
                   child: const Center(
                     child: CircularProgressIndicator(),
                   ),
@@ -310,15 +310,15 @@ class ImageMessageWidget extends StatelessWidget {
                 errorWidget: (context, url, error) => Container(
                   width: 250,
                   height: 200,
-                  color: Colors.grey[200],
+                  color: AppColors.backgroundSecondary,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.broken_image, color: Colors.grey[400], size: 48),
+                      Icon(Icons.broken_image, color: AppColors.textTertiary, size: 48),
                       const SizedBox(height: 8),
                       Text(
                         '图片加载失败',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),
@@ -328,10 +328,10 @@ class ImageMessageWidget extends StatelessWidget {
               if (message.status == MessageStatus.sending)
                 Positioned.fill(
                   child: Container(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: AppColors.overlayLight,
                     child: const Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                       ),
                     ),
                   ),

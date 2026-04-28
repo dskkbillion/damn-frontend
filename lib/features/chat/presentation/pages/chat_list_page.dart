@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
@@ -132,7 +133,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
     
     return Material(
-      color: Colors.white,
+      color: AppColors.backgroundCard,
       child: ChatListItem(
         key: const ValueKey('notification_entry'),
         chatRoom: fakeNotificationChatRoom,
@@ -178,15 +179,15 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       backgroundColor: const Color(0xFFEDEDED),
       appBar: AppBar(
         title: Text(s.chat_list_title),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.backgroundCard,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0.5,
-        shadowColor: Colors.grey[300],
+        shadowColor: AppColors.borderInput,
         actions: [
           TextButton.icon(
             icon: Icon(
               _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
-              color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+              color: _isMixedMode ? AppColors.textTertiary : Theme.of(context).primaryColor,
               size: 20,
             ),
             label: Text(
@@ -196,7 +197,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       ? s.chat_filter_buyer
                       : s.chat_filter_seller),
               style: TextStyle(
-                color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+                color: _isMixedMode ? AppColors.textTertiary : Theme.of(context).primaryColor,
                 fontSize: 14,
               ),
             ),
@@ -423,7 +424,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   Widget _buildSystemItems(BuildContext context, int currentUserId) {
     return SliverToBoxAdapter(
       child: Container(
-        color: Colors.white,
+        color: AppColors.backgroundCard,
         child: Column(
           children: [
             _buildNotificationItem(context, currentUserId),

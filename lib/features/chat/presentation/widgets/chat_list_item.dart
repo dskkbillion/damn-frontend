@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
@@ -101,13 +102,13 @@ class _ChatListItemState extends State<ChatListItem> {
         backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
             ? CachedNetworkImageProvider(opponent.avatar!)
             : null, // Use provider for CircleAvatar
-        backgroundColor: Colors.grey[200], // Placeholder background
+        backgroundColor: AppColors.backgroundSecondary, // Placeholder background
         child: (opponent.avatar == null || opponent.avatar!.isEmpty)
             ? Text(
                 opponent.nickName?.isNotEmpty == true
                     ? opponent.nickName![0].toUpperCase() // Show first initial
                     : '?',
-                style: const TextStyle(fontSize: 20, color: Colors.white),
+                style: const TextStyle(fontSize: 20, color: AppColors.onPrimary),
               )
             : null,
       ),
@@ -126,9 +127,9 @@ class _ChatListItemState extends State<ChatListItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.blue[50],
+                color: AppColors.primary.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue[200]!),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -146,7 +147,7 @@ class _ChatListItemState extends State<ChatListItem> {
                           return Container(
                             width: 20,
                             height: 20,
-                            color: Colors.grey[300],
+                            color: AppColors.borderInput,
                             child: const Icon(Icons.image, size: 12),
                           );
                         },
@@ -159,9 +160,9 @@ class _ChatListItemState extends State<ChatListItem> {
                   Flexible(
                     child: Text(
                       widget.chatRoom.productName ?? s.chat_product_default,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.blue[700],
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -173,9 +174,9 @@ class _ChatListItemState extends State<ChatListItem> {
                     const SizedBox(width: 4),
                     Text(
                       '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
-                        color: Colors.red[600],
+                        color: AppColors.error,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -188,7 +189,7 @@ class _ChatListItemState extends State<ChatListItem> {
       ),
       subtitle: Text(
         lastMessageText,
-        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+        style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -198,14 +199,14 @@ class _ChatListItemState extends State<ChatListItem> {
         children: [
           Text(
             timestampText,
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 5.0), // Space for badge
           if (widget.chatRoom.unreadCount > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), // Adjusted padding
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: AppColors.error,
                 borderRadius: BorderRadius.circular(10), // Make it slightly pill-shaped
               ),
               constraints: const BoxConstraints(
@@ -215,7 +216,7 @@ class _ChatListItemState extends State<ChatListItem> {
               child: Text(
                 // Handle 99+ case
                 widget.chatRoom.unreadCount > 99 ? '99+' : widget.chatRoom.unreadCount.toString(),
-                style: const TextStyle(color: Colors.white, fontSize: 10),
+                style: const TextStyle(color: AppColors.onPrimary, fontSize: 10),
                 textAlign: TextAlign.center,
               ),
             )

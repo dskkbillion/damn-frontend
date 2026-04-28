@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 创建一个标准化的Markdown样式表，限制标题大小
 /// 确保Markdown渲染内容在视觉上与应用其他部分保持一致
@@ -37,7 +38,7 @@ class MarkdownStyleHelper {
         fontStyle: FontStyle.italic,
       ),
       blockquoteDecoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.1),
+        color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(4.0),
         border: Border(
           left: BorderSide(
@@ -70,7 +71,7 @@ class MarkdownStyleHelper {
       tableHead: TextStyle(color: textColor, fontWeight: FontWeight.bold),
       tableBody: TextStyle(color: textColor),
       tableBorder: TableBorder.all(
-        color: Colors.grey.withOpacity(0.3),
+        color: AppColors.borderPrimary,
         width: 1.0,
       ),
       tableCellsPadding: const EdgeInsets.all(4.0),
@@ -80,7 +81,7 @@ class MarkdownStyleHelper {
         border: Border(
           bottom: BorderSide(
             width: 1.0,
-            color: Colors.grey.withOpacity(0.4),
+            color: AppColors.borderPrimary,
           ),
         ),
       ),

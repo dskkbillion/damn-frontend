@@ -170,7 +170,7 @@ class PaymentPromptBubble extends StatelessWidget {
                 backgroundColor: isRecommended
                   ? AppColors.warning
                   : AppColors.warning.withValues(alpha: 0.6),
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 12,
@@ -216,8 +216,8 @@ class PaymentPromptBubble extends StatelessWidget {
                   ),
                   child: const Text(
                     '推荐',
-                    style: TextStyle(
-                      color: Colors.white,
+                    style: const TextStyle(
+                      color: AppColors.onPrimary,
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),

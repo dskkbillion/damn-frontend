@@ -630,7 +630,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                 icon: const Icon(Icons.send, size: 18),
                                 label: const Text('发送提示'),
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: AppColors.onPrimary,
                                   backgroundColor: AppColors.warning,
                                   padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs + 2),
                                   shape: RoundedRectangleBorder(

@@ -76,11 +76,11 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
                   width: 40,
                   height: 40,
                   decoration: const BoxDecoration(
-                    color: Color(0xFFFFA500), // Yellow circle matching original
+                    color: AppColors.warning, // Yellow circle matching original
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
-                    child: Icon(Icons.warning_amber_rounded, color: Colors.white),
+                    child: Icon(Icons.warning_amber_rounded, color: AppColors.onPrimary),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -119,7 +119,7 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
                   // Unexpanded state - show truncated plain text
                   Text(
                     "${_messageContent.substring(0, maxCharCount)}...",
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
                   )
                 else
                   // Expanded state or short message - use Markdown rendering
@@ -127,8 +127,8 @@ class _CustomAllocateBubbleState extends State<CustomAllocateBubble> {
                     data: _messageContent,
                     selectable: true,
                     styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(
-                      context, 
-                      const Color(0xFF212121), // Black text
+                      context,
+                      AppColors.textPrimary,
                     ),
                     onTapLink: (text, href, title) {
                       if (href != null) {

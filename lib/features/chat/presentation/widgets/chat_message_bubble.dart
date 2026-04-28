@@ -1,3 +1,4 @@
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'dart:async';
 import 'dart:io'; // 添加这个import来支持File类型
 import 'package:flutter/material.dart';
@@ -206,7 +207,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       child: Text(
         timeString,
         style: TextStyle(
-          color: Colors.grey[500],
+          color: AppColors.textSecondary,
           fontSize: 11.0,
         ),
       ),
@@ -221,9 +222,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // Updated bubble colors based on frontend.md alignment
     final bubbleColor = isCurrentUser
         ? const Color(0xFFC9E6FF) // Light blue for current user
-        : Colors.white;          // White for opponent
+        : AppColors.backgroundCard;          // White for opponent
     // Consistent text color for both bubble types
-    const textColor = Colors.black87;
+    const textColor = AppColors.textPrimary;
 
     // Avatar Widget (only for opponent)
     final avatarWidget = !isCurrentUser && widget.opponent != null
@@ -234,11 +235,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
                 ? CachedNetworkImageProvider(widget.opponent!.avatar!)
                 : null,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: AppColors.borderInput,
             child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
                 ? Text(
                     widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
-                    style: const TextStyle(fontSize: 14, color: Colors.white),
+                    style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
                   )
                 : null,
           ),
@@ -356,7 +357,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
      } else {
        // Keep handling for unsupported types
-       return Text('[${AppLocalizations.of(context).chat_unknown_message}: ${widget.message.type}]', style: const TextStyle(color: Colors.red));
+       return Text('[${AppLocalizations.of(context).chat_unknown_message}: ${widget.message.type}]', style: const TextStyle(color: AppColors.error));
      }
   }
 
@@ -367,7 +368,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
          width: 150,
          height: 150,
          decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: AppColors.borderInput,
             borderRadius: BorderRadius.circular(16.0),
          ),
          child: Column(
@@ -375,7 +376,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
            children: [
              const CircularProgressIndicator(strokeWidth: 2.0),
              const SizedBox(height: 8),
-             Text(AppLocalizations.of(context).chat_uploading, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+             Text(AppLocalizations.of(context).chat_uploading, style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
            ],
          ),
        );
@@ -387,13 +388,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
          width: 150,
          height: 150,
          decoration: BoxDecoration(
-           color: Colors.grey[300],
+           color: AppColors.borderInput,
            borderRadius: BorderRadius.circular(16.0),
          ),
          child: Column(
            mainAxisAlignment: MainAxisAlignment.center,
            children: [
-             const Icon(Icons.error_outline, color: Colors.red, size: 40),
+             const Icon(Icons.error_outline, color: AppColors.error, size: 40),
              const SizedBox(height: 8),
              Text(AppLocalizations.of(context).chat_upload_failed, style: const TextStyle(fontSize: 12)),
              const SizedBox(height: 8),
@@ -425,10 +426,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        return Container(
          width: 150, height: 150,
          decoration: BoxDecoration(
-         color: Colors.grey[300],
+         color: AppColors.borderInput,
             borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
          ),
-         child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+         child: const Center(child: Icon(Icons.broken_image, color: AppColors.error)),
        );
      }
      
@@ -451,7 +452,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 imageUrl: imageUrl,
                 placeholder: (context, url) => Container(
                    width: 150, height: 150,
-                   color: Colors.grey[300],
+                   color: AppColors.borderInput,
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.center,
                      children: [
@@ -467,15 +468,15 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                  return Container(
                    width: 150, height: 150,
                    decoration: BoxDecoration(
-                     color: Colors.grey[200],
+                     color: AppColors.backgroundSecondary,
                      borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
                    ),
                    child: Column(
                      mainAxisAlignment: MainAxisAlignment.center,
                      children: [
-                       const Icon(Icons.broken_image, color: Colors.red, size: 40),
+                       const Icon(Icons.broken_image, color: AppColors.error, size: 40),
                        const SizedBox(height: 8),
-                       Text(AppLocalizations.of(context).chat_image_load_failed, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                       Text(AppLocalizations.of(context).chat_image_load_failed, style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
                        const SizedBox(height: 8),
                        // 重试按钮
                        ElevatedButton(
@@ -515,8 +516,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   Widget _buildAudioContent(BuildContext context, Color iconAndTextColor, bool isCurrentUser, String audioUrl) {
     // Determine icon color based on user (can be same as text or specific)
-    final Color effectiveIconColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
-    final Color effectiveTextColor = isCurrentUser ? Colors.black54 : Colors.black54; // Example: use greyish for both
+    final Color effectiveIconColor = isCurrentUser ? AppColors.textSecondary : AppColors.textSecondary; // Example: use greyish for both
+    final Color effectiveTextColor = isCurrentUser ? AppColors.textSecondary : AppColors.textSecondary; // Example: use greyish for both
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -553,7 +554,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 Container(
                   height: 3,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.borderInput,
                     borderRadius: BorderRadius.circular(1.5),
                   ),
                   child: FractionallySizedBox(
@@ -598,7 +599,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
    Widget _buildStatusIndicator(BuildContext context) {
     IconData iconData;
-    Color iconColor = Colors.grey;
+    Color iconColor = AppColors.textTertiary;
     double iconSize = 16.0;
 
     switch (widget.message.status) {
@@ -610,11 +611,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         break;
       case MessageStatus.failed:
         iconData = Icons.error_outline;
-        iconColor = Colors.red;
+        iconColor = AppColors.error;
         break;
       case MessageStatus.read:
         iconData = Icons.done_all;
-        iconColor = Colors.blue;
+        iconColor = AppColors.primary;
         break;
     }
 

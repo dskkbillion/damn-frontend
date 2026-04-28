@@ -196,7 +196,7 @@ class _EnhancedChatState extends State<EnhancedChat> {
     final status = message.metadata?['status'] as String?;
     
     IconData iconData;
-    Color iconColor = Colors.grey;
+    Color iconColor = AppColors.textTertiary;
     double iconSize = 14.0;
 
     switch (status) {
@@ -212,7 +212,7 @@ class _EnhancedChatState extends State<EnhancedChat> {
         break;
       case 'read':
         iconData = Icons.done_all;
-        iconColor = Colors.blue;
+        iconColor = AppColors.primary;
         break;
       default:
         iconData = Icons.done;
@@ -261,10 +261,10 @@ class _EnhancedChatState extends State<EnhancedChat> {
             bottom: 80.0,
             child: FloatingActionButton(
               mini: true,
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.backgroundCard,
               elevation: 4.0,
               onPressed: _scrollToBottom,
-              child: const Icon(Icons.arrow_downward, color: Colors.grey),
+              child: const Icon(Icons.arrow_downward, color: AppColors.textTertiary),
             ),
           ),
       ],
