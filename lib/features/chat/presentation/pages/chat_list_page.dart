@@ -324,8 +324,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
     final filteredRooms = <ChatRoom>[];
 
-    print("[ChatListPage] Starting filter with referId: $referId, appMode: $appMode, total rooms: ${chatRooms.length}");
-
     for (final room in chatRooms) {
       // 排除系统管理员聊天室
       if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
@@ -337,14 +335,28 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final isParticipant = room.participant1.id == referId || room.participant2.id == referId;
       if (!isParticipant) continue;
 
-      // 使用 ChatRoom 的 doctorId（卖家）和 memberId（买家）字段判断用户角色
+      // 判断当前用户在这个聊天室中的角色
+      // 优先使用 memberId/doctorId（API 新鲜数据），缓存数据可能为 null 则回退到 participant type
       bool shouldInclude = false;
-      if (appMode == AppMode.buyer) {
-        // 买家模式：只显示用户作为买家（memberId）的聊天
-        shouldInclude = room.memberId == referId;
-      } else if (appMode == AppMode.seller) {
-        // 卖家模式：只显示用户作为卖家（doctorId）的聊天
-        shouldInclude = room.doctorId == referId;
+      if (room.memberId != null && room.doctorId != null) {
+        // 有角色 ID：精确匹配
+        if (appMode == AppMode.buyer) {
+          shouldInclude = room.memberId == referId;
+        } else if (appMode == AppMode.seller) {
+          shouldInclude = room.doctorId == referId;
+        }
+      } else {
+        // 缓存回退：用 participant1（toEntity 中始终是当前用户）的 type 判断
+        // participant1.type == 'MEMBER' 表示当前用户是买家
+        // participant1.type == 'DOCTOR' 表示当前用户是卖家
+        final currentUserParticipant = room.participant1.id == referId
+            ? room.participant1
+            : room.participant2;
+        if (appMode == AppMode.buyer) {
+          shouldInclude = currentUserParticipant.type == 'MEMBER';
+        } else if (appMode == AppMode.seller) {
+          shouldInclude = currentUserParticipant.type == 'DOCTOR';
+        }
       }
 
       if (shouldInclude) {
@@ -352,7 +364,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       }
     }
 
-    print("[ChatListPage] App mode: $appMode, filtered ${filteredRooms.length} rooms");
     return filteredRooms;
   }
 

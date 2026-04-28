@@ -120,6 +120,8 @@ class ChatRoom extends Equatable {
       'productName': productName,
       'productImage': productImage,
       'productPrice': productPrice,
+      'doctorId': doctorId,
+      'memberId': memberId,
     };
   }
   
@@ -136,6 +138,8 @@ class ChatRoom extends Equatable {
       productName: json['productName'] as String?,
       productImage: json['productImage'] as String?,
       productPrice: (json['productPrice'] as num?)?.toDouble(),
+      doctorId: (json['doctorId'] as num?)?.toInt(),
+      memberId: (json['memberId'] as num?)?.toInt(),
     );
   }
   
