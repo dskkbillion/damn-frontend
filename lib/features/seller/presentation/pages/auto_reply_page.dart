@@ -250,7 +250,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         AppLocalizations.of(context).auto_reply_save_settings ?? 'Save Settings',
         style: const TextStyle(
           fontSize: 16,
-          color: Colors.white,
+          color: AppColors.onPrimary,
         ),
       ),
     );

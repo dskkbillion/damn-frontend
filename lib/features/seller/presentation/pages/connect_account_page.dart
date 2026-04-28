@@ -113,7 +113,7 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                 ),
@@ -140,13 +140,13 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: AppColors.warning.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.hourglass_top_rounded,
               size: 40,
-              color: Colors.orange.shade700,
+              color: AppColors.warning,
             ),
           ),
           const SizedBox(height: 24),
@@ -193,13 +193,13 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: AppColors.success.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.check_circle_outline,
               size: 40,
-              color: Colors.green.shade700,
+              color: AppColors.success,
             ),
           ),
           const SizedBox(height: 24),
@@ -247,14 +247,14 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             Icon(
               enabled ? Icons.check_circle : Icons.cancel,
               size: 18,
-              color: enabled ? Colors.green : AppColors.textTertiary,
+              color: enabled ? AppColors.success : AppColors.textTertiary,
             ),
             const SizedBox(width: 6),
             Text(
               enabled ? '已开通' : '未开通',
               style: TextStyle(
                 fontSize: 14,
-                color: enabled ? Colors.green : AppColors.textTertiary,
+                color: enabled ? AppColors.success : AppColors.textTertiary,
               ),
             ),
           ],

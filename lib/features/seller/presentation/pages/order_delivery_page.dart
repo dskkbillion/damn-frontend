@@ -210,7 +210,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
               context.read<OrderDeliveryBloc>().add(SubmitOrderDelivery());
             },
             style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onPrimary,
               backgroundColor: AppColors.success,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),

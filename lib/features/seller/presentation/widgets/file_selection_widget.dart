@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:path/path.dart' as path;
 
@@ -55,8 +56,8 @@ class FileSelectionWidget extends StatelessWidget {
             icon: const Icon(Icons.attach_file),
             label: Text(AppLocalizations.of(context).seller_file_select ?? 'Select File'),
             style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
+              foregroundColor: AppColors.onPrimary,
+              backgroundColor: AppColors.primary,
             ),
           ),
         
@@ -93,7 +94,7 @@ class FileSelectionWidget extends StatelessWidget {
                   ),
                   trailing: !disabled
                       ? IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
+                          icon: const Icon(Icons.delete, color: AppColors.error),
                           onPressed: () => onFileRemoved(index),
                         )
                       : null,
@@ -123,11 +124,11 @@ class FileSelectionWidget extends StatelessWidget {
       case '.gif':
       case '.bmp':
         iconData = Icons.image;
-        iconColor = Colors.blue;
+        iconColor = AppColors.primary;
         break;
       case '.pdf':
         iconData = Icons.picture_as_pdf;
-        iconColor = Colors.red;
+        iconColor = AppColors.error;
         break;
       case '.doc':
       case '.docx':
@@ -137,16 +138,16 @@ class FileSelectionWidget extends StatelessWidget {
       case '.xls':
       case '.xlsx':
         iconData = Icons.table_chart;
-        iconColor = Colors.green;
+        iconColor = AppColors.success;
         break;
       case '.ppt':
       case '.pptx':
         iconData = Icons.slideshow;
-        iconColor = Colors.orange;
+        iconColor = AppColors.warning;
         break;
       case '.txt':
         iconData = Icons.text_snippet;
-        iconColor = Colors.grey;
+        iconColor = AppColors.textTertiary;
         break;
       case '.zip':
       case '.rar':
@@ -156,7 +157,7 @@ class FileSelectionWidget extends StatelessWidget {
         break;
       default:
         iconData = Icons.insert_drive_file;
-        iconColor = Colors.grey;
+        iconColor = AppColors.textTertiary;
     }
     
     return Container(

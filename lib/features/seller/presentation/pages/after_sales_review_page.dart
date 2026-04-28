@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
@@ -251,7 +252,7 @@ class _RefundCard extends StatelessWidget {
                             errorBuilder: (_, __, ___) => Container(
                               width: 80,
                               height: 80,
-                              color: Colors.grey[300],
+                              color: AppColors.borderInput,
                               child: const Icon(Icons.broken_image),
                             ),
                           ),
@@ -282,7 +283,7 @@ class _RefundCard extends StatelessWidget {
                     onPressed: () => _showConfirmDialog(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.onPrimary,
                     ),
                     child: Text(AppLocalizations.of(context).after_sales_agree ?? 'Approve'),
                   ),
@@ -313,7 +314,7 @@ class _RefundCard extends StatelessWidget {
           child: Text(
             '$label:',
             style: textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ),
         ),
@@ -345,20 +346,20 @@ class _RefundCard extends StatelessWidget {
   Color _getStateColor(OrderRefundState state) {
     switch (state) {
       case OrderRefundState.waitAudit:
-        return Colors.amber;
+        return AppColors.warning;
       case OrderRefundState.auditPass:
-        return Colors.green;
+        return AppColors.success;
       case OrderRefundState.refused:
-        return Colors.red;
+        return AppColors.error;
       case OrderRefundState.buyerShip:
       case OrderRefundState.sellerReceived:
-        return Colors.blue;
+        return AppColors.primary;
       case OrderRefundState.finished:
-        return Colors.teal;
+        return AppColors.success;
       case OrderRefundState.canceled:
-        return Colors.grey;
+        return AppColors.textTertiary;
       default:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
   

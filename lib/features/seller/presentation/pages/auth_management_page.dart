@@ -205,7 +205,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
             ),
             child: Icon(
               _getAuthTypeIcon(auth.type),
-              color: Colors.white,
+              color: AppColors.onPrimary,
               size: 28,
             ),
           ),

@@ -510,7 +510,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
+                                  strokeWidth: 2, color: AppColors.onPrimary),
                             )
                           : const Text('同意退款'),
                     ),
@@ -787,7 +787,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                   errorBuilder: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
-                    color: Colors.grey[300],
+                    color: AppColors.borderInput,
                     child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

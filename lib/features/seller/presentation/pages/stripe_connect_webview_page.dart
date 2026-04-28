@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -138,7 +139,7 @@ class _StripeConnectWebViewPageState extends State<StripeConnectWebViewPage> {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                 ),
               ),
             ),
