@@ -29,11 +29,62 @@ class ChatRoutes {
   // Private constructor to prevent instantiation
   ChatRoutes._();
 
-  // Base path for chat module routes (optional, can be useful)
-  // static const String baseChatPath = '/chat';
-
   // Expose the routes list via a static getter
   static List<RouteBase> get routes => _routes;
+
+  /// 聊天室子路由（可复用于买家/卖家 Shell）
+  /// [namePrefix] 用于区分路由名称，避免 GoRouter name 冲突
+  static List<RouteBase> chatRoomSubRoutes({String namePrefix = ''}) => [
+    GoRoute(
+      path: ':chatId',
+      name: '${namePrefix}chatRoom',
+      builder: (context, state) {
+        final chatIdString = state.pathParameters['chatId'];
+        final chatId = int.tryParse(chatIdString ?? '');
+
+        if (chatId == null || chatId == 0) {
+          AppLogger.d("Error: Invalid or missing chatId: $chatIdString");
+          return Scaffold(
+              appBar: AppBar(title: const Text("Error")),
+              body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
+        }
+
+        return BlocProvider(
+          create: (_) {
+            final chatMessagesBloc = ChatMessagesBloc(
+              chatId: chatId,
+              getMessageList: sl<GetMessageList>(),
+              sendMessage: sl<SendMessage>(),
+              revokeMessage: sl<RevokeMessage>(),
+              getChatRoomDetails: sl<GetChatRoomDetails>(),
+              deleteChatMessage: sl<DeleteChatMessage>(),
+              userRepository: sl<IUserRepository>(),
+              webSocketDataSource: sl<IChatWebSocketDataSource>(),
+            );
+
+            chatMessagesBloc.onNewMessageReceived = (newMessage) {
+              AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
+              try {
+                if (sl.isRegistered<ChatListBloc>()) {
+                  final chatListBloc = sl<ChatListBloc>();
+                  chatListBloc.add(UpdateChatRoomLastMessage(
+                    chatId: chatId,
+                    lastMessage: newMessage,
+                  ));
+                }
+              } catch (e) {
+                AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
+              }
+            };
+
+            chatMessagesBloc.add(LoadChatMessages(chatId));
+            return chatMessagesBloc;
+          },
+          child: ChatRoomPage(chatId: chatId),
+        );
+      },
+    ),
+  ];
 
   // Define the actual routes for the chat module
   static final List<RouteBase> _routes = [
@@ -51,71 +102,8 @@ class ChatRoutes {
       },
       // Define nested routes starting from /chat
       routes: [
-        GoRoute(
-          path: ':chatId', // Relative path, becomes /chat/:chatId
-          name: 'chatRoom', // Optional name
-          builder: (context, state) {
-            // Extract chatId from the path parameters
-            final chatIdString = state.pathParameters['chatId'];
-            final chatId = int.tryParse(chatIdString ?? '');
-
-            // Validate chatId - Robust error handling is crucial here
-            if (chatId == null || chatId == 0) {
-              // Option 1: Show an error page
-              // return ErrorPageWidget(message: "Invalid Chat ID: $chatIdString");
-
-              // Option 2: Redirect back to chat list (or home)
-              // WidgetsBinding.instance.addPostFrameCallback((_) {
-              //   context.goNamed('chatList'); // Or context.go('/');
-              // });
-              // return const Scaffold(body: Center(child: CircularProgressIndicator())); // Show loading while redirecting
-
-              // Option 3: Show a simple error directly (less user-friendly for invalid IDs)
-              AppLogger.d("Error: Invalid or missing chatId: $chatIdString");
-              return Scaffold(
-                  appBar: AppBar(title: const Text("Error")),
-                  body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
-            }
-
-            // 直接创建ChatMessagesBloc并设置新消息回调
-            return BlocProvider(
-              create: (_) {
-                final chatMessagesBloc = ChatMessagesBloc(
-                  chatId: chatId,
-                  getMessageList: sl<GetMessageList>(),
-                  sendMessage: sl<SendMessage>(),
-                  revokeMessage: sl<RevokeMessage>(),
-                  getChatRoomDetails: sl<GetChatRoomDetails>(),
-                  deleteChatMessage: sl<DeleteChatMessage>(),
-                  userRepository: sl<IUserRepository>(),
-                  webSocketDataSource: sl<IChatWebSocketDataSource>(),
-                );
-
-                // 设置WebSocket消息回调以更新本地聊天列表
-                chatMessagesBloc.onNewMessageReceived = (newMessage) {
-                  AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
-                  try {
-                    // 尝试从 GetIt 获取 ChatListBloc
-                    if (sl.isRegistered<ChatListBloc>()) {
-                      final chatListBloc = sl<ChatListBloc>();
-                      chatListBloc.add(UpdateChatRoomLastMessage(
-                        chatId: chatId,
-                        lastMessage: newMessage,
-                      ));
-                      AppLogger.d('[ChatRoutes] Updated chat list with new WebSocket message');
-                    }
-                  } catch (e) {
-                    AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
-                  }
-                };
-
-                chatMessagesBloc.add(LoadChatMessages(chatId));
-                return chatMessagesBloc;
-              },
-              child: ChatRoomPage(chatId: chatId), // Pass chatId to the page widget
-            );
-          },
-        ),
+        // 复用共享的聊天室子路由
+        ...chatRoomSubRoutes(),
         // New refactored chat room route
         GoRoute(
           path: 'refactored/:chatId', // Relative path, becomes /chat/refactored/:chatId

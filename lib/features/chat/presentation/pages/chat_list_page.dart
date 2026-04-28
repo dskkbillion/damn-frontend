@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // 添加Riverpod导入
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart'; // 添加导入
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
@@ -30,15 +31,42 @@ class ChatListPage extends ConsumerStatefulWidget { // 改为ConsumerStatefulWid
 class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加用户身份状态
   String? _currentUserType; // 'MEMBER' 或 'DOCTOR'
-  
+
   // 添加Future存储变量，避免在每次build时创建新的Future
   late Future<int?> _referIdFuture;
-  
+
+  // 混合模式状态：false=按身份分类显示，true=显示所有聊天
+  bool _isMixedMode = false;
+
   @override
   void initState() {
     super.initState();
     // 在initState中初始化Future，只执行一次
     _referIdFuture = _getReferIdFromStorage();
+    // 从本地存储读取混合模式设置
+    _loadMixedModeSetting();
+  }
+
+  // 加载混合模式设置
+  Future<void> _loadMixedModeSetting() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _isMixedMode = prefs.getBool('chat_mixed_mode') ?? false;
+      });
+    } catch (e) {
+      print('[ChatListPage] Error loading mixed mode setting: $e');
+    }
+  }
+
+  // 保存混合模式设置
+  Future<void> _saveMixedModeSetting(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('chat_mixed_mode', value);
+    } catch (e) {
+      print('[ChatListPage] Error saving mixed mode setting: $e');
+    }
   }
   
   // 添加获取referId的方法
@@ -151,9 +179,48 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       appBar: AppBar(
         title: Text(s.chat_list_title),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black, 
-        elevation: 0.5, 
+        foregroundColor: Colors.black,
+        elevation: 0.5,
         shadowColor: Colors.grey[300],
+        actions: [
+          TextButton.icon(
+            icon: Icon(
+              _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
+              color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+              size: 20,
+            ),
+            label: Text(
+              _isMixedMode
+                  ? s.chat_filter_all
+                  : (currentAppMode == AppMode.buyer
+                      ? s.chat_filter_buyer
+                      : s.chat_filter_seller),
+              style: TextStyle(
+                color: _isMixedMode ? Colors.grey : Theme.of(context).primaryColor,
+                fontSize: 14,
+              ),
+            ),
+            onPressed: () {
+              setState(() {
+                _isMixedMode = !_isMixedMode;
+              });
+              _saveMixedModeSetting(_isMixedMode);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isMixedMode
+                        ? s.chat_filter_mode_all
+                        : (currentAppMode == AppMode.buyer
+                            ? s.chat_filter_mode_buyer
+                            : s.chat_filter_mode_seller),
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       // 使用FutureBuilder获取referId
       body: FutureBuilder<int?>(
@@ -183,8 +250,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               if (state.navigateToChatId != null) {
                 final chatId = state.navigateToChatId!;
                 print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
-                // Navigate to ChatRoomPage using GoRouter
-                context.push('/chat/$chatId').then((result) {
+                context.push(_chatRoomPath(chatId)).then((result) {
                    // Reset navigation trigger in Bloc state after navigation
                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
                    // Remove the RefreshChatList since we now update unread count directly
@@ -203,8 +269,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 } else if (state.status == ChatListStatus.failure) {
                   return _buildSystemItemsOnly(context, referId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
-                  // 使用referId和应用模式进行数据匹配
-                  final filteredRooms = _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
+                  // 根据混合模式决定是否筛选
+                  final filteredRooms = _isMixedMode
+                      ? _filterChatRoomsForMixedMode(state.chatRooms, referId)
+                      : _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
                   
                   return _buildChatListView(context, filteredRooms, currentAppMode, referId);
                 } else {
@@ -219,59 +287,72 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
   }
   
+  // 根据当前路由前缀决定聊天室路径
+  String _chatRoomPath(int chatId) {
+    // 卖家模式下使用 /seller/chat/:chatId，买家模式下使用 /chat/:chatId
+    final currentPath = GoRouterState.of(context).matchedLocation;
+    final prefix = currentPath.startsWith('/seller') ? '/seller/chat' : '/chat';
+    return '$prefix/$chatId';
+  }
+
   // 提取导航逻辑到单独方法
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
-    // Navigate to ChatRoomPage using GoRouter
-    context.push('/chat/${chatRoom.id}');
+    context.push(_chatRoomPath(chatRoom.id));
   }
   
-  // 新的筛选方法：根据应用模式筛选聊天室，同时排除系统管理员聊天室
-  List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
+  // 混合模式筛选：显示所有当前用户参与的聊天，不区分身份
+  List<ChatRoom> _filterChatRoomsForMixedMode(List<ChatRoom> chatRooms, int referId) {
     final filteredRooms = <ChatRoom>[];
-    
-    print("[ChatListPage] Starting filter with referId: $referId, appMode: $appMode, total rooms: ${chatRooms.length}");
-    
+
     for (final room in chatRooms) {
-      print("[ChatListPage] Checking room ${room.id}:");
-      print("  - participant1: type=${room.participant1.type}, referId=${room.participant1.referId}, name=${room.participant1.nickName}");
-      print("  - participant2: type=${room.participant2.type}, referId=${room.participant2.referId}, name=${room.participant2.nickName}");
-      
-      // 检查是否是系统管理员聊天室
-      bool isAdminChat = false;
+      // 排除系统管理员聊天室
       if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
           (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
-        isAdminChat = true;
-        print("[ChatListPage] 🚫 Skipping admin chat room ${room.id} - will be shown in system items");
-      }
-      
-      // 排除系统管理员聊天室
-      if (isAdminChat) {
         continue;
       }
-      
-      // 检查当前用户是否是这个聊天室的参与者（不管是participant1还是participant2）
-      bool isParticipant = false;
-      
-      // participant.id = CommonUser.id = commonUserId（后端保证）
-      // referId 变量存的是 commonUserId（从 SecureStorage 的 refer_id 键读取）
-      if (room.participant1.id == referId) {
-        isParticipant = true;
-        _currentUserType = room.participant1.type; // 记录当前用户类型
-        print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant1.type}, opponent: ${room.participant2.nickName}");
-      } else if (room.participant2.id == referId) {
-        isParticipant = true;
-        _currentUserType = room.participant2.type; // 记录当前用户类型
-        print("[ChatListPage] ✅ Found chat room: ${room.id}, current user is ${room.participant2.type}, opponent: ${room.participant1.nickName}");
-      } else {
-        print("[ChatListPage] ❌ No match for commonUserId $referId in room ${room.id}");
-      }
-      
-      if (isParticipant) {
+
+      // 检查当前用户是否是参与者（使用id匹配，不管什么身份）
+      if (room.participant1.id == referId || room.participant2.id == referId) {
         filteredRooms.add(room);
       }
     }
-    
-    print("[ChatListPage] App mode: $appMode, User type detected: $_currentUserType, filtered ${filteredRooms.length} rooms (admin chats excluded)");
+
+    return filteredRooms;
+  }
+
+  // 根据应用模式筛选聊天室：买家模式只显示用户作为买家的聊天，卖家模式只显示用户作为卖家的聊天
+  List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
+    final filteredRooms = <ChatRoom>[];
+
+    print("[ChatListPage] Starting filter with referId: $referId, appMode: $appMode, total rooms: ${chatRooms.length}");
+
+    for (final room in chatRooms) {
+      // 排除系统管理员聊天室
+      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
+          (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
+        continue;
+      }
+
+      // 先判断用户是否是这个聊天室的参与者
+      final isParticipant = room.participant1.id == referId || room.participant2.id == referId;
+      if (!isParticipant) continue;
+
+      // 使用 ChatRoom 的 doctorId（卖家）和 memberId（买家）字段判断用户角色
+      bool shouldInclude = false;
+      if (appMode == AppMode.buyer) {
+        // 买家模式：只显示用户作为买家（memberId）的聊天
+        shouldInclude = room.memberId == referId;
+      } else if (appMode == AppMode.seller) {
+        // 卖家模式：只显示用户作为卖家（doctorId）的聊天
+        shouldInclude = room.doctorId == referId;
+      }
+
+      if (shouldInclude) {
+        filteredRooms.add(room);
+      }
+    }
+
+    print("[ChatListPage] App mode: $appMode, filtered ${filteredRooms.length} rooms");
     return filteredRooms;
   }
 

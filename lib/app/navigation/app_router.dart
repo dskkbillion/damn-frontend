@@ -298,6 +298,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           source: 'app_navigation_seller_shell',
         );
       },
+      // 卖家模式下的聊天室子路由，复用 ChatRoutes 共享逻辑
+      routes: ChatRoutes.chatRoomSubRoutes(namePrefix: 'seller_'),
   );
   
   // 定义卖家主页路由
