@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,10 @@ import '../../../../app/app_mode.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
+import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 
 class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
@@ -27,15 +33,58 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   // 卖家模式开关
   bool _sellerModeOn = true;
 
+  // 卖家在线状态（默认在线，从API加载后更新）
+  bool _isOnline = true;
+
+  // 事件总线订阅
+  StreamSubscription<SellerOnlineStatusChangedEvent>? _onlineStatusSubscription;
+
   @override
   void initState() {
     super.initState();
     AppLogger.d('[SellerProfilePage] initState called');
+
+    // 从API加载初始在线状态
+    _loadOnlineStatus();
+
+    // 监听在线状态变更事件（来自时间管理页面的切换）
+    _onlineStatusSubscription = EventBus().sellerOnlineStatusChangedStream.listen((event) {
+      if (mounted) {
+        setState(() {
+          _isOnline = event.isOnline;
+        });
+        AppLogger.d('[SellerProfilePage] Online status updated via EventBus: ${event.isOnline}');
+      }
+    });
+  }
+
+  /// 从API加载卖家的初始在线状态
+  Future<void> _loadOnlineStatus() async {
+    try {
+      final getTimeSettingsUseCase = GetIt.instance<GetTimeSettingsUseCase>();
+      final result = await getTimeSettingsUseCase(NoParams());
+      result.fold(
+        (failure) {
+          AppLogger.d('[SellerProfilePage] Failed to load online status: ${failure.message}');
+        },
+        (settings) {
+          if (mounted) {
+            setState(() {
+              _isOnline = settings.isOnline;
+            });
+            AppLogger.d('[SellerProfilePage] Initial online status loaded: ${settings.isOnline}');
+          }
+        },
+      );
+    } catch (e) {
+      AppLogger.d('[SellerProfilePage] Error loading online status: $e');
+    }
   }
 
   @override
   void dispose() {
     AppLogger.d('[SellerProfilePage] dispose called');
+    _onlineStatusSubscription?.cancel();
     super.dispose();
   }
 
@@ -98,7 +147,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                             _buildMenuSection('收款账户', Icons.account_balance_outlined, '',
                               onTap: () => context.push('/seller/connect-account'),
                             ),
-                            _buildMenuSection(AppLocalizations.of(context).seller_profile_time_management, Icons.access_time_outlined, ''),
+                            _buildMenuSection(AppLocalizations.of(context).seller_profile_time_management, Icons.access_time_outlined, '',
+                              onTap: () => context.push(SellerRoutes.timeManagement),
+                            ),
                             const SizedBox(height: 10),
                             _buildSectionTitle(AppLocalizations.of(context).seller_profile_settings),
                             _buildMenuSection(
@@ -211,12 +262,28 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                       ),
-                      child: Text(
-                        AppLocalizations.of(context).seller_profile_seller_mode_online,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: _isOnline ? AppColors.success : AppColors.textTertiary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isOnline
+                                ? AppLocalizations.of(context).seller_profile_seller_mode_online
+                                : AppLocalizations.of(context).seller_profile_seller_mode_offline,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

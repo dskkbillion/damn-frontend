@@ -948,6 +948,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Chế độ người bán: Trực tuyến';
 
   @override
+  String get seller_profile_seller_mode_offline =>
+      'Chế độ người bán: Ngoại tuyến';
+
+  @override
   String get seller_profile_seller_mode => 'Chế độ người bán';
 
   @override

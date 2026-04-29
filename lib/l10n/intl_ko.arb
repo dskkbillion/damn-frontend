@@ -534,6 +534,7 @@
     "seller_profile_mission": "우리의 사명",
     "seller_profile_user_name": "Ray",
     "seller_profile_seller_mode_online": "판매자 모드: 온라인",
+    "seller_profile_seller_mode_offline": "판매자 모드: 오프라인",
     "seller_profile_seller_mode": "판매자 모드",
     "seller_profile_buyer_mode": "구매자 모드",
     "seller_profile_my_orders": "내 주문",

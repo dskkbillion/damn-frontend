@@ -542,6 +542,7 @@
     "seller_profile_mission": "アシスタントのミッション",
     "seller_profile_user_name": "ユーザー",
     "seller_profile_seller_mode_online": "出品者モード：オンライン",
+    "seller_profile_seller_mode_offline": "出品者モード：オフライン",
     "seller_profile_seller_mode": "出品者モード",
     "seller_profile_buyer_mode": "購入者モード",
     "seller_profile_my_orders": "注文管理",

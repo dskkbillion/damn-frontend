@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/usecases/update_tim
 import 'package:equatable/equatable.dart';
 import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 
 part 'time_management_event.dart';
 part 'time_management_state.dart';
@@ -78,6 +79,10 @@ class TimeManagementBloc extends Bloc<TimeManagementEvent, TimeManagementState> 
     result.fold(
       (failure) => emit(TimeManagementError(failure.message)),
       (success) {
+        // 通过事件总线通知其他页面（如卖家主页）在线状态已变更
+        EventBus().fireSellerOnlineStatusChangedEvent(
+          SellerOnlineStatusChangedEvent(isOnline: event.isOnline),
+        );
         // 更新成功后重新获取时间设置
         add(LoadTimeSettings());
       },

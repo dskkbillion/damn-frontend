@@ -920,6 +920,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seller_profile_seller_mode_online => '卖家模式：在线';
 
   @override
+  String get seller_profile_seller_mode_offline => '卖家模式：离线';
+
+  @override
   String get seller_profile_seller_mode => '卖家模式';
 
   @override

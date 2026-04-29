@@ -945,6 +945,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_profile_seller_mode_online => 'Seller Mode: Online';
 
   @override
+  String get seller_profile_seller_mode_offline => 'Seller Mode: Offline';
+
+  @override
   String get seller_profile_seller_mode => 'Seller Mode';
 
   @override

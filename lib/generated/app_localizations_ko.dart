@@ -926,6 +926,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get seller_profile_seller_mode_online => '판매자 모드: 온라인';
 
   @override
+  String get seller_profile_seller_mode_offline => '판매자 모드: 오프라인';
+
+  @override
   String get seller_profile_seller_mode => '판매자 모드';
 
   @override

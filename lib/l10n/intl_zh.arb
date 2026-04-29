@@ -542,6 +542,7 @@
     "seller_profile_mission": "小粽子的使命",
     "seller_profile_user_name": "瑞",
     "seller_profile_seller_mode_online": "卖家模式：在线",
+    "seller_profile_seller_mode_offline": "卖家模式：离线",
     "seller_profile_seller_mode": "卖家模式",
     "seller_profile_buyer_mode": "买家模式",
     "seller_profile_my_orders": "我的订单",

@@ -542,6 +542,7 @@
     "seller_profile_mission": "Mission",
     "seller_profile_user_name": "Ray",
     "seller_profile_seller_mode_online": "Seller Mode: Online",
+    "seller_profile_seller_mode_offline": "Seller Mode: Offline",
     "seller_profile_seller_mode": "Seller Mode",
     "seller_profile_buyer_mode": "Buyer Mode",
     "seller_profile_my_orders": "My Orders",

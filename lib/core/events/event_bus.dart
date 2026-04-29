@@ -85,6 +85,15 @@ class LocaleChangedEvent {
   LocaleChangedEvent({required this.languageCode});
 }
 
+/// 卖家在线状态变更事件，用于跨页面同步在线/离线状态
+class SellerOnlineStatusChangedEvent {
+  /// 新的在线状态
+  final bool isOnline;
+
+  /// 构造函数
+  SellerOnlineStatusChangedEvent({required this.isOnline});
+}
+
 /// 事件总线单例类，负责全局消息事件的分发
 class EventBus {
   /// 私有构造函数
@@ -108,6 +117,9 @@ class EventBus {
   /// 语言切换事件的广播控制器
   final _localeChangedStreamController = StreamController<LocaleChangedEvent>.broadcast();
 
+  /// 卖家在线状态变更事件的广播控制器
+  final _sellerOnlineStatusChangedStreamController = StreamController<SellerOnlineStatusChangedEvent>.broadcast();
+
   /// 消息事件流
   Stream<ChatMessageEvent> get messageStream => _messageStreamController.stream;
 
@@ -119,6 +131,9 @@ class EventBus {
 
   /// 语言切换事件流
   Stream<LocaleChangedEvent> get localeChangedStream => _localeChangedStreamController.stream;
+
+  /// 卖家在线状态变更事件流
+  Stream<SellerOnlineStatusChangedEvent> get sellerOnlineStatusChangedStream => _sellerOnlineStatusChangedStreamController.stream;
 
   /// 发送一个聊天消息事件
   void fireChatMessageEvent(ChatMessageEvent event) {
@@ -140,11 +155,17 @@ class EventBus {
     _localeChangedStreamController.add(event);
   }
 
+  /// 发送一个卖家在线状态变更事件
+  void fireSellerOnlineStatusChangedEvent(SellerOnlineStatusChangedEvent event) {
+    _sellerOnlineStatusChangedStreamController.add(event);
+  }
+
   /// 关闭事件总线
   void dispose() {
     _messageStreamController.close();
     _chatListUpdateStreamController.close();
     _evaluationSubmittedStreamController.close();
     _localeChangedStreamController.close();
+    _sellerOnlineStatusChangedStreamController.close();
   }
 } 

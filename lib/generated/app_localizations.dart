@@ -1796,6 +1796,12 @@ abstract class AppLocalizations {
   /// **'卖家模式：在线'**
   String get seller_profile_seller_mode_online;
 
+  /// No description provided for @seller_profile_seller_mode_offline.
+  ///
+  /// In zh, this message translates to:
+  /// **'卖家模式：离线'**
+  String get seller_profile_seller_mode_offline;
+
   /// No description provided for @seller_profile_seller_mode.
   ///
   /// In zh, this message translates to:

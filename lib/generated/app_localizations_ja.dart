@@ -926,6 +926,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get seller_profile_seller_mode_online => '出品者モード：オンライン';
 
   @override
+  String get seller_profile_seller_mode_offline => '出品者モード：オフライン';
+
+  @override
   String get seller_profile_seller_mode => '出品者モード';
 
   @override
