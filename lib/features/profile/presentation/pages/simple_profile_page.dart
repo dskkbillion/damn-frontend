@@ -199,7 +199,10 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       widget.onSwitchMode!();
                     }
                   },
-                  activeThumbColor: AppColors.success,
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) return AppColors.success;
+                    return null;
+                  }),
                 ),
               ],
             ),

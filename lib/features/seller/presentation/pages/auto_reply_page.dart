@@ -153,7 +153,10 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
             Switch(
               value: settings.isEnabled,
-              activeThumbColor: AppColors.success,
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) return AppColors.success;
+                return null;
+              }),
               onChanged: isUpdating 
                   ? null 
                   : (value) {

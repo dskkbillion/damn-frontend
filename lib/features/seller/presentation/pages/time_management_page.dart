@@ -173,7 +173,10 @@ class TimeManagementBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Switch(
                   value: settings.isOnline,
-                  activeThumbColor: AppColors.success,
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) return AppColors.success;
+                    return null;
+                  }),
                   onChanged: isUpdating 
                       ? null 
                       : (value) {

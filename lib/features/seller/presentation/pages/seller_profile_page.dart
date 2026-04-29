@@ -258,11 +258,14 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   child: Switch(
                     value: _sellerModeOn,
                     onChanged: null, // 禁用Switch的自动状态变化
-                    activeThumbColor: Theme.of(context).colorScheme.primary,
-                    activeTrackColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                    // 保持Switch可交互的视觉样式
-                    inactiveThumbColor: AppColors.textTertiary,
-                    inactiveTrackColor: AppColors.borderInput,
+                    thumbColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
+                      return AppColors.textTertiary;
+                    }),
+                    trackColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary.withOpacity(0.5);
+                      return AppColors.borderInput;
+                    }),
                   ),
                 ),
               ],
