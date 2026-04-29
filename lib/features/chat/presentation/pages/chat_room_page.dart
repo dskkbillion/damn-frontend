@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_me
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message_input_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/chat_constants.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -39,7 +40,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   static const double _scrollThreshold = 50.0; // 滚动阈值
   // 添加分页加载参数
   int _pageNum = 1;
-  final int _pageSize = 20;
+  final int _pageSize = ChatConstants.defaultPageSize;
   bool _isLoadingMore = false;
   bool _hasMoreMessages = true;
 

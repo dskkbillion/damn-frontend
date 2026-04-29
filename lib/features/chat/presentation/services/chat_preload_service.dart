@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 
 /// Service for preloading chat images to improve performance
 class ChatPreloadService {
@@ -116,7 +117,7 @@ class ChatPreloadService {
     final imageUrls = <String>[];
     
     for (final message in messages) {
-      if (message.type == 'image' && message.context.isNotEmpty) {
+      if (message.type == ChatMessageType.image && message.context.isNotEmpty) {
         // Parse image URL from context
         final imageUrl = _parseImageUrl(message.context);
         if (imageUrl != null && !_preloadedUrls.contains(imageUrl)) {

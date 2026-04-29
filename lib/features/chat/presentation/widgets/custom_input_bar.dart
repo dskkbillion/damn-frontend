@@ -16,6 +16,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 
 /// 文件上传进度对话框
 class _UploadProgressDialog extends StatelessWidget {
@@ -222,7 +223,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           // Use MessageListCubit to handle audio with file upload
           context.read<MessageListCubit>().sendFileMessage(
             filePath: path,
-            fileType: 'audio',
+            fileType: ChatMessageType.audio,
           );
         }
       }

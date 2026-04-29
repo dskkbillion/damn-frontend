@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
@@ -63,7 +64,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
     });
 
     final repository = getIt<IOrderRepository>();
-    final isSellerView = widget.chatRoom.participant1.type == 'DOCTOR';
+    final isSellerView = widget.chatRoom.participant1.type == ParticipantType.doctor;
     final result = await repository.getOrderList(
       productId: productId,
       page: 1,
@@ -146,7 +147,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
   }
 
   void _openOrder(Order order) {
-    final isSellerView = widget.chatRoom.participant1.type == 'DOCTOR';
+    final isSellerView = widget.chatRoom.participant1.type == ParticipantType.doctor;
     final route = _resolveTargetRoute(order, isSellerView: isSellerView);
     context.push(route);
   }
@@ -230,7 +231,7 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
 
     final latestOrder = _orders.first;
     final multipleOrders = _orders.length > 1;
-    final isSellerView = widget.chatRoom.participant1.type == 'DOCTOR';
+    final isSellerView = widget.chatRoom.participant1.type == ParticipantType.doctor;
     final statusText = OrderStatusMapper.getSimplifiedStatusText(
       latestOrder.state,
       isSellerView: isSellerView,

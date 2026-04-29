@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dar
 import 'package:dskk_flutter_refactor/core/services/global_websocket_manager.dart'; // Import GlobalWebSocketManager
 // 导入我们新创建的MockUserRepository
 import 'package:dskk_flutter_refactor/features/chat/data/repositories/mocks/mock_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 
 // Interfaces
 import '../domain/repositories/i_chat_repository.dart';
@@ -90,15 +91,15 @@ class ChatUserRepositoryImpl implements IUserRepository {
       
       // 读取用户类型（从AppMode或者存储中获取）
       final appMode = await _secureStorage.read(key: 'app_mode');
-      String userType = 'MEMBER'; // 默认值
-      
+      String userType = ParticipantType.member; // 默认值
+
       // 根据appMode判断用户类型
       // 如果是seller模式，用户类型应该是DOCTOR
       // 如果是buyer模式，用户类型应该是MEMBER
       if (appMode == 'seller') {
-        userType = 'DOCTOR';
+        userType = ParticipantType.doctor;
       } else if (appMode == 'buyer') {
-        userType = 'MEMBER';
+        userType = ParticipantType.member;
       }
       
       // 调试：检查auth_token是否存在

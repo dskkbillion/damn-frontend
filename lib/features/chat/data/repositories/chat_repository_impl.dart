@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart'; // Needed for currentUserId
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/chat_constants.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_repository.dart';
 
 // Correct import for Interface using package path
@@ -57,7 +58,7 @@ class ChatRepositoryImpl implements IChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = ChatConstants.defaultPageSize}) async {
     // TODO: Implement getMessages similar to getChatRooms
     // Need to fetch current user ID to pass to toEntity
     try {

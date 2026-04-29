@@ -41,7 +41,7 @@ class SendMessageRequested extends ChatMessagesEvent {
   final File? file; // Required if type is 'image' or 'audio'
 
   const SendMessageRequested({required this.type, this.text, this.file})
-      : assert(type == 'text' ? text != null : file != null);
+      : assert(type == ChatMessageType.text ? text != null : file != null);
 
   @override
   List<Object?> get props => [type, text, file];

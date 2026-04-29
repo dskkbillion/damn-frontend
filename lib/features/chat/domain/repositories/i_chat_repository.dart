@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart'; // Assuming Failure is in core
+import '../constants/chat_constants.dart';
 import '../entities/chat_message.dart';
 import '../entities/chat_room.dart';
 
@@ -8,10 +9,10 @@ import '../entities/chat_room.dart';
 abstract class IChatRepository {
   /// Retrieves the list of chat rooms for the current user.
   Future<Either<Failure, List<ChatRoom>>> getChatRooms();
-  
+
   /// Fetches the list of messages for a specific chat room.
   /// Implementations should handle marking messages as read implicitly.
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20});
+  Future<Either<Failure, List<ChatMessage>>> getMessages(int chatId, {int pageNum = 1, int pageSize = ChatConstants.defaultPageSize});
 
   /// Fetches details for a specific chat room.
   Future<Either<Failure, ChatRoom>> getRoomDetails(int chatId);

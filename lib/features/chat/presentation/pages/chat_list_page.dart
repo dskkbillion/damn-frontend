@@ -19,6 +19,9 @@ import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
 import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
+import '../../domain/constants/chat_constants.dart';
+import '../../domain/constants/participant_type.dart';
+import '../../domain/constants/message_type.dart';
 
 final sl = GetIt.instance; // Get GetIt instance
 
@@ -102,7 +105,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       id: 2, // 使用不同于系统管理员的ID
       referId: 2, // 使用不同于系统管理员的referId
       nickName: s.chat_notification_center,
-      type: 'NOTIFICATION',
+      type: ParticipantType.notification,
       avatar: null, // 可以添加特定图标
     );
     
@@ -111,7 +114,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       id: -1,
       referId: currentUserId,
       nickName: 'Me',
-      type: 'MEMBER',
+      type: ParticipantType.member,
     );
     
     // 创建假的聊天室对象，与系统管理员类似
@@ -126,7 +129,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         chatId: -2,
         senderId: 2,
         context: s.chat_notification_description,
-        type: 'text',
+        type: ChatMessageType.text,
         createTime: DateTime.now(),
         withdrawFlag: false,
       ),
@@ -307,8 +310,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
     for (final room in chatRooms) {
       // 排除系统管理员聊天室
-      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
-          (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
+      if ((room.participant1.type == ParticipantType.admin && room.participant1.referId == ChatConstants.adminReferId) ||
+          (room.participant2.type == ParticipantType.admin && room.participant2.referId == ChatConstants.adminReferId)) {
         continue;
       }
 
@@ -327,8 +330,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
     for (final room in chatRooms) {
       // 排除系统管理员聊天室
-      if ((room.participant1.type == 'ADMIN' && room.participant1.referId == 0) ||
-          (room.participant2.type == 'ADMIN' && room.participant2.referId == 0)) {
+      if ((room.participant1.type == ParticipantType.admin && room.participant1.referId == ChatConstants.adminReferId) ||
+          (room.participant2.type == ParticipantType.admin && room.participant2.referId == ChatConstants.adminReferId)) {
         continue;
       }
 
@@ -354,9 +357,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             ? room.participant1
             : room.participant2;
         if (appMode == AppMode.buyer) {
-          shouldInclude = currentUserParticipant.type == 'MEMBER';
+          shouldInclude = currentUserParticipant.type == ParticipantType.member;
         } else if (appMode == AppMode.seller) {
-          shouldInclude = currentUserParticipant.type == 'DOCTOR';
+          shouldInclude = currentUserParticipant.type == ParticipantType.doctor;
         }
       }
 

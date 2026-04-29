@@ -12,8 +12,10 @@ import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
+import '../../domain/constants/message_type.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import '../../domain/entities/participant.dart'; // Import Participant
+import '../../domain/constants/chat_constants.dart';
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 
@@ -72,7 +74,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   @override
   void initState() {
     super.initState();
-    if (widget.message.type == 'audio') {
+    if (widget.message.type == ChatMessageType.audio) {
       _audioPlayer = AudioPlayer();
       // Set player mode for consistency, especially on web
       _audioPlayer.setPlayerMode(PlayerMode.mediaPlayer);
@@ -126,7 +128,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   @override
   void dispose() {
-    if (widget.message.type == 'audio') {
+    if (widget.message.type == ChatMessageType.audio) {
       _durationSubscription?.cancel();
       _positionSubscription?.cancel();
       _playerCompleteSubscription?.cancel();
@@ -137,7 +139,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   void _playPauseAudio() async {
-    if (widget.message.type != 'audio') return;
+    if (widget.message.type != ChatMessageType.audio) return;
     final url = widget.message.context;
 
     try {
@@ -247,7 +249,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       : const SizedBox(width: 44);
 
     // 对于allocate类型的消息，使用专门的组件
-    if (widget.message.type == 'allocate') {
+    if (widget.message.type == ChatMessageType.allocate) {
       return AllocateMessageBubble(
         message: widget.message,
         sellerName: _getSellerName(),
@@ -256,7 +258,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     }
 
     // 对于图片消息，包含时间显示
-    if (widget.message.type == 'image') {
+    if (widget.message.type == ChatMessageType.image) {
       return Container(
         margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
         child: Row(
@@ -315,7 +317,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               children: [
                 bubbleContent,
                 // 翻译区域（微信风格）
-                if (!isCurrentUser && widget.message.type == 'text')
+                if (!isCurrentUser && widget.message.type == ChatMessageType.text)
                   _buildTranslationArea(),
                 _buildMessageTime(), // 添加时间显示
               ],
@@ -408,7 +410,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
     
-    if (widget.message.type == 'text') {
+    if (widget.message.type == ChatMessageType.text) {
        // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
        return GestureDetector(
          onLongPressStart: (details) {
@@ -428,10 +430,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
          shrinkWrap: true,
          ),
        );
-     } else if (widget.message.type == 'audio') {
+     } else if (widget.message.type == ChatMessageType.audio) {
        // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
-     } else if (widget.message.type == 'allocate') {
+     } else if (widget.message.type == ChatMessageType.allocate) {
        // allocate类型消息已经在build方法中直接返回特定组件，这里不应该被调用
        // 但为了安全，还是提供一个处理
        return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
@@ -483,7 +485,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                  // 重新发送消息
                  context.read<ChatMessagesBloc>().add(
                    SendMessageRequested(
-                     type: 'image', 
+                     type: ChatMessageType.image,
                      file: File(widget.message.context), // 需要保存原始文件路径
                    ),
                  );
@@ -713,7 +715,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final List<PopupMenuEntry<String>> menuItems = [];
 
     // 文本消息支持复制
-    if (widget.message.type == 'text') {
+    if (widget.message.type == ChatMessageType.text) {
         menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
     }
 
@@ -792,7 +794,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       final timeDifference = now.difference(messageTime);
 
       // 允许撤回的时间窗口：2分钟（120秒）
-      const revokeTimeLimit = Duration(minutes: 2);
+      const revokeTimeLimit = ChatConstants.revokeTimeLimit;
 
       print('[Debug] Revoke check - messageTime: $messageTime, now: $now, diff: ${timeDifference.inSeconds}s');
 

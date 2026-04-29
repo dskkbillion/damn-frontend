@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 
 /// Adapter for converting between domain entities and flutter_chat_ui types
 class ChatMessageAdapter {
@@ -15,7 +16,7 @@ class ChatMessageAdapter {
     final author = toUiUser(sender);
     
     switch (message.type) {
-      case 'text':
+      case ChatMessageType.text:
         return types.TextMessage(
           author: author,
           createdAt: message.createTime.millisecondsSinceEpoch,
@@ -29,7 +30,7 @@ class ChatMessageAdapter {
           },
         );
         
-      case 'image':
+      case ChatMessageType.image:
         // Parse image URL from context
         String imageUrl = message.context;
         Map<String, dynamic>? imageData;
@@ -58,7 +59,7 @@ class ChatMessageAdapter {
           },
         );
         
-      case 'audio':
+      case ChatMessageType.audio:
         // Parse audio data from context
         Map<String, dynamic>? audioData;
         String audioUrl = message.context;
@@ -87,7 +88,7 @@ class ChatMessageAdapter {
           },
         );
         
-      case 'file':
+      case ChatMessageType.file:
         // Parse file data from context
         Map<String, dynamic>? fileData;
         String fileUrl = message.context;
@@ -115,7 +116,7 @@ class ChatMessageAdapter {
           },
         );
         
-      case 'allocate':
+      case ChatMessageType.allocate:
         // Custom allocate message type
         Map<String, dynamic>? allocateData;
         
@@ -140,7 +141,7 @@ class ChatMessageAdapter {
           status: _toUiStatus(message.status),
         );
         
-      case 'revoke':
+      case ChatMessageType.revoke:
         // Withdrawn message
         return types.TextMessage(
           author: author,
@@ -183,11 +184,11 @@ class ChatMessageAdapter {
     int? doctorId,
   }) {
     String context = '';
-    String type = 'text';
-    
+    String type = ChatMessageType.text;
+
     if (uiMessage is types.TextMessage) {
       context = uiMessage.text;
-      type = uiMessage.metadata?['type'] ?? 'text';
+      type = uiMessage.metadata?['type'] ?? ChatMessageType.text;
     } else if (uiMessage is types.ImageMessage) {
       // Store image data as JSON
       context = jsonEncode({
@@ -195,7 +196,7 @@ class ChatMessageAdapter {
         'name': uiMessage.name,
         'size': uiMessage.size,
       });
-      type = 'image';
+      type = ChatMessageType.image;
     } else if (uiMessage is types.AudioMessage) {
       // Store audio data as JSON
       context = jsonEncode({
@@ -204,7 +205,7 @@ class ChatMessageAdapter {
         'size': uiMessage.size,
         'duration': uiMessage.duration.inSeconds,
       });
-      type = 'audio';
+      type = ChatMessageType.audio;
     } else if (uiMessage is types.FileMessage) {
       // Store file data as JSON
       context = jsonEncode({
@@ -212,13 +213,13 @@ class ChatMessageAdapter {
         'name': uiMessage.name,
         'size': uiMessage.size,
       });
-      type = 'file';
+      type = ChatMessageType.file;
     } else if (uiMessage is types.CustomMessage) {
       // Handle custom messages
       final metadata = uiMessage.metadata ?? {};
-      if (metadata['type'] == 'allocate') {
+      if (metadata['type'] == ChatMessageType.allocate) {
         context = metadata['originalContext'] ?? jsonEncode(metadata['allocateData']);
-        type = 'allocate';
+        type = ChatMessageType.allocate;
       } else {
         context = jsonEncode(metadata);
         type = metadata['type'] ?? 'custom';
@@ -345,12 +346,12 @@ class ChatMessageAdapter {
   /// Check if a message is withdrawn
   static bool isWithdrawn(types.Message message) {
     return message.metadata?['withdrawFlag'] == true ||
-           message.metadata?['type'] == 'revoke';
+           message.metadata?['type'] == ChatMessageType.revoke;
   }
-  
+
   /// Check if a message is an allocate message
   static bool isAllocateMessage(types.Message message) {
-    return message.metadata?['type'] == 'allocate';
+    return message.metadata?['type'] == ChatMessageType.allocate;
   }
   
   /// Get allocate data from a custom message

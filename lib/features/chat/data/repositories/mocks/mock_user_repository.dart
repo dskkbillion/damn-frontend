@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/user.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 
 /// Chat模块专用的MockUserRepository实现
 class MockUserRepository implements IUserRepository {
@@ -10,7 +11,7 @@ class MockUserRepository implements IUserRepository {
     commonUserId: '1', // 与main_dev_preview.dart中的testCommonUserId一致
     nickName: '瑞',
     avatar: 'https://duoshaokankan.oss-cn-beijing.aliyuncs.com/20250309/9c09ca8f-59df-4cbf-8d45-c8edb66f8ba9.jpg',
-    type: 'MEMBER',
+    type: ParticipantType.member,
   );
 
   @override

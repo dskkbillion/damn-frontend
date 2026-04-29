@@ -1,11 +1,14 @@
 import 'dart:convert'; // For jsonEncode if needed
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 // For firstWhereOrNull
 
 import 'package:dio/dio.dart'; // Import Dio
 import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import ServerException
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 
+import '../constants/chat_api_endpoints.dart';
+import '../../domain/constants/chat_constants.dart';
 import '../models/chat_message_dto.dart';
 import '../models/chat_room_dto.dart';
 import 'i_chat_remote_data_source.dart';
@@ -82,7 +85,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     try {
       // 🔥 老版本实现：直接使用POST方法 + 空对象（简单可靠）
       final response = await dio.post(
-        '/api/chat/list',
+        ChatApiEndpoints.chatList,
         data: {}, // 老版本的空对象请求
         options: Options(responseType: ResponseType.plain),
       );
@@ -171,10 +174,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   }
 
   @override
-  Future<List<ChatMessageDto>> getMessages(int chatId, {int pageNum = 1, int pageSize = 20}) async {
+  Future<List<ChatMessageDto>> getMessages(int chatId, {int pageNum = 1, int pageSize = ChatConstants.defaultPageSize}) async {
     AppLogger.d("[API Call] Fetching messages for chatId: $chatId, pageNum: $pageNum, pageSize: $pageSize...");
     try {
-      final response = await dio.post('/api/chat/message/list', data: {
+      final response = await dio.post(ChatApiEndpoints.messageList, data: {
         'chatId': chatId,
         'pageNum': pageNum,
         'pageSize': pageSize
@@ -256,13 +259,13 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       };
       
       // 根据participantId判断用户类型
-      if (participantId == 0) {
+      if (participantId == ChatConstants.adminReferId) {
         // 系统管理员使用ADMIN类型
-        requestData['type'] = 'ADMIN';
+        requestData['type'] = ParticipantType.admin;
         AppLogger.d("[API Call] Using type: ADMIN for system administrator chat creation.");
       } else {
         // 其他用户使用MEMBER类型
-        requestData['type'] = 'MEMBER';
+        requestData['type'] = ParticipantType.member;
         AppLogger.d("[API Call] Using type: MEMBER for regular user chat creation.");
       }
       
@@ -274,7 +277,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       AppLogger.d("[API Call] Request data: $requestData");
 
       final response = await dio.post(
-        '/api/chat/addChat',
+        ChatApiEndpoints.addChat,
         data: requestData, // Send the complete data map
         // Assuming default responseType: json is okay here
       );
@@ -304,12 +307,12 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         
         if (serverMessage != null) {
           if (serverMessage.contains("用户不存在")) {
-            errorMessage = participantId == 0 
-                ? "系统管理员账户配置异常，请联系技术支持" 
+            errorMessage = participantId == ChatConstants.adminReferId
+                ? "系统管理员账户配置异常，请联系技术支持"
                 : "目标用户不存在";
           } else if (serverMessage.contains("聊天对象类型要传递")) {
             errorMessage = "请求参数错误，请重试";
-          } else if (serverMessage.contains("空指针异常") && participantId == 0) {
+          } else if (serverMessage.contains("空指针异常") && participantId == ChatConstants.adminReferId) {
             errorMessage = "系统管理员账户未配置，请联系技术支持进行初始化";
           } else {
             errorMessage = serverMessage;
@@ -337,7 +340,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       'type': message.type,
     };
     try {
-      final response = await dio.post('/common/chat/message/add', data: requestBody);
+      final response = await dio.post(ChatApiEndpoints.sendMessage, data: requestBody);
       final dynamic data = _handleResponse(response, "send message");
       return ChatMessageDto.fromJson(data);
     } on DioException catch (e) {
@@ -353,7 +356,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   Future<void> revokeMessage(int messageId) async {
     AppLogger.d("[API Call] Revoking messageId: $messageId...");
     try {
-      final response = await dio.post('/api/chat/message/withdraw', data: {'id': messageId});
+      final response = await dio.post(ChatApiEndpoints.withdrawMessage, data: {'id': messageId});
       _handleVoidResponse(response, "revoke message");
     } on DioException catch (e) {
        AppLogger.d("DioException revoking message: ${e.message}, Response: ${e.response?.data}");
@@ -368,7 +371,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   Future<ChatRoomDto> getRoomDetails(int chatId) async {
     AppLogger.d("[API Call] Fetching room details for chatId: $chatId...");
     try {
-      final response = await dio.get('/api/chat/get', queryParameters: {'id': chatId});
+      final response = await dio.get(ChatApiEndpoints.getChatRoom, queryParameters: {'id': chatId});
       final dynamic data = _handleResponse(response, "fetch room details");
       return ChatRoomDto.fromJson(data);
     } on DioException catch (e) {
@@ -386,7 +389,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     try {
        // Assuming POST request with list of IDs in the body based on TODO doc
       // NOTE: If backend expects query parameter list of strings, adjust accordingly
-      final response = await dio.post('/api/chat/message/delete', data: { 'ids': messageIds });
+      final response = await dio.post(ChatApiEndpoints.deleteMessages, data: { 'ids': messageIds });
       _handleVoidResponse(response, "delete messages");
     } on DioException catch (e) {
        AppLogger.d("DioException deleting messages: ${e.message}, Response: ${e.response?.data}");
@@ -401,7 +404,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
   Future<void> deleteChatRooms(List<int> chatIds) async {
     AppLogger.d("[API Call] Deleting chat rooms: $chatIds...");
     try {
-      final response = await dio.post('/api/chat/delete', data: chatIds);
+      final response = await dio.post(ChatApiEndpoints.deleteChatRooms, data: chatIds);
       _handleVoidResponse(response, "delete chat rooms");
     } on DioException catch (e) {
       AppLogger.d("DioException deleting chat rooms: ${e.message}, Response: ${e.response?.data}");

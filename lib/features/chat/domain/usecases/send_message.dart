@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import '../entities/chat_message.dart';
 import '../repositories/i_chat_repository.dart';
 import '../repositories/i_file_repository.dart'; // Needed for file uploads
+import '../constants/message_type.dart';
 
 // Use case definition
 abstract class SendMessage implements UseCase<ChatMessage, SendMessageParams> {}
@@ -25,7 +26,7 @@ class SendMessageImpl implements SendMessage {
     AppLogger.d('[SendMessage] Type: ${messageToSend.type}, File provided: ${params.file != null}, Context: ${messageToSend.context}');
 
     // If it's an image or audio message with a file, upload the file first
-    if ((messageToSend.type == 'image' || messageToSend.type == 'audio') && params.file != null) {
+    if ((messageToSend.type == ChatMessageType.image || messageToSend.type == ChatMessageType.audio) && params.file != null) {
       AppLogger.d('[SendMessage] Uploading file for ${messageToSend.type} message: ${params.file!.path}');
       final uploadResult = await fileRepository.uploadFile(params.file!);
 
@@ -43,7 +44,7 @@ class SendMessageImpl implements SendMessage {
       }
        // Important: Create a *new* instance with the updated context
       messageToSend = messageToSend.copyWith(context: fileUrl);
-    } else if ((messageToSend.type == 'image' || messageToSend.type == 'audio' || messageToSend.type == 'file') && params.file == null) {
+    } else if ((messageToSend.type == ChatMessageType.image || messageToSend.type == ChatMessageType.audio || messageToSend.type == ChatMessageType.file) && params.file == null) {
       // 如果是文件类型（包括图片、音频、文档）且没有提供文件，检查 context 是否已包含 URL 或 JSON
       // 如果 context 已经包含 URL 或 JSON（说明文件已经上传），则继续发送
       AppLogger.d('[SendMessage] File type message without file. Context: ${messageToSend.context}');

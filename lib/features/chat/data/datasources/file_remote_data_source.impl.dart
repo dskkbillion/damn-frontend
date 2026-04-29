@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import Ser
 // Add injectable import
 
 // Correct import for Interface using package path
+import 'package:dskk_flutter_refactor/features/chat/data/constants/chat_api_endpoints.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_file_remote_data_source.dart';
 
 // Create Dio instance with proper base URL from environment
@@ -30,7 +31,7 @@ class FileRemoteDataSourceImpl implements IFileRemoteDataSource {
 
   @override
   Future<String> uploadFile(File file) async {
-    const uploadPath = '/api/common/public/upload'; // Define path clearly
+    const uploadPath = ChatApiEndpoints.uploadFile; // Define path clearly
     final targetUrl = dio.options.baseUrl + uploadPath;
     AppLogger.d("[API Call] Uploading file: ${file.path} to $targetUrl"); // Log full target URL
 

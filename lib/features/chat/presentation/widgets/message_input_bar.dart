@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
+import '../../domain/constants/message_type.dart';
 
 // 文件上传状态定义
 enum FileUploadStatus { uploading, success, failure }
@@ -74,7 +75,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
     if (_canSend) {
       final text = _controller.text.trim();
       context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: 'text', text: text),
+            SendMessageRequested(type: ChatMessageType.text, text: text),
           );
       _controller.clear();
       // Ensure keyboard hides after sending
@@ -198,7 +199,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
           context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: 'audio', file: recordingFile),
+            SendMessageRequested(type: ChatMessageType.audio, file: recordingFile),
           );
         } else {
           print('Recording file invalid or too short.');
@@ -279,7 +280,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
           
           // 2. 发送消息（会触发上传）
           context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: 'image', file: processResult.finalFile),
+            SendMessageRequested(type: ChatMessageType.image, file: processResult.finalFile),
           );
           
           // 3. 监听上传结果
@@ -336,7 +337,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
             
             // 逐个发送
             context.read<ChatMessagesBloc>().add(
-              SendMessageRequested(type: 'image', file: result.finalFile),
+              SendMessageRequested(type: ChatMessageType.image, file: result.finalFile),
             );
             
             _listenToUploadResult(result.finalFile);
@@ -565,7 +566,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
     // 发送Markdown消息
     context.read<ChatMessagesBloc>().add(
-      SendMessageRequested(type: 'text', text: markdownExample),
+      SendMessageRequested(type: ChatMessageType.text, text: markdownExample),
     );
   }
 

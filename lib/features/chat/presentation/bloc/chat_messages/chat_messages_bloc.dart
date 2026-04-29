@@ -13,6 +13,8 @@ import 'package:flutter/material.dart'; // For @immutable
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_room.dart'; // Needed for GetChatRoomDetails return type
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/chat_constants.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 // Domain UseCases (Required by Bloc logic)
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
@@ -187,7 +189,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         (messages) async {
           // 过滤掉撤回的消息，并按时间升序排列（最旧在前）
           // 与 _removeDuplicateMessages 和 chat_room_page 的 reverse+手动反转索引逻辑一致
-          final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != 'revoke').toList()
+          final filteredMessages = messages.where((msg) => !msg.withdrawFlag && msg.type != ChatMessageType.revoke).toList()
             ..sort((a, b) => a.createTime.compareTo(b.createTime));
           
           AppLogger.d("[ChatMessagesBloc] =====消息列表调试=====");
@@ -284,7 +286,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     
     for (final message in messages) {
       // 过滤掉撤回的消息
-      if (!message.withdrawFlag && message.type != 'revoke' && !messageIds.contains(message.id)) {
+      if (!message.withdrawFlag && message.type != ChatMessageType.revoke && !messageIds.contains(message.id)) {
         messageIds.add(message.id);
         uniqueMessages.add(message);
       }
@@ -311,13 +313,13 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     // 1. Create optimistic message
     final optimisticMessage = ChatMessage(
-      id: Random().nextInt(1000000) + 1000000,
+      id: Random().nextInt(ChatConstants.optimisticMessageIdBase) + ChatConstants.optimisticMessageIdBase,
       chatId: chatId,
       senderId: loadedState.currentUserParticipantId, // Use participant ID for sender
       // 后端契约：memberId = 发送者，doctorId = 接收者
       memberId: loadedState.currentUserParticipantId,
       doctorId: loadedState.opponent.id,
-      context: event.type == 'text' ? event.text! : '', // 对于文件类型，context留空，等待上传后填充URL
+      context: event.type == ChatMessageType.text ? event.text! : '', // 对于文件类型，context留空，等待上传后填充URL
       type: event.type,
       createTime: DateTime.now(),
       withdrawFlag: false,
@@ -406,7 +408,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
         );
 
         // 过滤掉撤回的消息，不添加到UI中
-        if (newMessage.withdrawFlag || newMessage.type == 'revoke') {
+        if (newMessage.withdrawFlag || newMessage.type == ChatMessageType.revoke) {
           AppLogger.d("[Bloc] Received revoked message ${newMessage.id} from WebSocket, ignoring.");
           return;
         }
@@ -439,7 +441,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
                AppLogger.d("[Bloc] Triggered chat list update for received message from other user");
 
                // 自动翻译新收到的对方消息
-               if (newMessage.type == 'text') {
+               if (newMessage.type == ChatMessageType.text) {
                  add(const TranslateMessages());
                }
              }
@@ -591,7 +593,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
     // 找出需要翻译的对方文本消息（未翻译且非正在翻译）
     final toTranslate = loadedState.messages.where((msg) =>
-        msg.type == 'text' &&
+        msg.type == ChatMessageType.text &&
         msg.senderId != loadedState.currentUserParticipantId &&
         msg.translatedContext == null &&
         !msg.isTranslating).toList();

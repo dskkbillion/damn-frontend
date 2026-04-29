@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import '../constants/chat_constants.dart';
 import '../entities/chat_message.dart';
 import '../repositories/i_chat_repository.dart';
 
@@ -33,7 +34,7 @@ class GetMessageListParams extends Equatable {
   const GetMessageListParams({
     required this.chatId,
     this.pageNum = 1,
-    this.pageSize = 20,
+    this.pageSize = ChatConstants.defaultPageSize,
   });
 
   @override

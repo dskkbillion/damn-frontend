@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/participant.dart';
@@ -87,7 +88,7 @@ class GroupedChatList extends StatelessWidget {
       // 判断当前用户的类型
       if (chatRoom.participant1.referId == currentUserId) {
         // 当前用户是participant1
-        if (chatRoom.participant1.type == 'MEMBER') {
+        if (chatRoom.participant1.type == ParticipantType.member) {
           // 当前用户是买家，对方是卖家
           seller = chatRoom.participant2;
           sellerId = chatRoom.participant2.referId ?? 0;
@@ -98,7 +99,7 @@ class GroupedChatList extends StatelessWidget {
         }
       } else {
         // 当前用户是participant2
-        if (chatRoom.participant2.type == 'MEMBER') {
+        if (chatRoom.participant2.type == ParticipantType.member) {
           // 当前用户是买家，对方是卖家
           seller = chatRoom.participant1;
           sellerId = chatRoom.participant1.referId ?? 0;
@@ -121,13 +122,13 @@ class GroupedChatList extends StatelessWidget {
       
       // 重新确定卖家信息（与上面逻辑一致）
       if (firstRoom.participant1.referId == currentUserId) {
-        if (firstRoom.participant1.type == 'MEMBER') {
+        if (firstRoom.participant1.type == ParticipantType.member) {
           seller = firstRoom.participant2;
         } else {
           seller = firstRoom.participant1;
         }
       } else {
-        if (firstRoom.participant2.type == 'MEMBER') {
+        if (firstRoom.participant2.type == ParticipantType.member) {
           seller = firstRoom.participant1;
         } else {
           seller = firstRoom.participant2;

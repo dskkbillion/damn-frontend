@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
+import '../../domain/constants/message_type.dart';
 
 class ChatListItem extends StatefulWidget { // Change to StatefulWidget for initState
   final ChatRoom chatRoom;
@@ -71,11 +72,11 @@ class _ChatListItemState extends State<ChatListItem> {
         : message.context;
 
     switch (message.type) {
-      case 'text':
+      case ChatMessageType.text:
         return contextPreview;
-      case 'image':
+      case ChatMessageType.image:
         return s.chat_image_message;
-      case 'audio':
+      case ChatMessageType.audio:
         return s.chat_audio_message;
       // 移除 'revoke' 类型处理，因为撤回消息已在BLoC层过滤
       // TODO: Add cases for other custom types ('order', 'distribute')

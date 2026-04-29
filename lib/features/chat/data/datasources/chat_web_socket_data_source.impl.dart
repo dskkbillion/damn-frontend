@@ -11,6 +11,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/foundation.dart' show kIsWeb; // For platform check
 import 'package:injectable/injectable.dart'; // Add injectable import
 
+import 'package:dskk_flutter_refactor/features/chat/data/constants/ws_constants.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/chat_constants.dart';
 import 'i_chat_web_socket_data_source.dart'; // Import interface
 
 enum ConnectionStatus {
@@ -28,8 +30,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   String? _token; // Store token for authentication
   String? _commonUserId; // Store user ID for connection URL
   int _reconnectAttempts = 0;
-  final int _maxReconnectAttempts = 5;
-  final Duration _reconnectDelay = const Duration(seconds: 5);
+  final int _maxReconnectAttempts = ChatConstants.wsMaxReconnectAttempts;
+  final Duration _reconnectDelay = ChatConstants.wsReconnectDelay;
   bool _isConnected = false; // 连接状态标志
   int? _activeChatId; // 当前用户正在查看的聊天室 ID，收到该房间消息时不增加未读数
 
@@ -106,7 +108,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       scheme: wsScheme,
       host: parsedUrl.host,
       port: parsedUrl.hasPort ? parsedUrl.port : null,
-      path: '${parsedUrl.path}/websocket/message/$_commonUserId/member',
+      path: '${parsedUrl.path}/websocket/message/$_commonUserId/${WsConstants.rolePath}',
       queryParameters: {
         'token': _token!,
       },
@@ -168,10 +170,10 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
             AppLogger.d("[WebSocket] 🔍 Decoded action: $action (type: ${action.runtimeType}), hasData: $hasData");
 
             switch (action) {
-              case 'LOGIN_SUCCESS':
+              case WsAction.loginSuccess:
                 AppLogger.d("[WebSocket] Login acknowledged by server.");
                 break;
-              case 'LOGIN_FAIL':
+              case WsAction.loginFail:
                 AppLogger.d("[WebSocket] Login rejected by server: ${decodedMessage['msg']}");
                 _isConnected = false;
                 _reconnectAttempts = _maxReconnectAttempts; // 阻止重连
@@ -181,16 +183,16 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                 _channel?.sink.close();
                 _channel = null;
                 break;
-              case 'NOTIFICATION':
+              case WsAction.notification:
                 AppLogger.d("[WebSocket] Received notification action: ${decodedMessage['msg']}");
                 break;
-              case 'CHAT':
+              case WsAction.chat:
                 _handleChatMessage(decodedMessage, incrementUnread: true);
                 break;
-              case 'CHAT_WITHDRAW':
+              case WsAction.chatWithdraw:
                 _handleChatMessage(decodedMessage, incrementUnread: false);
                 break;
-              case 'PONG':
+              case WsAction.pong:
                 AppLogger.d("[WebSocket] Received PONG.");
                 break;
               default:
@@ -313,7 +315,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _sendAuthMessage() {
     if (_channel != null && _token != null) {
-      final authMessage = jsonEncode({'type': 'auth', 'token': _token});
+      final authMessage = jsonEncode({'type': WsMessageType.auth, 'token': _token});
       AppLogger.d("[WebSocket] Sending Auth: $authMessage");
       _channel!.sink.add(authMessage);
     }
@@ -321,9 +323,9 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); // Cancel existing timer
-    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) { // 30秒发送一次心跳保活
+    _heartbeatTimer = Timer.periodic(ChatConstants.wsHeartbeatInterval, (timer) { // 心跳保活
       if (_channel != null) {
-        final pingMessage = jsonEncode({'type': 'ping'});
+        final pingMessage = jsonEncode({'type': WsMessageType.ping});
         AppLogger.d("[WebSocket] Sending Ping (keep-alive)");
         _channel!.sink.add(pingMessage);
       }

@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
@@ -229,7 +230,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final jsonString = jsonEncode(fileContext);
 
     // 直接发送文本消息，因为文件已经上传了
-    await sendTextMessage(jsonString, messageType: 'file');
+    await sendTextMessage(jsonString, messageType: ChatMessageType.file);
   }
   
   /// Send an image message with URL
@@ -250,7 +251,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final jsonString = jsonEncode(imageContext);
 
     // 直接发送文本消息，因为图片已经上传了
-    await sendTextMessage(jsonString, messageType: 'image');
+    await sendTextMessage(jsonString, messageType: ChatMessageType.image);
   }
   
   /// Add a new message to the list (used when message is sent successfully)
@@ -284,7 +285,7 @@ class MessageListCubit extends Cubit<MessageListState> {
     final file = File(filePath);
 
     // For audio and image files, we need to upload first
-    final needsUpload = fileType == 'audio' || fileType == 'image';
+    final needsUpload = fileType == ChatMessageType.audio || fileType == ChatMessageType.image;
     final content = needsUpload
         ? '' // Empty for files that need upload
         : (metadata != null ? jsonEncode(metadata) : filePath);
@@ -376,7 +377,7 @@ class MessageListCubit extends Cubit<MessageListState> {
         if (index != -1) {
           final revokedMessage = _allMessages[index].copyWith(
             withdrawFlag: true,
-            type: 'revoke',
+            type: ChatMessageType.revoke,
             context: '消息已撤回',
           );
           _allMessages[index] = revokedMessage;
@@ -619,7 +620,7 @@ class MessageListCubit extends Cubit<MessageListState> {
       bool isPaymentPrompt = message.type == 'payment_prompt';
 
       // 如果是text类型，检查内容是否包含付费提示标记
-      if (!isPaymentPrompt && message.type == 'text') {
+      if (!isPaymentPrompt && message.type == ChatMessageType.text) {
         try {
           if (message.context.contains('"type":"payment_prompt"')) {
             isPaymentPrompt = true;
