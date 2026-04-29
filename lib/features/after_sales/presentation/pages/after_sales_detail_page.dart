@@ -6,6 +6,8 @@ import '../../domain/entities/after_sales_application.dart'; // Import Entity
 // Correct import path for DI container if using getIt directly (less common in UI)
 import '../../../../app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_button_builder.dart';
 
 
 /// 售后详情页面
@@ -455,67 +457,54 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     );
   }
 
-   // Placeholder for Bottom Action Bar - Modify to accept data
+  // Bottom Action Bar - uses OrderActionButtonBuilder for consistent styling across the app
   Widget _buildBottomActionBar(BuildContext context, ColorScheme colorScheme, AfterSalesApplication application) {
-     // ... (implementation using application data to show/hide buttons)
-      List<Widget> actionButtons = [];
+    final l10n = AppLocalizations.of(context);
+    final List<Widget> actionButtons = [];
 
-      // Example logic: Determine buttons based on state
-      // This needs refinement based on actual state strings and business logic
-      if (application.refundState == 'WAIT_AUDIT' || application.refundState == 'AUDIT_PASS') {
-         actionButtons.add(
-            OutlinedButton(
-               onPressed: () { /* TODO: Implement cancel */ print('Cancel clicked'); },
-                style: OutlinedButton.styleFrom(
-                 side: BorderSide(color: colorScheme.outline),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                 textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
-               child: Text(AppLocalizations.of(context).after_sales_revoke),
-            ),
-         );
-         actionButtons.add(const SizedBox(width: 8));
-      }
-       if (application.refundState == 'WAIT_AUDIT') { // Can modify only when waiting?
-          actionButtons.add(
-             ElevatedButton(
-               onPressed: () { /* TODO: Implement modify */ print('Modify clicked'); },
-               style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
-               child: Text(AppLocalizations.of(context).after_sales_modify),
-            ),
-          );
-       } else {
-           // Maybe always show platform intervention?
-           actionButtons.add(
-             OutlinedButton(
-               onPressed: () { /* TODO: Implement platform intervention */ print('Platform clicked'); },
-               style: OutlinedButton.styleFrom(
-                 side: BorderSide(color: colorScheme.outline),
-                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                 textStyle: Theme.of(context).textTheme.labelMedium,
-               ),
-               child: Text(AppLocalizations.of(context).after_sales_platform_intervention),
-             ),
-           );
-       }
-
-
-     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        decoration: BoxDecoration(
-           color: Theme.of(context).scaffoldBackgroundColor,
-           border: Border(top: BorderSide(color: Colors.grey[300]!, width: 0.5)),
+    // 撤销申请：待审核或审核通过时可撤销
+    if (application.refundState == 'WAIT_AUDIT' || application.refundState == 'AUDIT_PASS') {
+      actionButtons.add(
+        OrderActionButtonBuilder.buildButton(
+          context,
+          l10n.after_sales_revoke,
+          () { /* TODO: Implement cancel */ print('Cancel clicked'); },
+          isPrimary: false,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: actionButtons, // Use the dynamically generated list
+      );
+    }
+
+    // 主操作按钮：待审核时可修改（主要按钮），其他状态显示平台介入（次要按钮）
+    if (application.refundState == 'WAIT_AUDIT') {
+      actionButtons.add(
+        OrderActionButtonBuilder.buildButton(
+          context,
+          l10n.after_sales_modify,
+          () { /* TODO: Implement modify */ print('Modify clicked'); },
+          isPrimary: true,
         ),
-     );
+      );
+    } else {
+      actionButtons.add(
+        OrderActionButtonBuilder.buildButton(
+          context,
+          l10n.after_sales_platform_intervention,
+          () { /* TODO: Implement platform intervention */ print('Platform clicked'); },
+          isPrimary: false,
+        ),
+      );
+    }
+
+    if (actionButtons.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        border: const Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)),
+      ),
+      child: OrderActionButtonBuilder.buildResponsiveButtonLayout(actionButtons),
+    );
   }
 
 } 
