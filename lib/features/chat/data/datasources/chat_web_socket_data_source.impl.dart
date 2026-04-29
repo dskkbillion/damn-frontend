@@ -27,6 +27,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   WebSocketChannel? _channel;
   StreamSubscription? _channelSubscription;
   Timer? _heartbeatTimer;
+  Timer? _pongTimer; // PONG 超时检测，发 ping 后启动，收到 pong 后取消
   String? _token; // Store token for authentication
   String? _commonUserId; // Store user ID for connection URL
   int _reconnectAttempts = 0;
@@ -193,7 +194,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                 _handleChatMessage(decodedMessage, incrementUnread: false);
                 break;
               case WsAction.pong:
-                AppLogger.d("[WebSocket] Received PONG.");
+                _pongTimer?.cancel();
+                AppLogger.d("[WebSocket] Received PONG (timeout cancelled).");
                 break;
               default:
                 if (hasData) {
@@ -222,7 +224,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         _connectionStatusController.add(ConnectionStatus.error);
         _handleReconnect(); // Attempt to reconnect on error
       },
-      cancelOnError: true, // Cancel subscription on error
+      cancelOnError: false, // 保持监听，单条坏消息不应杀掉整个连接
     );
      AppLogger.d("[WebSocket] Listening for messages.");
   }
@@ -323,20 +325,28 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); // Cancel existing timer
+    _pongTimer?.cancel();
     _heartbeatTimer = Timer.periodic(ChatConstants.wsHeartbeatInterval, (timer) { // 心跳保活
       if (_channel != null) {
         final pingMessage = jsonEncode({'type': WsMessageType.ping});
         AppLogger.d("[WebSocket] Sending Ping (keep-alive)");
         _channel!.sink.add(pingMessage);
+        // 启动 PONG 超时检测：如果超时未收到 PONG，视为连接已死
+        _pongTimer?.cancel();
+        _pongTimer = Timer(ChatConstants.wsPongTimeout, () {
+          AppLogger.d("[WebSocket] ⚠️ PONG timeout! Connection assumed dead, reconnecting...");
+          _handleReconnect();
+        });
       }
     });
-    AppLogger.d("[WebSocket] Heartbeat started (30s interval, ping mode).");
+    AppLogger.d("[WebSocket] Heartbeat started (30s interval, ping mode, pong timeout ${ChatConstants.wsPongTimeout.inSeconds}s).");
   }
 
   void _handleReconnect() {
      AppLogger.d("[WebSocket] Handling reconnect...");
     _isConnected = false; // 标记为未连接
     _heartbeatTimer?.cancel(); // Stop heartbeat during reconnection attempts
+    _pongTimer?.cancel();
     _channelSubscription?.cancel();
     _channel?.sink.close();
     _channel = null;
@@ -365,6 +375,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     AppLogger.d("[WebSocket] Disconnecting...");
     _reconnectAttempts = _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
     _heartbeatTimer?.cancel();
+    _pongTimer?.cancel();
     _channelSubscription?.cancel();
     await _channel?.sink.close();
     _channel = null;

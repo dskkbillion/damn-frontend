@@ -18,6 +18,9 @@ abstract final class ChatConstants {
   /// WebSocket 心跳间隔
   static const wsHeartbeatInterval = Duration(seconds: 30);
 
+  /// WebSocket PONG 超时时间（发 ping 后等待 pong 的最大时长）
+  static const wsPongTimeout = Duration(seconds: 10);
+
   /// WebSocket 重连延迟
   static const wsReconnectDelay = Duration(seconds: 5);
 
