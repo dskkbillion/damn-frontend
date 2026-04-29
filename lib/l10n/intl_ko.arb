@@ -1509,11 +1509,11 @@
     "chat_allocate_message": "【다수칸칸】",
     "chat_file_message": "【파일】",
     "chat_filter_all": "전체",
-    "chat_filter_buyer": "내 구매",
+    "chat_filter_buyer": "구매자 채팅",
     "chat_filter_mode_all": "전체 채팅 표시",
-    "chat_filter_mode_buyer": "내 구매 채팅만 표시",
-    "chat_filter_mode_seller": "내 판매 채팅만 표시",
-    "chat_filter_seller": "내 판매",
+    "chat_filter_mode_buyer": "구매자 채팅만 표시",
+    "chat_filter_mode_seller": "판매자 채팅만 표시",
+    "chat_filter_seller": "판매자 채팅",
     "chat_get_user_info_failed": "사용자 정보 가져오기 실패: {error}",
     "@chat_get_user_info_failed": {
         "placeholders": {

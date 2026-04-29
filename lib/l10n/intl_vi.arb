@@ -1509,11 +1509,11 @@
     "chat_allocate_message": "[DSKK]",
     "chat_file_message": "[Tệp]",
     "chat_filter_all": "Tất cả",
-    "chat_filter_buyer": "Mua của tôi",
+    "chat_filter_buyer": "Chat người mua",
     "chat_filter_mode_all": "Đang hiển thị tất cả chat",
-    "chat_filter_mode_buyer": "Chỉ hiển thị chat mua hàng",
-    "chat_filter_mode_seller": "Chỉ hiển thị chat bán hàng",
-    "chat_filter_seller": "Bán của tôi",
+    "chat_filter_mode_buyer": "Chỉ hiển thị chat người mua",
+    "chat_filter_mode_seller": "Chỉ hiển thị chat người bán",
+    "chat_filter_seller": "Chat người bán",
     "chat_get_user_info_failed": "Lấy thông tin người dùng thất bại: {error}",
     "@chat_get_user_info_failed": {
         "placeholders": {
