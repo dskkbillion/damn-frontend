@@ -582,7 +582,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // Create the GoRouter instance
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home', // Initial location
+    initialLocation: '/ai_chat', // AI 助手为默认首页
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus),
     observers: [
