@@ -5288,4 +5288,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String payment_test_description(String subject) {
     return '$subject - Payment Test';
   }
+
+  @override
+  String get chat_translating => 'Translating...';
+
+  @override
+  String get chat_translation_label => 'Translation';
 }

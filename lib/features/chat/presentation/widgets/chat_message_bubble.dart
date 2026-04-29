@@ -309,11 +309,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           if (!isCurrentUser) avatarWidget,
           Flexible(
             child: Column(
-              crossAxisAlignment: isCurrentUser 
-                  ? CrossAxisAlignment.end 
+              crossAxisAlignment: isCurrentUser
+                  ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
                 bubbleContent,
+                // 翻译区域（微信风格）
+                if (!isCurrentUser && widget.message.type == 'text')
+                  _buildTranslationArea(),
                 _buildMessageTime(), // 添加时间显示
               ],
             ),
@@ -322,6 +325,83 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         ],
       ),
     );
+  }
+
+  /// 构建翻译区域（微信风格灰色背景）
+  Widget _buildTranslationArea() {
+    final message = widget.message;
+
+    if (message.isTranslating) {
+      return Container(
+        margin: const EdgeInsets.only(top: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.7,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                color: AppColors.textTertiary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              AppLocalizations.of(context).chat_translating,
+              style: TextStyle(
+                color: AppColors.textTertiary,
+                fontSize: 13.0,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (message.translatedContext != null && message.translatedContext!.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.only(top: 4.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.7,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context).chat_translation_label,
+              style: TextStyle(
+                color: AppColors.textTertiary,
+                fontSize: 11.0,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              message.translatedContext!,
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 15.0,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {

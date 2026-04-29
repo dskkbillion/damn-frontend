@@ -5115,4 +5115,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String payment_test_description(String subject) {
     return '$subject - 결제 테스트';
   }
+
+  @override
+  String get chat_translating => '번역 중...';
+
+  @override
+  String get chat_translation_label => '번역';
 }

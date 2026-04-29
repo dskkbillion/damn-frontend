@@ -3115,5 +3115,7 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "chat_translating": "翻訳中...",
+    "chat_translation_label": "翻訳"
 }

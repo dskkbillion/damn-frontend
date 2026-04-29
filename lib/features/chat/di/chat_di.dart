@@ -38,6 +38,10 @@ import '../domain/usecases/delete_chat_message.dart';
 import '../domain/usecases/create_chat_room.dart';
 import '../domain/usecases/delete_chat_room.dart';
 
+// Translation
+import '../data/datasources/chat_translation_service.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
+
 // Blocs
 import '../presentation/bloc/chat_list/chat_list_bloc.dart';
 import '../presentation/bloc/chat_messages/chat_messages_bloc.dart';
@@ -246,6 +250,7 @@ void registerChatMessagesBloc(GetIt getIt) {
       deleteChatMessage: getIt<DeleteChatMessage>(),
       userRepository: getIt<IUserRepository>(),
       webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+      translationService: ChatTranslationService(getIt<CoreDioClient>()),
     ),
   );
 } 
@@ -400,6 +405,7 @@ class ChatDI {
           getChatRoomDetails: getIt<GetChatRoomDetails>(),
           userRepository: getIt<IUserRepository>(),
           webSocketDataSource: getIt<IChatWebSocketDataSource>(),
+          translationService: ChatTranslationService(getIt<CoreDioClient>()),
         ),
       );
       AppLogger.d('[ChatDI] Registered ChatMessagesBloc factory with parameters');

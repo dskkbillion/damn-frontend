@@ -3108,5 +3108,7 @@
     "seller_product_preview_load_failed": "상품 정보 불러오기 실패",
     "seller_product_preview_loading": "상품 정보 불러오는 중...",
     "seller_product_preview_retry": "다시 시도",
-    "seller_product_preview_title": "상품 미리보기"
+    "seller_product_preview_title": "상품 미리보기",
+    "chat_translating": "번역 중...",
+    "chat_translation_label": "번역"
 }

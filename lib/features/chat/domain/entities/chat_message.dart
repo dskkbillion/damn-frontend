@@ -15,6 +15,9 @@ class ChatMessage extends Equatable {
   final bool withdrawFlag;
   final bool? readFlg; // From API
   final MessageStatus status; // Frontend status
+  // 翻译相关字段（本地状态，不序列化）
+  final String? translatedContext;
+  final bool isTranslating;
 
   const ChatMessage({
     required this.id,
@@ -28,6 +31,8 @@ class ChatMessage extends Equatable {
     required this.withdrawFlag,
     this.readFlg,
     this.status = MessageStatus.sent, // Default to sent if coming from API
+    this.translatedContext,
+    this.isTranslating = false,
   });
 
   @override
@@ -43,6 +48,8 @@ class ChatMessage extends Equatable {
         withdrawFlag,
         readFlg,
         status,
+        translatedContext,
+        isTranslating,
       ];
 
   ChatMessage copyWith({
@@ -57,6 +64,8 @@ class ChatMessage extends Equatable {
     bool? withdrawFlag,
     bool? readFlg,
     MessageStatus? status,
+    String? translatedContext,
+    bool? isTranslating,
   }) {
     return ChatMessage(
       id: id ?? this.id,
@@ -70,6 +79,8 @@ class ChatMessage extends Equatable {
       withdrawFlag: withdrawFlag ?? this.withdrawFlag,
       readFlg: readFlg ?? this.readFlg,
       status: status ?? this.status,
+      translatedContext: translatedContext ?? this.translatedContext,
+      isTranslating: isTranslating ?? this.isTranslating,
     );
   }
   

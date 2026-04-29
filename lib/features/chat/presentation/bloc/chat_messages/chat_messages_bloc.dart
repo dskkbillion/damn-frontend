@@ -29,6 +29,7 @@ import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto
 // Core Dependencies (Required by Bloc logic/Error handling)
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // For EventBus
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_translation_service.dart';
 // ---------------------------
 
 part 'chat_messages_event.dart';
@@ -43,6 +44,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   final DeleteChatMessage deleteChatMessage;
   final IUserRepository userRepository;
   final IChatWebSocketDataSource webSocketDataSource;
+  final ChatTranslationService translationService;
   Function(ChatMessage)? onNewMessageReceived; // Callback for new messages
 
   User? _currentUser;
@@ -62,6 +64,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     required this.deleteChatMessage,
     required this.userRepository,
     required this.webSocketDataSource,
+    required this.translationService,
   }) : super(const ChatMessagesInitial()) {
     on<LoadChatMessages>(_onLoadChatMessages);
     on<LoadMoreChatMessages>(_onLoadMoreChatMessages);
@@ -71,6 +74,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     on<DeleteMessageRequested>(_onDeleteMessageRequested);
     on<ResetMessageRevokedFlag>(_onResetMessageRevokedFlag);
     on<ResetMessageSentFlag>(_onResetMessageSentFlag);
+    on<TranslateMessages>(_onTranslateMessages);
+    on<_MessageTranslated>(_onMessageTranslated);
   }
 
   Future<void> _onLoadChatMessages(
@@ -212,6 +217,9 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
           // WebSocket 连接由 GlobalWebSocketManager 统一维护。
           // 这里仅订阅全局消息流，避免旧聊天室页重复建立/断开连接。
           _subscribeWebSocketStream();
+
+          // 自动翻译对方消息
+          add(const TranslateMessages());
         },
       );
 
@@ -429,6 +437,11 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
                  lastMessageTime: newMessage.createTime,
                ));
                AppLogger.d("[Bloc] Triggered chat list update for received message from other user");
+
+               // 自动翻译新收到的对方消息
+               if (newMessage.type == 'text') {
+                 add(const TranslateMessages());
+               }
              }
         } else {
              AppLogger.d("[Bloc] Message ${newMessage.id} from WebSocket already exists, ignoring.");
@@ -565,6 +578,80 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       final currentState = state as ChatMessagesLoaded;
       emit(currentState.copyWith(hasMessageSent: false));
     }
+  }
+
+  Future<void> _onTranslateMessages(
+    TranslateMessages event,
+    Emitter<ChatMessagesState> emit,
+  ) async {
+    if (state is! ChatMessagesLoaded) return;
+    final loadedState = state as ChatMessagesLoaded;
+
+    final targetLang = await ChatTranslationService.getTargetLang();
+
+    // 找出需要翻译的对方文本消息（未翻译且非正在翻译）
+    final toTranslate = loadedState.messages.where((msg) =>
+        msg.type == 'text' &&
+        msg.senderId != loadedState.currentUserParticipantId &&
+        msg.translatedContext == null &&
+        !msg.isTranslating).toList();
+
+    if (toTranslate.isEmpty) return;
+
+    // 标记为正在翻译
+    final updatedMessages = loadedState.messages.map((msg) {
+      if (toTranslate.any((t) => t.id == msg.id)) {
+        return msg.copyWith(isTranslating: true);
+      }
+      return msg;
+    }).toList();
+    emit(loadedState.copyWith(messages: updatedMessages, isInitialLoad: false, hasNewMessage: false));
+
+    // 并发翻译（限制并发数为3）
+    final futures = <Future>[];
+    for (int i = 0; i < toTranslate.length; i++) {
+      final msg = toTranslate[i];
+      final future = translationService
+          .translateMessage(msg.id, msg.context, targetLang)
+          .then((translated) {
+        if (translated != null && !isClosed) {
+          add(_MessageTranslated(msg.id, translated));
+        }
+      });
+      futures.add(future);
+      // 每3个一批
+      if (futures.length >= 3) {
+        await Future.wait(futures);
+        futures.clear();
+      }
+    }
+    if (futures.isNotEmpty) {
+      await Future.wait(futures);
+    }
+  }
+
+  void _onMessageTranslated(
+    _MessageTranslated event,
+    Emitter<ChatMessagesState> emit,
+  ) {
+    if (state is! ChatMessagesLoaded) return;
+    final loadedState = state as ChatMessagesLoaded;
+
+    final updatedMessages = loadedState.messages.map((msg) {
+      if (msg.id == event.messageId) {
+        return msg.copyWith(
+          translatedContext: event.translatedText,
+          isTranslating: false,
+        );
+      }
+      return msg;
+    }).toList();
+
+    emit(loadedState.copyWith(
+      messages: updatedMessages,
+      isInitialLoad: false,
+      hasNewMessage: false,
+    ));
   }
 
   void _subscribeWebSocketStream() {

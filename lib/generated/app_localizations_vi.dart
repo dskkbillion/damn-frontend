@@ -5288,4 +5288,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String payment_test_description(String subject) {
     return '$subject - Kiểm thử thanh toán';
   }
+
+  @override
+  String get chat_translating => 'Đang dịch...';
+
+  @override
+  String get chat_translation_label => 'Bản dịch';
 }

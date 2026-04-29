@@ -5054,4 +5054,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String payment_test_description(String subject) {
     return '$subject - 支付测试';
   }
+
+  @override
+  String get chat_translating => '翻译中...';
+
+  @override
+  String get chat_translation_label => '译文';
 }

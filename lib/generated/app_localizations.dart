@@ -9361,6 +9361,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{subject} - 支付测试'**
   String payment_test_description(String subject);
+
+  /// No description provided for @chat_translating.
+  ///
+  /// In zh, this message translates to:
+  /// **'翻译中...'**
+  String get chat_translating;
+
+  /// No description provided for @chat_translation_label.
+  ///
+  /// In zh, this message translates to:
+  /// **'译文'**
+  String get chat_translation_label;
 }
 
 class _AppLocalizationsDelegate

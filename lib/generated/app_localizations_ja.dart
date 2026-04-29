@@ -5105,4 +5105,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String payment_test_description(String subject) {
     return '$subject - 支払いテスト';
   }
+
+  @override
+  String get chat_translating => '翻訳中...';
+
+  @override
+  String get chat_translation_label => '翻訳';
 }

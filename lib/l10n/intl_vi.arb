@@ -3108,5 +3108,7 @@
     "seller_product_preview_load_failed": "Tải thông tin sản phẩm thất bại",
     "seller_product_preview_loading": "Đang tải thông tin sản phẩm...",
     "seller_product_preview_retry": "Thử lại",
-    "seller_product_preview_title": "Xem trước sản phẩm"
+    "seller_product_preview_title": "Xem trước sản phẩm",
+    "chat_translating": "Đang dịch...",
+    "chat_translation_label": "Bản dịch"
 }

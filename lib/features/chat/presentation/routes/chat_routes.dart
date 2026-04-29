@@ -22,6 +22,8 @@ import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_roo
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart';
+import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_translation_service.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 
 final sl = GetIt.instance; // Assuming GetIt instance is globally accessible or passed
 
@@ -60,6 +62,7 @@ class ChatRoutes {
               deleteChatMessage: sl<DeleteChatMessage>(),
               userRepository: sl<IUserRepository>(),
               webSocketDataSource: sl<IChatWebSocketDataSource>(),
+              translationService: ChatTranslationService(sl<CoreDioClient>()),
             );
 
             chatMessagesBloc.onNewMessageReceived = (newMessage) {

@@ -93,6 +93,23 @@ class ResetMessageSentFlag extends ChatMessagesEvent {
   List<Object?> get props => [];
 }
 
+/// Event to trigger auto-translation for opponent messages
+class TranslateMessages extends ChatMessagesEvent {
+  const TranslateMessages();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Internal event: a single message translation completed
+class _MessageTranslated extends ChatMessagesEvent {
+  final int messageId;
+  final String translatedText;
+  const _MessageTranslated(this.messageId, this.translatedText);
+  @override
+  List<Object?> get props => [messageId, translatedText];
+}
+
 // Internal event for WebSocket messages
 class _MessageReceived extends ChatMessagesEvent {
   final ChatMessageDto messageDto;
