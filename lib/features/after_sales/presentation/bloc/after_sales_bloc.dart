@@ -213,11 +213,7 @@ class AfterSalesBloc extends Bloc<AfterSalesEvent, AfterSalesState> {
         refundReason: event.refundReason,
         refundExplain: event.refundExplain,
         refundImage: imagePathsToSubmit, // Pass the prepared image paths
-        // Pass refundAmount to ApplyAfterSalesParams if the definition includes it
-        // This depends on ApplyAfterSalesParams and the corresponding UseCase/Repo logic
-        // Let's assume ApplyAfterSalesParams needs updating or amount is handled differently
-        // For now, we won't pass amount directly to params unless defined.
-        // Check ApplyAfterSalesParams definition.
+        refundAmount: event.refundAmount,
     );
 
     // Assuming ApplyForAfterSalesUseCase takes ApplyAfterSalesParams

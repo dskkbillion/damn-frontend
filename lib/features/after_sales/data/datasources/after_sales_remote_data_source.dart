@@ -35,7 +35,8 @@ class AfterSalesRemoteDataSource implements IAfterSalesRemoteDataSource {
       'refundType': params.refundType,
       if (params.refundImage != null && params.refundImage!.isNotEmpty)
         'refundImage': params.refundImage,
-      // 'refundPrice' is intentionally omitted based on analysis
+      if (params.refundAmount != null)
+        'refundPrice': params.refundAmount,
     };
 
     try {

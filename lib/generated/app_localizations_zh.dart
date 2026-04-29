@@ -392,19 +392,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_filter_all => '全部';
 
   @override
-  String get chat_filter_buyer => '我的购买';
+  String get chat_filter_buyer => '买家消息';
 
   @override
-  String get chat_filter_seller => '我的出售';
+  String get chat_filter_seller => '卖家消息';
 
   @override
   String get chat_filter_mode_all => '显示全部聊天';
 
   @override
-  String get chat_filter_mode_buyer => '只显示我的购买聊天';
+  String get chat_filter_mode_buyer => '只显示买家消息';
 
   @override
-  String get chat_filter_mode_seller => '只显示我的出售聊天';
+  String get chat_filter_mode_seller => '只显示卖家消息';
 
   @override
   String get chat_press_to_talk => '按住 说话';
@@ -5060,4 +5060,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chat_translation_label => '译文';
+
+  @override
+  String get after_sales_info_evidence => '申请凭证';
 }

@@ -51,6 +51,7 @@ class OrderItemCardActionButtons extends StatelessWidget {
         break;
       case OrderStatus.awaitingConfirmation:
         if (onViewLogistics != null) buttons.add(_buildButton(context, l10n.order_action_view_logistics, onViewLogistics!));
+        if (onApplyAfterSale != null) buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
         if (onConfirmReceipt != null) buttons.add(_buildButton(context, l10n.order_action_confirm_receipt, onConfirmReceipt!, isPrimary: true));
         break;
       case OrderStatus.awaitingEvaluation:
@@ -59,12 +60,16 @@ class OrderItemCardActionButtons extends StatelessWidget {
         if (onEvaluate != null) buttons.add(_buildButton(context, l10n.order_action_go_evaluate, onEvaluate!, isPrimary: true));
         break;
       case OrderStatus.orderCompleted:
+        if (onApplyAfterSale != null) buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
+        if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
+        if (onDelete != null) buttons.add(_buildButton(context, l10n.order_action_delete_order, onDelete!));
+        break;
       case OrderStatus.canceled:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
       case OrderStatus.applyingForMediation:
-         if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
-         if (onDelete != null) buttons.add(_buildButton(context, l10n.order_action_delete_order, onDelete!));
+        if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
+        if (onDelete != null) buttons.add(_buildButton(context, l10n.order_action_delete_order, onDelete!));
         break;
       default:
         // For unknown or states with no specific actions on list card, maybe show details button

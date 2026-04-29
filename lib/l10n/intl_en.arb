@@ -3118,5 +3118,6 @@
         }
     },
     "chat_translating": "Translating...",
-    "chat_translation_label": "Translation"
+    "chat_translation_label": "Translation",
+    "after_sales_info_evidence": "Evidence"
 }

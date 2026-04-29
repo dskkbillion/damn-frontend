@@ -396,19 +396,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chat_filter_all => 'すべて';
 
   @override
-  String get chat_filter_buyer => '購入チャット';
+  String get chat_filter_buyer => '買い手チャット';
 
   @override
-  String get chat_filter_seller => '販売チャット';
+  String get chat_filter_seller => '売り手チャット';
 
   @override
   String get chat_filter_mode_all => 'すべてのチャットを表示';
 
   @override
-  String get chat_filter_mode_buyer => '購入チャットのみ表示';
+  String get chat_filter_mode_buyer => '買い手チャットのみ表示';
 
   @override
-  String get chat_filter_mode_seller => '販売チャットのみ表示';
+  String get chat_filter_mode_seller => '売り手チャットのみ表示';
 
   @override
   String get chat_press_to_talk => '押して話す';
@@ -5111,4 +5111,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chat_translation_label => '翻訳';
+
+  @override
+  String get after_sales_info_evidence => '証拠画像';
 }

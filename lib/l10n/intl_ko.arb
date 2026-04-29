@@ -3110,5 +3110,6 @@
     "seller_product_preview_retry": "다시 시도",
     "seller_product_preview_title": "상품 미리보기",
     "chat_translating": "번역 중...",
-    "chat_translation_label": "번역"
+    "chat_translation_label": "번역",
+    "after_sales_info_evidence": "증거 자료"
 }

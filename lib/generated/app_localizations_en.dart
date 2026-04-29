@@ -406,19 +406,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_filter_all => 'All';
 
   @override
-  String get chat_filter_buyer => 'My Purchases';
+  String get chat_filter_buyer => 'Buyer Chats';
 
   @override
-  String get chat_filter_seller => 'My Sales';
+  String get chat_filter_seller => 'Seller Chats';
 
   @override
   String get chat_filter_mode_all => 'Showing all chats';
 
   @override
-  String get chat_filter_mode_buyer => 'Showing my purchase chats only';
+  String get chat_filter_mode_buyer => 'Showing buyer chats only';
 
   @override
-  String get chat_filter_mode_seller => 'Showing my sales chats only';
+  String get chat_filter_mode_seller => 'Showing seller chats only';
 
   @override
   String get chat_press_to_talk => 'Press to Talk';
@@ -5294,4 +5294,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chat_translation_label => 'Translation';
+
+  @override
+  String get after_sales_info_evidence => 'Evidence';
 }

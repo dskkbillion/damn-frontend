@@ -845,13 +845,13 @@ abstract class AppLocalizations {
   /// No description provided for @chat_filter_buyer.
   ///
   /// In zh, this message translates to:
-  /// **'我的购买'**
+  /// **'买家消息'**
   String get chat_filter_buyer;
 
   /// No description provided for @chat_filter_seller.
   ///
   /// In zh, this message translates to:
-  /// **'我的出售'**
+  /// **'卖家消息'**
   String get chat_filter_seller;
 
   /// No description provided for @chat_filter_mode_all.
@@ -863,13 +863,13 @@ abstract class AppLocalizations {
   /// No description provided for @chat_filter_mode_buyer.
   ///
   /// In zh, this message translates to:
-  /// **'只显示我的购买聊天'**
+  /// **'只显示买家消息'**
   String get chat_filter_mode_buyer;
 
   /// No description provided for @chat_filter_mode_seller.
   ///
   /// In zh, this message translates to:
-  /// **'只显示我的出售聊天'**
+  /// **'只显示卖家消息'**
   String get chat_filter_mode_seller;
 
   /// No description provided for @chat_press_to_talk.
@@ -9373,6 +9373,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'译文'**
   String get chat_translation_label;
+
+  /// No description provided for @after_sales_info_evidence.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请凭证'**
+  String get after_sales_info_evidence;
 }
 
 class _AppLocalizationsDelegate

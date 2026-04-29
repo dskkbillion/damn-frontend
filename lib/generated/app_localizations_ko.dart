@@ -396,19 +396,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chat_filter_all => '전체';
 
   @override
-  String get chat_filter_buyer => '내 구매';
+  String get chat_filter_buyer => '구매자 채팅';
 
   @override
-  String get chat_filter_seller => '내 판매';
+  String get chat_filter_seller => '판매자 채팅';
 
   @override
   String get chat_filter_mode_all => '전체 채팅 표시';
 
   @override
-  String get chat_filter_mode_buyer => '내 구매 채팅만 표시';
+  String get chat_filter_mode_buyer => '구매자 채팅만 표시';
 
   @override
-  String get chat_filter_mode_seller => '내 판매 채팅만 표시';
+  String get chat_filter_mode_seller => '판매자 채팅만 표시';
 
   @override
   String get chat_press_to_talk => '누르고 말하기';
@@ -5121,4 +5121,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chat_translation_label => '번역';
+
+  @override
+  String get after_sales_info_evidence => '증거 자료';
 }

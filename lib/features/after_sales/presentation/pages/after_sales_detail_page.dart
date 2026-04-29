@@ -280,11 +280,68 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           _buildDetailRow(AppLocalizations.of(context).after_sales_info_reason, application.refundReason ?? '-', textTheme, colorScheme),
           if (application.refundExplain?.isNotEmpty == true)
             _buildDetailRow(AppLocalizations.of(context).after_sales_info_description, application.refundExplain!, textTheme, colorScheme),
+          if (application.refundImage?.isNotEmpty == true) ...[
+            const Divider(height: 24),
+            Text(
+              AppLocalizations.of(context).after_sales_info_evidence,
+              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: application.refundImage!.map((url) =>
+                GestureDetector(
+                  onTap: () => _showFullImage(context, url),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      url,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.image_not_supported, color: Colors.grey[400], size: 32),
+                      ),
+                    ),
+                  ),
+                ),
+              ).toList(),
+            ),
+          ],
           if (application.auditRemark?.isNotEmpty == true) ...[
             const Divider(height: 24),
             _buildDetailRow(AppLocalizations.of(context).after_sales_info_audit_remark, application.auditRemark!, textTheme, colorScheme),
           ],
         ],
+      ),
+    );
+  }
+
+  void _showFullImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: InteractiveViewer(
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const Center(
+                child: Icon(Icons.broken_image, color: Colors.white, size: 64),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

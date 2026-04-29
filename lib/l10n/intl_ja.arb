@@ -3117,5 +3117,6 @@
         }
     },
     "chat_translating": "翻訳中...",
-    "chat_translation_label": "翻訳"
+    "chat_translation_label": "翻訳",
+    "after_sales_info_evidence": "証拠画像"
 }

@@ -406,19 +406,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chat_filter_all => 'Tất cả';
 
   @override
-  String get chat_filter_buyer => 'Mua của tôi';
+  String get chat_filter_buyer => 'Chat người mua';
 
   @override
-  String get chat_filter_seller => 'Bán của tôi';
+  String get chat_filter_seller => 'Chat người bán';
 
   @override
   String get chat_filter_mode_all => 'Đang hiển thị tất cả chat';
 
   @override
-  String get chat_filter_mode_buyer => 'Chỉ hiển thị chat mua hàng';
+  String get chat_filter_mode_buyer => 'Chỉ hiển thị chat người mua';
 
   @override
-  String get chat_filter_mode_seller => 'Chỉ hiển thị chat bán hàng';
+  String get chat_filter_mode_seller => 'Chỉ hiển thị chat người bán';
 
   @override
   String get chat_press_to_talk => 'Nhấn giữ để nói';
@@ -5294,4 +5294,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get chat_translation_label => 'Bản dịch';
+
+  @override
+  String get after_sales_info_evidence => 'Bằng chứng';
 }

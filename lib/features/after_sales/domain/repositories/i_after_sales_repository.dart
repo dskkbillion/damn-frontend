@@ -26,6 +26,7 @@ class ApplyAfterSalesParams extends Equatable {
   final String refundReason;
   final String refundExplain;
   final List<String>? refundImage; // List of uploaded image URLs
+  final double? refundAmount;
 
   const ApplyAfterSalesParams({
     required this.orderItemId,
@@ -33,6 +34,7 @@ class ApplyAfterSalesParams extends Equatable {
     required this.refundReason,
     required this.refundExplain,
     this.refundImage,
+    this.refundAmount,
   });
 
   @override
@@ -42,6 +44,7 @@ class ApplyAfterSalesParams extends Equatable {
         refundReason,
         refundExplain,
         refundImage,
+        refundAmount,
       ];
 }
 
