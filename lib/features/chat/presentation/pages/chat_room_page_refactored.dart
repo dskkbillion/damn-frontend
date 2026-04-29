@@ -393,7 +393,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                 onProductTap: () {
                                   if (chatRoom.productId != null) {
                                     context.push(
-                                      '/home/product/${chatRoom.productId}',
+                                      '/product/${chatRoom.productId}',
                                       extra: {'chatRoomId': chatRoom.id},
                                     );
                                   }
@@ -401,7 +401,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                                 onActionTap: () {
                                   if (chatRoom.productId != null) {
                                     context.push(
-                                      '/home/product/${chatRoom.productId}',
+                                      '/product/${chatRoom.productId}',
                                       extra: {'chatRoomId': chatRoom.id},
                                     );
                                   }

@@ -277,8 +277,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
                                 print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
-                                // 产品详情路由是 /home 的子路由：/home/product/:productId
-                                context.push('/home/product/${chatRoom.productId}');
+                                // 产品详情路由是顶层路由：/product/:productId
+                                context.push('/product/${chatRoom.productId}');
                               } else {
                                 print('商品ID为空，无法导航到商品详情页');
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -290,7 +290,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                               // 处理操作按钮点击（如查看详情）
                               if (chatRoom.productId != null) {
                                 print('点击操作按钮: ${chatRoom.productName}');
-                                context.push('/home/product/${chatRoom.productId}');
+                                context.push('/product/${chatRoom.productId}');
                               }
                             },
                           );

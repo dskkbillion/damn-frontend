@@ -432,7 +432,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
         return GestureDetector(
           onTap: () {
             // 使用标准Go Router导航
-            context.push('/home/product/${product.id}');
+            context.push('/product/${product.id}');
           },
           child: Container(
             decoration: BoxDecoration(

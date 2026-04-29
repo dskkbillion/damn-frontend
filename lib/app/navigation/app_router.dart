@@ -617,37 +617,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                    ),
                  ),
                  routes: [
-                   // 产品详情路由
-                   GoRoute(
-                     path: 'product/:productId',
-                     name: 'productDetail',
-                     pageBuilder: (context, state) {
-                       final productId = state.pathParameters['productId'] ?? '';
-                       return MaterialPage(
-                         key: ValueKey(state.matchedLocation), // 使用最简单的key策略
-                         child: BlocProvider(
-                           create: (context) => getIt<ProductDetailCubit>(),
-                           child: ProductDetailPage(productId: productId),
-                         ),
-                       );
-                     },
-                     routes: [
-                       // 产品评论子路由
-                       GoRoute(
-                         path: 'reviews',
-                         name: 'productReviews',
-                         pageBuilder: (context, state) {
-                           final productId = state.pathParameters['productId'] ?? '';
-                           final productIdInt = int.tryParse(productId) ?? 0;
-                           return MaterialPage(
-                             key: ValueKey(state.matchedLocation),
-                             child: ProductReviewsPage(productId: productIdInt),
-                           );
-                         },
-                       ),
-                     ],
-                   ),
-                   
                    // 搜索路由
                    GoRoute(
                      path: 'search',
@@ -658,7 +627,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                        source: 'buyer_shell_home',
                      ),
                    ),
-                   
+
                    // 搜索结果路由
                    GoRoute(
                      path: 'search-results',
@@ -798,6 +767,38 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             child: SellerPublicProfilePage(sellerId: sellerId),
           );
         },
+      ),
+
+      // 产品详情路由 - 顶层路由，不属于任何 Shell
+      // 避免从卖家/聊天等模块跳转后返回键跳错到买家首页 (#297)
+      GoRoute(
+        path: '/product/:productId',
+        name: 'productDetail',
+        pageBuilder: (context, state) {
+          final productId = state.pathParameters['productId'] ?? '';
+          return MaterialPage(
+            key: ValueKey(state.matchedLocation),
+            child: BlocProvider(
+              create: (context) => getIt<ProductDetailCubit>(),
+              child: ProductDetailPage(productId: productId),
+            ),
+          );
+        },
+        routes: [
+          // 产品评论子路由
+          GoRoute(
+            path: 'reviews',
+            name: 'productReviews',
+            pageBuilder: (context, state) {
+              final productId = state.pathParameters['productId'] ?? '';
+              final productIdInt = int.tryParse(productId) ?? 0;
+              return MaterialPage(
+                key: ValueKey(state.matchedLocation),
+                child: ProductReviewsPage(productId: productIdInt),
+              );
+            },
+          ),
+        ],
       ),
 
       // 支付专用路由 - 使用智能路由系统

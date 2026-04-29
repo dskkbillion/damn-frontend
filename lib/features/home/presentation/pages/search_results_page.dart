@@ -108,7 +108,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 hasMore: state.hasMore,
                 onProductCardClicked: (product) {
                   // 跳转到商品详情页
-                  context.push('/home/product/${product.id}');
+                  context.push('/product/${product.id}');
                 },
                 onLoadMore: () {
                   if (!state.isLoadingMore && state.hasMore) {

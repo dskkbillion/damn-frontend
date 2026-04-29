@@ -15,8 +15,9 @@ class HomeRoutes {
   /// 主页路径
   static const String homePath = '/home';
   
-  /// 产品详情路径（子路由，完整路径为 /home/product/:productId）
-  static const String productDetailPath = 'product/:productId';
+  /// 产品详情路径（顶层路由：/product/:productId）
+  /// 注意：已从 /home 子路由提升为顶层路由，避免跨 Shell 导航后返回键跳错 (#297)
+  static const String productDetailPath = '/product/:productId';
   
   /// 搜索路径（子路由，完整路径为 /home/search）
   static const String searchPath = 'search';

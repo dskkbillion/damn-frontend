@@ -13,11 +13,8 @@ class RealHomeNavigationService implements HomeNavigationService {
   @override
   void navigateToProductDetail(String productId) {
     AppLogger.d('RealHomeNavigationService: 导航到产品详情页 ID=$productId');
-    // 使用命名路由导航到产品详情页
-    router.pushNamed(
-      HomeRoutes.productDetailName,
-      pathParameters: {'productId': productId},
-    );
+    // 使用顶级路由避免跨 Shell 导航时 Navigator key 冲突 (#231)
+    router.push('/product/$productId');
   }
   
   @override

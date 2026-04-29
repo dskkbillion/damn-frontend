@@ -142,7 +142,7 @@ class NotificationNavigationService {
   /// 跳转到商品详情
   static void _navigateToProduct(BuildContext context, String productId) {
     try {
-      context.push('/home/product/$productId');
+      context.push('/product/$productId');
     } catch (e) {
       debugPrint('Failed to navigate to product: $e');
       _showNavigationError(context, '无法打开商品详情');
