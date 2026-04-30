@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart'; // 导入Flutter Material包
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:go_router/go_router.dart';
@@ -48,31 +49,37 @@ class ProfileRoutes {
   // 模块内部路由定义
   static final List<RouteBase> _routes = [
     GoRoute(
-      path: profilePath, 
+      path: profilePath,
       name: 'profile',
-      builder: (context, state) => const ProfilePage(),
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: const ProfilePage(),
+      ),
       routes: [
         // 子路由：账号与安全页面
         GoRoute(
           path: 'account-security',
           name: 'accountSecurity',
-          builder: (context, state) => const AccountSecurityPage(),
+          pageBuilder: (context, state) => state.buildSmartPage(
+            const AccountSecurityPage(),
+            name: 'accountSecurity',
+          ),
         ),
         // 子路由：钱包页面 - 使用GetIt获取主应用的依赖
         GoRoute(
           path: 'wallet',
           name: 'wallet',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             // 获取主应用的GetIt实例
             final getIt = GetIt.instance;
-            
+
             try {
               // 尝试从GetIt获取主应用的Dio实例
               final dio = getIt<Dio>();
-              
+
               // 获取主应用的其他必要依赖
               final secureStorage = getIt<FlutterSecureStorage>();
-              
+
               // 创建网络信息服务 - 优先尝试获取已注册的，如果没有则创建模拟服务
               NetworkInfo networkInfo;
               try {
@@ -81,58 +88,64 @@ class ProfileRoutes {
                 AppLogger.d('NetworkInfo not found in GetIt, using mock: $e');
                 networkInfo = mock_network.MockNetworkInfo();
               }
-              
+
               // 创建远程数据源
               final remoteDataSource = ProfileRemoteDataSourceImpl(
                 dio: dio,
                 storage: secureStorage,
                 imageCompressService: getIt<ImageCompressService>(),
               );
-              
+
               // 创建钱包仓库
               final walletRepository = WalletRepositoryImpl(
                 remoteDataSource: remoteDataSource,
                 networkInfo: networkInfo,
               );
-              
+
               // 创建用例
               final getWalletSummary = GetWalletSummary(walletRepository);
               final getWalletTransactions = GetWalletTransactions(walletRepository);
-              
+
               // 创建BLoC
               final walletBloc = WalletBloc(
                 getWalletSummary: getWalletSummary,
                 getWalletTransactions: getWalletTransactions,
                 walletRepository: walletRepository,
               );
-              
+
               AppLogger.d('Successfully created WalletBloc with app dependencies');
-              
+
               // 返回带BlocProvider的WalletPage
-              return BlocProvider<WalletBloc>(
-                create: (context) => walletBloc,
-                child: const WalletPage(),
+              return state.buildSmartPage(
+                BlocProvider<WalletBloc>(
+                  create: (context) => walletBloc,
+                  child: const WalletPage(),
+                ),
+                name: 'wallet',
               );
             } catch (e) {
               // 如果从GetIt获取依赖失败，打印错误并返回一个简单的错误提示页面
               AppLogger.d('Error creating WalletBloc with app dependencies: $e');
-              return Scaffold(
-                appBar: AppBar(title: const Text('钱包')),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('初始化钱包页面失败'),
-                      const SizedBox(height: 16),
-                      Text('错误: $e', style: const TextStyle(fontSize: 12, color: AppColors.error)),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('返回'),
-                      ),
-                    ],
+              return state.buildSmartPage(
+                Scaffold(
+                  appBar: AppBar(title: const Text('钱包')),
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('初始化钱包页面失败'),
+                        const SizedBox(height: 16),
+                        Text('错误: $e', style: const TextStyle(fontSize: 12, color: AppColors.error)),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('返回'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                name: 'walletError',
               );
             }
           },
@@ -141,23 +154,29 @@ class ProfileRoutes {
         GoRoute(
           path: 'language-settings',
           name: 'languageSettings',
-          builder: (context, state) => const LanguageSettingsPage(),
+          pageBuilder: (context, state) => state.buildSmartPage(
+            const LanguageSettingsPage(),
+            name: 'languageSettings',
+          ),
         ),
         // 添加小帮手的使命页面路由
         GoRoute(
           path: 'assistant-mission',
           name: 'assistantMission',
-          builder: (context, state) => const AssistantMissionPage(),
+          pageBuilder: (context, state) => state.buildSmartPage(
+            const AssistantMissionPage(),
+            name: 'assistantMission',
+          ),
         ),
         // 添加订单页面路由
         GoRoute(
           path: 'orders',
           name: 'profileOrders',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             // 提取status查询参数
             final statusString = state.uri.queryParameters['status'];
             AppLogger.d('[ProfileRoutes] Orders route - status param: $statusString');
-            
+
             // 解析status
             OrderStatus? parsedStatus;
             if (statusString != null) {
@@ -169,11 +188,14 @@ class ProfileRoutes {
                 AppLogger.d('[ProfileRoutes] Failed to parse status: $statusString');
               }
             }
-            
-            return BlocProvider(
-              create: (_) => GetIt.instance<OrderListBloc>()
-                ..add(LoadOrders(status: parsedStatus)),
-              child: OrderListPage(initialStatus: statusString),
+
+            return state.buildSmartPage(
+              BlocProvider(
+                create: (_) => GetIt.instance<OrderListBloc>()
+                  ..add(LoadOrders(status: parsedStatus)),
+                child: OrderListPage(initialStatus: statusString),
+              ),
+              name: 'profileOrders',
             );
           },
         ),
@@ -183,12 +205,15 @@ class ProfileRoutes {
     GoRoute(
       path: changeContactPath,
       name: 'changeContact',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
         final currentContact = state.uri.queryParameters['currentContact'] ?? '';
-        return ChangeContactPage(
-          contactType: contactType,
-          currentContact: currentContact,
+        return state.buildSmartPage(
+          ChangeContactPage(
+            contactType: contactType,
+            currentContact: currentContact,
+          ),
+          name: 'changeContact',
         );
       },
     ),
@@ -196,12 +221,15 @@ class ProfileRoutes {
     GoRoute(
       path: unbindContactPath,
       name: 'unbindContact',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
         final currentContact = state.uri.queryParameters['currentContact'] ?? '';
-        return UnbindContactPage(
-          contactType: contactType,
-          currentContact: currentContact,
+        return state.buildSmartPage(
+          UnbindContactPage(
+            contactType: contactType,
+            currentContact: currentContact,
+          ),
+          name: 'unbindContact',
         );
       },
     ),

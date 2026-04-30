@@ -23,10 +23,13 @@ class AiDocsRoutes {
       path: '/ai_chat', // Example path for the main chat interface
       name: 'aiChat',   // Optional route name
       // Wrap ChatPage with BlocProvider for AiChatBloc
-      builder: (context, state) => BlocProvider(
-        // Use GetIt (imported from injection_container) to create the AiChatBloc instance
-        create: (_) => getIt<AiChatBloc>(),
-        child: const ChatPage(), // Assuming ChatPage takes no initial parameters for this route
+      pageBuilder: (context, state) => NoTransitionPage(
+        key: state.pageKey,
+        child: BlocProvider(
+          // Use GetIt (imported from injection_container) to create the AiChatBloc instance
+          create: (_) => getIt<AiChatBloc>(),
+          child: const ChatPage(), // Assuming ChatPage takes no initial parameters for this route
+        ),
       ),
       // TODO: Add sub-routes if needed, e.g., for specific conversation IDs:
       // routes: [
