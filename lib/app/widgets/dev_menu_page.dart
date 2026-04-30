@@ -67,7 +67,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
                 const Divider(),
 
                 _buildSectionTitle(l10n.app_dev_order_module_buyer),
-                _buildNavButton(context, l10n.app_dev_order_list, '/orders'),
+                _buildNavButton(context, l10n.app_dev_order_list, '/profile/orders'),
                 _buildNavButton(context, l10n.app_dev_order_detail_example, '/orderDetail/mock_order_1'),
                 const Divider(),
 

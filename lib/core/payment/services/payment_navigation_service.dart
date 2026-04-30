@@ -82,7 +82,7 @@ class PaymentNavigationService {
       context.push('/orderDetail/${response.orderId}');
     } else {
       // 没有订单ID，跳转到订单列表
-      context.go('/orders');
+      context.go('/profile/orders');
     }
   }
   
@@ -102,7 +102,7 @@ class PaymentNavigationService {
     }
     
     // 跳转到订单列表的待付款状态
-    context.go('/orders?status=awaitingPayment');
+    context.go('/profile/orders?status=awaitingPayment');
   }
   
   /// 跳转到订单页面并显示消息
@@ -124,7 +124,7 @@ class PaymentNavigationService {
     
     // 跳转到订单列表的指定状态
     final statusString = status.toJsonString();
-    context.go('/orders?status=$statusString');
+    context.go('/profile/orders?status=$statusString');
   }
   
   /// 显示重试对话框
@@ -143,7 +143,7 @@ class PaymentNavigationService {
             onPressed: () {
               Navigator.of(context).pop();
               // 跳转到待付款订单
-              context.go('/orders?status=awaitingPayment');
+              context.go('/profile/orders?status=awaitingPayment');
             },
             child: Text(l10n.payment_nav_view_orders),
           ),
@@ -176,7 +176,7 @@ class PaymentNavigationService {
             onPressed: () {
               Navigator.of(context).pop();
               // 跳转到待付款订单
-              context.go('/orders?status=awaitingPayment');
+              context.go('/profile/orders?status=awaitingPayment');
             },
             child: Text(l10n.payment_nav_view_orders),
           ),

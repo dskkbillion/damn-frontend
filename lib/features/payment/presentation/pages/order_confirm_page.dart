@@ -223,7 +223,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
                       // 跳转到订单列表（不指定状态，显示全部订单）
-                      context.go('/orders');
+                      context.go('/profile/orders');
                     },
                     child: const Text('查看订单'),
                   ),

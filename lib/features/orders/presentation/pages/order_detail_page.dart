@@ -91,7 +91,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         if (context.canPop()) {
           context.pop();
         } else {
-          context.go('/orders');
+          context.go('/profile/orders');
         }
       },
       child: Scaffold(
@@ -134,7 +134,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             if (context.canPop()) {
               context.pop(true);
             } else {
-              context.go('/orders');
+              context.go('/profile/orders');
             }
           }
         });
