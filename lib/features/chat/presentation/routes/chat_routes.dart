@@ -40,50 +40,57 @@ class ChatRoutes {
     GoRoute(
       path: ':chatId',
       name: '${namePrefix}chatRoom',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final chatIdString = state.pathParameters['chatId'];
         final chatId = int.tryParse(chatIdString ?? '');
 
         if (chatId == null || chatId == 0) {
           AppLogger.d("Error: Invalid or missing chatId: $chatIdString");
-          return Scaffold(
+          return state.buildSmartPage(
+            Scaffold(
               appBar: AppBar(title: const Text("Error")),
-              body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")));
+              body: Center(child: Text("Invalid Chat ID '$chatIdString'. Please go back.")),
+            ),
+            name: 'chatRoomError',
+          );
         }
 
-        return BlocProvider(
-          create: (_) {
-            final chatMessagesBloc = ChatMessagesBloc(
-              chatId: chatId,
-              getMessageList: sl<GetMessageList>(),
-              sendMessage: sl<SendMessage>(),
-              revokeMessage: sl<RevokeMessage>(),
-              getChatRoomDetails: sl<GetChatRoomDetails>(),
-              deleteChatMessage: sl<DeleteChatMessage>(),
-              userRepository: sl<IUserRepository>(),
-              webSocketDataSource: sl<IChatWebSocketDataSource>(),
-              translationService: ChatTranslationService(sl<CoreDioClient>()),
-            );
+        return state.buildSmartPage(
+          BlocProvider(
+            create: (_) {
+              final chatMessagesBloc = ChatMessagesBloc(
+                chatId: chatId,
+                getMessageList: sl<GetMessageList>(),
+                sendMessage: sl<SendMessage>(),
+                revokeMessage: sl<RevokeMessage>(),
+                getChatRoomDetails: sl<GetChatRoomDetails>(),
+                deleteChatMessage: sl<DeleteChatMessage>(),
+                userRepository: sl<IUserRepository>(),
+                webSocketDataSource: sl<IChatWebSocketDataSource>(),
+                translationService: ChatTranslationService(sl<CoreDioClient>()),
+              );
 
-            chatMessagesBloc.onNewMessageReceived = (newMessage) {
-              AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
-              try {
-                if (sl.isRegistered<ChatListBloc>()) {
-                  final chatListBloc = sl<ChatListBloc>();
-                  chatListBloc.add(UpdateChatRoomLastMessage(
-                    chatId: chatId,
-                    lastMessage: newMessage,
-                  ));
+              chatMessagesBloc.onNewMessageReceived = (newMessage) {
+                AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
+                try {
+                  if (sl.isRegistered<ChatListBloc>()) {
+                    final chatListBloc = sl<ChatListBloc>();
+                    chatListBloc.add(UpdateChatRoomLastMessage(
+                      chatId: chatId,
+                      lastMessage: newMessage,
+                    ));
+                  }
+                } catch (e) {
+                  AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
                 }
-              } catch (e) {
-                AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
-              }
-            };
+              };
 
-            chatMessagesBloc.add(LoadChatMessages(chatId));
-            return chatMessagesBloc;
-          },
-          child: ChatRoomPage(chatId: chatId),
+              chatMessagesBloc.add(LoadChatMessages(chatId));
+              return chatMessagesBloc;
+            },
+            child: ChatRoomPage(chatId: chatId),
+          ),
+          name: 'chatRoom',
         );
       },
     ),
@@ -94,13 +101,16 @@ class ChatRoutes {
     GoRoute(
       path: '/chat', // Path for the chat list page
       name: 'chatList', // Optional name for navigation
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         // 使用 GetIt singleton，避免每次创建新实例导致旧实例 close 后仍收到事件
         final chatListBloc = sl<ChatListBloc>();
         chatListBloc.add(LoadChatRoomList());
-        return BlocProvider.value(
-          value: chatListBloc,
-          child: const ChatListPage(),
+        return NoTransitionPage(
+          key: state.pageKey,
+          child: BlocProvider.value(
+            value: chatListBloc,
+            child: const ChatListPage(),
+          ),
         );
       },
       // Define nested routes starting from /chat

@@ -2,23 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import BlocProvider
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // Import the DI container instance
 import '../../../../app/di/injection_container.dart';
 
 // Import Blocs needed for providing
-import '../bloc/order_list_bloc.dart';
 import '../bloc/order_detail_bloc.dart';
-import '../seller/bloc/seller_order_list_bloc.dart';
 // Import OrderStatus and potentially an extension for parsing
 import '../../domain/entities/order_status.dart';
-import '../../domain/entities/order_item.dart'; 
+import '../../domain/entities/order_item.dart';
 
 // Import pages used in this module's routes
-import '../pages/order_list_page.dart';
 import '../pages/order_detail_page.dart';
 import '../pages/order_evaluation_page.dart';
-import '../seller/pages/seller_order_list_page.dart';
 import '../seller/pages/seller_order_detail_page.dart';
 
 /// Defines routes specifically for the Orders feature module.
@@ -32,93 +29,70 @@ class OrderRoutes {
   static final List<RouteBase> _routes = [
     // Buyer Routes
     GoRoute(
-      path: '/orders',
-      name: 'orders',
-      builder: (context, state) {
-        // Extract the 'status' query parameter
-        final statusString = state.uri.queryParameters['status']; 
-        print('[GoRoute /orders] Received raw status string from URL: $statusString'); 
-        
-        final parsedStatus = OrderStatusExtension.fromString(statusString);
-        print('[GoRoute /orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
-        
-        // Assuming OrderListBloc should be provided here
-        return BlocProvider(
-          // Use the parsed status for the initial event
-          create: (_) => getIt<OrderListBloc>()..add(LoadOrders(status: parsedStatus)), 
-          child: OrderListPage(initialStatus: statusString), // Pass the original string
-        );
-      },
-    ),
-    GoRoute(
       path: '/orderDetail/:orderId',
       name: 'orderDetail',
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final String orderId = state.pathParameters['orderId'] ?? 'invalid';
         // Provide OrderDetailBloc for the page
-        return BlocProvider(
-          create: (_) => getIt<OrderDetailBloc>(),
-          child: OrderDetailPage(orderId: orderId),
+        return state.buildSmartPage(
+          BlocProvider(
+            create: (_) => getIt<OrderDetailBloc>(),
+            child: OrderDetailPage(orderId: orderId),
+          ),
+          name: 'orderDetail',
         );
       },
     ),
     GoRoute(
       path: '/evaluation/:itemId',
       name: 'evaluation',
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final String itemIdStr = state.pathParameters['itemId'] ?? 'invalid';
         final int? itemId = int.tryParse(itemIdStr);
         if (itemId == null) {
           print('Error: Invalid itemId parameter in route: $itemIdStr');
-          return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).order_route_error)),
-            body: Center(child: Text(AppLocalizations.of(context).order_route_invalid_item_id(itemIdStr))),
+          return state.buildSmartPage(
+            Scaffold(
+              appBar: AppBar(title: Text(AppLocalizations.of(context).order_route_error)),
+              body: Center(child: Text(AppLocalizations.of(context).order_route_invalid_item_id(itemIdStr))),
+            ),
+            name: 'evaluationError',
           );
         }
         // Get orderItem from extra if available
         final orderItem = state.extra as OrderItem?;
-        return OrderEvaluationPage(
-          itemId: itemId,
-          orderItem: orderItem,
+        return state.buildSmartPage(
+          OrderEvaluationPage(
+            itemId: itemId,
+            orderItem: orderItem,
+          ),
+          name: 'evaluation',
         );
       },
     ),
     // Seller Routes
     GoRoute(
-      path: '/seller/orders', // Seller list path
-      name: 'sellerOrders', // Optional name
-      // Wrap SellerOrderListPage with BlocProvider
-      builder: (context, state) {
-        // 提取status查询参数
-        final statusString = state.uri.queryParameters['status'];
-        print('[GoRoute /seller/orders] Received raw status string from URL: $statusString');
-        
-        // 解析status为OrderStatus枚举
-        final parsedStatus = OrderStatusExtension.fromString(statusString);
-        print('[GoRoute /seller/orders] Parsed status using OrderStatusExtension.fromString: $parsedStatus');
-        
-        return BlocProvider(
-          create: (_) => getIt<SellerOrderListBloc>()
-            ..add(LoadSellerOrdersRequested(statusFilter: parsedStatus)),
-          child: const SellerOrderListPage(),
-        );
-      },
-    ),
-    GoRoute(
       path: '/seller/orders/:orderId', // Seller detail path with parameter
       name: 'sellerOrderDetail', // Optional name
       // Note: Seller detail page likely needs its own BlocProvider too.
       // Assuming SellerOrderDetailBloc is injected by GetIt if needed inside the page.
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final String orderIdStr = state.pathParameters['orderId'] ?? 'invalid';
         final int? orderId = int.tryParse(orderIdStr);
         if (orderId == null) {
           print('Error: Invalid orderId parameter in route: $orderIdStr');
-          return Scaffold(
+          return state.buildSmartPage(
+            Scaffold(
               appBar: AppBar(title: const Text('Error')),
-              body: Center(child: Text('Invalid Order ID: $orderIdStr')));
+              body: Center(child: Text('Invalid Order ID: $orderIdStr')),
+            ),
+            name: 'sellerOrderDetailError',
+          );
         }
-        return SellerOrderDetailPage(orderId: orderId);
+        return state.buildSmartPage(
+          SellerOrderDetailPage(orderId: orderId),
+          name: 'sellerOrderDetail',
+        );
       },
     ),
   ];
