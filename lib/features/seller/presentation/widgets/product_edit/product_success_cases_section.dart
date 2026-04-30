@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 成功案例 section，完全由 BLoC state 驱动，无本地状态。
 ///
@@ -571,23 +572,20 @@ class _SuccessCaseImage extends StatelessWidget {
     }
 
     if (successCase.imageUrl.isNotEmpty) {
-      return Image.network(
-        successCase.imageUrl,
+      return AppNetworkImage(
+        imageUrl: successCase.imageUrl,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          if (successCase.imagePath.isNotEmpty) {
-            return Image.file(
-              File(successCase.imagePath),
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _brokenImage(),
-            );
-          }
-          return _brokenImage();
-        },
+        errorWidget: successCase.imagePath.isNotEmpty
+            ? Image.file(
+                File(successCase.imagePath),
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _brokenImage(),
+              )
+            : _brokenImage(),
       );
     }
 
@@ -635,19 +633,16 @@ class _EditDialogImage extends StatelessWidget {
     }
 
     if (imageUrl != null && imageUrl!.isNotEmpty) {
-      return Image.network(
-        imageUrl!,
+      return AppNetworkImage(
+        imageUrl: imageUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          if (localPath != null && localPath!.isNotEmpty) {
-            return Image.file(
-              File(localPath!),
-              fit: BoxFit.cover,
-              errorBuilder: _errorFallback,
-            );
-          }
-          return _errorFallback(context, error, stackTrace);
-        },
+        errorWidget: (localPath != null && localPath!.isNotEmpty)
+            ? Image.file(
+                File(localPath!),
+                fit: BoxFit.cover,
+                errorBuilder: _errorFallback,
+              )
+            : null,
       );
     }
 

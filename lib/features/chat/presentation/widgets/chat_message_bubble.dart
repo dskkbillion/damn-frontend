@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:flutter_markdown/flutter_markdown.dart'; // 导入Markdown渲染包
@@ -184,7 +185,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 child: CachedNetworkImage(
                   imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                  placeholder: (ctx, url) => const Center(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: ShimmerEffect(child: CircleAvatar()),
+                    ),
+                  ),
                   errorWidget: (context, url, error) => const Center(child: Icon(Icons.error)),
                 ),
               ),
@@ -532,18 +539,13 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
              borderRadius: BorderRadius.circular(16.0), // 给图片添加圆角，与消息气泡一致
               child: CachedNetworkImage(
                 imageUrl: imageUrl,
-                placeholder: (context, url) => Container(
-                   width: 150, height: 150,
-                   color: AppColors.borderInput,
-                   child: Column(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                       const CircularProgressIndicator(strokeWidth: 2),
-                       const SizedBox(height: 8),
-                       Text(AppLocalizations.of(context).chat_image_loading, style: const TextStyle(fontSize: 12)),
-                     ],
-                   ),
-                 ),
+                placeholder: (ctx, url) => const Center(
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: ShimmerEffect(child: CircleAvatar()),
+                  ),
+                ),
                errorWidget: (context, url, error) {
                  print("[Image] 加载错误: $url, 错误: $error");
                  // 提供更友好的错误显示并添加重试按钮

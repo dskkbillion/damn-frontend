@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 售后申请表单页面
@@ -356,12 +357,10 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               width: 60, height: 60,
               color: Colors.grey[300],
               child: item.imageUrl.isNotEmpty
-                 ? ClipRRect(
+                 ? AppNetworkImage(
+                     imageUrl: item.imageUrl,
+                     fit: BoxFit.cover,
                      borderRadius: BorderRadius.circular(4.0),
-                     child: Image.network(item.imageUrl, fit: BoxFit.cover,
-                       errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image, color: Colors.grey[500]),
-                       loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-                     ),
                    )
                  : Icon(Icons.image, color: Colors.grey[500]),
             ),

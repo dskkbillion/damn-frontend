@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_man
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 商品卡片组件
 /// 
@@ -60,18 +61,14 @@ class ProductCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 商品图片
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: product.images.isNotEmpty 
-                      ? Image.network(
-                          product.images.split(',').first,
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildErrorImage(),
-                        )
-                      : _buildErrorImage(),
-                ),
+                product.images.isNotEmpty
+                    ? AppNetworkImage(
+                        imageUrl: product.images.split(',').first,
+                        width: 80,
+                        height: 80,
+                        borderRadius: BorderRadius.circular(8.0),
+                      )
+                    : _buildErrorImage(),
                 const SizedBox(width: 12),
                 // 商品信息
                 Expanded(

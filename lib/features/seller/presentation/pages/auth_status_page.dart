@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 认证状态详情页面
 class AuthStatusPage extends StatelessWidget {
@@ -160,17 +161,9 @@ class AuthStatusPage extends StatelessWidget {
                       border: Border.all(color: AppColors.borderInput),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: Image.network(
-                      imageUrl,
+                    child: AppNetworkImage(
+                      imageUrl: imageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: AppColors.backgroundSecondary,
-                        child: const Icon(
-                          Icons.broken_image,
-                          color: AppColors.textTertiary,
-                          size: 40,
-                        ),
-                      ),
                     ),
                   ),
                 );
@@ -465,16 +458,9 @@ class AuthStatusPage extends StatelessWidget {
         child: Stack(
           children: [
             Center(
-              child: Image.network(
-                imageUrl,
+              child: AppNetworkImage(
+                imageUrl: imageUrl,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(
-                    Icons.broken_image,
-                    color: AppColors.textTertiary,
-                    size: 80,
-                  ),
-                ),
               ),
             ),
             Positioned(

@@ -6,6 +6,7 @@ import '../bloc/profile_bloc.dart';
 import '../../domain/entities/user_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
@@ -203,7 +204,13 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
                     ? CachedNetworkImage(
                         imageUrl: avatarUrl,
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => const CircularProgressIndicator(),
+                        placeholder: (ctx, url) => const Center(
+                          child: SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: ShimmerEffect(child: CircleAvatar()),
+                          ),
+                        ),
                         errorWidget: (context, url, error) => const Icon(
                           Icons.person,
                           size: 60,

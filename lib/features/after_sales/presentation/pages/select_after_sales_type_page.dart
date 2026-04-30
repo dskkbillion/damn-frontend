@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 // Import OrderItem entity using the correct path
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -52,12 +53,10 @@ class SelectAfterSalesTypePage extends StatelessWidget {
               width: 60, height: 60,
               color: Colors.grey[300],
               child: item.imageUrl.isNotEmpty
-                 ? ClipRRect(
-                     borderRadius: BorderRadius.circular(4.0), // Add slight rounding
-                     child: Image.network(item.imageUrl, fit: BoxFit.cover,
-                       errorBuilder: (context, error, stackTrace) => Icon(Icons.broken_image, color: Colors.grey[500]),
-                       loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-                     ),
+                 ? AppNetworkImage(
+                     imageUrl: item.imageUrl,
+                     fit: BoxFit.cover,
+                     borderRadius: BorderRadius.circular(4.0),
                    )
                  : Icon(Icons.image, color: Colors.grey[500]),
             ),

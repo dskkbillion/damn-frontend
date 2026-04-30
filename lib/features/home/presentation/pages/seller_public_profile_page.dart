@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -534,10 +535,9 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       return CachedNetworkImage(
         imageUrl: product.images.first,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          color: AppColors.borderPrimary,
-          child: const Center(
-            child: CircularProgressIndicator(),
+        placeholder: (context, url) => ShimmerEffect(
+          child: Container(
+            color: AppColors.borderPrimary,
           ),
         ),
         errorWidget: (context, url, error) => Container(

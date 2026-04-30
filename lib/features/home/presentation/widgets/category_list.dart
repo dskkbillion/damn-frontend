@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 import '../../domain/entities/home_category.dart';
 
@@ -77,37 +78,11 @@ class CategoryList extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: ClipOval(
-                child: Image.network(
-                  category.iconUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.borderInput,
-                      child: const Icon(
-                        Icons.category,
-                        color: AppColors.textTertiary,
-                        size: 24,
-                      ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              child: AppNetworkImage(
+                imageUrl: category.iconUrl,
+                width: 48,
+                height: 48,
+                borderRadius: BorderRadius.circular(24),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),

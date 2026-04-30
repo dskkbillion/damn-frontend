@@ -13,6 +13,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -902,20 +903,11 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     }
     
     if (firstImage != null && firstImage.isNotEmpty) {
-      return Image.network(
-        firstImage,
+      return AppNetworkImage(
+        imageUrl: firstImage,
         width: 80,
         height: 80,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          AppLogger.d('[_buildProductImage] Image load error for ${product.id}: $error');
-          return Container(
-            width: 80,
-            height: 80,
-            color: AppColors.borderInput,
-            child: const Icon(Icons.image_not_supported, color: AppColors.textTertiary),
-          );
-        },
       );
     }
 

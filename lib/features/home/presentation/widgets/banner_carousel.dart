@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../domain/entities/banner.dart' as home_banner;
@@ -98,14 +99,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    print('BannerCarousel.build: banners=${widget.banners}');
-    print('BannerCarousel.build: banners.length=${widget.banners.length}');
-    if (widget.banners.isNotEmpty) {
-      print('BannerCarousel.build: first banner imageUrl=${widget.banners.first.imageUrl}');
-    }
-    
     if (widget.banners.isEmpty) {
-      print('BannerCarousel.build: banners is empty');
       return SizedBox(height: widget.height);
     }
 
@@ -151,10 +145,9 @@ class _BannerCarouselState extends State<BannerCarousel> {
                           return CachedNetworkImage(
                             imageUrl: banner.imageUrl,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
+                            placeholder: (context, url) => ShimmerEffect(
+                              child: Container(
+                                color: Colors.grey[200],
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(

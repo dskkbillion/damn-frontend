@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import '../../domain/entities/related_service_entity.dart';
 
 /// {@template service_card}
@@ -36,39 +37,11 @@ class ServiceCard extends StatelessWidget {
           child: Row(
             children: [
               // --- 左侧图片 ---
-              ClipRRect(
+              AppNetworkImage(
+                imageUrl: service.imageUrl,
+                width: 60,
+                height: 60,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                child: Image.network(
-                  service.imageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
-                  // 加载占位符
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      width: 60,
-                      height: 60,
-                      color: AppColors.borderPrimary,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                  // 错误占位符
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 60,
-                    height: 60,
-                    color: AppColors.borderPrimary,
-                    child: const Icon(Icons.image_not_supported, color: AppColors.textTertiary),
-                  ),
-                ),
               ),
 
               // --- 中间文本 ---

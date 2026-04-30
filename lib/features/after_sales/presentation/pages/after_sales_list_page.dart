@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/bloc/after_sales_bloc.dart';
 import '../../domain/entities/after_sales_application.dart'; // Import entity for list item
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 const int _defaultListPageSize = 10; // Define page size constant here
 
@@ -90,7 +91,7 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
            // TODO: Create a dedicated AfterSalesItemCard widget
            return ListTile(
               leading: application.productImage != null
-                ? Image.network(application.productImage!, width: 50, height: 50, fit: BoxFit.cover)
+                ? AppNetworkImage(imageUrl: application.productImage!, width: 50, height: 50)
                 : const Icon(Icons.image, size: 50),
               title: Text(application.productName ?? AppLocalizations.of(context).after_sales_list_unknown_product),
               subtitle: Text('${AppLocalizations.of(context).after_sales_list_status(application.refundStateText ?? application.refundState)}\n${AppLocalizations.of(context).after_sales_list_apply_time(application.createTime?.toLocal().toString() ?? '-')}'),

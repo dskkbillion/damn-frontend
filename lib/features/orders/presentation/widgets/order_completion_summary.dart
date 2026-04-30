@@ -4,6 +4,8 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// Widget displaying summary information for completed or canceled orders.
 class OrderCompletionSummary extends StatelessWidget {
@@ -163,21 +165,11 @@ class OrderCompletionSummary extends StatelessWidget {
                         itemCount: imageUrls.length,
                         separatorBuilder: (_, __) => const SizedBox(width: AppDimensions.spacingSm),
                         itemBuilder: (context, index) {
-                          return ClipRRect(
+                          return AppNetworkImage(
+                            imageUrl: imageUrls[index],
+                            width: 72,
+                            height: 72,
                             borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                            child: Image.network(
-                              imageUrls[index],
-                              width: 72,
-                              height: 72,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                width: 72,
-                                height: 72,
-                                color: colorScheme.surfaceContainerHighest,
-                                alignment: Alignment.center,
-                                child: const Icon(Icons.broken_image_outlined),
-                              ),
-                            ),
                           );
                         },
                       ),

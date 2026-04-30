@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import shared_pr
 import 'dart:convert'; // Import dart:convert for json handling
 import 'file_upload_item.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget for submitting order requirements (text and attachments).
@@ -211,13 +212,12 @@ class _OrderRequirementSubmissionFormState
             // Use a simpler display than the full OrderDetailItemTile if needed
             if (item != null)
               ListTile(
-                 leading: ClipRRect(
+                 leading: AppNetworkImage(
+                    imageUrl: item.imageUrl,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      item.imageUrl,
-                      width: 50, height: 50, fit: BoxFit.cover,
-                      errorBuilder: (_,__,___) => const Icon(Icons.broken_image, size: 50),
-                    ),
                   ),
                   title: Text(item.productName, style: textTheme.titleSmall),
                   subtitle: Text(item.skuName ?? '', style: textTheme.bodySmall),

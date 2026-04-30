@@ -9,6 +9,7 @@ import '../../../../features/chat/presentation/utils/markdown_style_helper.dart'
 import '../../domain/entities/ai_chat_message_entity.dart';
 import '../../domain/entities/related_service_entity.dart'; // Import RelatedServiceEntity
 import 'blinking_cursor.dart'; // Import the blinking cursor widget
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// {@template chat_message_bubble}
 /// A StatefulWidget that displays a single chat message bubble.
@@ -319,48 +320,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
          crossAxisAlignment: CrossAxisAlignment.start,
          mainAxisSize: MainAxisSize.min,
          children: [
-           ClipRRect(
+           AppNetworkImage(
+             imageUrl: imageUrl,
+             width: 200,
+             fit: BoxFit.cover,
              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-             child: Image.network(
-               imageUrl,
-               errorBuilder: (context, error, stackTrace) {
-                 // 图片加载失败时显示错误提示
-                 return Container(
-                   width: 200,
-                   height: 150,
-                   color: AppColors.borderPrimary,
-                   child: const Column(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                       Icon(Icons.error_outline, color: AppColors.textTertiary),
-                       SizedBox(height: AppDimensions.spacingSm),
-                       Text('图片加载失败', style: TextStyle(color: AppColors.textSecondary)),
-                     ],
-                   ),
-                 );
-               },
-               loadingBuilder: (context, child, loadingProgress) {
-                 if (loadingProgress == null) return child;
-                 // 图片加载中显示进度
-                 return Container(
-                   width: 200,
-                   height: 150,
-                   color: AppColors.backgroundSecondary,
-                   child: Center(
-                     child: CircularProgressIndicator(
-                       value: loadingProgress.expectedTotalBytes != null
-                           ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                           : null,
-                     ),
-                   ),
-                 );
-               },
-               fit: BoxFit.cover,
-               // 限制图片大小以避免过大
-               width: 200,
-               // 高度可以自适应，也可以设置固定值
-               // height: 150,
-             ),
            ),
 
            if (widget.message.content.isNotEmpty)

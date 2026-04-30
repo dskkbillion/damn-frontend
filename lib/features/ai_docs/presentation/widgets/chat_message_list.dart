@@ -10,6 +10,7 @@ import 'chat_message_bubble.dart';
 import 'streaming_message_bubble.dart';
 import 'time_separator.dart'; // 🕐 导入时间分隔符组件
 import 'package:dskk_flutter_refactor/core/utils/smart_time_formatter.dart'; // 🕐 导入智能时间格式化工具
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 class ChatMessageList extends StatefulWidget {
   const ChatMessageList({super.key});
@@ -368,32 +369,11 @@ class _ChatMessageListState extends State<ChatMessageList> {
               if (message.fileUrls?.isNotEmpty ?? false)
                  Padding(
                    padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-                   child: ClipRRect(
+                   child: AppNetworkImage(
+                     imageUrl: message.fileUrls!.first,
+                     height: 150,
+                     fit: BoxFit.cover,
                      borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
-                     child: Image.network(
-                        message.fileUrls!.first,
-                        height: 150,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                                height: 150,
-                                alignment: Alignment.center,
-                                child: CircularProgressIndicator(
-                                   strokeWidth: 2,
-                                   value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                          : null,
-                                ),
-                            );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                            height: 150,
-                            color: AppColors.borderPrimary,
-                            alignment: Alignment.center,
-                            child: const Icon(Icons.broken_image, color: AppColors.error, size: 50),
-                        ),
-                     ),
                    ),
                  ),
               // --- Display Message Content (with potential cursor for streaming) ---

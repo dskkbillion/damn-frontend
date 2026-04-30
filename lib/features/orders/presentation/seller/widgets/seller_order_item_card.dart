@@ -10,6 +10,8 @@ import 'seller_order_item_card_action_buttons.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 用于在**卖家**订单列表中显示单个订单摘要信息的卡片 Widget。
 class SellerOrderItemCard extends StatelessWidget {
@@ -149,27 +151,11 @@ class SellerOrderItemCard extends StatelessWidget {
                 children: [
                   // 商品图片
                   if (firstItem?.imageUrl != null && firstItem!.imageUrl.isNotEmpty)
-                    ClipRRect(
+                    AppNetworkImage(
+                      imageUrl: firstItem.imageUrl,
+                      width: 80,
+                      height: 80,
                       borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        firstItem.imageUrl,
-                        width: 80, height: 80,
-                        fit: BoxFit.cover,
-                        // 可以添加加载和错误处理
-                        loadingBuilder: (context, child, loadingProgress) {
-                           if (loadingProgress == null) return child;
-                           return Container(
-                             width: 80, height: 80,
-                             color: AppColors.backgroundSecondary,
-                             child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-                           );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 80, height: 80,
-                          color: AppColors.backgroundSecondary,
-                          child: const Icon(Icons.broken_image, color: AppColors.textTertiary),
-                        ),
-                      ),
                     )
                   else // 如果没有图片URL，显示占位符
                      Container(

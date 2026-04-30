@@ -25,7 +25,7 @@ class AppNetworkImage extends StatelessWidget {
   /// 淡入时长，默认 300ms
   final Duration fadeInDuration;
 
-  /// 淡出时长，默认 300ms
+  /// 淡出时长，默认 0ms（缓存命中时不闪烁）
   final Duration fadeOutDuration;
 
   /// 自定义 placeholder（优先于内置逻辑）
@@ -55,7 +55,7 @@ class AppNetworkImage extends StatelessWidget {
     this.borderRadius,
     this.heroTag,
     this.fadeInDuration = const Duration(milliseconds: 300),
-    this.fadeOutDuration = const Duration(milliseconds: 300),
+    this.fadeOutDuration = Duration.zero,
     this.placeholder,
     this.errorWidget,
     this.showRetryOnError = false,
@@ -122,6 +122,7 @@ class AppNetworkImage extends StatelessWidget {
       height: height,
       fadeInDuration: fadeInDuration,
       fadeOutDuration: fadeOutDuration,
+      placeholderFadeInDuration: Duration.zero,
       memCacheWidth: memCacheWidth,
       memCacheHeight: memCacheHeight,
       placeholder: (ctx, url) => _buildPlaceholder(ctx),

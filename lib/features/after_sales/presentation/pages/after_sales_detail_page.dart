@@ -6,6 +6,9 @@ import '../../domain/entities/after_sales_application.dart'; // Import Entity
 // Correct import path for DI container if using getIt directly (less common in UI)
 import '../../../../app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_button_builder.dart';
 
@@ -293,23 +296,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
               children: application.refundImage!.map((url) =>
                 GestureDetector(
                   onTap: () => _showFullImage(context, url),
-                  child: ClipRRect(
+                  child: AppNetworkImage(
+                    imageUrl: url,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      url,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.image_not_supported, color: Colors.grey[400], size: 32),
-                      ),
-                    ),
                   ),
                 ),
               ).toList(),
@@ -333,10 +325,17 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         child: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: InteractiveViewer(
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Center(
+              placeholder: (ctx, url) => const Center(
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: ShimmerEffect(child: CircleAvatar()),
+                ),
+              ),
+              errorWidget: (ctx, url, error) => const Center(
                 child: Icon(Icons.broken_image, color: Colors.white, size: 64),
               ),
             ),
@@ -461,24 +460,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Product Image
-              ClipRRect(
+              AppNetworkImage(
+                imageUrl: application.productImage ?? '',
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
                 borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 80, 
-                  height: 80,
-                  color: Colors.grey[200],
-                  child: application.productImage != null && application.productImage!.isNotEmpty
-                    ? Image.network(
-                        application.productImage!, 
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.image_not_supported, 
-                          color: Colors.grey[400], 
-                          size: 32,
-                        ),
-                      )
-                    : Icon(Icons.image, color: Colors.grey[400], size: 32),
-                ),
               ),
               const SizedBox(width: 12.0),
               // Product Details

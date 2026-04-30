@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'dart:io';
 
@@ -189,21 +191,17 @@ class _ImagePreviewPageState extends State<ImagePreviewPage> {
   Widget _buildImageWidget(String imagePath) {
     // 检查是否是网络图片
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-      return Image.network(
-        imagePath,
+      return CachedNetworkImage(
+        imageUrl: imagePath,
         fit: BoxFit.contain,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                  : null,
-              color: AppColors.onPrimary,
-            ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
+        placeholder: (ctx, url) => const Center(
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: ShimmerEffect(child: CircleAvatar()),
+          ),
+        ),
+        errorWidget: (context, url, error) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

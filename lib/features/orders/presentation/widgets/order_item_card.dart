@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_de
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 用于在订单列表中显示单个订单摘要信息的卡片 Widget。
 class OrderItemCard extends StatelessWidget {
@@ -261,27 +262,11 @@ class OrderItemCard extends StatelessWidget {
                 children: [
                   // 商品图片
                   if (firstItem?.imageUrl != null && firstItem!.imageUrl.isNotEmpty)
-                    ClipRRect(
+                    AppNetworkImage(
+                      imageUrl: firstItem.imageUrl,
+                      width: 80,
+                      height: 80,
                       borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        firstItem.imageUrl,
-                        width: 80, height: 80,
-                        fit: BoxFit.cover,
-                        // 可以添加加载和错误处理
-                        loadingBuilder: (context, child, loadingProgress) {
-                           if (loadingProgress == null) return child;
-                           return Container(
-                             width: 80, height: 80,
-                             color: Colors.grey[200],
-                             child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-                           );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.broken_image, color: Colors.grey[400]),
-                        ),
-                      ),
                     )
                   else // 如果没有图片URL，显示占位符
                      Container(

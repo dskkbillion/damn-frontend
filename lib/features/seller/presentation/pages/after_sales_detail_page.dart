@@ -10,6 +10,9 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 
 class AfterSalesDetailPage extends StatefulWidget {
   static const routeName = '/seller/after-sales/:id';
@@ -379,16 +382,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
               return GestureDetector(
                 onTap: () =>
                     _showImageDialog(context, refund.credentials[index]),
-                child: ClipRRect(
+                child: AppNetworkImage(
+                  imageUrl: refund.credentials[index],
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    refund.credentials[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppColors.borderInput,
-                      child: const Icon(Icons.broken_image),
-                    ),
-                  ),
                 ),
               );
             },
@@ -781,10 +778,17 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 3.0,
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Container(
+                  placeholder: (ctx, url) => const Center(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: ShimmerEffect(child: CircleAvatar()),
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
                     color: AppColors.borderInput,

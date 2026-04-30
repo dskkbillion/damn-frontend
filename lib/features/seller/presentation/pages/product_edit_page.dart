@@ -20,6 +20,7 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 // 输入验证常量
@@ -1899,36 +1900,25 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
     // 优先显示网络图片
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      return Image.network(
-        imageUrl,
+      return AppNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // 网络图片失败，尝试本地图片
-          if (localPath != null && localPath.isNotEmpty) {
-            return Image.file(
-              File(localPath),
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
-                    const SizedBox(height: 4),
-                    Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
-                  ],
-                );
-              },
-            );
-          }
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
-              const SizedBox(height: 4),
-              Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
-            ],
-          );
-        },
+        errorWidget: (localPath != null && localPath.isNotEmpty)
+            ? Image.file(
+                File(localPath),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.broken_image, size: 32, color: AppColors.textTertiary),
+                      const SizedBox(height: 4),
+                      Text(AppLocalizations.of(context).seller_product_edit_image_load_failed ?? 'Image load failed', style: TextStyle(color: AppColors.textTertiary, fontSize: 12)),
+                    ],
+                  );
+                },
+              )
+            : null,
       );
     }
 
@@ -2036,36 +2026,32 @@ class _ProductEditPageState extends State<ProductEditPage> {
       );
     } else if (successCase.imageUrl.isNotEmpty) {
       // 已上传 - 显示网络图片
-      imageWidget = Image.network(
-        successCase.imageUrl,
+      imageWidget = AppNetworkImage(
+        imageUrl: successCase.imageUrl,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          // 如果网络图片加载失败，尝试使用本地图片
-          if (successCase.imagePath.isNotEmpty) {
-            return Image.file(
-              File(successCase.imagePath),
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: AppColors.backgroundSecondary,
-                  child: Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
-                );
-              },
-            );
-          }
-          return Container(
-            width: double.infinity,
-            height: double.infinity,
-            color: AppColors.backgroundSecondary,
-            child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
-          );
-        },
+        errorWidget: successCase.imagePath.isNotEmpty
+            ? Image.file(
+                File(successCase.imagePath),
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    color: AppColors.backgroundSecondary,
+                    child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
+                  );
+                },
+              )
+            : Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: AppColors.backgroundSecondary,
+                child: const Icon(Icons.broken_image, size: 40, color: AppColors.textTertiary),
+              ),
       );
     } else if (successCase.imagePath.isNotEmpty) {
       // 待上传 - 显示本地图片
@@ -2624,40 +2610,30 @@ class _ProductEditPageState extends State<ProductEditPage> {
             border: Border.all(color: AppColors.borderInput),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(7),
-            child: localPath != null
-                ? Image.file(
+          child: localPath != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(7),
+                  child: Image.file(
                     File(localPath),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                  )
-                : networkUrl != null 
-                    ? Image.network(
-                        networkUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                            ),
-                          );
-                        },
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.image_not_supported, color: AppColors.textTertiary),
-                        ),
-                      )
-                    : const Center(
-                        child: Icon(Icons.image_not_supported, size: 40, color: AppColors.textTertiary),
+                  ),
+                )
+              : networkUrl != null
+                  ? AppNetworkImage(
+                      imageUrl: networkUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      borderRadius: BorderRadius.circular(7),
+                      errorWidget: const Center(
+                        child: Icon(Icons.image_not_supported, color: AppColors.textTertiary),
                       ),
-          ),
+                    )
+                  : const Center(
+                      child: Icon(Icons.image_not_supported, size: 40, color: AppColors.textTertiary),
+                    ),
         ),
         
         // 删除按钮

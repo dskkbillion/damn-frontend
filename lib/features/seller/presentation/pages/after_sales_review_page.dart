@@ -11,6 +11,9 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refu
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/status_tag.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 
 /// 售后审核列表页面
 class AfterSalesReviewPage extends StatefulWidget {
@@ -242,20 +245,12 @@ class _RefundCard extends StatelessWidget {
                       padding: const EdgeInsets.only(right: 8.0),
                       child: GestureDetector(
                         onTap: () => _showImageDialog(context, refund.credentials[index]),
-                        child: ClipRRect(
+                        child: AppNetworkImage(
+                          imageUrl: refund.credentials[index],
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(4.0),
-                          child: Image.network(
-                            refund.credentials[index],
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              width: 80,
-                              height: 80,
-                              color: AppColors.borderInput,
-                              child: const Icon(Icons.broken_image),
-                            ),
-                          ),
                         ),
                       ),
                     );
@@ -488,9 +483,17 @@ class _RefundCard extends StatelessWidget {
               child: InteractiveViewer(
                 minScale: 0.5,
                 maxScale: 3.0,
-                child: Image.network(
-                  imageUrl,
-                  errorBuilder: (_, __, ___) => Container(
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (ctx, url) => const Center(
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: ShimmerEffect(child: CircleAvatar()),
+                    ),
+                  ),
+                  errorWidget: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
                     color: Colors.grey[300],

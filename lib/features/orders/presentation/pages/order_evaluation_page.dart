@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../widgets/order_evaluation_form.dart';
 import '../../domain/entities/order_item.dart';
@@ -148,20 +149,10 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                     color: Colors.grey[200],
                   ),
                   child: item.imageUrl.isNotEmpty
-                      ? ClipRRect(
+                      ? AppNetworkImage(
+                          imageUrl: item.imageUrl,
+                          fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.network(
-                            item.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Icon(Icons.broken_image, color: Colors.grey[500]),
-                            loadingBuilder: (context, child, progress) =>
-                                progress == null
-                                    ? child
-                                    : const Center(
-                                        child: CircularProgressIndicator(strokeWidth: 2)
-                                      ),
-                          ),
                         )
                       : Icon(Icons.image, color: Colors.grey[500], size: 40),
                 ),

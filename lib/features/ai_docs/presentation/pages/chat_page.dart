@@ -29,6 +29,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate
 // Import chat module components for navigation
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 // Get the GetIt instance
 final getIt = GetIt.instance;
@@ -518,20 +519,12 @@ class ServiceGridItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 图片区域占据更多空间
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
-                  child: AspectRatio(
-                    aspectRatio: 1.0, // 保持正方形比例
-                    child: Image.network(
-                      service.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppColors.borderPrimary,
-                        child: const Center(
-                          child: Icon(Icons.image_not_supported, color: AppColors.textTertiary, size: 40),
-                        ),
-                      ),
-                    ),
+                AspectRatio(
+                  aspectRatio: 1.0, // 保持正方形比例
+                  child: AppNetworkImage(
+                    imageUrl: service.imageUrl,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(AppDimensions.spacingSm),
                   ),
                 ),
 

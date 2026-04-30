@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 import '../../domain/entities/favorite_service.dart';
 
@@ -39,36 +40,26 @@ class FavoriteServiceItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 服务图片
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: service.imageUrl != null
-                    ? Image.network(
-                        service.imageUrl!,
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[300],
-                            child: const Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        width: 80,
-                        height: 80,
-                        color: Colors.grey[300],
-                        child: const Icon(
-                          Icons.image,
-                          color: Colors.grey,
-                        ),
-                      ),
-              ),
+              if (service.imageUrl != null)
+                AppNetworkImage(
+                  imageUrl: service.imageUrl!,
+                  width: 80,
+                  height: 80,
+                  borderRadius: BorderRadius.circular(8),
+                )
+              else
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.image,
+                    color: Colors.grey,
+                  ),
+                ),
               const SizedBox(width: 12),
               // 服务信息
               Expanded(

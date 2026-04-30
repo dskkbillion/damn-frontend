@@ -1,6 +1,8 @@
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// Widget to display a single order item within the OrderDetailPage.
 class OrderDetailItemTile extends StatelessWidget {
@@ -19,27 +21,11 @@ class OrderDetailItemTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Item Image
-          ClipRRect(
+          AppNetworkImage(
+            imageUrl: item.imageUrl,
+            width: 70,
+            height: 70,
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              item.imageUrl,
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  width: 70, height: 70,
-                  color: Colors.grey[200],
-                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2.0)),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 70, height: 70,
-                color: Colors.grey[200],
-                child: Icon(Icons.broken_image, color: Colors.grey[400]),
-              ),
-            ),
           ),
           const SizedBox(width: 12.0),
           // Item Details

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_edit/product_edit_state.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import '../image_preview_page.dart';
 
 /// 商品封面图上传 section，完全由 BLoC state 驱动，无本地状态。
@@ -341,25 +342,12 @@ class _ImageItem extends StatelessWidget {
       );
     }
     if (networkUrl != null) {
-      return Image.network(
-        networkUrl!,
+      return AppNetworkImage(
+        imageUrl: networkUrl!,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: CircularProgressIndicator(
-              value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                  : null,
-              strokeWidth: 2,
-            ),
-          );
-        },
-        errorBuilder: (_, __, ___) =>
-            const Center(child: Icon(Icons.image_not_supported, color: AppColors.textTertiary)),
+        errorWidget: const Center(child: Icon(Icons.image_not_supported, color: AppColors.textTertiary)),
       );
     }
     return const Center(

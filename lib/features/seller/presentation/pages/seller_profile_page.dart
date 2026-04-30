@@ -13,6 +13,7 @@ import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 import '../../../../app/app_mode.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
@@ -213,29 +214,25 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: ClipOval(
-                    child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-                      ? Image.network(
-                          profile.avatarUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: AppColors.textTertiary,
-                            child: const Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      : Container(
+                  child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+                    ? AppNetworkImage(
+                        imageUrl: profile.avatarUrl!,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(40),
+                      )
+                    : Container(
+                        decoration: const BoxDecoration(
                           color: AppColors.textTertiary,
-                          child: const Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Colors.white,
-                          ),
+                          shape: BoxShape.circle,
                         ),
-                  ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                      ),
                 ),
               ),
               const SizedBox(width: 16),
