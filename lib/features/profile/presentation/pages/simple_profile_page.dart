@@ -1,10 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
+import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
 
 class SimpleProfilePage extends StatefulWidget {
   final VoidCallback? onSwitchMode;
@@ -18,9 +25,51 @@ class SimpleProfilePage extends StatefulWidget {
 class _SimpleProfilePageState extends State<SimpleProfilePage> {
   // 模拟用户数据
   String? userName;
-  bool isOnline = false;
+  bool _isOnline = true;
   String? avatarUrl;
   File? avatarFile;
+
+  // 事件总线订阅
+  StreamSubscription<SellerOnlineStatusChangedEvent>? _onlineStatusSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOnlineStatus();
+    _onlineStatusSubscription = EventBus().sellerOnlineStatusChangedStream.listen((event) {
+      if (mounted) {
+        setState(() {
+          _isOnline = event.isOnline;
+        });
+        AppLogger.d('[SimpleProfilePage] Online status updated via EventBus: ${event.isOnline}');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _onlineStatusSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadOnlineStatus() async {
+    try {
+      final getTimeSettingsUseCase = GetIt.instance<GetTimeSettingsUseCase>();
+      final result = await getTimeSettingsUseCase(NoParams());
+      result.fold(
+        (failure) => AppLogger.d('[SimpleProfilePage] Failed to load online status: ${failure.message}'),
+        (settings) {
+          if (mounted) {
+            setState(() {
+              _isOnline = settings.isOnline;
+            });
+          }
+        },
+      );
+    } catch (e) {
+      AppLogger.d('[SimpleProfilePage] Error loading online status: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,14 +202,16 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
+                        decoration: BoxDecoration(
+                          color: _isOnline ? AppColors.success : AppColors.textTertiary,
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        AppLocalizations.of(context).profile_online,
+                        _isOnline
+                            ? AppLocalizations.of(context).profile_online
+                            : AppLocalizations.of(context).profile_offline,
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.onPrimary.withValues(alpha: 0.8),
