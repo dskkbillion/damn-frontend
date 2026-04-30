@@ -141,8 +141,7 @@ class PaymentNavigationService {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              // 跳转到待付款订单
+              // context.go() 会替换整个导航栈，dialog 自动销毁
               context.go('/profile/orders?status=awaitingPayment');
             },
             child: Text(l10n.payment_nav_view_orders),
@@ -174,8 +173,7 @@ class PaymentNavigationService {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              // 跳转到待付款订单
+              // context.go() 会替换整个导航栈，dialog 自动销毁
               context.go('/profile/orders?status=awaitingPayment');
             },
             child: Text(l10n.payment_nav_view_orders),
