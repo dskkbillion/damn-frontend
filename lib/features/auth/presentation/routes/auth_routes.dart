@@ -1,5 +1,6 @@
 // May be needed for context/state access
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 // Import the DI container instance
@@ -27,10 +28,14 @@ class AuthRoutes {
       path: loginPath, // Use the constant
       name: 'login',   // Optional route name
       // Wrap UnifiedLoginPage with BlocProvider for SmsLoginCubit
-      builder: (context, state) => BlocProvider(
-        // Use GetIt (imported from injection_container) to create the Cubit instance
-        create: (_) => getIt<SmsLoginCubit>(),
-        child: const UnifiedLoginPage(), 
+      pageBuilder: (context, state) => state.buildSmartPage(
+        BlocProvider(
+          // Use GetIt (imported from injection_container) to create the Cubit instance
+          create: (_) => getIt<SmsLoginCubit>(),
+          child: const UnifiedLoginPage(),
+        ),
+        name: 'login',
+        source: 'auth_routes',
       ),
       // TODO: Add sub-routes if needed for the login flow
     ),

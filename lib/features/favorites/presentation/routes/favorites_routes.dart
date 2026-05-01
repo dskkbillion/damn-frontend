@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 
@@ -18,9 +19,13 @@ class FavoritesRoutes {
     GoRoute(
       path: '/favorites',
       name: 'favorites',
-      builder: (context, state) => BlocProvider(
-        create: (context) => GetIt.instance<FavoritesBloc>(),
-        child: const FavoritesPage(),
+      pageBuilder: (context, state) => state.buildSmartPage(
+        BlocProvider(
+          create: (context) => GetIt.instance<FavoritesBloc>(),
+          child: const FavoritesPage(),
+        ),
+        name: 'favorites',
+        source: 'favorites_routes',
       ),
     ),
   ];

@@ -197,9 +197,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   // Define Seller Shell Branch Routes explicitly
   final sellerDashboardRoute = GoRoute(
-    path: '/seller/dashboard', 
-    pageBuilder: (context, state) => state.buildSmartPage(
-      BlocProvider(
+    path: '/seller/dashboard',
+    pageBuilder: (context, state) => NoTransitionPage(
+      key: state.pageKey,
+      child: BlocProvider(
       create: (context) {
         try {
           // 尝试从GetIt获取
@@ -213,7 +214,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             final upgradeUseCase = GetSellerUpgradeStatisticsUseCase(repo);
             final indexUseCase = GetSellerIndexStatisticsUseCase(repo);
             final percentUseCase = GetSellerPercentStatisticsUseCase(repo);
-            
+
             return SellerStatisticsBloc(
               upgradeUseCase,
               indexUseCase,
@@ -228,8 +229,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       },
       child: const SellerStatisticsPage(),
       ),
-      name: 'sellerDashboard',
-      source: 'app_navigation_seller_shell',
     ),
   );
   
@@ -258,8 +257,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   // 定义商品管理路由
   final sellerProductsRoute = GoRoute(
     path: '/seller/products',
-    pageBuilder: (context, state) => state.buildSmartPage(
-      BlocProvider(
+    pageBuilder: (context, state) => NoTransitionPage(
+      key: state.pageKey,
+      child: BlocProvider(
       create: (_) {
         try {
           // 优先使用GetIt工厂获取ProductManagementBloc
@@ -278,8 +278,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       },
       child: const ProductManagementPage(),
       ),
-      name: 'sellerProducts',
-      source: 'app_navigation_seller_shell',
     ),
   );
   
@@ -289,13 +287,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       pageBuilder: (context, state) {
         // 使用 BlocProvider.value 避免 dispose 时 close singleton
         final chatListBloc = GetIt.I<ChatListBloc>()..add(LoadChatRoomList());
-        return state.buildSmartPage(
-          BlocProvider.value(
+        return NoTransitionPage(
+          key: state.pageKey,
+          child: BlocProvider.value(
             value: chatListBloc,
             child: const ChatListPage(),
           ),
-          name: 'sellerChat',
-          source: 'app_navigation_seller_shell',
         );
       },
       // 卖家模式下的聊天室子路由，复用 ChatRoutes 共享逻辑
@@ -306,8 +303,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final sellerHomeRoute = GoRoute(
     path: SellerRoutes.home,
     name: 'seller_home',
-    pageBuilder: (context, state) => state.buildSmartPage(
-      BlocProvider(
+    pageBuilder: (context, state) => NoTransitionPage(
+      key: state.pageKey,
+      child: BlocProvider(
       create: (context) {
         try {
           // 使用GetIt工厂获取SellerHomeBloc，而不是使用手动创建的实例
@@ -324,8 +322,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       },
       child: const SellerHomePage(),
       ),
-      name: 'sellerHome',
-      source: 'app_navigation_seller_shell',
     ),
   );
   
@@ -609,8 +605,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                GoRoute(
                  path: '/home',
                  name: 'home',
-                 pageBuilder: (context, state) => MaterialPage(
-                   key: ValueKey(state.matchedLocation), // 使用最简单的key策略
+                 pageBuilder: (context, state) => NoTransitionPage(
+                   key: state.pageKey,
                    child: BlocProvider<HomeBloc>(
                      create: (_) => getIt<HomeBloc>(),
                      child: const HomePage(),
@@ -658,8 +654,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/dev_menu',
-                pageBuilder: (context, state) => const NoTransitionPage(
-                  child: DevMenuPage(),
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  child: const DevMenuPage(),
                 ),
               ),
             ],

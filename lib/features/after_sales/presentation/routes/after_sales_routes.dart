@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 
 // Import After Sales pages
@@ -27,36 +28,50 @@ class AfterSalesRoutes {
     GoRoute(
       path: '/afterSales',
       name: 'afterSales',
-      builder: (context, state) => const AfterSalesListPage(), // Using builder
+      pageBuilder: (context, state) => state.buildSmartPage(
+        const AfterSalesListPage(),
+        name: 'afterSales',
+        source: 'after_sales_routes',
+      ),
     ),
     GoRoute(
       path: '/afterSalesDetail/:id', // Using :id as the parameter name
       name: 'afterSalesDetail',
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (context, state) {
         final String id = state.pathParameters['id'] ?? 'invalid';
-        return AfterSalesDetailPage(
-          id: id,
+        return state.buildSmartPage(
+          AfterSalesDetailPage(id: id),
+          name: 'afterSalesDetail',
+          source: 'after_sales_routes',
         );
       },
     ),
     GoRoute(
       path: '/selectAfterSalesType/:orderItemId',
       name: 'selectAfterSalesType',
-      builder: (BuildContext context, GoRouterState state) {
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final OrderItem? orderItem = state.extra as OrderItem?;
         if (orderItem == null) {
           AppLogger.d('Error: OrderItem not passed correctly to /selectAfterSalesType');
           // Consider navigating to an error page or showing a dialog
-          return const Scaffold(body: Center(child: Text('Error: Missing order item data.')));
+          return state.buildSmartPage(
+            const Scaffold(body: Center(child: Text('Error: Missing order item data.'))),
+            name: 'selectAfterSalesType',
+            source: 'after_sales_routes',
+          );
         }
         AppLogger.d('Navigated to /selectAfterSalesType, received item: ${orderItem.productName}');
-        return SelectAfterSalesTypePage(orderItem: orderItem);
+        return state.buildSmartPage(
+          SelectAfterSalesTypePage(orderItem: orderItem),
+          name: 'selectAfterSalesType',
+          source: 'after_sales_routes',
+        );
       },
     ),
     GoRoute(
        path: '/afterSalesApply', // Path for the application form
        name: 'afterSalesApply',
-       builder: (BuildContext context, GoRouterState state) {
+       pageBuilder: (BuildContext context, GoRouterState state) {
           // Extract parameters carefully
           final String? itemIdStr = state.uri.queryParameters['itemId'];
           final String? type = state.uri.queryParameters['type'];
@@ -67,18 +82,26 @@ class AfterSalesRoutes {
           // Validate parameters
           if (itemId == null || type == null || type.isEmpty || orderItem == null) {
              AppLogger.d('Error: Invalid parameters for /afterSalesApply. ItemId: $itemIdStr, Type: $type, Item: ${orderItem == null ? 'null' : 'provided'}');
-             return const Scaffold(body: Center(child: Text('Error: Invalid apply parameters.')));
+             return state.buildSmartPage(
+               const Scaffold(body: Center(child: Text('Error: Invalid apply parameters.'))),
+               name: 'afterSalesApply',
+               source: 'after_sales_routes',
+             );
           }
 
           AppLogger.d('Navigating to /afterSalesApply with itemId: $itemId, type: $type, item: ${orderItem.productName}');
           // Pass parameters to the page constructor
-          return BlocProvider(
-            create: (_) => getIt<AfterSalesBloc>(),
-            child: AfterSalesApplyPage(
-              orderItemId: itemId,
-              afterSalesType: type,
-              orderItem: orderItem,
+          return state.buildSmartPage(
+            BlocProvider(
+              create: (_) => getIt<AfterSalesBloc>(),
+              child: AfterSalesApplyPage(
+                orderItemId: itemId,
+                afterSalesType: type,
+                orderItem: orderItem,
+              ),
             ),
+            name: 'afterSalesApply',
+            source: 'after_sales_routes',
           );
         },
     ),
