@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/payment_prompt_payload.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
@@ -41,7 +42,8 @@ class MessageListCubit extends Cubit<MessageListState> {
   final RevokeMessage _revokeMessage;
   final DeleteChatMessage _deleteChatMessage;
   final ChatPreloadService? _preloadService; // 可选的预加载服务
-  final IChatLocalDataSource? _localDataSource; // 本地数据源
+  // ignore: unused_field
+  final IChatLocalDataSource? _localDataSource; // DI-injected, retained for future use
   final GetChatRoomDetails? _getChatRoomDetails; // 获取聊天室详情
   final IHomeRepository? _homeRepository; // 商品仓库
   
@@ -154,12 +156,6 @@ class MessageListCubit extends Cubit<MessageListState> {
           messages: List.from(_allMessages),
           hasMore: _hasMore,
         ));
-        
-        // 检查是否需要插入本地付费提示（买卖双方都检查）
-        if (_isLightConsultation) {
-          // 延迟执行避免阻塞响应
-          Future.microtask(() => _checkAndInsertLocalPaymentPrompt());
-        }
         
         // 触发图片预加载
         _triggerImagePreload(messages);
@@ -343,16 +339,10 @@ class MessageListCubit extends Cubit<MessageListState> {
 
         // 通知 ChatListBloc 更新最后一条消息
         _updateChatListLastMessage(sentMessage);
-
-        // 检查是否需要插入本地付费提示（买卖双方都检查）
-        if (_isLightConsultation) {
-          // 延迟执行避免阻塞响应
-          Future.microtask(() => _checkAndInsertLocalPaymentPrompt());
-        }
       },
     );
   }
-  
+
   /// Withdraw a message (alias for revokeMessage)
   Future<void> withdrawMessage(int messageId) async {
     return revokeMessage(messageId);
@@ -459,12 +449,9 @@ class MessageListCubit extends Cubit<MessageListState> {
         // 更新聊天列表的最后一条消息
         _updateChatListLastMessage(message);
         
-        // 如果是轻咨询，检查是否需要显示付费提示
+        // 如果是轻咨询，重新计算轮次以驱动 shouldShowPaymentPromptButton
         if (_isLightConsultation) {
-          // 重新计算轮次
           _calculateRoundCount(_allMessages);
-          // 检查付费提示
-          Future.microtask(() => _checkAndInsertLocalPaymentPrompt());
         }
       }
     }
@@ -616,34 +603,10 @@ class MessageListCubit extends Cubit<MessageListState> {
     // 获取最后发送的付费提示消息轮次
     int lastPromptRound = 0;
     for (final message in _allMessages) {
-      // 检查是否为付费提示消息（可能是text类型但内容是payment_prompt）
-      bool isPaymentPrompt = message.type == 'payment_prompt';
-
-      // 如果是text类型，检查内容是否包含付费提示标记
-      if (!isPaymentPrompt && message.type == ChatMessageType.text) {
-        try {
-          if (message.context.contains('"type":"payment_prompt"')) {
-            isPaymentPrompt = true;
-          } else {
-            final content = jsonDecode(message.context);
-            if (content['type'] == 'payment_prompt') {
-              isPaymentPrompt = true;
-            }
-          }
-        } catch (_) {
-          // 不是JSON格式，忽略
-        }
-      }
-
-      if (isPaymentPrompt) {
-        // 尝试从消息内容中获取轮次信息
-        try {
-          final content = jsonDecode(message.context);
-          lastPromptRound = content['roundCount'] ?? 0;
-          break;
-        } catch (_) {
-          // 忽略解析错误
-        }
+      final payload = PaymentPromptPayload.tryParse(message.context);
+      if (payload != null) {
+        lastPromptRound = payload.roundCount;
+        break;
       }
     }
 
@@ -675,118 +638,46 @@ class MessageListCubit extends Cubit<MessageListState> {
   int get currentRoundCount => _roundCount;
 
   /// 卖家发送付费提示消息
-  /// [showPopup] - 是否在买家端弹窗显示（默认false，仅显示消息）
-  Future<void> sendPaymentPromptMessage({bool showPopup = false}) async {
+  Future<void> sendPaymentPromptMessage() async {
     if (_currentChatId == null || !_isSeller) return;
 
     AppLogger.d('[PaymentPrompt] Seller sending payment prompt at round $_roundCount');
 
-    // 检查是否有商品信息
     if (_currentChatRoom?.productId == null) {
       AppLogger.d('[PaymentPrompt] ERROR: No product associated with this chat room');
       throw Exception('无法发送付费提示：聊天室未关联商品');
     }
 
-    // 检查是否成功获取商品详情
     if (_productDetail == null || _productDetail!.variants == null || _productDetail!.variants!.isEmpty) {
       AppLogger.d('[PaymentPrompt] ERROR: Product detail or variants not available');
       throw Exception('无法发送付费提示：商品信息获取失败，请稍后重试');
     }
 
-    // 使用真实的商品档位
-    final variants = _productDetail!.variants!.map((v) => {
-      'id': v.id,
-      'price': v.sellingPrice,
-      'name': v.name,
-    }).toList();
+    final variants = _productDetail!.variants!
+        .map((v) => PaymentPromptVariant(
+              id: v.id,
+              price: v.sellingPrice,
+              name: v.name,
+            ))
+        .toList();
     AppLogger.d('[PaymentPrompt] Using real product variants: ${variants.length} items');
 
-    // 创建付费提示消息内容
-    final random = Random();
-    final promptText = _paymentPromptMessages[random.nextInt(_paymentPromptMessages.length)];
-
-    final promptContent = jsonEncode({
-      'type': 'payment_prompt',
-      'source': 'seller',
-      'content': promptText,
-      'productId': _currentChatRoom?.productId?.toString(),
-      'sellerId': _productDetail?.sellerId,  // 添加卖家ID，用于订单创建
-      'roundCount': _roundCount,
-      'variants': variants,
-      'showPopup': showPopup,  // 添加弹窗标记
-    });
-
-    // 作为普通文本消息发送，但内容是特殊格式的JSON
-    // 后端会将其作为普通text类型存储，前端通过内容格式识别
-    await sendTextMessage(promptContent); // 不指定messageType，默认使用'text'
-  }
-
-  /// 检查并插入本地付费提示（买家端自动显示，已废弃）
-  Future<void> _checkAndInsertLocalPaymentPrompt() async {
-    // 这个方法已废弃，改为卖家主动发送
-    return;
-
-    // 获取显示次数
-    final count = await _localDataSource?.getPaymentPromptCount(_currentChatId!) ?? 0;
-    AppLogger.d('[PaymentPrompt] Current display count: $count');
-    
-    // 已显示4次，不再提醒（1-5-10-20共4次）
-    if (count >= 4) return;
-    
-    // 判断是否触发（1-5-10-20轮次）
-    bool shouldShow = false;
-    if (count == 0 && _roundCount >= 1) {
-      shouldShow = true; // 第一次：1轮（便于测试）
-    } else if (count == 1 && _roundCount >= 5) {
-      shouldShow = true; // 第二次：5轮
-    } else if (count == 2 && _roundCount >= 10) {
-      shouldShow = true; // 第三次：10轮  
-    } else if (count == 3 && _roundCount >= 20) {
-      shouldShow = true; // 第四次：20轮
-    }
-    
-    if (!shouldShow) return;
-    
-    // 创建虚拟消息
-    final virtualMessage = _createLocalPaymentPromptMessage();
-    
-    // 插入到消息列表开头（最新消息）
-    _allMessages.insert(0, virtualMessage);
-    
-    // 更新计数
-    await _localDataSource?.savePaymentPromptCount(_currentChatId!, count + 1);
-    
-    // 更新UI
-    _emitLoadedState();
-  }
-  
-  /// 创建本地付费提示消息
-  ChatMessage _createLocalPaymentPromptMessage() {
-    final random = Random();
-    final promptText = _paymentPromptMessages[random.nextInt(_paymentPromptMessages.length)];
-    
-    return ChatMessage(
-      id: -DateTime.now().millisecondsSinceEpoch, // 负数ID标识虚拟消息
-      chatId: _currentChatId!,
-      senderId: 0, // 系统消息
-      type: 'payment_prompt',
-      context: jsonEncode({
-        'type': 'payment_prompt',
-        'source': 'local', // 标记为本地生成
-        'content': promptText,
-        'productId': _currentChatRoom?.productId?.toString(),
-        'variants': [
-          {'id': 1, 'price': 30, 'name': '基础咨询'},
-          {'id': 2, 'price': 50, 'name': '标准咨询', 'recommended': true},
-          {'id': 3, 'price': 100, 'name': '深度咨询'},
-        ],
-      }),
-      createTime: DateTime.now(),
-      withdrawFlag: false,
-      status: MessageStatus.read,
+    final promptText = _paymentPromptMessages[Random().nextInt(_paymentPromptMessages.length)];
+    final payload = PaymentPromptPayload(
+      type: kPaymentPromptType,
+      source: 'seller',
+      content: promptText,
+      productId: _currentChatRoom?.productId?.toString(),
+      sellerId: _productDetail?.sellerId,
+      roundCount: _roundCount,
+      variants: variants,
     );
+
+    // 作为普通文本消息发送，内容是 PaymentPromptPayload 的 JSON。
+    // 后端按 text 类型存储；前端通过 PaymentPromptPayload.tryParse 识别并渲染卡片。
+    await sendTextMessage(jsonEncode(payload.toJson()));
   }
-  
+
   /// 发送简单的状态更新
   void _emitLoadedState() {
     emit(MessageListState.loaded(
@@ -860,12 +751,6 @@ class MessageListCubit extends Cubit<MessageListState> {
         
         // 通知更新最后一条消息
         _updateChatListLastMessage(sentMessage);
-        
-        // 检查是否需要插入本地付费提示（买卖双方都检查）
-        if (_isLightConsultation) {
-          // 延迟执行避免阻塞响应
-          Future.microtask(() => _checkAndInsertLocalPaymentPrompt());
-        }
       },
     );
   }

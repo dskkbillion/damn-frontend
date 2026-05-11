@@ -13,7 +13,9 @@ import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
+import '../../domain/entities/payment_prompt_payload.dart';
 import '../../domain/constants/message_type.dart';
+import 'payment_prompt_bubble.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
 import '../../domain/entities/participant.dart'; // Import Participant
 import '../../domain/constants/chat_constants.dart';
@@ -225,6 +227,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   @override
   Widget build(BuildContext context) {
+    // Payment-prompt messages are encoded as text-typed messages whose
+    // context is a JSON envelope. Detect & dispatch to the rich bubble
+    // before falling through to the default text/image/audio renderers.
+    // isSeller here means "viewer is the seller": payment_prompt is always
+    // sent by the seller, so viewer-is-sender ⇔ viewer-is-seller.
+    final paymentPrompt = PaymentPromptPayload.tryParse(widget.message.context);
+    if (paymentPrompt != null) {
+      return PaymentPromptBubble(
+        payload: paymentPrompt,
+        isSeller: widget.message.senderId == widget.currentUserParticipantId,
+        chatRoomId: widget.message.chatId,
+      );
+    }
+
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
