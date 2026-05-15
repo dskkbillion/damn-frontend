@@ -3,8 +3,8 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
@@ -74,23 +74,25 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   }
   
   Future<void> _initializeChat() async {
-    // 获取当前用户ID (common_user_id)
+    // 取当前 commonUserId 走 IUserRepository(与 ChatRoomDto.toEntity / sendMessage
+    // 同一条链路),而不是直接读 secureStorage——切换账号后 secureStorage 的写入存在
+    // 时序窗口,直接读会拿到上一个登录用户的残留值,导致 chat_room 误判身份。
     try {
-      final secureStorage = getIt<FlutterSecureStorage>();
-      final commonUserIdStr = await secureStorage.read(key: 'common_user_id');
-      if (commonUserIdStr != null) {
-        final userId = int.tryParse(commonUserIdStr);
-        if (userId != null) {
-          setState(() {
-            _currentUserId = userId;
-          });
-          AppLogger.d('DEBUG: Got current user ID from storage: $_currentUserId');
-        } else {
-          AppLogger.d('ERROR: Failed to parse common_user_id: $commonUserIdStr');
-        }
-      } else {
-        AppLogger.d('WARNING: No common_user_id found in storage');
-      }
+      final userResult = await getIt<IUserRepository>().getCurrentUser();
+      userResult.fold(
+        (failure) => AppLogger.d('ERROR: Failed to get current user: ${failure.message}'),
+        (user) {
+          final commonUserId = int.tryParse(user.commonUserId);
+          if (commonUserId != null) {
+            setState(() {
+              _currentUserId = commonUserId;
+            });
+            AppLogger.d('DEBUG: Got current user ID from IUserRepository: $_currentUserId');
+          } else {
+            AppLogger.d('ERROR: User.commonUserId is not parseable: ${user.commonUserId}');
+          }
+        },
+      );
     } catch (e) {
       AppLogger.d('ERROR: Failed to get current user ID: $e');
     }
