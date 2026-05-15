@@ -143,8 +143,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           // );
         },
         (chatId) {
-          // 导航到聊天页面（使用新版支持文件上传的聊天室）
-          GoRouter.of(context).push('/chat/refactored/$chatId');
+          // 用 go 而非 push: /product/:id 是 root navigator 顶层路由,
+          // /chat/refactored/:chatId 在 Shell branch 内, 跨 Navigator push
+          // 会撞到 Shell 已有的 pageKey reservation 触发断言失败。
+          GoRouter.of(context).go('/chat/refactored/$chatId');
         },
       );
     } catch (e) {
