@@ -1505,6 +1505,16 @@
             }
         }
     },
+    "order_card_canceling": "正在取消订单...",
+    "order_card_canceled": "订单已取消",
+    "order_card_cancel_failed": "取消失败：{error}",
+    "@order_card_cancel_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "order_card_load_detail_failed": "加载订单详情失败：{error}",
     "@order_card_load_detail_failed": {
         "placeholders": {
