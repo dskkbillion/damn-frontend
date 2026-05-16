@@ -25,13 +25,22 @@ class ProductTranslation extends Equatable {
     this.provider,
   });
 
+  /// 源/目标同语言 — 后端可能仍返回 translation 数据但实际无翻译需求,
+  /// 此时应回退到原文,避免显示空翻译或与原文相同的内容 (#341)。
+  bool get _sameLanguage =>
+      sourceLang != null &&
+      targetLang != null &&
+      sourceLang!.toLowerCase() == targetLang!.toLowerCase();
+
   /// 是否包含有效的翻译内容
   bool get hasTranslation =>
-      (translatedName != null && translatedName!.isNotEmpty) ||
-      (translatedDescription != null && translatedDescription!.isNotEmpty);
+      !_sameLanguage &&
+      ((translatedName != null && translatedName!.isNotEmpty) ||
+          (translatedDescription != null && translatedDescription!.isNotEmpty));
 
   /// 返回翻译名称，若无翻译则回退到原始名称
   String nameOrOriginal(String original) {
+    if (_sameLanguage) return original;
     if (translatedName != null && translatedName!.isNotEmpty) {
       return translatedName!;
     }
@@ -40,6 +49,7 @@ class ProductTranslation extends Equatable {
 
   /// 返回翻译描述，若无翻译则回退到原始描述
   String descriptionOrOriginal(String original) {
+    if (_sameLanguage) return original;
     if (translatedDescription != null && translatedDescription!.isNotEmpty) {
       return translatedDescription!;
     }
