@@ -162,16 +162,20 @@ class _ChatPageState extends State<ChatPage> {
                       // Dispatch event to fetch recommendations first
                       // Ensure a conversation is selected before fetching
                       final bloc = context.read<AiChatBloc>();
-                      if (bloc.state.selectedConversationId != null) {
-                        bloc.add(FetchRecommendations());
-                      } else {
-                         // Optionally show a message if no conversation is selected
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(content: Text(appLocalizations.ai_docs_select_conversation_first)), // 使用国际化文本
-                         );
-                         return; // Don't show bottom sheet if no conversation
+                      if (bloc.state.selectedConversationId == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(appLocalizations.ai_docs_select_conversation_first)),
+                        );
+                        return;
                       }
-                      // Then show the bottom sheet (it will initially show loading)
+                      // #327 已有缓存(同 conversation 未发新消息)直接打开 bottom sheet
+                      // 失效点已在切会话/新发消息处把 recommendations 清空,这里只判 status+非空
+                      final hasCached = bloc.state.recommendationsStatus ==
+                              RecommendationsStatus.loaded &&
+                          bloc.state.recommendations.isNotEmpty;
+                      if (!hasCached) {
+                        bloc.add(FetchRecommendations());
+                      }
                       _showRecommendationsBottomSheet(context);
                    },
                    child: Text(
