@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
@@ -251,22 +252,30 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // Consistent text color for both bubble types
     const textColor = AppColors.textPrimary;
 
-    // Avatar Widget (only for opponent)
+    // Avatar Widget (only for opponent) — 点击跳对方公开主页 (#334)
     final avatarWidget = !isCurrentUser && widget.opponent != null
       ? Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                ? CachedNetworkImageProvider(widget.opponent!.avatar!)
-                : null,
-            backgroundColor: AppColors.borderInput,
-            child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
-                ? Text(
-                    widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
-                    style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
-                  )
-                : null,
+          child: GestureDetector(
+            onTap: () {
+              final sellerId = widget.opponent?.referId;
+              if (sellerId != null) {
+                context.push('/seller-profile/$sellerId');
+              }
+            },
+            child: CircleAvatar(
+              radius: 18,
+              backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
+                  ? CachedNetworkImageProvider(widget.opponent!.avatar!)
+                  : null,
+              backgroundColor: AppColors.borderInput,
+              child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
+                  ? Text(
+                      widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
+                      style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
+                    )
+                  : null,
+            ),
           ),
         )
       : const SizedBox(width: 44);
