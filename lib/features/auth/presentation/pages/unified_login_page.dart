@@ -104,7 +104,10 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
             }
           },
           builder: (context, state) {
-            bool isLoading = state is SmsLoginLoading || state is SmsLoginCodeSending;
+            // 只在真正登录中显示底部按钮 loading;
+            // SmsLoginCodeSending 由「获取验证码」按钮自己的 isSending 处理,
+            // 否则发送验证码时底部+右侧两处同时转(#328)。
+            bool isLoading = state is SmsLoginLoading;
 
             return SingleChildScrollView(
               child: Padding(
