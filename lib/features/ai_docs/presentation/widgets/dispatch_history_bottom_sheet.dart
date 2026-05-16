@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
@@ -91,6 +92,12 @@ class DispatchHistoryBottomSheetContent extends StatelessWidget {
                           Icons.chevron_right,
                           color: AppColors.textTertiary,
                         ),
+                        // #354 点列表项跳产品详情 (/product/:id 顶层路由,已存在)
+                        onTap: () {
+                          if (item.itemId.isEmpty) return;
+                          Navigator.of(context).pop(); // 关闭 bottomsheet
+                          context.push('/product/${item.itemId}');
+                        },
                       );
                     },
                   ),
