@@ -25,6 +25,7 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conv
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_page_title.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/dispatch_history_bottom_sheet.dart';
 
 // Import chat module components for navigation
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
@@ -110,6 +111,28 @@ class _ChatPageState extends State<ChatPage> {
          actions: [
            // 频率限制指示器
            const RateLimitIndicator(),
+           // 已分发服务追溯入口 (#347):点开看本会话历史分发记录
+           BlocBuilder<AiChatBloc, AiChatState>(
+             buildWhen: (previous, current) =>
+                 previous.dispatchHistory != current.dispatchHistory ||
+                 previous.dispatchHistoryStatus != current.dispatchHistoryStatus ||
+                 previous.selectedConversationId != current.selectedConversationId,
+             builder: (context, state) {
+               final hasHistory = (state.dispatchHistory?.isNotEmpty ?? false);
+               return IconButton(
+                 tooltip: '已分发服务',
+                 icon: Icon(
+                   Icons.history,
+                   color: hasHistory
+                       ? Theme.of(context).colorScheme.primary
+                       : AppColors.textTertiary,
+                 ),
+                 onPressed: hasHistory
+                     ? () => _showDispatchHistoryBottomSheet(context)
+                     : null,
+               );
+             },
+           ),
            // Replace IconButton with a TextButton - wrapped with BlocBuilder to check generation status
            BlocBuilder<AiChatBloc, AiChatState>(
              buildWhen: (previous, current) =>
@@ -260,6 +283,24 @@ class _ChatPageState extends State<ChatPage> {
            value: aiChatBloc,
            // Create a dedicated widget for the bottom sheet content
            child: const RecommendationBottomSheetContent(),
+        );
+      },
+    );
+  }
+
+  /// 已分发服务历史弹窗 (#347)。
+  void _showDispatchHistoryBottomSheet(BuildContext pageContext) {
+    final aiChatBloc = BlocProvider.of<AiChatBloc>(pageContext);
+    showModalBottomSheet(
+      context: pageContext,
+      isScrollControlled: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(pageContext).size.height * 0.6,
+      ),
+      builder: (BuildContext bottomSheetContext) {
+        return BlocProvider.value(
+          value: aiChatBloc,
+          child: const DispatchHistoryBottomSheetContent(),
         );
       },
     );

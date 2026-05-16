@@ -18,8 +18,10 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package 
 // Domain Layer - Use package imports
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/allocated_item_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_dispatch_history_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/create_conversation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/delete_conversation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conversations_usecase.dart';
@@ -39,7 +41,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_cha
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart'; 
-export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/allocated_item_entity.dart'; 
 
 // Parts (No Duplicates)
 part 'ai_chat_event.dart';
@@ -60,6 +63,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final UploadFileUseCase _uploadFile;
   final GetRelatedServicesUseCase _getRelatedServices;
   final AllocateChatResourceUseCase _allocateChatResource;
+  final GetDispatchHistoryUseCase _getDispatchHistory;
   final TranscribeAudioUseCase _transcribeAudio;
   final CancelChatGenerationUseCase _cancelChatGeneration;
   final OptimizedAllocationUseCase _optimizedAllocation;
@@ -87,6 +91,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._uploadFile,
     this._getRelatedServices,
     this._allocateChatResource,
+    this._getDispatchHistory,
     this._transcribeAudio,
     this._cancelChatGeneration,
     this._optimizedAllocation,
@@ -118,7 +123,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SendVoiceMessage>(_onSendVoiceMessage); 
     on<CancelStreaming>(_onCancelStreaming); 
     on<CancelChatGeneration>(_onCancelChatGeneration);
-    on<FetchRecommendations>(_onFetchRecommendations); 
+    on<FetchRecommendations>(_onFetchRecommendations);
+    on<FetchDispatchHistory>(_onFetchDispatchHistory);
     on<TriggerAllocationAction>(_onTriggerAllocationAction); 
     on<TriggerOptimizedAllocation>(_onTriggerOptimizedAllocation);
     // Internal Stream Handling
@@ -364,10 +370,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           totalMessages: historyData.totalMessages,
           // 加载完成后触发滚动到底部
           shouldScrollToBottom: true,
+          // 切到新会话时清空旧历史,触发 AppBar 按钮状态刷新
+          clearDispatchHistory: true,
+          dispatchHistoryStatus: DispatchHistoryStatus.initial,
         ));
-        
+
         // 立即重置滚动标志
         emit(state.copyWith(shouldScrollToBottom: false));
+
+        // #347 异步拉取本会话的已分发历史,驱动 AppBar 按钮空/置灰状态
+        add(FetchDispatchHistory());
       },
     );
   }
@@ -1432,6 +1444,42 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     );
   }
 
+  /// 拉取当前 conversation 的已分发商品历史(#347)。
+  /// 后端 user_id 字段语义同 allocate(走 common_user_id,验权用 verify_conversation_access)。
+  Future<void> _onFetchDispatchHistory(
+    FetchDispatchHistory event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final currentConvId = state.selectedConversationId;
+    if (currentConvId == null) {
+      return;
+    }
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.error,
+        dispatchHistoryErrorMessage: '未登录或用户 ID 无效',
+      ));
+      return;
+    }
+    emit(state.copyWith(dispatchHistoryStatus: DispatchHistoryStatus.loading));
+
+    final result = await _getDispatchHistory(GetDispatchHistoryParams(
+      conversationId: currentConvId,
+      userId: userId,
+    ));
+    result.fold(
+      (failure) => emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.error,
+        dispatchHistoryErrorMessage: failure.toString(),
+      )),
+      (history) => emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.loaded,
+        dispatchHistory: history,
+      )),
+    );
+  }
+
   // --- Handler for Allocation Action ---
   Future<void> _onTriggerAllocationAction(
     TriggerAllocationAction event,
@@ -1525,11 +1573,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           serviceAllocationStatus: successStatus,
            // errorMessage: '服务已成功分发给商家'
         ));
-        
+
+        // #347 分发成功后刷新历史,AppBar 按钮立即点亮
+        add(FetchDispatchHistory());
+
         // 后台异步处理发送消息，不再使用结果更新UI状态
         _sendAllocationMessageToMerchant(
-          event.merchantId, 
-          event.item, 
+          event.merchantId,
+          event.item,
           summary
         ).catchError((e) {
           AppLogger.d('向商家发送消息失败(不影响UI状态): $e');
