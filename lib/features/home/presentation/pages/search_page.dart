@@ -20,7 +20,6 @@ class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   List<String> _searchHistory = [];
   List<String> _hotSearches = ['修改待审核', '产品', '设计', '文案']; // 默认热搜词
-  bool _isLoading = false;
 
   @override
   void initState() {
@@ -37,10 +36,6 @@ class _SearchPageState extends State<SearchPage> {
 
   // 从API获取热搜词
   Future<void> _fetchHotKeywords() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       // 获取API基础URL
       final baseUrl = dotenv.env['BACKEND_BASE_URL'];
@@ -78,10 +73,6 @@ class _SearchPageState extends State<SearchPage> {
     } catch (e) {
       AppLogger.d('获取热搜词出错: $e');
       // 发生错误时继续使用默认热搜词
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -180,22 +171,11 @@ class _SearchPageState extends State<SearchPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 热门搜索
-            Row(
-              children: [
-                Text(
-                  appLocalizations.search_hot_keywords,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (_isLoading)
-                  Container(
-                    margin: const EdgeInsets.only(left: AppDimensions.spacingSm),
-                    width: 16,
-                    height: 16,
-                    child: const CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              ],
+            Text(
+              appLocalizations.search_hot_keywords,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
             Wrap(
