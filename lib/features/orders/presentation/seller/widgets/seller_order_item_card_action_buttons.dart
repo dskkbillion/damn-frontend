@@ -152,7 +152,7 @@ class SellerOrderItemCardActionButtons extends StatelessWidget {
               },
               (chatId) {
                 final room = (id: chatId);
-                context.push('/chat/refactored/${room.id}');
+                context.go('/chat/refactored/${room.id}');
               },
             );
           },
