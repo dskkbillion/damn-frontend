@@ -11,6 +11,7 @@ import '../domain/usecases/stream_chat_completion_usecase.dart';
 import '../domain/usecases/upload_file_usecase.dart';
 import '../domain/usecases/get_related_services_usecase.dart';
 import '../domain/usecases/allocate_chat_resource_usecase.dart';
+import '../domain/usecases/get_dispatch_history_usecase.dart';
 import '../domain/usecases/transcribe_audio_usecase.dart';
 import '../domain/usecases/cancel_chat_generation_usecase.dart';
 import '../domain/usecases/optimized_allocation_usecase.dart';
@@ -126,6 +127,13 @@ class AiDocsDI {
         () => GetRelatedServicesUseCase(getIt<IAiChatRepository>()),
       );
       AppLogger.d('[AiDocsDI] Registered GetRelatedServicesUseCase');
+    }
+
+    if (!getIt.isRegistered<GetDispatchHistoryUseCase>()) {
+      getIt.registerLazySingleton<GetDispatchHistoryUseCase>(
+        () => GetDispatchHistoryUseCase(getIt<IAiChatRepository>()),
+      );
+      AppLogger.d('[AiDocsDI] Registered GetDispatchHistoryUseCase');
     }
 
     if (!getIt.isRegistered<AllocateChatResourceUseCase>()) {

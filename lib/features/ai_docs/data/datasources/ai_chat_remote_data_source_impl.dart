@@ -902,6 +902,45 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> getDispatchHistory({
+    required int conversationId,
+    required int userId,
+  }) async {
+    const String path = '/model/chat/allocations/list';
+    try {
+      const storage = FlutterSecureStorage();
+      final token = await storage.read(key: 'auth_token');
+      final options = Options(
+        headers: {
+          if (token != null && token.isNotEmpty) 'Authorization': token,
+        },
+      );
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        queryParameters: {
+          'conversation_id': conversationId,
+          'user_id': userId,
+        },
+        options: options,
+      );
+      final data = _handleResponse(response.data);
+      if (data is List) {
+        return data.whereType<Map<String, dynamic>>().toList(growable: false);
+      }
+      return const <Map<String, dynamic>>[];
+    } on ds_exceptions.ServerException {
+      rethrow;
+    } on ds_exceptions.NetworkException {
+      rethrow;
+    } catch (e) {
+      AppLogger.d('Unexpected error in getDispatchHistory at $path: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to fetch dispatch history: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
   Future<String> transcribeAudio({
     required String audioOssUrl,
     int? userId,

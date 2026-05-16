@@ -108,14 +108,21 @@ abstract class IAiChatRemoteDataSource {
 
   /// Triggers a chat allocation action (e.g., one-click dispatch).
   /// Corresponds to the /chat/allocate endpoint.
-  /// 
+  ///
   /// Returns the allocation result details on success.
   /// Throws [ServerException], [NetworkException], or [DataSourceException] on failure.
   Future<Map<String, dynamic>> allocateChatResource({
     required int conversationId,
     required int userId,
-    required Map<String, dynamic> item, 
+    required Map<String, dynamic> item,
     required int merchantId,
+  });
+
+  /// 获取某 conversation 的全部已分发商品历史(#347)。
+  /// 对应后端 GET /model/chat/allocations/list。返回按 allocatedAt desc 排序。
+  Future<List<Map<String, dynamic>>> getDispatchHistory({
+    required int conversationId,
+    required int userId,
   });
 
   /// Calls the `/model/chat/audio` endpoint for speech-to-text.

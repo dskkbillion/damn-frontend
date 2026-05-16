@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../entities/allocated_item_entity.dart';
 import '../entities/chat_allocation_result_entity.dart';
 import '../entities/related_service_entity.dart';
 import '../usecases/load_history_usecase.dart';
@@ -81,8 +82,15 @@ abstract class IAiChatRepository {
   Future<Either<Failure, ChatAllocationResultEntity>> allocateChatResource({
     required int conversationId,
     required int userId,
-    required Map<String, dynamic> item, 
+    required Map<String, dynamic> item,
     required int merchantId,
+  });
+
+  /// 获取某 conversation 的已分发商品历史(#347)。
+  /// 按 allocatedAt desc 排序。可能返回空列表(无历史)。
+  Future<Either<Failure, List<AllocatedItemEntity>>> getDispatchHistory({
+    required int conversationId,
+    required int userId,
   });
 
   /// Transcribes audio from a given URL.
