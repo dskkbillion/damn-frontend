@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/currency/presentation/cubit/currency_cubit.dart';
+import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 
 import '../../domain/entities/home_feed_item.dart';
 import 'product_card.dart';
@@ -62,6 +65,36 @@ class _HomeFeedListState extends State<HomeFeedList> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _prefetchCurrencyConversions();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomeFeedList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // feedItems 变化（如加载更多）后补预折算
+    if (!identical(oldWidget.feedItems, widget.feedItems)) {
+      _prefetchCurrencyConversions();
+    }
+  }
+
+  /// #348 性能优化：列表加载后批量预折算所有商品价格，
+  /// 避免每张卡片 PriceDisplayWidget 各自自驱动触发冗余 fx 请求。
+  /// widget 自驱动逻辑仍保留作兜底（增量加载/缓存 miss）。
+  void _prefetchCurrencyConversions() {
+    if (widget.feedItems.isEmpty) return;
+    final amounts = widget.feedItems
+        .map((e) => e.sellingPrice)
+        .where((p) => p > 0)
+        .toSet()
+        .toList();
+    if (amounts.isEmpty) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<CurrencyCubit>().convertMultiplePrices(
+            amounts: amounts,
+            sourceCurrency: Currency.usd,
+          );
+    });
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/features/home/domain/entities/product_detail.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/widgets/product_images_carousel.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -378,8 +379,8 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Text(
-              PriceFormatter.format(widget.product.sellingPrice),
+            PriceDisplayWidget(
+              price: widget.product.sellingPrice,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
