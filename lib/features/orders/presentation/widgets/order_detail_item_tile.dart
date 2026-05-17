@@ -2,7 +2,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
-import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 
 /// Widget to display a single order item within the OrderDetailPage.
 class OrderDetailItemTile extends StatelessWidget {
@@ -52,7 +52,7 @@ class OrderDetailItemTile extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '¥${item.price.toStringAsFixed(2)}',
+                      RegionConfig.formatPrice(item.price),
                       style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
