@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -193,6 +194,7 @@ class AiDocsDI {
             getIt<UploadFileUseCase>(),
             getIt<GetRelatedServicesUseCase>(),
             getIt<AllocateChatResourceUseCase>(),
+            getIt<GetDispatchHistoryUseCase>(),
             getIt<TranscribeAudioUseCase>(),
             getIt<CancelChatGenerationUseCase>(),
             getIt<OptimizedAllocationUseCase>(),
@@ -200,6 +202,7 @@ class AiDocsDI {
             getIt<GenerateConversationTitleUseCase>(),
             getIt<IAiChatRemoteDataSource>(),
             getIt<FlutterSecureStorage>(),
+            getIt<IdResolver>(),
           ));
       AppLogger.d('[AiDocsDI] Registered AiChatBloc');
     } else {

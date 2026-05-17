@@ -21,6 +21,7 @@ import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart'
 // 添加缺失的依赖
 import 'package:dskk_flutter_refactor/core/network/i_http_client.dart';
 import 'package:dskk_flutter_refactor/core/network/dio_http_client.dart';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 
@@ -113,6 +114,13 @@ Future<void> registerAuthDependencies() async {
   } else {
     AppLogger.d(
         '[DI] IUserRepository already registered, skipping registration');
+  }
+
+  // 注册 IdResolver (#358 — 跨端 ID 语义封装,见 docs/dev/id_schema_cn.md)
+  if (!getIt.isRegistered<IdResolver>()) {
+    getIt.registerLazySingleton<IdResolver>(
+        () => IdResolverImpl(getIt<ISecureStorageRepository>()));
+    AppLogger.d('[DI] Registered IdResolver');
   }
 }
 

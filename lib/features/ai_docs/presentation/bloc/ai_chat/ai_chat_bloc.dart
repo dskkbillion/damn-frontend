@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 // For jsonDecode in stream handling
@@ -73,8 +74,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // --- Data Source for Rate Limit Access ---
   final IAiChatRemoteDataSource _remoteDataSource;
 
-  // --- Inject Secure Storage --- 
+  // --- Inject Secure Storage ---
   final FlutterSecureStorage _storage;
+
+  // --- ID 语义解析 (#358) ---
+  final IdResolver _idResolver;
 
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
@@ -99,8 +103,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._generateConversationTitle,
     this._remoteDataSource, // Add data source to constructor
     this._storage, // Add storage to constructor
+    this._idResolver, // #358 ID 语义解析
     // Start with initial state containing defaults for new properties
-  ) : super(const AiChatState()) { 
+  ) : super(const AiChatState()) {
     // --- Register event handlers ---
     // Conversation List Management
     on<LoadConversations>(_onLoadConversations);
@@ -142,39 +147,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   }
 
   // --- Helper to get current user ID (common_user_id) ---
-  // Returns common_user_id which is used for AI chat, recommendations, etc.
-  // Returns null if not found or not an int
-  Future<int?> _getCurrentUserId() async {
-    // 修改：使用common_user_id而不是user_id
-    final commonUserIdString = await _storage.read(key: 'common_user_id');
-
-    // 调试日志
-    final userIdString = await _storage.read(key: 'user_id');
-    AppLogger.d("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
-
-    if (commonUserIdString != null) {
-      // 转换为整数并返回
-      return int.tryParse(commonUserIdString);
-    }
-
-    // 不再回退使用user_id，如果没有common_user_id则直接返回null（错误）
-    AppLogger.d("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
-    return null;
-  }
-
-  // --- Helper to get member user ID (user_id) ---
-  // Returns user_id (member table primary key) which is used for allocation API
-  // Returns null if not found or not an int
-  Future<int?> _getMemberUserId() async {
-    final userIdString = await _storage.read(key: 'user_id');
-
-    if (userIdString != null) {
-      return int.tryParse(userIdString);
-    }
-
-    AppLogger.d("[AiChatBloc] 错误: 未找到user_id");
-    return null;
-  }
+  // ID 解析 — 走 IdResolver,不再直接 read storage(#358)
+  // 见 docs/dev/id_schema_cn.md §2 跨端契约清单
+  Future<int?> _getCurrentUserId() => _idResolver.commonUserId();
+  Future<int?> _getMemberUserId() => _idResolver.memberIdForBackend();
 
   // --- Conversation List Handlers ---
 
