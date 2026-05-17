@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
-import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/features/orders/domain/usecases/get_order_detail_use_case.dart';
 
 enum PaymentResultStatus { success, failure, pending }
 
@@ -52,8 +53,14 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
   void _startPolling() {
     final orderIdInt = int.tryParse(widget.orderId ?? '');
     if (orderIdInt == null) return;
+    final getOrderDetail = getIt<GetOrderDetailUseCase>();
     _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       _pollAttempt++;
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {});
       if (_pollAttempt > _maxPolls) {
         timer.cancel();
         if (mounted) {
@@ -64,24 +71,23 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
         return;
       }
       try {
-        final bloc = context.read<OrderDetailBloc>();
-        bloc.add(LoadOrderDetail(orderId: orderIdInt));
-        await bloc.stream.firstWhere(
-          (state) => state is OrderDetailLoaded || state is OrderDetailError,
-        );
+        final result = await getOrderDetail(orderIdInt);
         if (!mounted) return;
-        final state = bloc.state;
-        if (state is OrderDetailLoaded) {
-          if (state.order.state != OrderStatus.awaitingPayment &&
-              state.order.state != OrderStatus.canceled) {
-            timer.cancel();
-            setState(() {
-              _status = PaymentResultStatus.success;
-            });
-          }
-        }
-      } catch (_) {
-        // 网络异常静默重试
+        result.fold(
+          (failure) => AppLogger.d('[PaymentResult] poll #$_pollAttempt failed: $failure'),
+          (order) {
+            AppLogger.d('[PaymentResult] poll #$_pollAttempt state=${order.state}');
+            if (order.state != OrderStatus.awaitingPayment &&
+                order.state != OrderStatus.canceled) {
+              timer.cancel();
+              setState(() {
+                _status = PaymentResultStatus.success;
+              });
+            }
+          },
+        );
+      } catch (e) {
+        AppLogger.d('[PaymentResult] poll #$_pollAttempt exception: $e');
       }
     });
   }
