@@ -123,7 +123,7 @@ Treat this as the ground truth until verified otherwise. New endpoints must be a
 - `GET /api/fx/rates?base=USD&targets=cny,eur,vnd` — 汇率查询
   - `base` 仅支持 `USD`（存储币种恒 USD），传其它值返回 `code != 200`
   - `targets` 逗号分隔 ISO 4217（大小写不敏感），为空返回全部缓存币种
-  - 响应：`{ code:200, msg, data:{ base:"USD", rates:{ "cny":7.12, "eur":0.92, ... } } }`
+  - 响应（扁平，AjaxResult.put 塞顶层，**无 data 包裹**）：`{ code:200, msg, base:"USD", rates:{ "cny":7.12, "eur":0.92, ... } }`
   - 后端定时每小时刷新（Fawaz Currency API → Redis 2h TTL）；数据源故障返回 `code != 200`，**不静默兜底**
   - ⚠️ 仅用于「展示折算」，不参与结算（结算恒 USD via Stripe）
 

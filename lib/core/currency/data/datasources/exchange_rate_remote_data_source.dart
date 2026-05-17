@@ -55,8 +55,9 @@ class ExchangeRateRemoteDataSource implements IExchangeRateRemoteDataSource {
       throw Exception('汇率接口业务失败: ${body['msg'] ?? 'unknown'}');
     }
 
-    final data = body['data'] as Map<String, dynamic>?;
-    final rawRates = data?['rates'] as Map<String, dynamic>?;
+    // 后端用 AjaxResult.put 扁平塞字段：rates/base 在响应顶层，无 data 包裹。
+    // 实测响应：{ "code":200, "msg":"操作成功", "rates":{...}, "base":"USD" }
+    final rawRates = body['rates'] as Map<String, dynamic>?;
     if (rawRates == null || rawRates.isEmpty) {
       throw Exception('汇率接口返回空 rates');
     }
