@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -20,7 +20,7 @@ class CurrencyDI {
   static Future<void> init(GetIt getIt) async {
     // Data Sources
     getIt.registerLazySingleton<IExchangeRateRemoteDataSource>(
-      () => ExchangeRateRemoteDataSource(getIt<Dio>()),
+      () => ExchangeRateRemoteDataSource(getIt<CoreDioClient>()),
     );
     
     getIt.registerLazySingleton<IExchangeRateLocalDataSource>(
@@ -47,18 +47,9 @@ class CurrencyDI {
     );
   }
   
-  /// 注册核心依赖（如果还未注册）
+  /// 注册核心依赖（如果还未注册）。
+  /// 网络层走全局 [CoreDioClient]（injection_container 已注册），此处不再注册裸 Dio。
   static Future<void> registerCoreDependencies(GetIt getIt) async {
-    // Dio
-    if (!getIt.isRegistered<Dio>()) {
-      getIt.registerLazySingleton<Dio>(() {
-        final dio = Dio();
-        dio.options.connectTimeout = const Duration(seconds: 10);
-        dio.options.receiveTimeout = const Duration(seconds: 10);
-        return dio;
-      });
-    }
-    
     // SharedPreferences
     if (!getIt.isRegistered<SharedPreferences>()) {
       final prefs = await SharedPreferences.getInstance();

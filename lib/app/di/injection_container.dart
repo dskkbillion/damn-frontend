@@ -33,6 +33,7 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 
 // Import auth module DI
 import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
+import 'package:dskk_flutter_refactor/core/currency/di/currency_di.dart';
 
 // Import ai_docs module DI
 import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
@@ -166,6 +167,17 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   } catch (e) {
     AppLogger.d('[DI] Failed to initialize Auth module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+
+  // 初始化多币种(汇率)模块依赖 — #348
+  try {
+    AppLogger.d('[DI] Starting Currency module initialization...');
+    await CurrencyDI.registerCoreDependencies(getIt);
+    await CurrencyDI.init(getIt);
+    AppLogger.d('[DI] Currency module dependencies initialization complete.');
+  } catch (e) {
+    AppLogger.d('[DI] Failed to initialize Currency module: $e');
+    // 不抛出异常，允许应用继续启动(汇率失败仅退化为单币显示)
   }
 
   // 注册支付模块依赖
