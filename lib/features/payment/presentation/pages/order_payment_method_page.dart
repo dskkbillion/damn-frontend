@@ -459,6 +459,10 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
           params['success'] = 'false';
           params['errorMessage'] = '用户取消支付';
+        } else if (result != null && result['result'] == PaymentWebViewResult.pending) {
+          // #326: 用户声明已支付但 success_url 没自动跳 — 让 paymentResult 页查后端
+          params['success'] = 'pending';
+          params['errorMessage'] = '正在确认支付结果...';
         } else {
           params['success'] = 'false';
           params['errorMessage'] = '支付失败';

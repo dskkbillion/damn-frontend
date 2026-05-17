@@ -73,12 +73,18 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
           },
           onNavigationRequest: (NavigationRequest request) {
             final uri = Uri.tryParse(request.url);
+            // #326: success/cancel/failure callback 不依赖域名白名单
+            // 后端配置的 success_url 可能指向 dev 隧道 (faker.hk1.tunnelfrp.cc)
+            // 或被运营改成其他域名 — 先按 path pattern 判定支付结果,再判域名
+            _checkUrl(request.url);
+            if (_isHandlingResult) {
+              return NavigationDecision.prevent;
+            }
             if (uri != null && !_isAllowedDomain(uri.host)) {
               AppLogger.d('[StripePaymentWebView] 已阻止非白名单域名: ${uri.host}');
               return NavigationDecision.prevent;
             }
             AppLogger.d('[StripePaymentWebView] 导航请求: ${uri?.host ?? "unknown"}');
-            _checkUrl(request.url);
             return NavigationDecision.navigate;
           },
         ),
@@ -154,9 +160,31 @@ class _StripePaymentWebViewPageState extends State<StripePaymentWebViewPage> {
         title: const Text('支付'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.of(context).pop({
-              'result': PaymentWebViewResult.cancelled,
+          onPressed: () async {
+            // #326: 不要直接判为 cancelled,问用户实际状态
+            // 因为 success_url 可能不可达导致 WebView 不自动关闭,
+            // 用户其实已经支付成功,只能手动点 X
+            final navigator = Navigator.of(context);
+            final answer = await showDialog<PaymentWebViewResult>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('请确认支付状态'),
+                content: const Text('您是否已经完成支付?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(PaymentWebViewResult.cancelled),
+                    child: const Text('没有,取消支付'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(PaymentWebViewResult.pending),
+                    child: const Text('已完成,查询订单'),
+                  ),
+                ],
+              ),
+            );
+            if (!mounted) return;
+            navigator.pop({
+              'result': answer ?? PaymentWebViewResult.cancelled,
               'orderId': widget.orderId,
               'url': _currentUrl,
             });
@@ -195,4 +223,6 @@ enum PaymentWebViewResult {
   success,
   failed,
   cancelled,
+  // #326: 用户点 X 时声明"已完成支付",触发调用方查后端订单状态
+  pending,
 }
