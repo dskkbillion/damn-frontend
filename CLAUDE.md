@@ -262,3 +262,7 @@ Payment SDKs (`fluwx`, `tobias`) are currently **commented out** in `pubspec.yam
 - **Use enums, not string literals**, for any value that maps to a backend enum (status, type, etc.).
 - **Don't invent API endpoints or fields** — verify in backend source first.
 - When unsure, check `docs/dev/` and the backend controller sources before guessing.
+- **ID 使用规则(参考 [docs/dev/id_schema_cn.md](docs/dev/id_schema_cn.md))**:
+  - 写跨端 API 调用前,先查那份文档 §2 的「跨端契约清单」确认 endpoint 期望传 `member.id` 还是 `xun_common_user.id`
+  - 新 endpoint 没在清单里 → **先 staging curl 抽样确认**,然后补到清单
+  - 不要按变量名猜语义 — `tenantId` / `doctorId` / `memberId` / `userId` 在不同上下文里语义不同(历史教训:#355 #346)
