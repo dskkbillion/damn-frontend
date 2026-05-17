@@ -470,12 +470,15 @@ class MessageListCubit extends Cubit<MessageListState> {
   void _updateChatListLastMessage(ChatMessage message) {
     if (_currentChatId != null) {
       // 使用EventBus触发聊天列表更新，确保实时更新
+      // #212 CHAT-08: 在聊天室内收到消息(包括自动回复)时一并 resetUnread,
+      // 避免退出聊天室后仍残留未读气泡。用户既然在房内,这条消息就是已读。
       EventBus().fireChatListUpdateEvent(ChatListUpdateEvent(
         chatId: _currentChatId!,
         lastMessage: message.context,
         lastMessageType: message.type,
         lastMessageWithdrawFlag: message.withdrawFlag,
         lastMessageTime: message.createTime,
+        resetUnread: true,
       ));
       AppLogger.d('[MessageListCubit] Fired ChatListUpdateEvent for chatId: $_currentChatId');
     }

@@ -88,9 +88,20 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
           listener: (context, state) {
             // 处理副作用，如显示 SnackBar, 导航等
             if (state is SmsLoginFailure) {
-              final errorMessage = '登录失败: ${state.failure.message}';
+              // #209 AUTH-07: 不直接暴露 ServerException 原始文本,识别"验证码"
+              // 关键字后显示友好提示
+              String raw = state.failure.message;
+              String userMessage;
+              if (raw.contains('验证码') || raw.toLowerCase().contains('code')) {
+                userMessage = '验证码错误或已过期,请重新获取';
+              } else {
+                // 提取 message: 后的实际内容,丢掉 ServerException 包装
+                final match = RegExp(r'message:\s*([^,)]+)').firstMatch(raw);
+                final clean = match?.group(1)?.trim() ?? raw;
+                userMessage = '登录失败:$clean';
+              }
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(errorMessage)),
+                SnackBar(content: Text(userMessage)),
               );
             } else if (state is SmsLoginCodeSendFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
