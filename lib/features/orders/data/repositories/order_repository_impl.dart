@@ -21,6 +21,7 @@ import 'package:dskk_flutter_refactor/core/config/app_config.dart';
 import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 
 /// 订单仓库接口的实现类。
 @LazySingleton(as: IOrderRepository) // Add injectable annotation
@@ -31,6 +32,7 @@ class OrderRepositoryImpl implements IOrderRepository {
   final NetworkInfo networkInfo;
   final IFileUploadService fileUploadService;
   final ISecureStorageRepository secureStorage; // 添加安全存储依赖
+  final IdResolver _idResolver; // #358 ID 语义解析
 
   OrderRepositoryImpl({
     required this.remoteDataSource,
@@ -39,7 +41,8 @@ class OrderRepositoryImpl implements IOrderRepository {
     required this.networkInfo,
     required this.fileUploadService,
     required this.secureStorage, // 注入安全存储
-  });
+    required IdResolver idResolver,
+  }) : _idResolver = idResolver;
 
   /// 辅助函数，用于执行网络请求并处理通用错误。
   Future<Either<Failure, T>> _handleApiCall<T>(
@@ -173,7 +176,8 @@ class OrderRepositoryImpl implements IOrderRepository {
     String userRole,
   ) async {
     try {
-      final currentUserId = await secureStorage.getUserId();
+      // #358 通过 IdResolver 拿 member.id(订单 buyer/tenant 用 member.id)
+      final currentUserId = await _idResolver.memberIdForBackend();
       if (currentUserId == null) {
         AppLogger.d('[OrderRepository] Warning: Current user ID is null, returning empty list');
         return [];

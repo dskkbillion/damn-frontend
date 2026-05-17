@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/secure_storage_repository.dart';
+import '../../../core/auth/id_resolver.dart';
 import '../../../core/network/network_info.dart';
 import '../data/datasources/home_local_data_source.dart';
 import '../data/datasources/home_remote_data_source.dart';
@@ -164,26 +165,26 @@ Future<void> initHomeDi() async {
   if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getUserId')) {
     sl.registerLazySingleton<Future<String?> Function()>(
       () => () async {
-        final secureStorage = sl<ISecureStorageRepository>();
-        final userId = await secureStorage.getUserId();
-        return userId?.toString();
+        // #358 走 IdResolver,语义 = member.id
+        final id = await sl<IdResolver>().memberIdForBackend();
+        return id?.toString();
       },
       instanceName: 'getUserId',
     );
-    AppLogger.d('[home_di] 注册 getUserId 函数');
+    AppLogger.d('[home_di] 注册 getUserId 函数 (via IdResolver)');
   }
-  
+
   // 注册获取 CommonUserId 的函数
   if (!sl.isRegistered<Future<String?> Function()>(instanceName: 'getCommonUserId')) {
     sl.registerLazySingleton<Future<String?> Function()>(
       () => () async {
-        final secureStorage = sl<ISecureStorageRepository>();
-        final commonUserId = await secureStorage.getCommonUserId();
-        return commonUserId?.toString();
+        // #358 走 IdResolver,语义 = xun_common_user.id
+        final id = await sl<IdResolver>().commonUserId();
+        return id?.toString();
       },
       instanceName: 'getCommonUserId',
     );
-    AppLogger.d('[home_di] 注册 getCommonUserId 函数');
+    AppLogger.d('[home_di] 注册 getCommonUserId 函数 (via IdResolver)');
   }
 
   // 注册 Data Sources
