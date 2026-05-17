@@ -64,14 +64,54 @@ class Currency extends Equatable {
     symbol: '¥',
     decimalDigits: 0,
   );
-  
-  /// 支持的货币列表
+
+  // 以下币种与后端 /api/fx/rates 返回集合对齐（#348）。
+  // VND/KRW/IDR 为 0 小数位币种。
+  static const Currency vnd = Currency(
+    code: 'VND',
+    name: 'Vietnamese Dong',
+    symbol: '₫',
+    decimalDigits: 0,
+  );
+
+  static const Currency krw = Currency(
+    code: 'KRW',
+    name: 'South Korean Won',
+    symbol: '₩',
+    decimalDigits: 0,
+  );
+
+  static const Currency thb = Currency(
+    code: 'THB',
+    name: 'Thai Baht',
+    symbol: '฿',
+  );
+
+  static const Currency idr = Currency(
+    code: 'IDR',
+    name: 'Indonesian Rupiah',
+    symbol: 'Rp',
+    decimalDigits: 0,
+  );
+
+  static const Currency sgd = Currency(
+    code: 'SGD',
+    name: 'Singapore Dollar',
+    symbol: r'S$',
+  );
+
+  /// 支持的货币列表（与后端 /api/fx/rates 目标币对齐）
   static const List<Currency> supportedCurrencies = [
     cny,
     usd,
     eur,
     gbp,
     jpy,
+    vnd,
+    krw,
+    thb,
+    idr,
+    sgd,
   ];
   
   /// 根据代码获取货币
