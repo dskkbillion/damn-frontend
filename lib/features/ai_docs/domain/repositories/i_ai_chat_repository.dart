@@ -93,12 +93,7 @@ abstract class IAiChatRepository {
     required int userId,
   });
 
-  /// Transcribes audio from a given URL.
-  /// (Corresponds to /model/chat/audio endpoint).
-  ///
-  /// Returns [Either<Failure, String>] where String is the transcribed text.
-  Future<Either<Failure, String>> transcribeAudio(
-      {required String audioOssUrl, int? userId});
+  // #368 deleted transcribeAudio() — omni 直接理解音频 (#360)
 
   /// Cancels an ongoing chat generation.
   /// (Corresponds to /model/chat/cancel endpoint).

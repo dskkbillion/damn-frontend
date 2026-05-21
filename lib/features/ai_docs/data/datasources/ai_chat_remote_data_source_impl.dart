@@ -599,7 +599,23 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             }
           }
           break;
-          
+
+        case 'conversation.user_audio_transcript':
+          // #371 omni 回写用户音频转写文本 — bloc 收到后 patch [语音消息] 占位
+          if (data.isNotEmpty) {
+            final jsonData = jsonDecode(data);
+            AppLogger.d('[DataSource - SSE] #371 user_audio_transcript: $jsonData');
+            if (jsonData is Map<String, dynamic>) {
+              final transcript = jsonData['transcript'] as String?;
+              if (transcript != null && transcript.isNotEmpty) {
+                // 用特殊标记把 transcript 文本透传给 BLoC, 格式 [USER_AUDIO_TRANSCRIPT]<文本>
+                sink.add('[USER_AUDIO_TRANSCRIPT]$transcript');
+              }
+            }
+          }
+          break;
+
+
         default:
           AppLogger.d('[DataSource - SSE] Unknown event type: $event');
           break;
@@ -944,56 +960,9 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     }
   }
 
-  @override
-  Future<String> transcribeAudio({
-    required String audioOssUrl,
-    int? userId,
-  }) async {
-    const path = '/model/chat/audio';
-    final Map<String, dynamic> requestData = {
-      'url': audioOssUrl,
-    };
-    if (userId != null) requestData['user_id'] = userId;
-    try {
-      // 获取token
-      const storage = FlutterSecureStorage();
-      final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
-      
-      // 创建包含认证头的选项
-      final options = Options(
-        headers: {
-          if (token != null && token.isNotEmpty)
-            'Authorization': token, // 直接使用token
-        }
-      );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
-      
-      // 直接使用Dio实例
-      final response = await _httpClient.getDioInstance().post(
-        path, 
-        data: requestData,
-        options: options
-      );
-      
-      // 处理响应
-      final responseData = response.data;
-      final data = _handleResponse(responseData);
-      
-      if (data != null && data['content'] is String) {
-        return data['content'];
-      } else {
-        throw ds_exceptions.DataSourceException(message: 'Invalid transcription format in API response');
-      }
-    } on ds_exceptions.ServerException {
-      rethrow;
-    } on ds_exceptions.NetworkException {
-      rethrow;
-    } catch (e) {
-      AppLogger.d('Unexpected error in transcribeAudio: $e');
-      throw ds_exceptions.DataSourceException(message: 'Failed to transcribe audio: ${e.toString()}');
-    }
-  }
+  // #368 deleted transcribeAudio() implementation — omni 直接理解音频 (#360)
+  // 后端 /model/chat/audio endpoint 保留到 2026-06-04 (老 app 版本兼容期),
+  // 此前端方法删除后, 老 app 自身 fallback 路径仍能调它(不通过此 client)。
 
   @override
   Future<void> cancelChatGeneration({

@@ -248,17 +248,7 @@ class AiChatRepositoryImpl implements IAiChatRepository {
     });
   }
 
-  @override
-  Future<Either<Failure, String>> transcribeAudio(
-      {required String audioOssUrl, int? userId}) async {
-    // Use helper, return String result directly
-     return _tryCatch<String>(() async {
-      return await _remoteDataSource.transcribeAudio(
-        audioOssUrl: audioOssUrl,
-        userId: userId,
-      );
-    });
-  }
+  // #368 deleted transcribeAudio() implementation — omni 直接理解音频 (#360)
 
   @override
   Future<Either<Failure, void>> cancelChatGeneration({

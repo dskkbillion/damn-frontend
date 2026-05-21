@@ -29,7 +29,6 @@ import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conve
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/optimized_allocation_usecase.dart';
@@ -65,7 +64,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final GetRelatedServicesUseCase _getRelatedServices;
   final AllocateChatResourceUseCase _allocateChatResource;
   final GetDispatchHistoryUseCase _getDispatchHistory;
-  final TranscribeAudioUseCase _transcribeAudio;
+  // #368 deleted TranscribeAudioUseCase field — omni 直接理解音频 (#360)
   final CancelChatGenerationUseCase _cancelChatGeneration;
   final OptimizedAllocationUseCase _optimizedAllocation;
   final UpdateConversationTitleUseCase _updateConversationTitle;
@@ -96,7 +95,6 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._getRelatedServices,
     this._allocateChatResource,
     this._getDispatchHistory,
-    this._transcribeAudio,
     this._cancelChatGeneration,
     this._optimizedAllocation,
     this._updateConversationTitle,
@@ -990,50 +988,19 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           errorMessage: errorMessage,
         ));
       },
-      // 6. 上传成功
+      // 6. 上传成功 — omni 直接理解音频 (#360 + #368)
       (audioOssUrl) async {
         AppLogger.d('音频上传成功，URL: $audioOssUrl');
 
-        // #370 feature flag: omni 直接理解音频, 不再 ASR 预转录
-        // ENABLE_OMNI_VOICE=true (默认) → 跳过 ASR; false → 走回退路径(临时回滚用, ASR 服务计划 2026-06-04 下线)
-        final useOmni = (dotenv.env['ENABLE_OMNI_VOICE'] ?? 'true').toLowerCase() != 'false';
-
-        if (useOmni) {
-          // #370 直接发音频给 omni — content 是占位符, 真实理解在 omni 侧
-          // 关联 #371: 后续 omni 回写 transcript 后, 此处可改成回填真实转写内容
-          final updatedMessages = state.messages.map((msg) {
-            if (msg.messageId == tempVoiceMessageId) {
-              return msg.copyWith(
-                content: '[语音消息]',
-                fileUrls: [audioOssUrl],
-                messageType: MessageType.audio,
-                isTranscribing: false,
-              );
-            }
-            return msg;
-          }).toList();
-
-          emit(state.copyWith(
-            status: AiChatStatus.sendingMessage,
-            messages: updatedMessages,
-            clearErrorMessage: true,
-          ));
-
-          AppLogger.d('[#370] omni 直接处理音频, 跳过 ASR 预转录');
-          await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
-          return;
-        }
-
-        // #370 legacy path (ENABLE_OMNI_VOICE=false 回滚兜底, AliyunASR 仍在线): ASR 预转录
-        // TODO 2026-06-04: 后端 /model/chat/audio 下线后, 这段死代码可删除 (#368)
-        AppLogger.w('[#370] ENABLE_OMNI_VOICE=false, 走 legacy ASR 路径');
+        // #368 直接走 omni 路径, 前端不再调 /model/chat/audio (ASR endpoint 2026-06-04 下线)
+        // content 默认 '[语音消息]' 占位符。#371 实施后由后端 SSE 回写真实 transcript
         final updatedMessages = state.messages.map((msg) {
           if (msg.messageId == tempVoiceMessageId) {
             return msg.copyWith(
-              content: "转录中...",
+              content: '[语音消息]',
               fileUrls: [audioOssUrl],
               messageType: MessageType.audio,
-              isTranscribing: true,
+              isTranscribing: false,
             );
           }
           return msg;
@@ -1045,49 +1012,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           clearErrorMessage: true,
         ));
 
-        final transcriptionResult = await _transcribeAudio(
-          TranscribeAudioParams(audioOssUrl: audioOssUrl, userId: userId),
-        );
-
-        await transcriptionResult.fold(
-          (failure) async {
-            AppLogger.d('语音转录失败: $failure');
-            final updatedMessages = state.messages.map((msg) {
-              if (msg.messageId == tempVoiceMessageId) {
-                return msg.copyWith(
-                  content: '[转录失败，但可播放原音频]',
-                  isTranscribing: false,
-                  messageType: MessageType.audio,
-                );
-              }
-              return msg;
-            }).toList();
-            emit(state.copyWith(
-              status: AiChatStatus.transcriptionFailure,
-              messages: updatedMessages,
-              errorMessage: '语音转录失败',
-            ));
-            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
-          },
-          (transcription) async {
-            AppLogger.d('语音转录成功: $transcription');
-            final updatedMessages = state.messages.map((msg) {
-              if (msg.messageId == tempVoiceMessageId) {
-                return msg.copyWith(
-                  content: transcription,
-                  messageType: MessageType.audio,
-                  isTranscribing: false,
-                );
-              }
-              return msg;
-            }).toList();
-            emit(state.copyWith(
-              status: AiChatStatus.transcriptionSuccess,
-              messages: updatedMessages,
-            ));
-            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, transcription, emit);
-          },
-        );
+        AppLogger.d('[#368] omni 直接处理音频, 不再 ASR 预转录');
+        await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
       },
     );
   }
@@ -1143,6 +1069,22 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       // 对于语音消息，我们已经在前端显示了语音消息气泡（包含转录状态和结果）
       // 这个标识只是确认后端已经处理了用户消息，不需要额外显示
       // 我们只需要继续等待AI响应即可
+      return;
+    }
+
+    // #371 处理 omni 回写用户音频转写文本: 把最近一条 type=audio 且 content='[语音消息]' 的消息 patch 为真实转写
+    if (chunk.startsWith('[USER_AUDIO_TRANSCRIPT]')) {
+      final transcript = chunk.substring('[USER_AUDIO_TRANSCRIPT]'.length);
+      AppLogger.d('[AiChatBloc] #371 收到 user audio transcript, 长度=${transcript.length}');
+      final updatedMessages = state.messages.map((msg) {
+        if (msg.messageType == MessageType.audio &&
+            msg.sender == MessageSender.user &&
+            (msg.content == '[语音消息]' || msg.content.isEmpty)) {
+          return msg.copyWith(content: transcript);
+        }
+        return msg;
+      }).toList();
+      emit(state.copyWith(messages: updatedMessages));
       return;
     }
     

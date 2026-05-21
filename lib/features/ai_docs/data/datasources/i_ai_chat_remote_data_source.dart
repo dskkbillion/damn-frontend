@@ -125,17 +125,8 @@ abstract class IAiChatRemoteDataSource {
     required int userId,
   });
 
-  /// Calls the `/model/chat/audio` endpoint for speech-to-text.
-  ///
-  /// [audioOssUrl] The OSS URL of the audio file to transcribe.
-  /// [userId] The user ID (optional according to API doc, confirm if needed).
-  ///
-  /// Throws specific exceptions on failure.
-  /// Returns the transcribed text content (String) on success.
-  Future<String> transcribeAudio({
-    required String audioOssUrl,
-    int? userId, 
-  });
+  // #368 deleted transcribeAudio() — omni 直接理解音频 (#360), 此 endpoint 2026-06-04 下线
+  // (后端 /model/chat/audio + AliyunASRService 保留到 sunset 日期, 老 app 版本兼容)
 
   /// Cancels an ongoing chat generation via the `/model/chat/cancel` endpoint.
   ///
