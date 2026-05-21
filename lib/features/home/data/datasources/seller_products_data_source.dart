@@ -187,6 +187,8 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
             AppLogger.d('[getSellerInfo] 使用备选方案，粉丝数: $realFansCount');
           }
           
+          // #365 字段映射对齐后端: levelName/score/collectNum/authenticated/evaluates
+          final authList = data['authenticationVos'];
           return SellerInfo(
             id: sellerId,
             nickName: data['nickName'] ?? '未知卖家',
@@ -195,15 +197,29 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
             remarks: null,
             memberAttention: isFollowing,
             fansCount: realFansCount, // 🔥 使用真实统计的粉丝数
+            levelName: data['levelName'] as String?,
+            score: (data['score'] as num?)?.toInt() ?? 0,
+            collectNum: (data['collectNum'] as num?)?.toInt() ?? 0,
+            authenticated: authList is List && authList.isNotEmpty,
+            evaluates: data['memberEvaluateNewVos'] as List?,
           );
         }
       } else {
         AppLogger.d('获取卖家信息失败: ${response.data['msg']}');
       }
       return null;
+    } on DioException catch (e) {
+      // #364 区分业务异常 vs 网络异常 — 不再静默吞错
+      final bizCode = e.response?.data?['code'];
+      if (bizCode != null && bizCode != 200) {
+        AppLogger.e('[getSellerInfo] 业务异常 code=$bizCode msg=${e.response?.data?['msg']} sellerId=$sellerId');
+      } else {
+        AppLogger.d('[getSellerInfo] 网络异常 sellerId=$sellerId: $e');
+      }
+      return null;
     } catch (e) {
-      AppLogger.d('获取卖家信息出错: $e');
+      AppLogger.e('[getSellerInfo] 未预期异常 sellerId=$sellerId: $e');
       return null;
     }
   }
-} 
+}

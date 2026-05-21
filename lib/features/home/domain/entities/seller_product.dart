@@ -123,6 +123,12 @@ class SellerInfo {
   final String? remarks;
   final bool? memberAttention;
   final int fansCount;
+  // #365 字段映射对齐后端 ProjectApiController.details() 真实响应
+  final String? levelName;
+  final int score;
+  final int collectNum;
+  final bool authenticated;
+  final List<dynamic>? evaluates;
 
   SellerInfo({
     required this.id,
@@ -132,9 +138,15 @@ class SellerInfo {
     this.remarks,
     this.memberAttention,
     this.fansCount = 0,
+    this.levelName,
+    this.score = 0,
+    this.collectNum = 0,
+    this.authenticated = false,
+    this.evaluates,
   });
 
   factory SellerInfo.fromJson(Map<String, dynamic> json) {
+    final authList = json['authenticationVos'];
     return SellerInfo(
       id: json['id'] ?? 0,
       nickName: json['nickName'] ?? '',
@@ -143,6 +155,11 @@ class SellerInfo {
       remarks: json['remarks'],
       memberAttention: json['memberAttention'] ?? false,
       fansCount: json['fansCount'] ?? 0,
+      levelName: json['levelName'] as String?,
+      score: (json['score'] as num?)?.toInt() ?? 0,
+      collectNum: (json['collectNum'] as num?)?.toInt() ?? 0,
+      authenticated: authList is List && authList.isNotEmpty,
+      evaluates: json['memberEvaluateNewVos'] as List?,
     );
   }
-} 
+}
