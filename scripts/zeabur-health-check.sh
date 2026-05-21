@@ -39,17 +39,26 @@ FAIL=0
 check_deploy() {
   local name="$1"
   local sid="$2"
-  local status
-  status=$(npx -y zeabur@latest deployment list --service-id "$sid" -i=false 2>&1 \
-    | head -3 | tail -1 | grep -oE "(BUILDING|RUNNING|FAILED|CRASHED|REMOVED)" | head -1)
-  if [[ "$status" == "RUNNING" ]]; then
-    echo "${GREEN}✅${RESET} ${name} (${sid:0:12}...) → RUNNING"
+  # 取最近 10 次部署中**第一个 RUNNING** 的(zeabur 把失败的 retry 部署也排前面, 但实际服务跑的是上次 RUNNING)
+  # 没有 RUNNING 才报当前最新状态
+  local all_status
+  all_status=$(npx -y zeabur@latest deployment list --service-id "$sid" -i=false 2>&1 \
+    | grep -oE "(BUILDING|RUNNING|FAILED|CRASHED|REMOVED)")
+  local has_running=$(echo "$all_status" | grep -c "RUNNING" || echo 0)
+  local newest=$(echo "$all_status" | head -1)
+
+  if [[ "$has_running" -gt 0 ]]; then
+    if [[ "$newest" == "RUNNING" ]]; then
+      echo "${GREEN}✅${RESET} ${name} (${sid:0:12}...) → RUNNING (newest)"
+    else
+      echo "${YELLOW}⚠️${RESET}  ${name} (${sid:0:12}...) → ${newest}, but service running on previous deploy"
+    fi
     PASS=$((PASS+1))
-  elif [[ -z "$status" ]]; then
+  elif [[ -z "$newest" ]]; then
     echo "${YELLOW}⚠️${RESET}  ${name} (${sid:0:12}...) → 无活跃部署"
     FAIL=$((FAIL+1))
   else
-    echo "${RED}❌${RESET} ${name} (${sid:0:12}...) → ${status}"
+    echo "${RED}❌${RESET} ${name} (${sid:0:12}...) → ${newest} (no RUNNING in history)"
     FAIL=$((FAIL+1))
   fi
 }
@@ -79,10 +88,14 @@ asr_sunset_check() {
   # - HTTP 404/410/Gone → ✅(2026-06-04 真正下线后)
   # - 无响应 → ❌
   local headers
-  headers=$(curl -sS -I --max-time 10 \
+  # 用 POST + 有效 body, 后端才会进入 endpoint 路由并附上 Sunset header
+  # 故意传一个会 422 失败的 URL — 仅检 response headers 是否带 deprecation 标记
+  headers=$(curl -sS --max-time 10 -D - -o /dev/null \
     -H "Authorization: ${TOKEN}" -H "packageName: com.duoshaokankan.weapp" \
     -H "version: 100" -H "client: ios" -H "clienttype: 1" \
-    -X POST "${MODEL_URL}/model/chat/audio" 2>&1 || echo "")
+    -H "Content-Type: application/json" \
+    -X POST "${MODEL_URL}/model/chat/audio" \
+    -d '{"user_id":10377,"url":"https://example.com/notreal.mp3"}' 2>&1 || echo "")
 
   local sunset=$(echo "$headers" | grep -i "^sunset:" | head -1)
   local deprecation=$(echo "$headers" | grep -i "^deprecation:" | head -1)
