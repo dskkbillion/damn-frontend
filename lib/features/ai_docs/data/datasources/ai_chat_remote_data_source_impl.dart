@@ -407,24 +407,28 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       AppLogger.d('[DataSource] Adding transcription: $transcription');
     }
     
-    // 支持多模态：判断是否为图像URL并使用相应的参数名
+    // #369 多模态附件分流: 非图片扩展名走 files, 其它默认走 image_urls
+    // 原版本用 substring 匹配("image"/"img" 会误匹配 OSS path 里的任意 URL),已弃用
+    // omni 负责未知格式拒收 → 走 onError 抛 ServerFailure, 不在前端兜底 (CLAUDE.md "No silent fallbacks")
     if (fileUrls.isNotEmpty) {
-      // 简单的图像URL判断逻辑（可以根据实际需求调整）
-      final isImageUrls = fileUrls.any((url) => 
-        url.toLowerCase().contains('.jpg') || 
-        url.toLowerCase().contains('.jpeg') || 
-        url.toLowerCase().contains('.png') || 
-        url.toLowerCase().contains('.gif') || 
-        url.toLowerCase().contains('.webp') ||
-        url.toLowerCase().contains('image') ||
-        url.toLowerCase().contains('img'));
-      
-      if (isImageUrls) {
-        requestData['image_urls'] = fileUrls; // 使用新的 image_urls 参数
-        AppLogger.d('[DataSource] Adding image_urls: $fileUrls');
+      const nonImageExts = {
+        '.pdf', '.mp4', '.mov', '.avi', '.mkv', '.webm',
+        '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+        '.zip', '.rar', '.7z', '.tar', '.gz',
+        '.mp3', '.wav', '.m4a', '.flac', '.ogg',  // 音频默认应该用 audio_urls 字段,这里仅兜底
+      };
+      final hasNonImage = fileUrls.any((url) {
+        final lower = url.toLowerCase();
+        // 去掉 query string 后看扩展名
+        final pathOnly = lower.split('?').first;
+        return nonImageExts.any((ext) => pathOnly.endsWith(ext));
+      });
+      if (hasNonImage) {
+        requestData['files'] = fileUrls;
+        AppLogger.d('[DataSource] Non-image files detected, adding files: $fileUrls');
       } else {
-        requestData['files'] = fileUrls; // 保持向后兼容（用于其他文件类型）
-        AppLogger.d('[DataSource] Adding files: $fileUrls');
+        requestData['image_urls'] = fileUrls;
+        AppLogger.d('[DataSource] Adding image_urls (omni multimodal): $fileUrls');
       }
     }
     
