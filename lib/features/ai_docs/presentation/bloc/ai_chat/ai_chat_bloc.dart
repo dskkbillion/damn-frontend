@@ -993,85 +993,98 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       // 6. 上传成功
       (audioOssUrl) async {
         AppLogger.d('音频上传成功，URL: $audioOssUrl');
-        
-        // 5. 转录成功，更新语音消息显示转录结果
+
+        // #370 feature flag: omni 直接理解音频, 不再 ASR 预转录
+        // ENABLE_OMNI_VOICE=true (默认) → 跳过 ASR; false → 走回退路径(临时回滚用, ASR 服务计划 2026-06-04 下线)
+        final useOmni = (dotenv.env['ENABLE_OMNI_VOICE'] ?? 'true').toLowerCase() != 'false';
+
+        if (useOmni) {
+          // #370 直接发音频给 omni — content 是占位符, 真实理解在 omni 侧
+          // 关联 #371: 后续 omni 回写 transcript 后, 此处可改成回填真实转写内容
+          final updatedMessages = state.messages.map((msg) {
+            if (msg.messageId == tempVoiceMessageId) {
+              return msg.copyWith(
+                content: '[语音消息]',
+                fileUrls: [audioOssUrl],
+                messageType: MessageType.audio,
+                isTranscribing: false,
+              );
+            }
+            return msg;
+          }).toList();
+
+          emit(state.copyWith(
+            status: AiChatStatus.sendingMessage,
+            messages: updatedMessages,
+            clearErrorMessage: true,
+          ));
+
+          AppLogger.d('[#370] omni 直接处理音频, 跳过 ASR 预转录');
+          await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
+          return;
+        }
+
+        // #370 legacy path (ENABLE_OMNI_VOICE=false 回滚兜底, AliyunASR 仍在线): ASR 预转录
+        // TODO 2026-06-04: 后端 /model/chat/audio 下线后, 这段死代码可删除 (#368)
+        AppLogger.w('[#370] ENABLE_OMNI_VOICE=false, 走 legacy ASR 路径');
         final updatedMessages = state.messages.map((msg) {
           if (msg.messageId == tempVoiceMessageId) {
-            AppLogger.d('[语音消息] 更新消息 - 设置音频URL: $audioOssUrl');
             return msg.copyWith(
-              content: "转录中...", // 上传成功后显示转录中状态
-              fileUrls: [audioOssUrl], // 设置音频URL到fileUrls
-              messageType: MessageType.audio, // 确保类型正确
-              isTranscribing: true, // 保持转录中状态
+              content: "转录中...",
+              fileUrls: [audioOssUrl],
+              messageType: MessageType.audio,
+              isTranscribing: true,
             );
           }
           return msg;
         }).toList();
-        
+
         emit(state.copyWith(
           status: AiChatStatus.sendingMessage,
           messages: updatedMessages,
           clearErrorMessage: true,
         ));
-        
-        // 8. 开始转录
-        AppLogger.d('开始调用语音转文字服务, URL: $audioOssUrl');
+
         final transcriptionResult = await _transcribeAudio(
-          TranscribeAudioParams(
-            audioOssUrl: audioOssUrl,
-            userId: userId,
-          )
+          TranscribeAudioParams(audioOssUrl: audioOssUrl, userId: userId),
         );
-        
+
         await transcriptionResult.fold(
-          // 转录失败
           (failure) async {
             AppLogger.d('语音转录失败: $failure');
-            
-            // 更新消息状态为转录失败
             final updatedMessages = state.messages.map((msg) {
               if (msg.messageId == tempVoiceMessageId) {
                 return msg.copyWith(
-                  content: '[转录失败，但可播放原音频]', // 显示转录失败信息
-                  isTranscribing: false, // 清除转录中状态
-                  messageType: MessageType.audio, // 保持音频类型
+                  content: '[转录失败，但可播放原音频]',
+                  isTranscribing: false,
+                  messageType: MessageType.audio,
                 );
               }
               return msg;
             }).toList();
-            
             emit(state.copyWith(
               status: AiChatStatus.transcriptionFailure,
               messages: updatedMessages,
               errorMessage: '语音转录失败',
             ));
-            
-            // 仍然尝试发送音频消息到后端（不带转录）
             await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
           },
-          // 转录成功
           (transcription) async {
             AppLogger.d('语音转录成功: $transcription');
-            
-            // 更新消息显示转录结果 - content设置为转录文本，保持音频类型
             final updatedMessages = state.messages.map((msg) {
               if (msg.messageId == tempVoiceMessageId) {
                 return msg.copyWith(
-                  content: transcription, // 设置转录文本到content
-                  messageType: MessageType.audio, // 保持音频类型
-                  isTranscribing: false, // 清除转录中状态
-                  // fileUrls已经在上传成功时设置，保持不变
+                  content: transcription,
+                  messageType: MessageType.audio,
+                  isTranscribing: false,
                 );
               }
               return msg;
             }).toList();
-            
             emit(state.copyWith(
               status: AiChatStatus.transcriptionSuccess,
               messages: updatedMessages,
             ));
-            
-            // 发送音频消息到后端（带转录）
             await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, transcription, emit);
           },
         );
