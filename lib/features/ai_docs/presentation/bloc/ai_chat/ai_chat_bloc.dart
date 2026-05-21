@@ -1072,19 +1072,29 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       return;
     }
 
-    // #371 处理 omni 回写用户音频转写文本: 把最近一条 type=audio 且 content='[语音消息]' 的消息 patch 为真实转写
+    // #371 处理 omni 回写用户音频转写文本: 找到**最近一条**(从末尾向前)
+    // type=audio + sender=user + content 占位符的消息, patch 为真实转写。
+    // 用反向 firstWhereOrNull 避免一次 transcript 误覆盖多个排队的语音消息(Architect P1 修复)。
     if (chunk.startsWith('[USER_AUDIO_TRANSCRIPT]')) {
       final transcript = chunk.substring('[USER_AUDIO_TRANSCRIPT]'.length);
       AppLogger.d('[AiChatBloc] #371 收到 user audio transcript, 长度=${transcript.length}');
-      final updatedMessages = state.messages.map((msg) {
-        if (msg.messageType == MessageType.audio &&
-            msg.sender == MessageSender.user &&
-            (msg.content == '[语音消息]' || msg.content.isEmpty)) {
-          return msg.copyWith(content: transcript);
+      final messages = List<AiChatMessageEntity>.from(state.messages);
+      int targetIndex = -1;
+      for (int i = messages.length - 1; i >= 0; i--) {
+        final m = messages[i];
+        if (m.messageType == MessageType.audio &&
+            m.sender == MessageSender.user &&
+            (m.content == '[语音消息]' || m.content.isEmpty)) {
+          targetIndex = i;
+          break;
         }
-        return msg;
-      }).toList();
-      emit(state.copyWith(messages: updatedMessages));
+      }
+      if (targetIndex >= 0) {
+        messages[targetIndex] = messages[targetIndex].copyWith(content: transcript);
+        emit(state.copyWith(messages: messages));
+      } else {
+        AppLogger.w('[AiChatBloc] #371 未找到待 patch 的语音消息, transcript 丢弃');
+      }
       return;
     }
     

@@ -602,15 +602,21 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
 
         case 'conversation.user_audio_transcript':
           // #371 omni 回写用户音频转写文本 — bloc 收到后 patch [语音消息] 占位
+          // 隔离 try/catch — malformed transcript JSON 不应中断整个 stream (Architect P2)
           if (data.isNotEmpty) {
-            final jsonData = jsonDecode(data);
-            AppLogger.d('[DataSource - SSE] #371 user_audio_transcript: $jsonData');
-            if (jsonData is Map<String, dynamic>) {
-              final transcript = jsonData['transcript'] as String?;
-              if (transcript != null && transcript.isNotEmpty) {
-                // 用特殊标记把 transcript 文本透传给 BLoC, 格式 [USER_AUDIO_TRANSCRIPT]<文本>
-                sink.add('[USER_AUDIO_TRANSCRIPT]$transcript');
+            try {
+              final jsonData = jsonDecode(data);
+              AppLogger.d('[DataSource - SSE] #371 user_audio_transcript: $jsonData');
+              if (jsonData is Map<String, dynamic>) {
+                final transcript = jsonData['transcript'] as String?;
+                if (transcript != null && transcript.isNotEmpty) {
+                  // 用特殊标记把 transcript 文本透传给 BLoC, 格式 [USER_AUDIO_TRANSCRIPT]<文本>
+                  sink.add('[USER_AUDIO_TRANSCRIPT]$transcript');
+                }
               }
+            } catch (e) {
+              // transcript 解析失败不影响主回复流, 仅日志
+              AppLogger.d('[DataSource - SSE] #371 transcript JSON parse 失败 (忽略): $e');
             }
           }
           break;
