@@ -1179,9 +1179,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      // Set error state
      emit(state.copyWith(
        status: AiChatStatus.messageSendFailure,
-       errorMessage: "Error during streaming: ${event.errorMessage ?? 'Unknown error'}", 
+       errorMessage: "Error during streaming: ${event.errorMessage}",
        streamingResponseText: '', // Clear stream text on error
-       
      ));
   }
 
