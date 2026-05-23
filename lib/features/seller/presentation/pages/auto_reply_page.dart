@@ -72,9 +72,23 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             _isContentDirty = true;
           });
         } else if (state is AutoReplySaveSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).auto_reply_settings_saved ?? 'Settings Saved')),
-          );
+          // #218 SELL-10: 给"保存成功"更明显的反馈(default 4s 太短不易察觉)
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(AppLocalizations.of(context).auto_reply_settings_saved ?? 'Settings Saved'),
+                  ],
+                ),
+                backgroundColor: AppColors.success,
+                duration: const Duration(seconds: 3),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
         } else if (state is AutoReplyLoaded) {
           // 更新文本控制器和状态
           _contentController.text = state.settings.content ?? '';
@@ -154,7 +168,7 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             Switch(
               value: settings.isEnabled,
               thumbColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return AppColors.success;
+                if (states.contains(WidgetState.selected)) return Theme.of(context).colorScheme.primary;
                 return null;
               }),
               onChanged: isUpdating 

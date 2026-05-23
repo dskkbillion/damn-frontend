@@ -1505,6 +1505,16 @@
             }
         }
     },
+    "order_card_canceling": "Canceling order...",
+    "order_card_canceled": "Order canceled",
+    "order_card_cancel_failed": "Cancel failed: {error}",
+    "@order_card_cancel_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "order_card_load_detail_failed": "Failed to load order details: {error}",
     "@order_card_load_detail_failed": {
         "placeholders": {

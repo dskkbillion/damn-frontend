@@ -92,6 +92,10 @@ class CancelStreaming extends AiChatEvent {} // Renamed from StopGeneration
 /// Event to fetch related service recommendations.
 class FetchRecommendations extends AiChatEvent {}
 
+/// 拉取某 conversation 的已分发商品历史(#347)。
+/// 触发时机:进入会话后 / 用户点 AppBar"已分发"按钮。
+class FetchDispatchHistory extends AiChatEvent {}
+
 /// Event to load the list of conversations.
 class LoadConversations extends AiChatEvent {
   final int? page; // 可选的页码，如果不提供则使用第1页

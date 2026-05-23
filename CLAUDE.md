@@ -119,6 +119,14 @@ Treat this as the ground truth until verified otherwise. New endpoints must be a
 - `POST /api/shop/evaluate/add` — 添加评价
 - `POST /api/shop/evaluate/list` — 评价列表
 
+**FxRate (`FxRateApiController`)** — #348 多币种双显示（白名单免登录）
+- `GET /api/fx/rates?base=USD&targets=cny,eur,vnd` — 汇率查询
+  - `base` 仅支持 `USD`（存储币种恒 USD），传其它值返回 `code != 200`
+  - `targets` 逗号分隔 ISO 4217（大小写不敏感），为空返回全部缓存币种
+  - 响应（扁平，AjaxResult.put 塞顶层，**无 data 包裹**）：`{ code:200, msg, base:"USD", rates:{ "cny":7.12, "eur":0.92, ... } }`
+  - 后端定时每小时刷新（Fawaz Currency API → Redis 2h TTL）；数据源故障返回 `code != 200`，**不静默兜底**
+  - ⚠️ 仅用于「展示折算」，不参与结算（结算恒 USD via Stripe）
+
 ### Mandatory request conventions
 
 - **Pagination:** `pageNum` + `pageSize`. Never `pageIndex` / `size` / `count`.
@@ -262,3 +270,7 @@ Payment SDKs (`fluwx`, `tobias`) are currently **commented out** in `pubspec.yam
 - **Use enums, not string literals**, for any value that maps to a backend enum (status, type, etc.).
 - **Don't invent API endpoints or fields** — verify in backend source first.
 - When unsure, check `docs/dev/` and the backend controller sources before guessing.
+- **ID 使用规则(参考 [docs/dev/id_schema_cn.md](docs/dev/id_schema_cn.md))**:
+  - 写跨端 API 调用前,先查那份文档 §2 的「跨端契约清单」确认 endpoint 期望传 `member.id` 还是 `xun_common_user.id`
+  - 新 endpoint 没在清单里 → **先 staging curl 抽样确认**,然后补到清单
+  - 不要按变量名猜语义 — `tenantId` / `doctorId` / `memberId` / `userId` 在不同上下文里语义不同(历史教训:#355 #346)

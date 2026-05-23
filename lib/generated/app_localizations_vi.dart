@@ -2897,6 +2897,17 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get order_card_canceling => 'Đang hủy đơn hàng...';
+
+  @override
+  String get order_card_canceled => 'Đơn hàng đã hủy';
+
+  @override
+  String order_card_cancel_failed(String error) {
+    return 'Hủy thất bại: $error';
+  }
+
+  @override
   String order_card_load_detail_failed(String error) {
     return 'Tải chi tiết đơn hàng thất bại: $error';
   }

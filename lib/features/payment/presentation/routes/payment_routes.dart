@@ -19,13 +19,18 @@ class PaymentRoutes {
       path: '/payment/result',
       name: 'paymentResult',
       pageBuilder: (context, state) {
-        final success = state.uri.queryParameters['success'] == 'true';
+        final raw = state.uri.queryParameters['success'];
+        final initialStatus = raw == 'true'
+            ? PaymentResultStatus.success
+            : raw == 'pending'
+                ? PaymentResultStatus.pending
+                : PaymentResultStatus.failure;
         final orderId = state.uri.queryParameters['orderId'];
         final errorMessage = state.uri.queryParameters['errorMessage'];
 
         return state.buildSmartPage(
           PaymentResultPage(
-            success: success,
+            initialStatus: initialStatus,
             orderId: orderId,
             errorMessage: errorMessage,
           ),

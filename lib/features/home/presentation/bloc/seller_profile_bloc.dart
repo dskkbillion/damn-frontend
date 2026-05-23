@@ -79,14 +79,20 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               remarks: currentState.seller!.remarks,
               memberAttention: true, // 设置为已关注
               fansCount: currentState.seller!.fansCount + 1, // 粉丝数量+1
+              // #365 保留新字段
+              levelName: currentState.seller!.levelName,
+              score: currentState.seller!.score,
+              collectNum: currentState.seller!.collectNum,
+              authenticated: currentState.seller!.authenticated,
+              evaluates: currentState.seller!.evaluates,
             )
           : null;
-      
+
       emit(SellerProfileLoaded(
         products: currentState.products,
         seller: updatedSeller,
       ));
-      
+
       // 调用API执行实际关注操作
       AppLogger.d('[SellerProfileBloc] 调用关注API...');
       final result = await followSeller.execute(event.sellerId);
@@ -154,6 +160,12 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               remarks: currentState.seller!.remarks,
               memberAttention: false, // 设置为未关注
               fansCount: currentState.seller!.fansCount - 1, // 粉丝数量-1
+              // #365 保留新字段
+              levelName: currentState.seller!.levelName,
+              score: currentState.seller!.score,
+              collectNum: currentState.seller!.collectNum,
+              authenticated: currentState.seller!.authenticated,
+              evaluates: currentState.seller!.evaluates,
             )
           : null;
       

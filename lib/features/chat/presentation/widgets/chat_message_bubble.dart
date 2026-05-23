@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
@@ -13,8 +14,11 @@ import 'package:url_launcher/url_launcher.dart'; // 导入URL处理包
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../../domain/entities/chat_message.dart';
+import '../../domain/entities/payment_prompt_payload.dart';
 import '../../domain/constants/message_type.dart';
+import 'payment_prompt_bubble.dart';
 import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBloc
+import '../cubit/message_list/message_list_cubit.dart';
 import '../../domain/entities/participant.dart'; // Import Participant
 import '../../domain/constants/chat_constants.dart';
 import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
@@ -225,6 +229,42 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
   @override
   Widget build(BuildContext context) {
+    // 撤回的消息渲染居中灰色提示(#333),否则会因为不匹配 text/audio/image/allocate
+    // 默认分支而不显示任何内容。MessageListCubit.revokeMessage 已把
+    // type 设为 revoke + withdrawFlag=true + context='消息已撤回'。
+    if (widget.message.withdrawFlag ||
+        widget.message.type == ChatMessageType.revoke) {
+      final isCurrentUser =
+          widget.message.senderId == widget.currentUserParticipantId;
+      final tipText = isCurrentUser ? '你撤回了一条消息' : '对方撤回了一条消息';
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Center(
+          child: Text(
+            tipText,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textTertiary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Payment-prompt messages are encoded as text-typed messages whose
+    // context is a JSON envelope. Detect & dispatch to the rich bubble
+    // before falling through to the default text/image/audio renderers.
+    // isSeller here means "viewer is the seller": payment_prompt is always
+    // sent by the seller, so viewer-is-sender ⇔ viewer-is-seller.
+    final paymentPrompt = PaymentPromptPayload.tryParse(widget.message.context);
+    if (paymentPrompt != null) {
+      return PaymentPromptBubble(
+        payload: paymentPrompt,
+        isSeller: widget.message.senderId == widget.currentUserParticipantId,
+        chatRoomId: widget.message.chatId,
+      );
+    }
+
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
@@ -235,22 +275,30 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // Consistent text color for both bubble types
     const textColor = AppColors.textPrimary;
 
-    // Avatar Widget (only for opponent)
+    // Avatar Widget (only for opponent) — 点击跳对方公开主页 (#334)
     final avatarWidget = !isCurrentUser && widget.opponent != null
       ? Padding(
           padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                ? CachedNetworkImageProvider(widget.opponent!.avatar!)
-                : null,
-            backgroundColor: AppColors.borderInput,
-            child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
-                ? Text(
-                    widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
-                    style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
-                  )
-                : null,
+          child: GestureDetector(
+            onTap: () {
+              final sellerId = widget.opponent?.referId;
+              if (sellerId != null) {
+                context.push('/seller-profile/$sellerId');
+              }
+            },
+            child: CircleAvatar(
+              radius: 18,
+              backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
+                  ? CachedNetworkImageProvider(widget.opponent!.avatar!)
+                  : null,
+              backgroundColor: AppColors.borderInput,
+              child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
+                  ? Text(
+                      widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
+                      style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
+                    )
+                  : null,
+            ),
           ),
         )
       : const SizedBox(width: 44);
@@ -773,7 +821,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                 // 再次检查是否可以撤回（防止时间差问题）
                 final revokeResult = _checkRevokeStatus();
                 if (revokeResult.canRevoke) {
-                context.read<ChatMessagesBloc>().add(RevokeMessageRequested(widget.message.id));
+                  // refactored 聊天室走 MessageListCubit 链路,不是 ChatMessagesBloc (#333)
+                  context.read<MessageListCubit>().revokeMessage(widget.message.id);
                 } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

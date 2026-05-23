@@ -21,6 +21,7 @@ import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart'
 // 添加缺失的依赖
 import 'package:dskk_flutter_refactor/core/network/i_http_client.dart';
 import 'package:dskk_flutter_refactor/core/network/dio_http_client.dart';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 
@@ -32,6 +33,7 @@ import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 
 // Import auth module DI
 import 'package:dskk_flutter_refactor/features/auth/di/auth_di.dart';
+import 'package:dskk_flutter_refactor/core/currency/di/currency_di.dart';
 
 // Import ai_docs module DI
 import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
@@ -114,6 +116,13 @@ Future<void> registerAuthDependencies() async {
     AppLogger.d(
         '[DI] IUserRepository already registered, skipping registration');
   }
+
+  // 注册 IdResolver (#358 — 跨端 ID 语义封装,见 docs/dev/id_schema_cn.md)
+  if (!getIt.isRegistered<IdResolver>()) {
+    getIt.registerLazySingleton<IdResolver>(
+        () => IdResolverImpl(getIt<ISecureStorageRepository>()));
+    AppLogger.d('[DI] Registered IdResolver');
+  }
 }
 
 Future<void> configureDependencies({required String backendBaseUrl}) async {
@@ -158,6 +167,17 @@ Future<void> configureDependencies({required String backendBaseUrl}) async {
   } catch (e) {
     AppLogger.d('[DI] Failed to initialize Auth module: $e');
     // 不抛出异常，允许应用继续启动，但记录错误信息
+  }
+
+  // 初始化多币种(汇率)模块依赖 — #348
+  try {
+    AppLogger.d('[DI] Starting Currency module initialization...');
+    await CurrencyDI.registerCoreDependencies(getIt);
+    await CurrencyDI.init(getIt);
+    AppLogger.d('[DI] Currency module dependencies initialization complete.');
+  } catch (e) {
+    AppLogger.d('[DI] Failed to initialize Currency module: $e');
+    // 不抛出异常，允许应用继续启动(汇率失败仅退化为单币显示)
   }
 
   // 注册支付模块依赖

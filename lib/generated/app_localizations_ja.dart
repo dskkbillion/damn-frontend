@@ -2795,6 +2795,17 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get order_card_canceling => '注文をキャンセル中...';
+
+  @override
+  String get order_card_canceled => '注文をキャンセルしました';
+
+  @override
+  String order_card_cancel_failed(String error) {
+    return 'キャンセル失敗: $error';
+  }
+
+  @override
   String order_card_load_detail_failed(String error) {
     return '注文詳細の読み込みに失敗しました: $error';
   }

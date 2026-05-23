@@ -49,9 +49,11 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<void> _initializeAuthStatus() async {
     _statusController.add(const AuthUnknown()); // 初始为未知
     try {
-      // 同时获取 id (int) 和 token (String)
-      final id = await secureStorage.getInt('user_id'); // 使用约定的 key
-      final token = await secureStorage.getString('auth_token'); // 使用约定的 key
+      // #358: auth init 走 storage 是底层操作(IdResolver 在 storage 之上),
+      // 这里语义 = member.id,等价于 IdResolver.memberIdForBackend(),
+      // 不为这一行引入 IdResolver 循环依赖。
+      final id = await secureStorage.getInt('user_id');
+      final token = await secureStorage.getString('auth_token');
 
       if (id != null && token != null) {
         // 验证Token有效性

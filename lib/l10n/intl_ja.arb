@@ -1504,6 +1504,16 @@
             }
         }
     },
+    "order_card_canceling": "注文をキャンセル中...",
+    "order_card_canceled": "注文をキャンセルしました",
+    "order_card_cancel_failed": "キャンセル失敗: {error}",
+    "@order_card_cancel_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "order_card_load_detail_failed": "注文詳細の読み込みに失敗しました: {error}",
     "@order_card_load_detail_failed": {
         "placeholders": {

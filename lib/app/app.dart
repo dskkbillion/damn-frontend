@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import 'package:dskk_flutter_refactor/core/currency/presentation/cubit/currency_cubit.dart';
+import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router.dart'; // Import the provider
 import 'package:dskk_flutter_refactor/core/config/theme/app_theme.dart';
 import 'package:dskk_flutter_refactor/core/widgets/global_message_notification.dart'; // 导入全局消息通知组件
@@ -70,12 +74,42 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
       // 使用 builder 将 GlobalMessageNotification 和 ModeFlipTransitionOverlay 放在 MaterialApp 内部
       // 这样它们可以访问 Overlay 和路由信息
       builder: (context, child) {
-        return GlobalMessageNotification(
-          child: ModeFlipTransitionOverlay(
-            child: child!,
+        // #348 根注入 CurrencyCubit，全 app 共享一份汇率状态。
+        // 按用户 locale 推断默认副币种，启动即触发双显折算。
+        return BlocProvider<CurrencyCubit>(
+          create: (_) {
+            final cubit = GetIt.I<CurrencyCubit>();
+            final secondary = _secondaryCurrencyForLocale(locale);
+            if (secondary != null) {
+              cubit.selectCurrency(secondary);
+            }
+            return cubit;
+          },
+          child: GlobalMessageNotification(
+            child: ModeFlipTransitionOverlay(
+              child: child!,
+            ),
           ),
         );
       },
     );
   }
-} 
+
+  /// #348 按 locale 推断双显副币种。
+  /// 存储恒 USD；英文用户主用 USD，无需双显（返回 null → PriceDisplayWidget 仅主行）。
+  Currency? _secondaryCurrencyForLocale(Locale? locale) {
+    switch (locale?.languageCode) {
+      case 'vi':
+        return Currency.vnd;
+      case 'zh':
+        return Currency.cny;
+      case 'ja':
+        return Currency.jpy;
+      case 'ko':
+        return Currency.krw;
+      case 'en':
+      default:
+        return null;
+    }
+  }
+}

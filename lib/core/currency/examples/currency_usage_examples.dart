@@ -90,7 +90,6 @@ class CurrencyExamplesContent extends StatelessWidget {
                       Text('原价: '),
                       PriceDisplayWidget(
                         price: 199.99,
-                        showConversionIndicator: true,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

@@ -2758,6 +2758,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get order_card_canceling => '正在取消订单...';
+
+  @override
+  String get order_card_canceled => '订单已取消';
+
+  @override
+  String order_card_cancel_failed(String error) {
+    return '取消失败：$error';
+  }
+
+  @override
   String order_card_load_detail_failed(String error) {
     return '加载订单详情失败：$error';
   }

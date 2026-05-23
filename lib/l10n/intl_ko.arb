@@ -1786,6 +1786,16 @@
     },
     "order_card_deleted": "주문이 삭제되었습니다",
     "order_card_deleting": "주문 삭제 중...",
+    "order_card_canceling": "주문 취소 중...",
+    "order_card_canceled": "주문이 취소되었습니다",
+    "order_card_cancel_failed": "취소 실패: {error}",
+    "@order_card_cancel_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "order_card_delivery_days": "교부 기간: {days}일 이내",
     "@order_card_delivery_days": {
         "placeholders": {

@@ -407,24 +407,28 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       AppLogger.d('[DataSource] Adding transcription: $transcription');
     }
     
-    // 支持多模态：判断是否为图像URL并使用相应的参数名
+    // #369 多模态附件分流: 非图片扩展名走 files, 其它默认走 image_urls
+    // 原版本用 substring 匹配("image"/"img" 会误匹配 OSS path 里的任意 URL),已弃用
+    // omni 负责未知格式拒收 → 走 onError 抛 ServerFailure, 不在前端兜底 (CLAUDE.md "No silent fallbacks")
     if (fileUrls.isNotEmpty) {
-      // 简单的图像URL判断逻辑（可以根据实际需求调整）
-      final isImageUrls = fileUrls.any((url) => 
-        url.toLowerCase().contains('.jpg') || 
-        url.toLowerCase().contains('.jpeg') || 
-        url.toLowerCase().contains('.png') || 
-        url.toLowerCase().contains('.gif') || 
-        url.toLowerCase().contains('.webp') ||
-        url.toLowerCase().contains('image') ||
-        url.toLowerCase().contains('img'));
-      
-      if (isImageUrls) {
-        requestData['image_urls'] = fileUrls; // 使用新的 image_urls 参数
-        AppLogger.d('[DataSource] Adding image_urls: $fileUrls');
+      const nonImageExts = {
+        '.pdf', '.mp4', '.mov', '.avi', '.mkv', '.webm',
+        '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+        '.zip', '.rar', '.7z', '.tar', '.gz',
+        '.mp3', '.wav', '.m4a', '.flac', '.ogg',  // 音频默认应该用 audio_urls 字段,这里仅兜底
+      };
+      final hasNonImage = fileUrls.any((url) {
+        final lower = url.toLowerCase();
+        // 去掉 query string 后看扩展名
+        final pathOnly = lower.split('?').first;
+        return nonImageExts.any((ext) => pathOnly.endsWith(ext));
+      });
+      if (hasNonImage) {
+        requestData['files'] = fileUrls;
+        AppLogger.d('[DataSource] Non-image files detected, adding files: $fileUrls');
       } else {
-        requestData['files'] = fileUrls; // 保持向后兼容（用于其他文件类型）
-        AppLogger.d('[DataSource] Adding files: $fileUrls');
+        requestData['image_urls'] = fileUrls;
+        AppLogger.d('[DataSource] Adding image_urls (omni multimodal): $fileUrls');
       }
     }
     
@@ -595,7 +599,29 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             }
           }
           break;
-          
+
+        case 'conversation.user_audio_transcript':
+          // #371 omni 回写用户音频转写文本 — bloc 收到后 patch [语音消息] 占位
+          // 隔离 try/catch — malformed transcript JSON 不应中断整个 stream (Architect P2)
+          if (data.isNotEmpty) {
+            try {
+              final jsonData = jsonDecode(data);
+              AppLogger.d('[DataSource - SSE] #371 user_audio_transcript: $jsonData');
+              if (jsonData is Map<String, dynamic>) {
+                final transcript = jsonData['transcript'] as String?;
+                if (transcript != null && transcript.isNotEmpty) {
+                  // 用特殊标记把 transcript 文本透传给 BLoC, 格式 [USER_AUDIO_TRANSCRIPT]<文本>
+                  sink.add('[USER_AUDIO_TRANSCRIPT]$transcript');
+                }
+              }
+            } catch (e) {
+              // transcript 解析失败不影响主回复流, 仅日志
+              AppLogger.d('[DataSource - SSE] #371 transcript JSON parse 失败 (忽略): $e');
+            }
+          }
+          break;
+
+
         default:
           AppLogger.d('[DataSource - SSE] Unknown event type: $event');
           break;
@@ -902,55 +928,47 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
   }
 
   @override
-  Future<String> transcribeAudio({
-    required String audioOssUrl,
-    int? userId,
+  Future<List<Map<String, dynamic>>> getDispatchHistory({
+    required int conversationId,
+    required int userId,
   }) async {
-    const path = '/model/chat/audio';
-    final Map<String, dynamic> requestData = {
-      'url': audioOssUrl,
-    };
-    if (userId != null) requestData['user_id'] = userId;
+    const String path = '/model/chat/allocations/list';
     try {
-      // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 转录音频，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
-      
-      // 创建包含认证头的选项
       final options = Options(
         headers: {
-          if (token != null && token.isNotEmpty)
-            'Authorization': token, // 直接使用token
-        }
+          if (token != null && token.isNotEmpty) 'Authorization': token,
+        },
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
-      
-      // 直接使用Dio实例
-      final response = await _httpClient.getDioInstance().post(
-        path, 
-        data: requestData,
-        options: options
+      final response = await _httpClient.getDioInstance().get(
+        path,
+        queryParameters: {
+          'conversation_id': conversationId,
+          'user_id': userId,
+        },
+        options: options,
       );
-      
-      // 处理响应
-      final responseData = response.data;
-      final data = _handleResponse(responseData);
-      
-      if (data != null && data['content'] is String) {
-        return data['content'];
-      } else {
-        throw ds_exceptions.DataSourceException(message: 'Invalid transcription format in API response');
+      final data = _handleResponse(response.data);
+      if (data is List) {
+        return data.whereType<Map<String, dynamic>>().toList(growable: false);
       }
+      return const <Map<String, dynamic>>[];
     } on ds_exceptions.ServerException {
       rethrow;
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in transcribeAudio: $e');
-      throw ds_exceptions.DataSourceException(message: 'Failed to transcribe audio: ${e.toString()}');
+      AppLogger.d('Unexpected error in getDispatchHistory at $path: $e');
+      throw ds_exceptions.DataSourceException(
+        message: 'Failed to fetch dispatch history: ${e.toString()}',
+      );
     }
   }
+
+  // #368 deleted transcribeAudio() implementation — omni 直接理解音频 (#360)
+  // 后端 /model/chat/audio endpoint 保留到 2026-06-04 (老 app 版本兼容期),
+  // 此前端方法删除后, 老 app 自身 fallback 路径仍能调它(不通过此 client)。
 
   @override
   Future<void> cancelChatGeneration({

@@ -366,12 +366,35 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       return Center(child: Text(AppLocalizations.of(context).seller_profile_no_merchant_info));
     }
 
+    // #365 读取后端 /api/project/details 真实字段(levelName / score / evaluates / authenticated)
+    // 替换之前的 hard-coded "二级会员" / "5.0" / "3小时" / `trueName != null` 判定
+    final l10n = AppLocalizations.of(context);
+    final evaluateCount = seller.evaluates?.length ?? 0;
     return ListView(
       children: [
-        _buildInfoItem(AppLocalizations.of(context).seller_profile_member_level, AppLocalizations.of(context).seller_profile_level_two, Icons.grade),
-        _buildInfoItem(AppLocalizations.of(context).seller_profile_seller_rating, '5.0', Icons.star),
-        _buildInfoItem(AppLocalizations.of(context).seller_profile_response_time, AppLocalizations.of(context).seller_profile_response_hours, Icons.access_time),
-        _buildInfoItem(AppLocalizations.of(context).seller_profile_certification_status, seller.trueName != null ? AppLocalizations.of(context).seller_profile_certified : AppLocalizations.of(context).seller_profile_not_certified, Icons.verified_user),
+        _buildInfoItem(
+          l10n.seller_profile_member_level,
+          seller.levelName ?? '-',
+          Icons.grade,
+        ),
+        _buildInfoItem(
+          l10n.seller_profile_seller_rating,
+          seller.score.toStringAsFixed(1),
+          Icons.star,
+        ),
+        // 把"回应时间"位置改为"累计评价",消化 memberEvaluateNewVos 字段,避免视觉空缺
+        _buildInfoItem(
+          l10n.seller_profile_my_services,
+          evaluateCount > 0 ? '$evaluateCount' : '-',
+          Icons.rate_review,
+        ),
+        _buildInfoItem(
+          l10n.seller_profile_certification_status,
+          seller.authenticated
+              ? l10n.seller_profile_certified
+              : l10n.seller_profile_not_certified,
+          Icons.verified_user,
+        ),
       ],
     );
   }

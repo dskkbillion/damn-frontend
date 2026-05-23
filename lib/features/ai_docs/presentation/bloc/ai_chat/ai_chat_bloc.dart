@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:io';
 // For jsonDecode in stream handling
@@ -18,15 +19,16 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart'; // Use package 
 // Domain Layer - Use package imports
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/allocated_item_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/allocate_chat_resource_usecase.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_dispatch_history_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/create_conversation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/delete_conversation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_conversations_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/get_related_services_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/stream_chat_completion_usecase.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/transcribe_audio_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/upload_file_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/cancel_chat_generation_usecase.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/optimized_allocation_usecase.dart';
@@ -39,7 +41,8 @@ import 'package:dskk_flutter_refactor/features/ai_docs/data/datasources/i_ai_cha
 // Move Exports Before Parts - Use package imports
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_conversation_entity.dart'; 
 export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/ai_chat_message_entity.dart'; 
-export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart'; 
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
+export 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/allocated_item_entity.dart'; 
 
 // Parts (No Duplicates)
 part 'ai_chat_event.dart';
@@ -60,7 +63,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   final UploadFileUseCase _uploadFile;
   final GetRelatedServicesUseCase _getRelatedServices;
   final AllocateChatResourceUseCase _allocateChatResource;
-  final TranscribeAudioUseCase _transcribeAudio;
+  final GetDispatchHistoryUseCase _getDispatchHistory;
+  // #368 deleted TranscribeAudioUseCase field — omni 直接理解音频 (#360)
   final CancelChatGenerationUseCase _cancelChatGeneration;
   final OptimizedAllocationUseCase _optimizedAllocation;
   final UpdateConversationTitleUseCase _updateConversationTitle;
@@ -69,8 +73,11 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // --- Data Source for Rate Limit Access ---
   final IAiChatRemoteDataSource _remoteDataSource;
 
-  // --- Inject Secure Storage --- 
+  // --- Inject Secure Storage ---
   final FlutterSecureStorage _storage;
+
+  // --- ID 语义解析 (#358) ---
+  final IdResolver _idResolver;
 
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
@@ -87,15 +94,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     this._uploadFile,
     this._getRelatedServices,
     this._allocateChatResource,
-    this._transcribeAudio,
+    this._getDispatchHistory,
     this._cancelChatGeneration,
     this._optimizedAllocation,
     this._updateConversationTitle,
     this._generateConversationTitle,
     this._remoteDataSource, // Add data source to constructor
     this._storage, // Add storage to constructor
+    this._idResolver, // #358 ID 语义解析
     // Start with initial state containing defaults for new properties
-  ) : super(const AiChatState()) { 
+  ) : super(const AiChatState()) {
     // --- Register event handlers ---
     // Conversation List Management
     on<LoadConversations>(_onLoadConversations);
@@ -118,7 +126,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     on<SendVoiceMessage>(_onSendVoiceMessage); 
     on<CancelStreaming>(_onCancelStreaming); 
     on<CancelChatGeneration>(_onCancelChatGeneration);
-    on<FetchRecommendations>(_onFetchRecommendations); 
+    on<FetchRecommendations>(_onFetchRecommendations);
+    on<FetchDispatchHistory>(_onFetchDispatchHistory);
     on<TriggerAllocationAction>(_onTriggerAllocationAction); 
     on<TriggerOptimizedAllocation>(_onTriggerOptimizedAllocation);
     // Internal Stream Handling
@@ -136,39 +145,10 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   }
 
   // --- Helper to get current user ID (common_user_id) ---
-  // Returns common_user_id which is used for AI chat, recommendations, etc.
-  // Returns null if not found or not an int
-  Future<int?> _getCurrentUserId() async {
-    // 修改：使用common_user_id而不是user_id
-    final commonUserIdString = await _storage.read(key: 'common_user_id');
-
-    // 调试日志
-    final userIdString = await _storage.read(key: 'user_id');
-    AppLogger.d("[AiChatBloc] 用户ID信息: user_id = $userIdString, common_user_id = $commonUserIdString");
-
-    if (commonUserIdString != null) {
-      // 转换为整数并返回
-      return int.tryParse(commonUserIdString);
-    }
-
-    // 不再回退使用user_id，如果没有common_user_id则直接返回null（错误）
-    AppLogger.d("[AiChatBloc] 错误: 未找到common_user_id，AI聊天功能需要正确的common_user_id");
-    return null;
-  }
-
-  // --- Helper to get member user ID (user_id) ---
-  // Returns user_id (member table primary key) which is used for allocation API
-  // Returns null if not found or not an int
-  Future<int?> _getMemberUserId() async {
-    final userIdString = await _storage.read(key: 'user_id');
-
-    if (userIdString != null) {
-      return int.tryParse(userIdString);
-    }
-
-    AppLogger.d("[AiChatBloc] 错误: 未找到user_id");
-    return null;
-  }
+  // ID 解析 — 走 IdResolver,不再直接 read storage(#358)
+  // 见 docs/dev/id_schema_cn.md §2 跨端契约清单
+  Future<int?> _getCurrentUserId() => _idResolver.commonUserId();
+  Future<int?> _getMemberUserId() => _idResolver.memberIdForBackend();
 
   // --- Conversation List Handlers ---
 
@@ -364,10 +344,16 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           totalMessages: historyData.totalMessages,
           // 加载完成后触发滚动到底部
           shouldScrollToBottom: true,
+          // 切到新会话时清空旧历史,触发 AppBar 按钮状态刷新
+          clearDispatchHistory: true,
+          dispatchHistoryStatus: DispatchHistoryStatus.initial,
         ));
-        
+
         // 立即重置滚动标志
         emit(state.copyWith(shouldScrollToBottom: false));
+
+        // #347 异步拉取本会话的已分发历史,驱动 AppBar 按钮空/置灰状态
+        add(FetchDispatchHistory());
       },
     );
   }
@@ -1002,91 +988,32 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           errorMessage: errorMessage,
         ));
       },
-      // 6. 上传成功
+      // 6. 上传成功 — omni 直接理解音频 (#360 + #368)
       (audioOssUrl) async {
         AppLogger.d('音频上传成功，URL: $audioOssUrl');
-        
-        // 5. 转录成功，更新语音消息显示转录结果
+
+        // #368 直接走 omni 路径, 前端不再调 /model/chat/audio (ASR endpoint 2026-06-04 下线)
+        // content 默认 '[语音消息]' 占位符。#371 实施后由后端 SSE 回写真实 transcript
         final updatedMessages = state.messages.map((msg) {
           if (msg.messageId == tempVoiceMessageId) {
-            AppLogger.d('[语音消息] 更新消息 - 设置音频URL: $audioOssUrl');
             return msg.copyWith(
-              content: "转录中...", // 上传成功后显示转录中状态
-              fileUrls: [audioOssUrl], // 设置音频URL到fileUrls
-              messageType: MessageType.audio, // 确保类型正确
-              isTranscribing: true, // 保持转录中状态
+              content: '[语音消息]',
+              fileUrls: [audioOssUrl],
+              messageType: MessageType.audio,
+              isTranscribing: false,
             );
           }
           return msg;
         }).toList();
-        
+
         emit(state.copyWith(
           status: AiChatStatus.sendingMessage,
           messages: updatedMessages,
           clearErrorMessage: true,
         ));
-        
-        // 8. 开始转录
-        AppLogger.d('开始调用语音转文字服务, URL: $audioOssUrl');
-        final transcriptionResult = await _transcribeAudio(
-          TranscribeAudioParams(
-            audioOssUrl: audioOssUrl,
-            userId: userId,
-          )
-        );
-        
-        await transcriptionResult.fold(
-          // 转录失败
-          (failure) async {
-            AppLogger.d('语音转录失败: $failure');
-            
-            // 更新消息状态为转录失败
-            final updatedMessages = state.messages.map((msg) {
-              if (msg.messageId == tempVoiceMessageId) {
-                return msg.copyWith(
-                  content: '[转录失败，但可播放原音频]', // 显示转录失败信息
-                  isTranscribing: false, // 清除转录中状态
-                  messageType: MessageType.audio, // 保持音频类型
-                );
-              }
-              return msg;
-            }).toList();
-            
-            emit(state.copyWith(
-              status: AiChatStatus.transcriptionFailure,
-              messages: updatedMessages,
-              errorMessage: '语音转录失败',
-            ));
-            
-            // 仍然尝试发送音频消息到后端（不带转录）
-            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
-          },
-          // 转录成功
-          (transcription) async {
-            AppLogger.d('语音转录成功: $transcription');
-            
-            // 更新消息显示转录结果 - content设置为转录文本，保持音频类型
-            final updatedMessages = state.messages.map((msg) {
-              if (msg.messageId == tempVoiceMessageId) {
-                return msg.copyWith(
-                  content: transcription, // 设置转录文本到content
-                  messageType: MessageType.audio, // 保持音频类型
-                  isTranscribing: false, // 清除转录中状态
-                  // fileUrls已经在上传成功时设置，保持不变
-                );
-              }
-              return msg;
-            }).toList();
-            
-            emit(state.copyWith(
-              status: AiChatStatus.transcriptionSuccess,
-              messages: updatedMessages,
-            ));
-            
-            // 发送音频消息到后端（带转录）
-            await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, transcription, emit);
-          },
-        );
+
+        AppLogger.d('[#368] omni 直接处理音频, 不再 ASR 预转录');
+        await _sendVoiceToBackend(currentConversationId, userId, audioOssUrl, null, emit);
       },
     );
   }
@@ -1142,6 +1069,32 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
       // 对于语音消息，我们已经在前端显示了语音消息气泡（包含转录状态和结果）
       // 这个标识只是确认后端已经处理了用户消息，不需要额外显示
       // 我们只需要继续等待AI响应即可
+      return;
+    }
+
+    // #371 处理 omni 回写用户音频转写文本: 找到**最近一条**(从末尾向前)
+    // type=audio + sender=user + content 占位符的消息, patch 为真实转写。
+    // 用反向 firstWhereOrNull 避免一次 transcript 误覆盖多个排队的语音消息(Architect P1 修复)。
+    if (chunk.startsWith('[USER_AUDIO_TRANSCRIPT]')) {
+      final transcript = chunk.substring('[USER_AUDIO_TRANSCRIPT]'.length);
+      AppLogger.d('[AiChatBloc] #371 收到 user audio transcript, 长度=${transcript.length}');
+      final messages = List<AiChatMessageEntity>.from(state.messages);
+      int targetIndex = -1;
+      for (int i = messages.length - 1; i >= 0; i--) {
+        final m = messages[i];
+        if (m.messageType == MessageType.audio &&
+            m.sender == MessageSender.user &&
+            (m.content == '[语音消息]' || m.content.isEmpty)) {
+          targetIndex = i;
+          break;
+        }
+      }
+      if (targetIndex >= 0) {
+        messages[targetIndex] = messages[targetIndex].copyWith(content: transcript);
+        emit(state.copyWith(messages: messages));
+      } else {
+        AppLogger.w('[AiChatBloc] #371 未找到待 patch 的语音消息, transcript 丢弃');
+      }
       return;
     }
     
@@ -1226,9 +1179,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
      // Set error state
      emit(state.copyWith(
        status: AiChatStatus.messageSendFailure,
-       errorMessage: "Error during streaming: ${event.errorMessage ?? 'Unknown error'}", 
+       errorMessage: "Error during streaming: ${event.errorMessage}",
        streamingResponseText: '', // Clear stream text on error
-       
      ));
   }
 
@@ -1432,6 +1384,42 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     );
   }
 
+  /// 拉取当前 conversation 的已分发商品历史(#347)。
+  /// 后端 user_id 字段语义同 allocate(走 common_user_id,验权用 verify_conversation_access)。
+  Future<void> _onFetchDispatchHistory(
+    FetchDispatchHistory event,
+    Emitter<AiChatState> emit,
+  ) async {
+    final currentConvId = state.selectedConversationId;
+    if (currentConvId == null) {
+      return;
+    }
+    final userId = await _getCurrentUserId();
+    if (userId == null) {
+      emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.error,
+        dispatchHistoryErrorMessage: '未登录或用户 ID 无效',
+      ));
+      return;
+    }
+    emit(state.copyWith(dispatchHistoryStatus: DispatchHistoryStatus.loading));
+
+    final result = await _getDispatchHistory(GetDispatchHistoryParams(
+      conversationId: currentConvId,
+      userId: userId,
+    ));
+    result.fold(
+      (failure) => emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.error,
+        dispatchHistoryErrorMessage: failure.toString(),
+      )),
+      (history) => emit(state.copyWith(
+        dispatchHistoryStatus: DispatchHistoryStatus.loaded,
+        dispatchHistory: history,
+      )),
+    );
+  }
+
   // --- Handler for Allocation Action ---
   Future<void> _onTriggerAllocationAction(
     TriggerAllocationAction event,
@@ -1525,11 +1513,14 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           serviceAllocationStatus: successStatus,
            // errorMessage: '服务已成功分发给商家'
         ));
-        
+
+        // #347 分发成功后刷新历史,AppBar 按钮立即点亮
+        add(FetchDispatchHistory());
+
         // 后台异步处理发送消息，不再使用结果更新UI状态
         _sendAllocationMessageToMerchant(
-          event.merchantId, 
-          event.item, 
+          event.merchantId,
+          event.item,
           summary
         ).catchError((e) {
           AppLogger.d('向商家发送消息失败(不影响UI状态): $e');

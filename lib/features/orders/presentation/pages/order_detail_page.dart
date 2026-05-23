@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart';
+import 'package:dskk_flutter_refactor/features/payment/presentation/pages/order_payment_method_page.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_status_timeline_header.dart';
 
 // 新的组件导入
@@ -67,6 +68,11 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     } else if (state is OrderDetailActionSuccess && state.updatedState != null) {
       return state.updatedState!.order;
     } else if (state is OrderDetailActionFailure && state.previousState != null) {
+      return state.previousState!.order;
+    } else if (state is OrderDetailNavigateToPaymentSelection) {
+      // #324 之前漏掉这个分支会让页面闪显"订单不可用"
+      return state.order;
+    } else if (state is OrderDetailPaymentLoading && state.previousState != null) {
       return state.previousState!.order;
     }
     return null;
@@ -151,6 +157,18 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+    } else if (state is OrderDetailNavigateToPaymentSelection) {
+      // #324 之前 bloc emit 这个 state 后 UI 没人监听导航,导致"订单不可用"
+      // 用同一个 bloc 实例 push 到支付方式选择页
+      final bloc = context.read<OrderDetailBloc>();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => BlocProvider.value(
+            value: bloc,
+            child: OrderPaymentMethodPage(order: state.order),
+          ),
+        ),
+      );
     }
   }
 

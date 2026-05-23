@@ -5246,6 +5246,24 @@ abstract class AppLocalizations {
   /// **'删除失败：{error}'**
   String order_card_delete_failed(String error);
 
+  /// No description provided for @order_card_canceling.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在取消订单...'**
+  String get order_card_canceling;
+
+  /// No description provided for @order_card_canceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单已取消'**
+  String get order_card_canceled;
+
+  /// No description provided for @order_card_cancel_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消失败：{error}'**
+  String order_card_cancel_failed(String error);
+
   /// No description provided for @order_card_load_detail_failed.
   ///
   /// In zh, this message translates to:

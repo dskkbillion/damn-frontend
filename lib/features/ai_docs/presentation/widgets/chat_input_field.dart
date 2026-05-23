@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
@@ -419,8 +422,23 @@ class _ChatInputFieldState extends State<ChatInputField> {
     } else {
       // --- Stop Recording ---
       try {
-         final String? path = await _audioRecorder.stop();
+         String? path = await _audioRecorder.stop();
          AppLogger.d("Recording stopped: $path");
+
+         // [DEBUG-ONLY] 模拟发送音频: 模拟器麦克风录到的是空音频, 用打包的真实中文语音替换,
+         // 以便在真机 UI 上验证 语音→omni→transcript 回写 的完整端到端管线。
+         // 仅 kDebugMode + ENABLE_OMNI_VOICE_MOCK=true 时生效, 生产无影响。
+         if (kDebugMode &&
+             path != null &&
+             (dotenv.env['ENABLE_OMNI_VOICE_MOCK'] ?? 'false').toLowerCase() == 'true') {
+           try {
+             final mockBytes = await rootBundle.load('assets/audio/mock_voice.wav');
+             await File(path).writeAsBytes(mockBytes.buffer.asUint8List(), flush: true);
+             AppLogger.w("[VOICE-MOCK] 已用 assets/audio/mock_voice.wav 替换录音 ($path)");
+           } catch (e) {
+             AppLogger.w("[VOICE-MOCK] 替换失败, 继续用真实录音: $e");
+           }
+         }
 
          setState(() {
            _isRecording = false;

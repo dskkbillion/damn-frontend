@@ -9,21 +9,8 @@ import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 
 // Import Chat module pages and Blocs
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_room_page_refactored.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
-import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_messages/chat_messages_bloc.dart';
-// For ChatListBloc event
-// Import necessary use cases or dependencies for ChatMessagesBloc
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_message_list.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/send_message.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/revoke_message.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/get_chat_room_details.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/usecases/delete_chat_message.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
-import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart';
-import 'package:dskk_flutter_refactor/features/chat/data/datasources/chat_translation_service.dart';
-import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 
 final sl = GetIt.instance; // Assuming GetIt instance is globally accessible or passed
 
@@ -55,40 +42,21 @@ class ChatRoutes {
           );
         }
 
+        // 老版 ChatRoomPage 不支持轻咨询/payment_prompt 发送按钮,
+        // 这里直接用 refactored 版,买家/卖家从列表点入对话也能看到按钮。
+        // (refactored 自己从 getIt 取 Cubits,不需要外层 BlocProvider 注入 ChatMessagesBloc)
         return state.buildSmartPage(
-          BlocProvider(
-            create: (_) {
-              final chatMessagesBloc = ChatMessagesBloc(
-                chatId: chatId,
-                getMessageList: sl<GetMessageList>(),
-                sendMessage: sl<SendMessage>(),
-                revokeMessage: sl<RevokeMessage>(),
-                getChatRoomDetails: sl<GetChatRoomDetails>(),
-                deleteChatMessage: sl<DeleteChatMessage>(),
-                userRepository: sl<IUserRepository>(),
-                webSocketDataSource: sl<IChatWebSocketDataSource>(),
-                translationService: ChatTranslationService(sl<CoreDioClient>()),
-              );
-
-              chatMessagesBloc.onNewMessageReceived = (newMessage) {
-                AppLogger.d('[ChatRoutes] New WebSocket message received, updating local chat list');
-                try {
-                  if (sl.isRegistered<ChatListBloc>()) {
-                    final chatListBloc = sl<ChatListBloc>();
-                    chatListBloc.add(UpdateChatRoomLastMessage(
-                      chatId: chatId,
-                      lastMessage: newMessage,
-                    ));
-                  }
-                } catch (e) {
-                  AppLogger.d('[ChatRoutes] Error updating chat list with WebSocket message: $e');
-                }
-              };
-
-              chatMessagesBloc.add(LoadChatMessages(chatId));
-              return chatMessagesBloc;
+          ChatRoomPageRefactored(
+            chatId: chatId,
+            onMessagesLoaded: () {
+              AppLogger.d('[ChatRoutes] Messages loaded for chat $chatId');
             },
-            child: ChatRoomPage(chatId: chatId),
+            onMessageRevoked: (chatId, newLastMessage) {
+              AppLogger.d('[ChatRoutes] Message revoked in chat $chatId');
+            },
+            onMessageSent: () {
+              AppLogger.d('[ChatRoutes] Message sent in chat $chatId');
+            },
           ),
           name: 'chatRoom',
         );

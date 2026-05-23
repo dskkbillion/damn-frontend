@@ -22,6 +22,105 @@ class OrderItemCard extends StatelessWidget {
 
   const OrderItemCard({super.key, required this.order, this.onTap});
 
+  /// 显示取消订单确认对话框 (#325)
+  Future<void> _showCancelConfirmationDialog(BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.order_confirm_cancel_title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(l10n.order_confirm_cancel_content),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(l10n.order_dialog_cancel),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            TextButton(
+              child: Text(l10n.order_dialog_confirm),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _performCancelOrder(context, order);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 执行取消订单操作 (#325) — 与 _performDeleteOrder 同款 OrderDetailBloc 链路
+  Future<void> _performCancelOrder(BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final orderDetailBloc = getIt<OrderDetailBloc>();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.order_card_canceling)),
+      );
+
+      late StreamSubscription streamSubscription;
+      bool orderLoaded = false;
+
+      streamSubscription = orderDetailBloc.stream.listen((state) {
+        if (state is OrderDetailLoaded && !orderLoaded) {
+          orderLoaded = true;
+          orderDetailBloc.add(OrderActionRequested(
+            action: OrderAction.cancel,
+            orderId: order.id.toString(),
+          ));
+        } else if (state is OrderDetailActionSuccess) {
+          streamSubscription.cancel();
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.order_card_canceled),
+              backgroundColor: Colors.green,
+            ),
+          );
+          if (context.mounted) {
+            final orderListBloc = context.read<OrderListBloc>();
+            context.read<OrderListBloc>().add(LoadOrders(status: orderListBloc.currentStatus));
+          }
+        } else if (state is OrderDetailActionFailure) {
+          streamSubscription.cancel();
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.order_card_cancel_failed(state.message)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is OrderDetailError) {
+          streamSubscription.cancel();
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.order_card_load_detail_failed(state.message)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      });
+
+      orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
+    } catch (e) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.order_card_cancel_failed(e.toString())),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// 显示删除订单确认对话框
   Future<void> _showDeleteConfirmationDialog(BuildContext context, Order order) async {
     final l10n = AppLocalizations.of(context);
@@ -372,8 +471,7 @@ class OrderItemCard extends StatelessWidget {
                    onViewDetails: navigateToDetail,
                    // Actions that modify state (might interact with OrderListBloc later)
                    onCancel: () {
-                     // TODO: Connect to OrderListBloc if needed for immediate UI update
-                     print('[OrderItemCard] Cancel order: ${order.id}');
+                     _showCancelConfirmationDialog(context, order);
                    },
                    onConfirmReceipt: () {
                      // TODO: Connect to OrderListBloc if needed

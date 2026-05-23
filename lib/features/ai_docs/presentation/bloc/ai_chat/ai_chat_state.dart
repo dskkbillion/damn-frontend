@@ -84,6 +84,14 @@ enum RecommendationsStatus {
   error,
 }
 
+/// 已分发服务追溯入口(#347)的加载状态。
+enum DispatchHistoryStatus {
+  initial,
+  loading,
+  loaded,
+  error,
+}
+
 /// Represents the status of a service allocation.
 enum AllocationStatus {
   initial, // 初始状态
@@ -178,6 +186,12 @@ class AiChatState extends Equatable {
   final RecommendationsStatus recommendationsStatus;
   final String? recommendationsErrorMessage;
 
+  /// 当前 conversation 的已分发商品历史(#347)。
+  /// null = 未拉取 / 拉取失败回退;empty list = 拉取成功但无记录。
+  final List<AllocatedItemEntity>? dispatchHistory;
+  final DispatchHistoryStatus dispatchHistoryStatus;
+  final String? dispatchHistoryErrorMessage;
+
   /// --- New field for service allocation status ---
   /// 用于跟踪每个服务的分发状态，键为服务ID，值为分发状态
   final Map<int, AllocationStatus> serviceAllocationStatus;
@@ -234,6 +248,9 @@ class AiChatState extends Equatable {
     this.recommendationsStatus = RecommendationsStatus.initial,
     this.recommendations = const [],
     this.recommendationsErrorMessage,
+    this.dispatchHistory,
+    this.dispatchHistoryStatus = DispatchHistoryStatus.initial,
+    this.dispatchHistoryErrorMessage,
     this.serviceAllocationStatus = const {}, // 默认为空映射
     this.createdChatRoomId,
     this.titleStatus = TitleStatus.initial,
@@ -276,6 +293,10 @@ class AiChatState extends Equatable {
     RecommendationsStatus? recommendationsStatus,
     List<RelatedServiceEntity>? recommendations,
     String? recommendationsErrorMessage,
+    List<AllocatedItemEntity>? dispatchHistory,
+    DispatchHistoryStatus? dispatchHistoryStatus,
+    String? dispatchHistoryErrorMessage,
+    bool clearDispatchHistory = false,
     Map<int, AllocationStatus>? serviceAllocationStatus,
     int? createdChatRoomId,
     TitleStatus? titleStatus,
@@ -330,6 +351,9 @@ class AiChatState extends Equatable {
       recommendationsErrorMessage: clearRecommendationsErrorMessage
                                         ? null
                                         : recommendationsErrorMessage ?? this.recommendationsErrorMessage,
+      dispatchHistory: clearDispatchHistory ? null : dispatchHistory ?? this.dispatchHistory,
+      dispatchHistoryStatus: dispatchHistoryStatus ?? this.dispatchHistoryStatus,
+      dispatchHistoryErrorMessage: dispatchHistoryErrorMessage ?? this.dispatchHistoryErrorMessage,
       serviceAllocationStatus: serviceAllocationStatus ?? this.serviceAllocationStatus,
       createdChatRoomId: createdChatRoomId ?? this.createdChatRoomId,
       titleStatus: titleStatus ?? this.titleStatus,
@@ -372,6 +396,9 @@ class AiChatState extends Equatable {
         recommendationsStatus,
         recommendations,
         recommendationsErrorMessage,
+        dispatchHistory,
+        dispatchHistoryStatus,
+        dispatchHistoryErrorMessage,
         serviceAllocationStatus,
         createdChatRoomId,
         titleStatus,

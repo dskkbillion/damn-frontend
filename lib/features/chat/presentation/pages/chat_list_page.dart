@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
@@ -73,24 +74,37 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     }
   }
   
-  // 添加获取referId的方法
+  // #335 添加获取referId的方法 — 加 5s timeout 防止 SecureStorage 偶发卡死导致整页白屏
   Future<int?> _getReferIdFromStorage() async {
     try {
       final secureStorage = GetIt.instance<FlutterSecureStorage>();
-      final referIdStr = await secureStorage.read(key: 'refer_id');
-      
+      final referIdStr = await secureStorage
+          .read(key: 'refer_id')
+          .timeout(const Duration(seconds: 5));
+
       if (referIdStr != null) {
         final referId = int.tryParse(referIdStr);
-        print('[ChatListPage] Retrieved refer_id from secure storage: $referId');
+        AppLogger.d('[ChatListPage] Retrieved refer_id from secure storage: $referId');
         return referId;
       } else {
-        print('[ChatListPage] refer_id not found in secure storage');
+        AppLogger.d('[ChatListPage] refer_id not found in secure storage');
         return null;
       }
-    } catch (e) {
-      print('[ChatListPage] Error reading refer_id from secure storage: $e');
+    } on TimeoutException catch (e) {
+      // #335 关键修复:SecureStorage 偶发慢,5s 超时后允许 UI 显示重试按钮(原代码会永久卡在 ConnectionState.waiting)
+      AppLogger.e('[ChatListPage] SecureStorage read timeout (#335 — chat 偶发无法进入): $e');
+      rethrow;
+    } catch (e, stack) {
+      AppLogger.e('[ChatListPage] Error reading refer_id from secure storage: $e\n$stack');
       return null;
     }
+  }
+
+  // #335 手动重试入口
+  void _retryReferId() {
+    setState(() {
+      _referIdFuture = _getReferIdFromStorage();
+    });
   }
 
 
@@ -233,10 +247,24 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
+          // #335 SecureStorage 超时或异常 → 提供重试入口,不再卡死白屏
           if (snapshot.hasError) {
-            print('[ChatListPage] Error getting referId: ${snapshot.error}');
-            return Center(child: Text(s.chat_get_user_info_failed('${snapshot.error}')));
+            AppLogger.e('[ChatListPage] Error getting referId: ${snapshot.error}');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(s.chat_get_user_info_failed('${snapshot.error}')),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: _retryReferId,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('重试'),
+                  ),
+                ],
+              ),
+            );
           }
           
           final referId = snapshot.data;

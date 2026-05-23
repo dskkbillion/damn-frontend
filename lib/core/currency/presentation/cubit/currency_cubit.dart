@@ -69,14 +69,11 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       return result.fold(
         (failure) => null,
         (convertedMoney) {
-          // 缓存转换结果
           _convertedPricesCache[cacheKey] = convertedMoney;
-          
-          // 更新状态以触发UI更新
-          if (state is CurrencyLoaded) {
-            emit(CurrencyState.loaded(_selectedCurrency, _convertedPricesCache));
-          }
-          
+          // 折算成功后无条件 emit loaded，确保 UI 拿到新缓存。
+          // 原 `if (state is CurrencyLoaded)` 会在 state 非 loaded 时丢更新，
+          // 导致 widget 自驱动补算成功但界面不刷新（#348 双显不显示根因）。
+          emit(CurrencyState.loaded(_selectedCurrency, _convertedPricesCache));
           return convertedMoney;
         },
       );
@@ -108,16 +105,12 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       result.fold(
         (failure) => null,
         (convertedMoneyList) {
-          // 更新缓存
           for (int i = 0; i < amounts.length; i++) {
             final cacheKey = '${sourceCurrency.code}_${target.code}_${amounts[i]}';
             _convertedPricesCache[cacheKey] = convertedMoneyList[i];
           }
-          
-          // 更新状态
-          if (state is CurrencyLoaded) {
-            emit(CurrencyState.loaded(_selectedCurrency, _convertedPricesCache));
-          }
+          // 无条件 emit loaded：与 convertPrice 一致，避免 state 非 loaded 时丢更新
+          emit(CurrencyState.loaded(_selectedCurrency, _convertedPricesCache));
         },
       );
     } catch (e) {

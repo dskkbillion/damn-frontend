@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
-import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
+import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -129,8 +129,8 @@ class ProductCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        PriceFormatter.format(item.sellingPrice),
+                      PriceDisplayWidget(
+                        price: item.sellingPrice,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,

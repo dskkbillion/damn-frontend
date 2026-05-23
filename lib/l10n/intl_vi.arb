@@ -1786,6 +1786,16 @@
     },
     "order_card_deleted": "Đơn hàng đã xóa",
     "order_card_deleting": "Đang xóa đơn hàng...",
+    "order_card_canceling": "Đang hủy đơn hàng...",
+    "order_card_canceled": "Đơn hàng đã hủy",
+    "order_card_cancel_failed": "Hủy thất bại: {error}",
+    "@order_card_cancel_failed": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
     "order_card_delivery_days": "Giao hàng: trong vòng {days} ngày",
     "@order_card_delivery_days": {
         "placeholders": {

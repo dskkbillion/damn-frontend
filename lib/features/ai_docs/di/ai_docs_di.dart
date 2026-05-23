@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -11,7 +12,7 @@ import '../domain/usecases/stream_chat_completion_usecase.dart';
 import '../domain/usecases/upload_file_usecase.dart';
 import '../domain/usecases/get_related_services_usecase.dart';
 import '../domain/usecases/allocate_chat_resource_usecase.dart';
-import '../domain/usecases/transcribe_audio_usecase.dart';
+import '../domain/usecases/get_dispatch_history_usecase.dart';
 import '../domain/usecases/cancel_chat_generation_usecase.dart';
 import '../domain/usecases/optimized_allocation_usecase.dart';
 import '../domain/usecases/update_conversation_title_usecase.dart';
@@ -128,6 +129,13 @@ class AiDocsDI {
       AppLogger.d('[AiDocsDI] Registered GetRelatedServicesUseCase');
     }
 
+    if (!getIt.isRegistered<GetDispatchHistoryUseCase>()) {
+      getIt.registerLazySingleton<GetDispatchHistoryUseCase>(
+        () => GetDispatchHistoryUseCase(getIt<IAiChatRepository>()),
+      );
+      AppLogger.d('[AiDocsDI] Registered GetDispatchHistoryUseCase');
+    }
+
     if (!getIt.isRegistered<AllocateChatResourceUseCase>()) {
       getIt.registerLazySingleton<AllocateChatResourceUseCase>(
         () => AllocateChatResourceUseCase(getIt<IAiChatRepository>()),
@@ -135,12 +143,7 @@ class AiDocsDI {
       AppLogger.d('[AiDocsDI] Registered AllocateChatResourceUseCase');
     }
 
-    if (!getIt.isRegistered<TranscribeAudioUseCase>()) {
-      getIt.registerLazySingleton<TranscribeAudioUseCase>(
-        () => TranscribeAudioUseCase(getIt<IAiChatRepository>()),
-      );
-      AppLogger.d('[AiDocsDI] Registered TranscribeAudioUseCase');
-    }
+    // #368 deleted TranscribeAudioUseCase registration — omni 直接理解音频 (#360)
 
     if (!getIt.isRegistered<CancelChatGenerationUseCase>()) {
       getIt.registerLazySingleton<CancelChatGenerationUseCase>(
@@ -185,13 +188,14 @@ class AiDocsDI {
             getIt<UploadFileUseCase>(),
             getIt<GetRelatedServicesUseCase>(),
             getIt<AllocateChatResourceUseCase>(),
-            getIt<TranscribeAudioUseCase>(),
+            getIt<GetDispatchHistoryUseCase>(),
             getIt<CancelChatGenerationUseCase>(),
             getIt<OptimizedAllocationUseCase>(),
             getIt<UpdateConversationTitleUseCase>(),
             getIt<GenerateConversationTitleUseCase>(),
             getIt<IAiChatRemoteDataSource>(),
             getIt<FlutterSecureStorage>(),
+            getIt<IdResolver>(),
           ));
       AppLogger.d('[AiDocsDI] Registered AiChatBloc');
     } else {

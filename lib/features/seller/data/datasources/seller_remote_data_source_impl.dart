@@ -484,7 +484,9 @@ class SellerRemoteDataSourceImpl implements ISellerRemoteDataSource {
         storeName: data['nickName'] ?? data['storeName'] ?? '',
         logoUrl: data['avatar'],
         description: data['description'],
-        // 其他字段初始化...
+        // #339 SELL-ONLINE-02: 之前漏了 onlineFlag 字段透传,
+        // 导致 seller_home_page 拿到 null → ?? false → 永远显示"离线"
+        onlineFlag: data['onlineFlag'] as bool?,
       );
     } catch (e) {
       _handleError(e);

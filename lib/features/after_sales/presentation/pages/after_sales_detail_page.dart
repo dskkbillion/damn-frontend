@@ -10,6 +10,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_button_builder.dart';
 
 
@@ -279,7 +280,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           const SizedBox(height: 16),
           _buildDetailRow(AppLocalizations.of(context).after_sales_info_order_number, application.refundSn ?? '-', textTheme, colorScheme),
           _buildDetailRow(AppLocalizations.of(context).after_sales_info_apply_time, _formatDateTime(application.createTime), textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context).after_sales_info_refund_amount, '¥${application.refundPrice?.toStringAsFixed(2) ?? '0.00'}', textTheme, colorScheme),
+          // #217 AS-08 + #356: 币种符号走 RegionConfig,不再写死 ¥
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_refund_amount, RegionConfig.formatPrice(application.refundPrice ?? 0), textTheme, colorScheme),
           _buildDetailRow(AppLocalizations.of(context).after_sales_info_reason, application.refundReason ?? '-', textTheme, colorScheme),
           if (application.refundExplain?.isNotEmpty == true)
             _buildDetailRow(AppLocalizations.of(context).after_sales_info_description, application.refundExplain!, textTheme, colorScheme),

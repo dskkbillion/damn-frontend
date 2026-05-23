@@ -96,9 +96,9 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
   }
 
    // Renamed function for clarity
-   void _loadOrdersForStatus(OrderStatus? status) {
+   void _loadOrdersForStatus(OrderStatus? status, {bool forceRefresh = false}) {
       context.read<OrderListBloc>().add(
-            LoadOrders(status: status),
+            LoadOrders(status: status, forceRefresh: forceRefresh),
           );
    }
 
@@ -247,8 +247,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      onRefresh: () async {
                        // 触觉反馈
                        HapticFeedback.mediumImpact();
-                       // 重新加载当前标签的数据
-                       _loadOrdersForStatus(_tabStatuses[_tabController.index]);
+                       // #213 ORD-03: 下拉刷新走 forceRefresh,绕过 stale-while-revalidate 缓存
+                       _loadOrdersForStatus(_tabStatuses[_tabController.index], forceRefresh: true);
                        // 等待加载完成
                        await Future.delayed(const Duration(milliseconds: 500));
                      },

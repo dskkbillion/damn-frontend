@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/core/error/exceptions.dart'; // Import cor
 
 // Domain Layer (Interfaces and Entities)
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/repositories/i_ai_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/allocated_item_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/chat_allocation_result_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/entities/related_service_entity.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/domain/usecases/load_history_usecase.dart'; // 导入LoadHistoryResult
@@ -234,16 +235,20 @@ class AiChatRepositoryImpl implements IAiChatRepository {
   }
 
   @override
-  Future<Either<Failure, String>> transcribeAudio(
-      {required String audioOssUrl, int? userId}) async {
-    // Use helper, return String result directly
-     return _tryCatch<String>(() async {
-      return await _remoteDataSource.transcribeAudio(
-        audioOssUrl: audioOssUrl,
+  Future<Either<Failure, List<AllocatedItemEntity>>> getDispatchHistory({
+    required int conversationId,
+    required int userId,
+  }) async {
+    return _tryCatch<List<AllocatedItemEntity>>(() async {
+      final list = await _remoteDataSource.getDispatchHistory(
+        conversationId: conversationId,
         userId: userId,
       );
+      return list.map(AllocatedItemEntity.fromJson).toList(growable: false);
     });
   }
+
+  // #368 deleted transcribeAudio() implementation — omni 直接理解音频 (#360)
 
   @override
   Future<Either<Failure, void>> cancelChatGeneration({
