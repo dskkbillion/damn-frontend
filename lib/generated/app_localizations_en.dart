@@ -2897,6 +2897,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get order_card_canceling => 'Canceling order...';
+
+  @override
+  String get order_card_canceled => 'Order canceled';
+
+  @override
+  String order_card_cancel_failed(String error) {
+    return 'Cancel failed: $error';
+  }
+
+  @override
   String order_card_load_detail_failed(String error) {
     return 'Failed to load order details: $error';
   }

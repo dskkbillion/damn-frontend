@@ -2796,6 +2796,17 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get order_card_canceling => '주문 취소 중...';
+
+  @override
+  String get order_card_canceled => '주문이 취소되었습니다';
+
+  @override
+  String order_card_cancel_failed(String error) {
+    return '취소 실패: $error';
+  }
+
+  @override
   String order_card_load_detail_failed(String error) {
     return '주문 상세 불러오기 실패: $error';
   }
