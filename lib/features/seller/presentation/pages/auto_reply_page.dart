@@ -259,9 +259,9 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
         }
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.success,
+        backgroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(vertical: 12),
-        disabledBackgroundColor: AppColors.success.withValues(alpha: 0.5),
+        disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
       ),
       child: Text(
         AppLocalizations.of(context).auto_reply_save_settings ?? 'Save Settings',
