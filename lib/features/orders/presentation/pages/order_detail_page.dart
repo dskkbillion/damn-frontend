@@ -104,8 +104,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         appBar: AppBar(
           title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
             builder: (context, state) {
-              final extractedOrder = _extractOrder(state);
-              return Text(extractedOrder != null ? AppLocalizations.of(context).order_detail_title_with_id(extractedOrder.id) : AppLocalizations.of(context).order_detail_title);
+              return Text(AppLocalizations.of(context).order_detail_title);
             },
           ),
         ),
