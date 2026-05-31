@@ -543,7 +543,7 @@ class OrderItemCard extends StatelessWidget {
       case OrderStatus.awaitingPayment:
         if (order.autoCancelTime != null) {
           final remaining = order.autoCancelTime!.difference(DateTime.now());
-          if (remaining.isNegative) return l10n?.order_card_timeout_canceling ?? '';
+          if (remaining.isNegative) return l10n?.order_card_canceled ?? '';
           return l10n?.order_card_pay_in_time(_formatDuration(remaining)) ?? '';
         }
         break;
