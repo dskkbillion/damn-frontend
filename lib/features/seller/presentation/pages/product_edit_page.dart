@@ -671,7 +671,11 @@ class _ProductEditPageState extends State<ProductEditPage> {
     }
     
     // 验证商品图片
-    if (_bloc.state.selectedImagePaths.isEmpty && (_bloc.state.product?.images.isEmpty ?? true)) {
+    // #379: 校验需同时考虑已成功上传到 OSS 的图片(uploadedImageUrls)，
+    // 否则上传成功后 selectedImagePaths 被清空、images 为空会误判"未上传图片"。
+    if (_bloc.state.selectedImagePaths.isEmpty &&
+        _bloc.state.uploadedImageUrls.isEmpty &&
+        (_bloc.state.product?.images.isEmpty ?? true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).product_edit_at_least_one_image ?? 'Please upload at least one product image'),
