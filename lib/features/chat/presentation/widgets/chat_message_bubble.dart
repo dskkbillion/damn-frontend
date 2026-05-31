@@ -265,6 +265,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       );
     }
 
+    // AI summary messages are currently sent by the backend as plain text
+    // (type='text') but are internal system content not intended for users.
+    // Hide them until the backend adds a dedicated message type (#377 / backend#20).
+    if (widget.message.type == ChatMessageType.text &&
+        _isAiSummaryMessage(widget.message.context)) {
+      return const SizedBox.shrink();
+    }
+
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
@@ -868,6 +876,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 保留原有的简单检查方法（向后兼容）
   bool _canRevokeMessage() {
       return _checkRevokeStatus().canRevoke;
+  }
+
+  // 检测 AI 内部 summary 消息（后端当前以 text 类型下发，#377 / backend#20）。
+  // 前端根据内容前缀过滤，避免将系统内容展示给用户。
+  // 后端正式添加 summary 消息类型后，可删除此方法并改用类型过滤。
+  static bool _isAiSummaryMessage(String context) {
+    const aiSummaryPrefixes = [
+      '**Service Conversation Summary',
+      '**User Profile Construction',
+    ];
+    for (final prefix in aiSummaryPrefixes) {
+      if (context.startsWith(prefix)) return true;
+    }
+    return false;
   }
 
   // 添加一个方法用于获取allocate消息的显示名称
