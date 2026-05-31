@@ -188,6 +188,7 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
           }
           
           // #365 字段映射对齐后端: levelName/score/collectNum/authenticated/evaluates
+          // #383 读取 onlineFlag 供买家端展示卖家在线状态
           final authList = data['authenticationVos'];
           return SellerInfo(
             id: sellerId,
@@ -202,6 +203,7 @@ class SellerProductsDataSourceImpl implements SellerProductsDataSource {
             collectNum: (data['collectNum'] as num?)?.toInt() ?? 0,
             authenticated: authList is List && authList.isNotEmpty,
             evaluates: data['memberEvaluateNewVos'] as List?,
+            onlineFlag: data['onlineFlag'] as bool?,
           );
         }
       } else {
