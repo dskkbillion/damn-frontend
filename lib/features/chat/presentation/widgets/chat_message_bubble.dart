@@ -21,7 +21,8 @@ import '../bloc/chat_messages/chat_messages_bloc.dart'; // Import ChatMessagesBl
 import '../cubit/message_list/message_list_cubit.dart';
 import '../../domain/entities/participant.dart'; // Import Participant
 import '../../domain/constants/chat_constants.dart';
-import 'allocate_message_bubble.dart'; // 导入新创建的allocate消息气泡组件
+import 'ai_summary_message_bubble.dart'; // allocate 类型改用安全渲染的 AI 摘要气泡 (#377)
+import 'file_message_widget.dart'; // file 类型消息渲染组件
 import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 
 // 撤回状态检查结果
@@ -57,6 +58,23 @@ class ChatMessageBubble extends StatefulWidget {
     required this.currentUserParticipantId,
     required this.opponent, // Make opponent required
   });
+
+  // 检测 AI 内部 summary 消息（后端当前以 text 类型下发，#377 / backend#20）。
+  // 前端根据内容前缀过滤，避免将系统内容展示给用户。
+  // 后端正式添加 summary 消息类型后，可删除此方法并改用类型过滤。
+  //
+  // 唯一事实来源：AiSummaryMessageBubble 也复用此前缀表判定泄漏样本，
+  // 切勿在别处另行维护前缀列表。
+  static bool isAiSummaryMessage(String context) {
+    const aiSummaryPrefixes = [
+      '**Service Conversation Summary',
+      '**User Profile Construction',
+    ];
+    for (final prefix in aiSummaryPrefixes) {
+      if (context.startsWith(prefix)) return true;
+    }
+    return false;
+  }
 
   @override
   State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
@@ -269,7 +287,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // (type='text') but are internal system content not intended for users.
     // Hide them until the backend adds a dedicated message type (#377 / backend#20).
     if (widget.message.type == ChatMessageType.text &&
-        _isAiSummaryMessage(widget.message.context)) {
+        ChatMessageBubble.isAiSummaryMessage(widget.message.context)) {
       return const SizedBox.shrink();
     }
 
@@ -311,9 +329,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         )
       : const SizedBox(width: 44);
 
-    // 对于allocate类型的消息，使用专门的组件
+    // 对于allocate类型(AI需求摘要)的消息，使用安全渲染组件，
+    // 杜绝内部 prompt 结构（**...** 标题）泄漏进聊天 UI (#377)。
     if (widget.message.type == ChatMessageType.allocate) {
-      return AllocateMessageBubble(
+      return AiSummaryMessageBubble(
         message: widget.message,
         sellerName: _getSellerName(),
         isCurrentUserMessage: isCurrentUser,
@@ -497,12 +516,27 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
        // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
      } else if (widget.message.type == ChatMessageType.allocate) {
-       // allocate类型消息已经在build方法中直接返回特定组件，这里不应该被调用
-       // 但为了安全，还是提供一个处理
-       return Text(messageContext, style: TextStyle(color: textColor, fontSize: 15));
+       // allocate类型消息已在 build 方法中直接路由到 AiSummaryMessageBubble，
+       // 这里正常不会被调用。但为防止内部 prompt 结构（**...**）泄漏，
+       // 兜底也走与 AiSummaryMessageBubble 一致的确定性 strip，绝不渲染原文。
+       return Text(
+         AiSummaryMessageBubble.stripMarkdownMarkers(messageContext),
+         style: TextStyle(color: textColor, fontSize: 15),
+       );
+     } else if (widget.message.type == ChatMessageType.file) {
+       // 文件消息：复用 FileMessageWidget 渲染（文件名/大小/图标 + 点击预览下载）。
+       // 不可落入下方"未知 type"分支。
+       return FileMessageWidget(
+         message: widget.message,
+         isMe: isCurrentUser,
+       );
      } else {
-       // Keep handling for unsupported types
-       return Text('[${AppLocalizations.of(context).chat_unknown_message}: ${widget.message.type}]', style: const TextStyle(color: AppColors.error));
+       // 未知/暂不支持的 type：中性降级文案，绝不暗示"请升级 App / 版本太老"，
+       // 避免正常 file 或未来未知 type 被误导成版本问题。颜色用中性色而非红字。
+       return Text(
+         AppLocalizations.of(context).chat_unsupported_message,
+         style: const TextStyle(color: AppColors.textTertiary, fontSize: 15),
+       );
      }
   }
 
@@ -876,20 +910,6 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 保留原有的简单检查方法（向后兼容）
   bool _canRevokeMessage() {
       return _checkRevokeStatus().canRevoke;
-  }
-
-  // 检测 AI 内部 summary 消息（后端当前以 text 类型下发，#377 / backend#20）。
-  // 前端根据内容前缀过滤，避免将系统内容展示给用户。
-  // 后端正式添加 summary 消息类型后，可删除此方法并改用类型过滤。
-  static bool _isAiSummaryMessage(String context) {
-    const aiSummaryPrefixes = [
-      '**Service Conversation Summary',
-      '**User Profile Construction',
-    ];
-    for (final prefix in aiSummaryPrefixes) {
-      if (context.startsWith(prefix)) return true;
-    }
-    return false;
   }
 
   // 添加一个方法用于获取allocate消息的显示名称

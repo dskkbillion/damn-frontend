@@ -292,6 +292,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_unknown_message => '[Unknown message]';
 
   @override
+  String get chat_unsupported_message => 'This message can\'t be viewed yet';
+
+  @override
   String get chat_unknown_user => 'Unknown User';
 
   @override
@@ -330,6 +333,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chat_expand => 'Expand';
+
+  @override
+  String get chat_summary_hidden =>
+      'This summary could not be generated and has been hidden';
 
   @override
   String get chat_admin_connection_error => 'Unable to connect to system admin';

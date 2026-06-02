@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'[未知消息]'**
   String get chat_unknown_message;
 
+  /// No description provided for @chat_unsupported_message.
+  ///
+  /// In zh, this message translates to:
+  /// **'该消息暂不支持查看'**
+  String get chat_unsupported_message;
+
   /// No description provided for @chat_unknown_user.
   ///
   /// In zh, this message translates to:
@@ -697,6 +703,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'展开'**
   String get chat_expand;
+
+  /// No description provided for @chat_summary_hidden.
+  ///
+  /// In zh, this message translates to:
+  /// **'该需求摘要生成异常，已隐藏'**
+  String get chat_summary_hidden;
 
   /// No description provided for @chat_admin_connection_error.
   ///

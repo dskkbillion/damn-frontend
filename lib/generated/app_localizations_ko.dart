@@ -284,6 +284,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chat_unknown_message => '[알 수 없는 메시지]';
 
   @override
+  String get chat_unsupported_message => '이 메시지는 아직 볼 수 없습니다';
+
+  @override
   String get chat_unknown_user => '알 수 없는 사용자';
 
   @override
@@ -321,6 +324,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get chat_expand => '펼치기';
+
+  @override
+  String get chat_summary_hidden => '이 요약은 생성에 실패하여 숨겨졌습니다';
 
   @override
   String get chat_admin_connection_error => '시스템 관리자에 연결할 수 없습니다';

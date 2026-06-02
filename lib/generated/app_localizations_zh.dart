@@ -281,6 +281,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_unknown_message => '[未知消息]';
 
   @override
+  String get chat_unsupported_message => '该消息暂不支持查看';
+
+  @override
   String get chat_unknown_user => '未知用户';
 
   @override
@@ -318,6 +321,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get chat_expand => '展开';
+
+  @override
+  String get chat_summary_hidden => '该需求摘要生成异常，已隐藏';
 
   @override
   String get chat_admin_connection_error => '无法连接到系统管理员';

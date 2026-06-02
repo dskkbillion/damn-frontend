@@ -292,6 +292,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get chat_unknown_message => '[Tin nhắn không xác định]';
 
   @override
+  String get chat_unsupported_message => 'Tin nhắn này hiện chưa thể xem được';
+
+  @override
   String get chat_unknown_user => 'Người dùng không xác định';
 
   @override
@@ -329,6 +332,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get chat_expand => 'Mở rộng';
+
+  @override
+  String get chat_summary_hidden =>
+      'Không thể tạo bản tóm tắt này nên đã được ẩn';
 
   @override
   String get chat_admin_connection_error =>
