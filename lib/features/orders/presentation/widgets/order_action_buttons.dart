@@ -28,35 +28,41 @@ class OrderDetailActionButtons extends StatelessWidget {
     // 使用 order_status.dart 中定义的实际枚举值
     switch (order.state) {
       case OrderStatus.awaitingPayment: // 待付款
-        buttons.add(_buildButton(context, l10n.order_action_cancel, () {
-          dialogs.showConfirmationDialog(
-            context: context,
-            title: l10n.order_confirm_cancel_title,
-            content: l10n.order_confirm_cancel_content,
-            onConfirm: () {
-              context.read<OrderDetailBloc>().add(
-                OrderActionRequested(
-                  action: OrderAction.cancel,
-                  orderId: order.id.toString()
-                )
+        // #374 超时未付款订单：后端 autoCancel 已生效但状态尚未刷新到 canceled 时，
+        // 不再渲染「取消订单 / 去支付」按钮（与列表页 order_item_card_action_buttons.dart 同款守卫）。
+        final isTimedOut = order.autoCancelTime != null &&
+            order.autoCancelTime!.isBefore(DateTime.now());
+        if (!isTimedOut) {
+          buttons.add(_buildButton(context, l10n.order_action_cancel, () {
+            dialogs.showConfirmationDialog(
+              context: context,
+              title: l10n.order_confirm_cancel_title,
+              content: l10n.order_confirm_cancel_content,
+              onConfirm: () {
+                context.read<OrderDetailBloc>().add(
+                  OrderActionRequested(
+                    action: OrderAction.cancel,
+                    orderId: order.id.toString()
+                  )
+                );
+              },
+            );
+          }));
+          primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+            builder: (context, state) {
+              final isLoading = state is OrderDetailPaymentLoading;
+              return _buildButton(
+                context,
+                isLoading ? l10n.order_action_processing : l10n.order_action_go_pay,
+                isLoading ? null : () {
+                  context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
+                },
+                isPrimary: true,
+                isLoading: isLoading,
               );
             },
           );
-        }));
-        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
-          builder: (context, state) {
-            final isLoading = state is OrderDetailPaymentLoading;
-            return _buildButton(
-              context,
-              isLoading ? l10n.order_action_processing : l10n.order_action_go_pay,
-              isLoading ? null : () {
-                context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
-              },
-              isPrimary: true,
-              isLoading: isLoading,
-            );
-          },
-        );
+        }
         break;
 
       // 待提交状态 - 需要提交材料
