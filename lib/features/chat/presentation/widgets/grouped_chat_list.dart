@@ -8,7 +8,6 @@ import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant
 import '../../domain/entities/chat_room.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/participant.dart';
-import '../../domain/constants/message_type.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import 'chat_list_item.dart';
 import 'ai_summary_message_bubble.dart'; // #377 复用 summary 安全清洗
@@ -18,7 +17,7 @@ import 'chat_message_bubble.dart'; // #377 复用 isAiSummaryMessage 前缀表
 /// （会泄漏 **User Profile Construction** 等内部 prompt 标记）。命中泄漏前缀显示
 /// 中性占位，否则无条件 strip markdown 标记，与 AiSummaryMessageBubble 一致。
 String summaryPreviewText(ChatMessage message, AppLocalizations s) {
-  if (message.type == ChatMessageType.allocate) {
+  if (ChatMessageBubble.isSummaryType(message.type)) {
     if (ChatMessageBubble.isAiSummaryMessage(message.context)) {
       return s.chat_summary_hidden;
     }

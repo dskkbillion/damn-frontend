@@ -76,6 +76,12 @@ class ChatMessageBubble extends StatefulWidget {
     return false;
   }
 
+  /// #377 第②层双认：AI summary 既可能以历史 [ChatMessageType.allocate] 也可能以
+  /// 新 [ChatMessageType.aiSummary] 下发，两者都用 AiSummaryMessageBubble 安全渲染。
+  /// 历史 allocate 数据因此免迁移。
+  static bool isSummaryType(String type) =>
+      type == ChatMessageType.allocate || type == ChatMessageType.aiSummary;
+
   @override
   State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
 }
@@ -329,9 +335,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         )
       : const SizedBox(width: 44);
 
-    // 对于allocate类型(AI需求摘要)的消息，使用安全渲染组件，
+    // 对于 AI 需求摘要消息（历史 allocate / 新 ai_summary 双认），使用安全渲染组件，
     // 杜绝内部 prompt 结构（**...** 标题）泄漏进聊天 UI (#377)。
-    if (widget.message.type == ChatMessageType.allocate) {
+    if (ChatMessageBubble.isSummaryType(widget.message.type)) {
       return AiSummaryMessageBubble(
         message: widget.message,
         sellerName: _getSellerName(),
@@ -515,10 +521,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      } else if (widget.message.type == ChatMessageType.audio) {
        // Pass textColor and isCurrentUser to audio content
        return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
-     } else if (widget.message.type == ChatMessageType.allocate) {
-       // allocate类型消息已在 build 方法中直接路由到 AiSummaryMessageBubble，
-       // 这里正常不会被调用。但为防止内部 prompt 结构（**...**）泄漏，
-       // 兜底也走与 AiSummaryMessageBubble 一致的确定性 strip，绝不渲染原文。
+     } else if (ChatMessageBubble.isSummaryType(widget.message.type)) {
+       // summary 消息（allocate/ai_summary）已在 build 方法中直接路由到
+       // AiSummaryMessageBubble，这里正常不会被调用。但为防止内部 prompt 结构
+       // （**...**）泄漏，兜底也走确定性 strip，绝不渲染原文。
        return Text(
          AiSummaryMessageBubble.stripMarkdownMarkers(messageContext),
          style: TextStyle(color: textColor, fontSize: 15),

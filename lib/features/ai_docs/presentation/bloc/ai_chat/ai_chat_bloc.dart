@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dskk_flutter_refactor/core/auth/id_resolver.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/features/chat/domain/constants/message_type.dart';
 import 'dart:io';
 // For jsonDecode in stream handling
 import 'package:bloc/bloc.dart';
@@ -1676,7 +1677,9 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
              final sendMessageParams = {
                'chatId': chatId,
            'context': messageContent,
-               'type': 'allocate',
+               // #377 第②层：写入端切到新 ai_summary 类型（加法引入，渲染端双认
+               // allocate+ai_summary，历史 allocate 数据免迁移）。
+               'type': ChatMessageType.aiSummary,
              };
              
              AppLogger.d("发送消息请求参数: $sendMessageParams");

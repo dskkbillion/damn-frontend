@@ -73,7 +73,7 @@ class _ChatListItemState extends State<ChatListItem> {
     // #377：allocate（AI summary）预览不能直接渲染原始 context（含 **User Profile
     // Construction** 等内部 prompt 标记会泄漏）。命中泄漏前缀显示中性占位；否则
     // 无条件 strip markdown 标记后再截断，与 AiSummaryMessageBubble 一致。
-    if (message.type == ChatMessageType.allocate) {
+    if (ChatMessageBubble.isSummaryType(message.type)) {
       if (ChatMessageBubble.isAiSummaryMessage(message.context)) {
         return s.chat_summary_hidden;
       }
