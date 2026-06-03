@@ -95,7 +95,7 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            '绑定 Stripe 收款账户后，买家付款会自动结算到您的银行卡。\n整个过程由 Stripe 安全处理，我们不会存储您的银行信息。',
+            '绑定银行账号，通常只需 1-2 分钟。买家付款会自动结算到您的账户，整个过程由 Stripe 安全处理。',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -151,7 +151,7 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
           ),
           const SizedBox(height: 24),
           const Text(
-            '账户审核中',
+            '银行账号已绑定',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -160,7 +160,7 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
           ),
           const SizedBox(height: 12),
           const Text(
-            '您的收款账户信息已提交，Stripe 正在审核中。\n通常在 1-2 个工作日内完成。',
+            '银行账号已绑定成功。首次提现时需完成身份验证，通常只需几分钟。',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
