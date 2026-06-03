@@ -459,23 +459,35 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         ));
       }
     } else {
-      // 删除主图片
-      final currentPaths = List<String>.from(state.selectedImagePaths);
-      if (event.index < currentPaths.length) {
-        currentPaths.removeAt(event.index);
-        
-        // 同时需要删除对应的已上传URL
-        final currentUrls = List<String>.from(state.uploadedImageUrls);
-        if (event.index < currentUrls.length) {
-          currentUrls.removeAt(event.index);
+      // 删除主图片。
+      // #380: UI _buildImageGrid 把图片渲染为合并列表
+      //   allImages = [...uploadedImageUrls, ...selectedImagePaths]
+      // 删除按钮传的是【合并列表 index】。原实现错误地用该 index 去
+      // selectedImagePaths 判断/删除，而已上传图加载后 selectedImagePaths 为空，
+      // 导致已上传图（在合并列表前半段）的删除被守卫直接拦截，点 X 无反应。
+      // 这里按合并列表语义正确映射 index。
+      final uploadedUrls = List<String>.from(state.uploadedImageUrls);
+      final selectedPaths = List<String>.from(state.selectedImagePaths);
+
+      if (event.index < uploadedUrls.length) {
+        // 删除已上传图（网络 URL）。这不是上传进度事件，不动 uploadedCount/totalUploadCount。
+        uploadedUrls.removeAt(event.index);
+        emit(state.copyWith(uploadedImageUrls: uploadedUrls));
+      } else {
+        // 映射到新选择的本地图片
+        final localIndex = event.index - uploadedUrls.length;
+        if (localIndex >= 0 && localIndex < selectedPaths.length) {
+          selectedPaths.removeAt(localIndex);
+          emit(state.copyWith(
+            selectedImagePaths: selectedPaths,
+            uploadedCount: math.max(0, state.uploadedCount - 1),
+            totalUploadCount: math.max(0, state.totalUploadCount - 1),
+          ));
+        } else {
+          AppLogger.d('[#380] 删除图片 index 越界: ${event.index} '
+              '(uploaded=${uploadedUrls.length}, selected=${selectedPaths.length})');
+          return;
         }
-        
-        emit(state.copyWith(
-          selectedImagePaths: currentPaths,
-          uploadedImageUrls: currentUrls,
-          uploadedCount: math.max(0, state.uploadedCount - 1), // 减少已上传计数
-          totalUploadCount: math.max(0, state.totalUploadCount - 1), // 减少总计数
-        ));
       }
     }
   }
