@@ -62,6 +62,9 @@ class HomeLoaded extends HomeState {
   /// 是否正在后台刷新（已有缓存数据，远程请求进行中）
   final bool isRefreshing;
 
+  /// #384 当前随机排序种子，loadMore 复用此 seed 保持分页稳定
+  final int? seed;
+
   const HomeLoaded({
     required this.banners,
     required this.categories,
@@ -69,10 +72,11 @@ class HomeLoaded extends HomeState {
     this.hasReachedMax = false,
     this.isLoadingMore = false,
     this.isRefreshing = false,
+    this.seed,
   });
 
   @override
-  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore, isRefreshing];
+  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore, isRefreshing, seed ?? -1];
 
   /// 创建一个新的 HomeLoaded 实例，并替换指定的属性
   HomeLoaded copyWith({
@@ -82,6 +86,7 @@ class HomeLoaded extends HomeState {
     bool? hasReachedMax,
     bool? isLoadingMore,
     bool? isRefreshing,
+    int? seed,
   }) {
     return HomeLoaded(
       banners: banners ?? this.banners,
@@ -90,6 +95,7 @@ class HomeLoaded extends HomeState {
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isRefreshing: isRefreshing ?? this.isRefreshing,
+      seed: seed ?? this.seed,
     );
   }
 }
