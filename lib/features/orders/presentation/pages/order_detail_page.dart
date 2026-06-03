@@ -167,7 +167,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             child: OrderPaymentMethodPage(order: state.order),
           ),
         ),
-      );
+      ).then((_) {
+        // #373 支付流程返回后（无论成功/取消/失败）重新拉取订单状态，
+        // 避免详情页停留在旧的 awaitingPayment（后端已流转到 awaitingConfirmation），
+        // 否则用户被迫再次付款（资损）。LoadOrderDetail 幂等，多拉一次无害。
+        if (_orderIdInt != null && mounted) {
+          bloc.add(LoadOrderDetail(orderId: _orderIdInt!));
+        }
+      });
     }
   }
 
