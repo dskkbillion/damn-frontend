@@ -80,8 +80,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
-    
     if (_orderIdInt == null) {
       return Scaffold(
         appBar: AppBar(title: Text(AppLocalizations.of(context).order_detail_error)),
@@ -275,8 +273,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 构建订单详情内容
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
-    
     return Column(
       children: [
         // 时间轴头部

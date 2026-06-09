@@ -528,6 +528,10 @@ class ProductUpdateData extends Equatable {
     } else {
       // 如果没有图片，提供空数组
       data['images'] = <String>[];
+      // #394: 删光所有图时必须显式发 mainImage=''（空串，非 null），
+      // 否则后端 MyBatis-Plus updateById 的 NOT_NULL 策略会跳过 null 字段，
+      // 导致 main_image 列残留指向已删图的旧 URL（已 staging 实测确诊）。
+      data['mainImage'] = '';
     }
     
     // 添加详情图
