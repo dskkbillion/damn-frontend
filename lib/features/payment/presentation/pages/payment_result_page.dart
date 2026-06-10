@@ -214,10 +214,27 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
                         if (_status == PaymentResultStatus.success) ...[
                           ElevatedButton(
                             onPressed: () {
-                              if (widget.orderId != null) {
-                                context.push('/orderDetail/${widget.orderId}');
-                              } else {
+                              final orderId = widget.orderId;
+                              if (orderId == null) {
                                 _exitPaymentFlow(context);
+                                return;
+                              }
+                              // #390: 回到已存在的原始 OrderDetailPage（name=='orderDetail'），
+                              // 而非 push 第二个详情页；found 标志 + route.isFirst 双重防穿。
+                              final navigator =
+                                  Navigator.of(context, rootNavigator: true);
+                              var found = false;
+                              navigator.popUntil((route) {
+                                if (route.settings.name == 'orderDetail') {
+                                  found = true;
+                                  return true;
+                                }
+                                return route.isFirst;
+                              });
+                              if (!found) {
+                                AppLogger.w(
+                                    '[#390] 原始 OrderDetailPage 不在栈中，走兜底 go 导航');
+                                context.go('/orderDetail/$orderId');
                               }
                             },
                             style: ElevatedButton.styleFrom(
