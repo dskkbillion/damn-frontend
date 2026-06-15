@@ -91,7 +91,13 @@ abstract class ProfileRemoteDataSource {
   });
 
   /// 提交提款申请
-  Future<void> submitWithdrawal({required double amount});
+  ///
+  /// [idempotencyToken] 幂等 token，同一次提现意图内必须稳定复用（详见后端契约
+  /// docs/dev/wallet_seller_api_contract.md）。
+  Future<void> submitWithdrawal({
+    required double amount,
+    required String idempotencyToken,
+  });
 }
 
 class ServerException implements Exception {
@@ -438,10 +444,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<void> submitWithdrawal({required double amount}) async {
+  Future<void> submitWithdrawal({
+    required double amount,
+    required String idempotencyToken,
+  }) async {
     try {
+      // idempotencyToken：后端用作去重键 + Stripe Idempotency-Key，重复点击/重试落同一笔 payout。
       final response = await dio.post('/api/wallet/seller/withdraw', data: {
         'amount': amount,
+        'idempotencyToken': idempotencyToken,
       });
       if (response.statusCode == 200 &&
           response.data != null &&

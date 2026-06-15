@@ -76,8 +76,16 @@ class LoadMoreWalletTransactions extends WalletEvent {
 class SubmitWithdrawal extends WalletEvent {
   final double amount;
 
-  const SubmitWithdrawal({required this.amount});
+  /// 幂等 token（一次性 UUID）。
+  /// 契约：同一次提现意图内必须稳定复用——由 UI 在用户点击「确认提现」时生成一次，
+  /// 整条调用链复用同一 token。换 token 重试会导致后端幂等失效 → 重复打款双发。
+  final String idempotencyToken;
+
+  const SubmitWithdrawal({
+    required this.amount,
+    required this.idempotencyToken,
+  });
 
   @override
-  List<Object?> get props => [amount];
+  List<Object?> get props => [amount, idempotencyToken];
 }

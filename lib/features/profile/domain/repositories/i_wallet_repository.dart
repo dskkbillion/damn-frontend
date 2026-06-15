@@ -28,5 +28,10 @@ abstract class IWalletRepository {
   });
 
   /// 提交提款申请
-  Future<Either<Failure, void>> submitWithdrawal({required double amount});
+  ///
+  /// [idempotencyToken] 幂等 token，同一次提现意图内必须稳定复用。
+  Future<Either<Failure, void>> submitWithdrawal({
+    required double amount,
+    required String idempotencyToken,
+  });
 }

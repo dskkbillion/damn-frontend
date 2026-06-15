@@ -64,10 +64,16 @@ class WalletRepositoryImpl implements IWalletRepository {
   }
 
   @override
-  Future<Either<Failure, void>> submitWithdrawal({required double amount}) async {
+  Future<Either<Failure, void>> submitWithdrawal({
+    required double amount,
+    required String idempotencyToken,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.submitWithdrawal(amount: amount);
+        await remoteDataSource.submitWithdrawal(
+          amount: amount,
+          idempotencyToken: idempotencyToken,
+        );
         return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message, statusCode: e.statusCode));
