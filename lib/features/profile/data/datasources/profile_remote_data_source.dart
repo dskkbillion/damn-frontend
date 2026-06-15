@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/transaction_dto.dart';
 import '../models/user_profile_dto.dart';
 import '../models/wallet_summary_dto.dart';
+import '../models/seller_balance_dto.dart';
 import '../models/saved_item_dto.dart';
 import '../models/liked_story_dto.dart';
 import '../../../../core/services/image_compress_service.dart';
@@ -320,34 +321,26 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<WalletSummaryDto> getWalletSummary() async {
     try {
-      // 尝试获取用户ID
-      final userId = await storage.read(key: 'user_id');
-      final commonUserId = await storage.read(key: 'common_user_id');
-      final actualUserId = commonUserId ?? userId;
-      
-      // 更新API路径为正确的路径
-      final response = await dio.get('/api/member/balance/info');
-      
-      // 打印调试信息
-      AppLogger.d('Requesting wallet info from: /api/member/balance/info');
-      AppLogger.d('Available user IDs - userId: $userId, commonUserId: $commonUserId');
+      // 卖家钱包余额改取 Stripe 真相源 /api/wallet/seller/balance（替代旧 /api/member/balance/info）。
+      // 实测响应（嵌套 data）：{ "code":200, "msg":"操作成功",
+      //   "data":{ "bound":true, "available":12345, "pending":6789, "currency":"usd" } }
+      // available/pending 单位为 cents，由 SellerBalanceDto 负责 ÷100 换算。
+      final response = await dio.get('/api/wallet/seller/balance');
+      AppLogger.d('Requesting seller balance from: /api/wallet/seller/balance');
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data'] != null) {
-          return WalletSummaryDto.fromJson(data['data']);
-        } else {
-          throw ServerException(
-            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取钱包信息失败',
-            statusCode: (data is Map<String, dynamic> ? data['code'] : null),
-          );
-        }
-      } else {
-        throw ServerException(
-          message: '获取钱包信息失败，状态码: ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
+      final data = response.data;
+      if (response.statusCode == 200 &&
+          data is Map<String, dynamic> &&
+          data['code'] == 200 &&
+          data['data'] != null) {
+        final balance = SellerBalanceDto.fromJson(data['data'] as Map<String, dynamic>);
+        // bound=false 也是合法响应（未绑定），按 0 余额 + bound 标记正常映射，不当作错误。
+        return WalletSummaryDto.fromWalletSummary(balance.toWalletSummary());
       }
+      throw ServerException(
+        message: (data is Map<String, dynamic> ? data['msg'] as String? : null) ?? '获取钱包信息失败',
+        statusCode: (data is Map<String, dynamic> ? data['code'] as int? : null) ?? response.statusCode,
+      );
     } on DioException catch (e) {
       throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
