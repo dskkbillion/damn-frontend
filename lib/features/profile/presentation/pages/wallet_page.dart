@@ -626,6 +626,11 @@ class _WalletPageState extends State<WalletPage> {
   void _showWithdrawDialog(double availableBalance) {
     final TextEditingController amountController = TextEditingController();
     final walletBloc = context.read<WalletBloc>();
+    // 幂等 token：绑定到「本次提现弹窗 = 一次提现意图」，在弹窗打开时生成一次并锁定。
+    // 弹窗内的任何重试（连点确认、超时后再点）都复用此 token；只有关闭后重新打开弹窗
+    // 才视为新意图换新 token。这样"同一次意图的所有重试沿用同一 token"，根治后端
+    // 60s 限频窗口外的重复打款双发（详见后端契约 docs/dev/wallet_seller_api_contract.md）。
+    final String idempotencyToken = const Uuid().v4();
 
     showDialog(
       context: context,
@@ -679,11 +684,10 @@ class _WalletPageState extends State<WalletPage> {
               }
 
               Navigator.pop(context);
-              // 幂等 token：用户每次主动点击「确认提现」= 一次提现意图，生成一次 UUID。
-              // 同一意图的任何重试都复用此 token（详见后端契约），避免重复打款双发。
+              // 复用弹窗级 token（见 _showWithdrawDialog 顶部），不在此处新生成。
               walletBloc.add(SubmitWithdrawal(
                 amount: amount,
-                idempotencyToken: const Uuid().v4(),
+                idempotencyToken: idempotencyToken,
               ));
             },
             child: Text(AppLocalizations.of(context).profile_wallet_confirm_withdraw),
