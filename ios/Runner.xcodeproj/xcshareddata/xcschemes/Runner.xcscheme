@@ -97,5 +97,12 @@
    <ArchiveAction
       buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DART_DEFINES"
+            value = "RU5WX0ZJTEU9LmVudi5zdGFnaW5n"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </ArchiveAction>
 </Scheme>
