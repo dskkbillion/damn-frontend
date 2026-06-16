@@ -1,0 +1,57 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "predicate": { "text_contains": "一键购买" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "一键购买" }
+    },
+    {
+      "action": "wait_for",
+      "predicate": { "text_contains": "确认订单" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "Pay Now" },
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "Pay Now" }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 6000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

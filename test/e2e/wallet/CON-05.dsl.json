@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "绑定收款账户", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "开始绑定", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 12000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "检测到 Onboarding 链接过期：WebView 已关闭并返回，APP 自动重新请求新的 Onboarding 链接（可能出现加载中状态）或显示错误提示",
+      "timeout_ms": 15000
+    },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

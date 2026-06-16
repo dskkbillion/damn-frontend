@@ -4,33 +4,29 @@
 
 ```
 test/e2e/
-  README.md                          # 本文件
-  manifest.json                      # 所有用例清单（id/file/module/fixtures/automatable/verified 等）
-  run_batch.workflow.md              # 串行跑批协议（含登录前置顺序约束）
-  fixtures/
-    login.fragment.json              # 「登录」步骤片段（参考用，不可直接 execute_dsl）
-    ensure_logged_out.fragment.json  # 「确保登出」步骤片段（参考用）
-    ensure_logged_in.fragment.json   # 「确保已登录」轻量前置（HOME 系列用，依赖跑批器先建 session）
-  auth/
-    AUTH-01.dsl.json                 # 手机号登录（幂等，自包含）
-    AUTH-04.dsl.json                 # 无效手机号格式提示
-    AUTH-06.dsl.json                 # 发送验证码（partial，倒计时不可测）
-    AUTH-10.dsl.json                 # 退出登录
-  home/
-    HOME-01.dsl.json                 # 首页加载断言
-    HOME-04.dsl.json                 # 进入商品详情
-    HOME-05.dsl.json                 # 商品图片轮播（弱验证）
-    HOME-08.dsl.json                 # 查看商品评价跳转
-    HOME-09.dsl.json                 # 评价列表内容（商品357）
-    HOME-10.dsl.json                 # 查看卖家主页
-    HOME-11.dsl.json                 # 卖家主页商品列表
-    HOME-12.dsl.json                 # 搜索入口跳转
-    HOME-13.dsl.json                 # 搜索显示结果
-    HOME-14.dsl.json                 # 搜索无结果空态
+  README.md                # 本文件
+  manifest.json            # 全量用例清单（128 条，id/file/module/fixtures/automatable/verified）
+  run_batch.workflow.md    # 串行跑批协议（含登录前置顺序约束）
+  fixtures/                # 可复用步骤片段（login / ensure_logged_in / ensure_logged_out）
+  auth/      (9)   home/    (15)  orders/  (11)  payment/ (6)   favorites/ (8)
+  after_sales/(12) chat/    (8)   seller/  (16)  wallet/  (31)  ai_docs/   (9)
 ```
 
-> 全部 14 条 case 已于 2026-06-16 真机实跑校正（manifest.verified 字段记录结果，13 PASS + 1 partial）。
-> ⚠️ 跑批顺序有硬约束：见 `run_batch.workflow.md`——需登录的 HOME case 依赖先跑 AUTH-01 建立 session。
+### 覆盖总览（2026-06-16）
+
+| 模块 | 脚本数 | 真机已验证 | 备注 |
+|------|--------|-----------|------|
+| auth | 9 | AUTH-01/04/06/10 PASS | AUTH-02/03/11 阻塞（国际号码/邮箱/token） |
+| home | 15 | 10 个 PASS | 高价值买家流程全覆盖 |
+| payment | 6 | PAY-01 PASS（确认订单页）| 真实支付走 Stripe，PAY-07/08 等 partial/no |
+| chat | 8 | CHAT-01 PASS（空态）| 发消息需对端，多数 partial |
+| orders/after_sales/favorites | 31 | 脚本就绪，待真机 | **当前测试账号无订单/收藏/会话数据**，需活跃账号或造数据 |
+| seller/wallet/connect | 47 | 脚本就绪，待真机 | 需卖家模式 + 卖家数据/Stripe Connect 状态 |
+
+- **128 条 case**：automatable `yes` 34 / `partial` 87 / `no` 7。已真机 PASS **15 条**（auth+home+PAY-01）。
+- 其余脚本逻辑已按源码写好、JSON 合法，标 `脚本已生成-待真机校正`——多数 blocked 在 fixture（需活跃账号数据/外部依赖），换有数据的账号即可逐步跑绿。
+- ⚠️ **跑批顺序硬约束**：见 `run_batch.workflow.md`——需登录的 case 依赖先跑 AUTH-01 建立 session。
+- ⚠️ **关键 fixture 教训**：测试账号 18888888888（common_user 10290 / 买家标识 10378）是干净账号，订单/收藏/会话全空；DB 里 member.id=1 的数据属于别的用户，断言锚点与 fixture 一律以真机实测为准（详见各 case 的 verified）。
 
 ## 怎么跑
 

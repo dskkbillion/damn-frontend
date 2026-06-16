@@ -1,0 +1,36 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 6000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "账户余额" }, "timeout_ms": 8000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "全部" }, "timeout_ms": 5000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "收入" }, "timeout_ms": 5000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "支出" }, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "收入", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "列表已按[收入]筛选：可见交易记录均为收入类型（金额前有+号或绿色），或列表为空（无收入记录）",
+      "timeout_ms": 5000
+    },
+    { "action": "tap", "predicate": { "text_contains": "支出", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "列表已按[支出]筛选：可见交易记录均为支出类型（金额前有-号或红色），或列表为空（无支出记录）",
+      "timeout_ms": 5000
+    },
+    { "action": "tap", "predicate": { "text_contains": "全部", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

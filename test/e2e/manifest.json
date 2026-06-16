@@ -3,12 +3,357 @@
   "description": "DSKK E2E 测试用例清单。每条记录对应一个自包含的 .dsl.json 脚本，可由 workflow 串行调用 execute_dsl 执行。verified 字段记录真机实跑状态（2026-06-16，设备 DSKK-QA-iPhone17）。登录前置约定：需登录的 case（requires_login=true）不再各自 fresh 自动登录（实测长脚本会断链），改由跑批器先跑 AUTH-01 建立 session 后复用已登录态，脚本开头仅断言已在已登录首页（见 fixtures/ensure_logged_in.fragment.json）。",
   "cases": [
     {
+      "id": "AI-01",
+      "file": "ai_docs/AI-01.dsl.json",
+      "module": "ai_docs",
+      "description": "AI 对话页加载-历史消息显示：底部「看看」tab 进入 AI 对话页，断言「欢迎使用AI助手」；打开侧边栏 Drawer 断言「新建聊天」「会话列表」",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态（AUTH-01 先跑）"
+      ],
+      "automatable": "yes",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists text_contains:「欢迎使用AI助手」（AI 对话页已加载）",
+        "assert_exists text_contains:「新建聊天」（侧边栏 Drawer 已打开）",
+        "assert_exists text_contains:「会话列表」（侧边栏 tooltip/标题文本）"
+      ]
+    },
+    {
+      "id": "AI-02",
+      "file": "ai_docs/AI-02.dsl.json",
+      "module": "ai_docs",
+      "description": "发送消息-显示在列表：在 AI 对话页输入「测试消息」点发送，断言用户气泡显示在消息列表中",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态（AUTH-01 先跑）"
+      ],
+      "automatable": "yes",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists text_contains:「测试消息」（用户发送的消息气泡出现在消息列表）",
+        "type 输入后 input 自动清空（通过 _textController.clear() 实现）"
+      ]
+    },
+    {
+      "id": "AI-03",
+      "file": "ai_docs/AI-03.dsl.json",
+      "module": "ai_docs",
+      "description": "接收AI回复-流式响应渲染：发送「你好」后等待 AI 流式回复，弱断言回复气泡存在（StreamingMessageBubble 左对齐）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "真实 AI 服务或 mock 流服务可响应（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "ai_assert「AI 回复气泡存在，位于用户消息之后，左对齐」（弱验证，流式逐字效果难断言）"
+      ]
+    },
+    {
+      "id": "AI-04",
+      "file": "ai_docs/AI-04.dsl.json",
+      "module": "ai_docs",
+      "description": "请求商品推荐-底部弹推荐列表：发送消息后点 AppBar「匹配」按钮，断言底部弹窗「推荐服务」打开",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "后端 /get_related_services 接口有数据或 mock（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists text_contains:「推荐服务」（ModalBottomSheet 标题）",
+        "「匹配」按钮在无消息时为禁用态，需先发送消息激活"
+      ]
+    },
+    {
+      "id": "AI-05",
+      "file": "ai_docs/AI-05.dsl.json",
+      "module": "ai_docs",
+      "description": "推荐卡片-图片/标题/价格：打开推荐底部弹窗后断言 GridView 卡片含商品图、标题、以「￥」开头的价格",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "后端推荐接口返回 ≥1 条推荐数据（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists {type:image, index:0}（推荐卡片商品图）",
+        "assert_exists text_contains:「￥」（价格，格式 ￥XX.XX）",
+        "ai_assert「底部弹窗卡片含图片/标题/价格」（弱验证）"
+      ]
+    },
+    {
+      "id": "AI-06",
+      "file": "ai_docs/AI-06.dsl.json",
+      "module": "ai_docs",
+      "description": "点击推荐商品-触发分配进聊天：tap「让ta看看」按钮触发 TriggerOptimizedAllocation，弱断言按钮状态变化（DEE-40 匹配度不足）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "后端推荐+分配接口正常（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "ai_assert「推荐卡片按钮变为「进入聊天」或 loading 状态，说明分配已触发」（弱验证）",
+        "blocker：DEE-40 匹配度不足；分配成功后 createdChatRoomId 非空，按钮变绿色「进入聊天」"
+      ]
+    },
+    {
+      "id": "AI-07",
+      "file": "ai_docs/AI-07.dsl.json",
+      "module": "ai_docs",
+      "description": "会话侧边栏-切换历史会话：打开 Drawer 侧边栏，点 ListTile 切换到第二个历史会话，断言消息列表更新",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "账号下有 ≥2 条历史 AI 会话"
+      ],
+      "automatable": "yes",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists text_contains:「新建聊天」（Drawer 已打开）",
+        "assert_exists {type:list_item, index:0}（至少有一条会话 ListTile）",
+        "切换后侧边栏自动关闭（Navigator.pop），消息列表更新至目标会话"
+      ]
+    },
+    {
+      "id": "AI-08",
+      "file": "ai_docs/AI-08.dsl.json",
+      "module": "ai_docs",
+      "description": "AI rate limit remaining≤5-显示警告横幅：进入 AI 对话页后 RateLimitWarningBanner 显示「今日剩余次数」文本和「还可使用 N 次」",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "需造 remaining≤5 数据或 mock FetchRateLimitStatus 响应（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_exists text_contains:「今日剩余次数」（remaining 3-5 时显示）或「使用次数即将耗尽」（remaining ≤2）",
+        "assert_exists text_contains:「还可使用」",
+        "assert_exists text_contains:「后重置」",
+        "blocker：DEE-41 计数从不更新；RateLimitWarningBanner remaining>5 时返回 SizedBox.shrink 不渲染"
+      ]
+    },
+    {
+      "id": "AI-09",
+      "file": "ai_docs/AI-09.dsl.json",
+      "module": "ai_docs",
+      "description": "关闭限流提示-横幅可关闭：在限流横幅显示时点关闭区域，断言横幅消失（_isRateLimitWarningDismissed=true）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "需 AI-08 前置：remaining≤5 横幅已显示（外部依赖）"
+      ],
+      "automatable": "partial",
+      "verified": "待真机校正",
+      "issue": "211",
+      "assertions": [
+        "assert_not_exists text_contains:「今日剩余次数」（横幅关闭后消失）",
+        "blocker：依赖 AI-08 前置，remaining>5 时横幅不渲染无法测试"
+      ]
+    },
+    {
+      "id": "AS-01",
+      "file": "after_sales/AS-01.dsl.json",
+      "module": "after_sales",
+      "description": "售后列表加载",
+      "requires_login": true,
+      "fixtures": [
+        "已完成订单+售后记录（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-02",
+      "file": "after_sales/AS-02.dsl.json",
+      "module": "after_sales",
+      "description": "申请售后入口-从订单详情进类型选择页",
+      "requires_login": true,
+      "fixtures": [
+        "awaitingConfirmation订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-03",
+      "file": "after_sales/AS-03.dsl.json",
+      "module": "after_sales",
+      "description": "选择重做跳转：我的 → 我的订单 → 待收货tab（awaitingConfirmation）→ 点订单进详情 → 点「申请售后」→ 进选择售后类型页 → 点「我要重新制作」→ 断言进入售后申请页",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有 awaitingConfirmation 订单11条（有「申请售后」入口）"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「申请售后」（订单详情页售后入口按钮，i18n after_sales_apply_title）",
+        "assert_exists text_contains:「选择售后类型」（i18n after_sales_select_type_title）",
+        "assert_exists text_contains:「我要重新制作」（i18n after_sales_type_remake_title）",
+        "assert_exists text_contains:「申请售后」（售后申请页 AppBar，i18n after_sales_apply_title）"
+      ]
+    },
+    {
+      "id": "AS-04",
+      "file": "after_sales/AS-04.dsl.json",
+      "module": "after_sales",
+      "description": "选择补充-跳转申请页",
+      "requires_login": true,
+      "fixtures": [
+        "awaitingConfirmation订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-05",
+      "file": "after_sales/AS-05.dsl.json",
+      "module": "after_sales",
+      "description": "选择退款跳转含金额输入框：同 AS-03 路径进到选择售后类型页 → 点「我要退款」→ 断言进入售后申请页（AppBar「申请售后」+ type:input 金额输入框）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有 awaitingConfirmation 订单11条"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「我要退款」（i18n after_sales_type_refund_title）",
+        "assert_exists text_contains:「申请售后」（退款申请页 AppBar）",
+        "assert_exists type:input（退款金额输入框，AfterSalesApplyPage._amountController）"
+      ]
+    },
+    {
+      "id": "AS-06",
+      "file": "after_sales/AS-06.dsl.json",
+      "module": "after_sales",
+      "description": "填写售后原因",
+      "requires_login": true,
+      "fixtures": [
+        "awaitingConfirmation订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-07",
+      "file": "after_sales/AS-07.dsl.json",
+      "module": "after_sales",
+      "description": "上传凭证图片",
+      "requires_login": true,
+      "fixtures": [
+        "awaitingConfirmation订单+本地图片（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-08",
+      "file": "after_sales/AS-08.dsl.json",
+      "module": "after_sales",
+      "description": "提交售后申请",
+      "requires_login": true,
+      "fixtures": [
+        "awaitingConfirmation订单+后端apply（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-09",
+      "file": "after_sales/AS-09.dsl.json",
+      "module": "after_sales",
+      "description": "查看售后详情",
+      "requires_login": true,
+      "fixtures": [
+        "已提交售后申请（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-10",
+      "file": "after_sales/AS-10.dsl.json",
+      "module": "after_sales",
+      "description": "售后状态跟踪",
+      "requires_login": true,
+      "fixtures": [
+        "多种refundState售后（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-11",
+      "file": "after_sales/AS-11.dsl.json",
+      "module": "after_sales",
+      "description": "撤销售后申请（TODO接口未完全实现）",
+      "requires_login": true,
+      "fixtures": [
+        "WAIT_AUDIT售后（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "AS-12",
+      "file": "after_sales/AS-12.dsl.json",
+      "module": "after_sales",
+      "description": "申请平台介入（TODO接口未完全实现）",
+      "requires_login": true,
+      "fixtures": [
+        "audit_reject售后（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "217",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
       "id": "AUTH-01",
       "file": "auth/AUTH-01.dsl.json",
       "module": "auth",
       "description": "手机号登录-中国大陆号码正常登录（幂等：fresh 启动后自动判断是否已登录，若已登录先登出再执行登录流程）",
       "requires_login": false,
-      "fixtures": ["买家账号（18888888888 + 万能码 565656）"],
+      "fixtures": [
+        "买家账号（18888888888 + 万能码 565656）"
+      ],
       "automatable": "yes",
       "verified": "PASS（2026-06-16 真机整段重放：已登录态→自动登出→登录→跳首页「搜索服务」断言通过）",
       "issue": "209",
@@ -17,12 +362,43 @@
       ]
     },
     {
+      "id": "AUTH-02",
+      "file": null,
+      "module": "auth",
+      "description": "手机号登录-国际号码选区号后登录（阻塞：后端仅支持中国大陆格式，国际号码无法通过后端验证）",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态"
+      ],
+      "automatable": "no",
+      "issue": "209",
+      "assertions": [],
+      "verified": "阻塞：后端不支持国际号码，AUTH-02 无法生成脚本"
+    },
+    {
+      "id": "AUTH-03",
+      "file": null,
+      "module": "auth",
+      "description": "邮箱登录-切换邮箱模式并登录（阻塞：邮箱验证码可能进垃圾箱，mobai 无法自动获取收件箱验证码）",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态",
+        "真实邮箱账号（可收验证码邮件）"
+      ],
+      "automatable": "no",
+      "issue": "209",
+      "assertions": [],
+      "verified": "阻塞：需真实邮箱配置，mobai 无法自动读取验证码，AUTH-03 无法完全自动化"
+    },
+    {
       "id": "AUTH-04",
       "file": "auth/AUTH-04.dsl.json",
       "module": "auth",
       "description": "无效手机号格式-输入 123 点获取验证码，断言 SnackBar 错误提示，确保未登录态（脚本开头 if_exists 自动登出）",
       "requires_login": false,
-      "fixtures": ["未登录态（脚本开头自动确保登出）"],
+      "fixtures": [
+        "未登录态（脚本开头自动确保登出）"
+      ],
       "automatable": "yes",
       "verified": "PASS（2026-06-16 真机：tap 后命中 SnackBar「请输入11位手机号」。关键：tap 与 assert 之间不能插 wait_for stable，否则 SnackBar(~2s 瞬态)已消失导致 FAIL）",
       "issue": "209",
@@ -32,12 +408,31 @@
       ]
     },
     {
+      "id": "AUTH-05",
+      "file": "auth/AUTH-05.dsl.json",
+      "module": "auth",
+      "description": "无效邮箱格式-邮箱模式输入无效格式（test）点获取验证码，断言 SnackBar「请输入有效的邮箱地址」",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态（脚本开头 if_exists 自动确保登出）"
+      ],
+      "automatable": "yes",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「请输入有效的邮箱地址」（unified_login_page.dart:247 SnackBar，邮箱模式 onSendCode 校验；dart:220 form validator 均为此文案）",
+        "assert_not_exists text_contains:「登录成功!」"
+      ],
+      "verified": "待真机校正"
+    },
+    {
       "id": "AUTH-06",
       "file": "auth/AUTH-06.dsl.json",
       "module": "auth",
       "description": "发送验证码-输入有效手机号点「获取验证码」，确保未登录态（脚本开头 if_exists 自动登出）",
       "requires_login": false,
-      "fixtures": ["未登录态（脚本开头自动确保登出）"],
+      "fixtures": [
+        "未登录态（脚本开头自动确保登出）"
+      ],
       "automatable": "partial",
       "verified": "环境受限（2026-06-16 真机实测：万能码 565656 环境下点「获取验证码」按钮 14s 后仍是「获取验证码」，不进入 60s 倒计时——倒计时这一核心行为在测试环境不可复现）。脚本已改为确定性弱断言：点击后验证码 input 仍存在 + 无「异常」报错，不再硬断言倒计时。倒计时本身需真实短信环境才能验证。",
       "issue": "209",
@@ -47,12 +442,535 @@
       ]
     },
     {
+      "id": "AUTH-07",
+      "file": "auth/AUTH-07.dsl.json",
+      "module": "auth",
+      "description": "验证码错误-手机号登录输错误码（000000）点登录，断言 SnackBar「验证码错误或已过期」，不暴露 ServerException 原始异常",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态（脚本开头 if_exists 自动确保登出）",
+        "买家账号 18888888888（先获取验证码触发计时器）"
+      ],
+      "automatable": "yes",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「验证码错误或已过期」（unified_login_page.dart:95-97 SmsLoginFailure 处理：raw 含「验证码」或「code」→ 友好提示，源码逗号为 ASCII 逗号「,」）",
+        "assert_not_exists text_contains:「登录成功!」",
+        "assert_not_exists text_contains:「ServerException」（不暴露原始异常）"
+      ],
+      "verified": "待真机校正"
+    },
+    {
+      "id": "AUTH-08",
+      "file": "auth/AUTH-08.dsl.json",
+      "module": "auth",
+      "description": "验证码过期-获取验证码后输入任意码登录，断言「验证码错误或已过期」（partial：万能码环境下验证码不真实过期，脚本只验证错误码触发的友好提示）",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态（脚本开头 if_exists 自动确保登出）"
+      ],
+      "automatable": "partial",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「验证码错误或已过期」（真正过期场景需等待5分钟以上或后端造数据，脚本以错误码近似验证友好提示文案）",
+        "assert_not_exists text_contains:「登录成功!」"
+      ],
+      "verified": "待真机校正（blocker：完整过期验证需等待5分钟或后端时间伪造，脚本仅部分覆盖）"
+    },
+    {
+      "id": "AUTH-09",
+      "file": "auth/AUTH-09.dsl.json",
+      "module": "auth",
+      "description": "重新发送验证码-点获取验证码后等待倒计时结束（60s）再次点击，断言按钮回到可点状态",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态（脚本开头 if_exists 自动确保登出）"
+      ],
+      "automatable": "partial",
+      "issue": "209",
+      "assertions": [
+        "wait_for text_contains:「获取验证码」 timeout_ms:75000（等待60s倒计时归零，按钮文案回到「获取验证码」）",
+        "tap 再次点击「获取验证码」（验证按钮确实回到 enabled+可点状态）",
+        "assert_exists type:input index:1（验证码 input 仍存在，点击后无崩溃）"
+      ],
+      "verified": "待真机校正（blocker：需等待60秒倒计时，万能码环境下倒计时行为不稳定，见 AUTH-06 verified 说明）"
+    },
+    {
+      "id": "AUTH-10",
+      "file": "auth/AUTH-10.dsl.json",
+      "module": "auth",
+      "description": "退出登录-已登录态走「我的」→「账号与安全」→「退出登录」→ 确认弹窗，断言回到登录页 session 已清",
+      "requires_login": true,
+      "fixtures": [
+        "已登录买家账号（脚本开头 if_exists 自动登录确保已登录态）"
+      ],
+      "automatable": "yes",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「获取验证码」（回到登录页）",
+        "assert_exists text_contains:「手机号」（session 已清，需重新登录）"
+      ],
+      "verified": "PASS（2026-06-16 真机整段重放：fresh→已登录态→我的→scroll→账号与安全→退出登录→弹窗「确定」→ 停在登录页「获取验证码」「手机号」断言通过）。注：本脚本保留 fresh+if_exists 自动登录块，因常态下 fresh 恢复已登录态走 else 分支(不触发自动登录)，无长脚本断链风险。"
+    },
+    {
+      "id": "AUTH-11",
+      "file": null,
+      "module": "auth",
+      "description": "Token 过期-已登录态触发任意 API 后自动跳转登录页（阻塞：需真实 token 过期或后端造数据，纯 mobai 无法模拟）",
+      "requires_login": true,
+      "fixtures": [
+        "已登录态+token 已过期/被撤销"
+      ],
+      "automatable": "no",
+      "issue": "209",
+      "assertions": [],
+      "verified": "阻塞：需真实 token 过期或后端造数据，AUTH-11 无法自动化"
+    },
+    {
+      "id": "AUTH-12",
+      "file": "auth/AUTH-12.dsl.json",
+      "module": "auth",
+      "description": "协议/隐私链接-进登录页滚到底部断言「用户协议」「隐私政策」「和」文本存在（partial：onPressed 为 TODO 仅 debugPrint，跳转未实现，只验证文本渲染）",
+      "requires_login": false,
+      "fixtures": [
+        "未登录态（脚本开头 if_exists 自动确保登出）"
+      ],
+      "automatable": "partial",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「用户协议」（unified_login_page.dart:368）",
+        "assert_exists text_contains:「隐私政策」（unified_login_page.dart:345）",
+        "assert_exists text_contains:「和」（unified_login_page.dart:353）"
+      ],
+      "verified": "待真机校正（blocker：两个链接 onPressed 均为 TODO/debugPrint，第 341-365 行，跳转功能未实现——本 case 只验证文本渲染，不验证跳转行为）"
+    },
+    {
+      "id": "CHAT-01",
+      "file": "chat/CHAT-01.dsl.json",
+      "module": "chat",
+      "description": "聊天列表加载：已登录前置 → 底部「聊聊」tab → 断言聊天列表渲染（AppBar「聊天列表」+ 通知中心系统固定条目）。空态可跑（不依赖会话数据）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "无需会话数据：「聊天列表」「通知中心」是任何账号都有的固定项"
+      ],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机，当前账号 18888888888 无会话：聊聊 tab → 「聊天列表」「通知中心」均命中，「暂无聊天记录」空态正常）。已去掉原 {type:image} 弱断言（依赖会话头像，空账号下不稳）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「聊天列表」（i18n chat_list_title，AppBar）",
+        "assert_exists text_contains:「通知中心」（i18n chat_notification_center，系统固定条目，任何账号都有）"
+      ]
+    },
+    {
+      "id": "CHAT-02",
+      "file": "chat/CHAT-02.dsl.json",
+      "module": "chat",
+      "description": "进入聊天室：聊天列表 → 点第一个会话 type:image → 断言进入聊天室（「输入消息...」输入框 + type:input）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有145条会话，至少有一条有消息记录"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "tap {type:image, index:0}（点第一个会话条目，买家模式下按卖家分组显示）",
+        "assert_exists text_contains:「输入消息...」（i18n chat_enter_message，消息输入框 placeholder）",
+        "assert_exists type:input（聊天室输入框）"
+      ]
+    },
+    {
+      "id": "CHAT-03",
+      "file": "chat/CHAT-03.dsl.json",
+      "module": "chat",
+      "description": "发送文字消息",
+      "requires_login": true,
+      "fixtures": [
+        "≥1活跃会话（需对端，当前账号无会话）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CHAT-04",
+      "file": "chat/CHAT-04.dsl.json",
+      "module": "chat",
+      "description": "发送图片消息",
+      "requires_login": true,
+      "fixtures": [
+        "≥1会话+本地图片+后端上传（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CHAT-04b",
+      "file": "chat/CHAT-04b.dsl.json",
+      "module": "chat",
+      "description": "发送文件消息",
+      "requires_login": true,
+      "fixtures": [
+        "≥1会话+本地文件+后端上传（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CHAT-06",
+      "file": "chat/CHAT-06.dsl.json",
+      "module": "chat",
+      "description": "文件预览跳转",
+      "requires_login": true,
+      "fixtures": [
+        "含文件消息的会话（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CHAT-07",
+      "file": "chat/CHAT-07.dsl.json",
+      "module": "chat",
+      "description": "消息时间分组",
+      "requires_login": true,
+      "fixtures": [
+        "≥3条不同时间消息会话（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CHAT-08",
+      "file": "chat/CHAT-08.dsl.json",
+      "module": "chat",
+      "description": "未读角标（DEE-72已知缺陷）",
+      "requires_login": true,
+      "fixtures": [
+        "含未读消息会话（需对端）"
+      ],
+      "automatable": "partial",
+      "issue": "212",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-01",
+      "file": "wallet/CON-01.dsl.json",
+      "module": "connect",
+      "description": "未绑定状态-显示引导页+开始绑定",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 bound=false（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-02",
+      "file": "wallet/CON-02.dsl.json",
+      "module": "connect",
+      "description": "点击开始绑定-打开Onboarding WebView",
+      "requires_login": true,
+      "fixtures": [
+        "bound=false + 真实Stripe/mock"
+      ],
+      "automatable": "no",
+      "issue": "344",
+      "verified": "脚本已生成（automatable=no：外部依赖/未实现，不纳入自动跑批）",
+      "assertions": []
+    },
+    {
+      "id": "CON-03",
+      "file": "wallet/CON-03.dsl.json",
+      "module": "connect",
+      "description": "WebView加载-白名单域名正常",
+      "requires_login": true,
+      "fixtures": [
+        "真实Stripe onboardingUrl或mock"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-04",
+      "file": "wallet/CON-04.dsl.json",
+      "module": "connect",
+      "description": "Onboarding完成-检测return URL",
+      "requires_login": true,
+      "fixtures": [
+        "真实完成Stripe Onboarding"
+      ],
+      "automatable": "no",
+      "issue": "344",
+      "verified": "脚本已生成（automatable=no：外部依赖/未实现，不纳入自动跑批）",
+      "assertions": []
+    },
+    {
+      "id": "CON-05",
+      "file": "wallet/CON-05.dsl.json",
+      "module": "connect",
+      "description": "Onboarding链接过期-检测refresh",
+      "requires_login": true,
+      "fixtures": [
+        "过期Stripe链接（需mock）"
+      ],
+      "automatable": "no",
+      "issue": "344",
+      "verified": "脚本已生成（automatable=no：外部依赖/未实现，不纳入自动跑批）",
+      "assertions": []
+    },
+    {
+      "id": "CON-06",
+      "file": "wallet/CON-06.dsl.json",
+      "module": "connect",
+      "description": "手动关闭WebView-状态不变",
+      "requires_login": true,
+      "fixtures": [
+        "已进入Stripe WebView"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-07",
+      "file": "wallet/CON-07.dsl.json",
+      "module": "connect",
+      "description": "审核中状态-显示审核中+刷新状态",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 PendingVerification（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-08",
+      "file": "wallet/CON-08.dsl.json",
+      "module": "connect",
+      "description": "刷新状态按钮-重拉账户状态",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 PendingVerification（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-09",
+      "file": "wallet/CON-09.dsl.json",
+      "module": "connect",
+      "description": "已激活状态-chargesEnabled/payoutsEnabled",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 ConnectAccountActive（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-10",
+      "file": "wallet/CON-10.dsl.json",
+      "module": "connect",
+      "description": "错误状态-错误信息+重试",
+      "requires_login": true,
+      "fixtures": [
+        "网络离线或后端错误（需模拟）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-11",
+      "file": "wallet/CON-11.dsl.json",
+      "module": "connect",
+      "description": "非白名单域名-WebView阻止跳转",
+      "requires_login": true,
+      "fixtures": [
+        "已进入Stripe WebView + 注入跳转"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "CON-12",
+      "file": "wallet/CON-12.dsl.json",
+      "module": "connect",
+      "description": "非HTTPS请求-WebView阻止",
+      "requires_login": true,
+      "fixtures": [
+        "已进入Stripe WebView + HTTP请求"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "FAV-01",
+      "file": "favorites/FAV-01.dsl.json",
+      "module": "favorites",
+      "description": "收藏列表商品Tab：已登录前置 → 我的 tab → 点「收藏」→ 断言「我的收藏」页 + 服务/卖家 Tab + 含$价格的商品卡片",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1收藏商品2个（本地DB已确认）"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「我的收藏」（i18n favorites_title，AppBar title）",
+        "assert_exists text_contains:「服务」（i18n favorites_tab_services，TabBar）",
+        "assert_exists text_contains:「卖家」（i18n favorites_tab_sellers，TabBar）",
+        "assert_exists {type:image, text_contains:「$」}（收藏服务卡片含价格）"
+      ]
+    },
+    {
+      "id": "FAV-02",
+      "file": "favorites/FAV-02.dsl.json",
+      "module": "favorites",
+      "description": "收藏页切换卖家Tab：进收藏页 → 点「卖家」Tab → 断言卖家列表有 type:image 元素（卖家头像/卡片）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1关注卖家1个（本地DB已确认）"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "tap text_contains:「卖家」（切换到卖家Tab）",
+        "assert_exists type:image（卖家卡片有头像等 image 元素）"
+      ]
+    },
+    {
+      "id": "FAV-03",
+      "file": "favorites/FAV-03.dsl.json",
+      "module": "favorites",
+      "description": "下拉刷新收藏服务列表",
+      "requires_login": true,
+      "fixtures": [
+        "收藏服务≥1（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "216",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "FAV-04",
+      "file": "favorites/FAV-04.dsl.json",
+      "module": "favorites",
+      "description": "触底加载更多（分页）",
+      "requires_login": true,
+      "fixtures": [
+        "收藏服务≥10（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "216",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "FAV-05",
+      "file": "favorites/FAV-05.dsl.json",
+      "module": "favorites",
+      "description": "取消收藏：收藏页服务Tab → 点第一个 button（取消收藏，FavoriteServiceItem.onRemove 触发，卡片上按钮）→ ai_assert 收藏列表有变化或出现空态【需实跑确认取消收藏的确切按钮锚点】",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1收藏商品2个（取消后剩1个或空）"
+      ],
+      "automatable": "partial",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists {type:image, text_contains:「$」}（服务Tab有收藏商品）",
+        "ai_assert「收藏服务列表每个卡片有取消收藏按钮」（确认交互方式，需实跑）",
+        "tap {type:button, index:0}（点第一个按钮，需实跑确认是否为取消收藏按钮）",
+        "ai_assert「取消收藏已触发：列表变化或空态或提示」（弱验证，需实跑确认）"
+      ]
+    },
+    {
+      "id": "FAV-06",
+      "file": "favorites/FAV-06.dsl.json",
+      "module": "favorites",
+      "description": "取关卖家从列表移除",
+      "requires_login": true,
+      "fixtures": [
+        "关注卖家≥1（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "216",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "FAV-07",
+      "file": "favorites/FAV-07.dsl.json",
+      "module": "favorites",
+      "description": "点击收藏服务卡片跳转商品详情",
+      "requires_login": true,
+      "fixtures": [
+        "收藏服务≥1（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "216",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "FAV-08",
+      "file": "favorites/FAV-08.dsl.json",
+      "module": "favorites",
+      "description": "空状态展示（无任何收藏）",
+      "requires_login": true,
+      "fixtures": [
+        "无收藏/无关注（当前账号即空态，可直接跑）"
+      ],
+      "automatable": "yes",
+      "issue": "216",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
       "id": "HOME-01",
       "file": "home/HOME-01.dsl.json",
       "module": "home",
       "description": "首页加载-已登录态进入首页，断言搜索栏 placeholder「搜索服务」和瀑布流商品卡片渲染",
       "requires_login": true,
-      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）", "本地已有已发布商品 seed"],
+      "fixtures": [
+        "已登录买家账号（脚本开头 if_exists 自动登录）",
+        "本地已有已发布商品 seed"
+      ],
       "automatable": "yes",
       "verified": "PASS（2026-06-16 真机：「搜索服务」命中 [Other]，商品卡片命中 [Image]）。关键：Flutter 瀑布流商品卡片在 a11y tree 里是 XCUIElementTypeImage 不是 cell，且 banner 图也是 Image——用 {type:image, text_contains:\"$\"} 锚定含价格的商品卡片以排除 banner。",
       "issue": "210",
@@ -62,12 +980,43 @@
       ]
     },
     {
+      "id": "HOME-02",
+      "file": "home/HOME-02.dsl.json",
+      "module": "home",
+      "description": "首页下拉刷新（DEE-38后端待修）",
+      "requires_login": true,
+      "fixtures": [
+        "首页已加载"
+      ],
+      "automatable": "partial",
+      "issue": "210",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "HOME-03",
+      "file": "home/HOME-03.dsl.json",
+      "module": "home",
+      "description": "首页触底加载更多（DEE-39后端待修）",
+      "requires_login": true,
+      "fixtures": [
+        "首页已加载"
+      ],
+      "automatable": "partial",
+      "issue": "210",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
       "id": "HOME-04",
       "file": "home/HOME-04.dsl.json",
       "module": "home",
       "description": "进入商品详情-首页点第一个商品卡片，断言详情页含「已发布」状态文本和「一键购买」按钮",
       "requires_login": true,
-      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）", "本地已有已发布商品 seed"],
+      "fixtures": [
+        "已登录买家账号（脚本开头 if_exists 自动登录）",
+        "本地已有已发布商品 seed"
+      ],
       "automatable": "yes",
       "verified": "PASS（2026-06-16 真机：tap 商品卡片→详情页「已发布」「一键购买 ($343.99)」均命中）。关键：tap 多元素匹配会 AMBIGUOUS_MATCH 报错，商品卡片定位必须带 index——用 {type:image, text_contains:\"$\", index:0} 点第一个商品（assert_exists 不报错但 tap 必须消歧）。",
       "issue": "210",
@@ -78,42 +1027,15 @@
       ]
     },
     {
-      "id": "HOME-12",
-      "file": "home/HOME-12.dsl.json",
-      "module": "home",
-      "description": "搜索入口-点击首页「搜索服务」搜索栏，断言跳转搜索页并有 input 输入框 +「热搜榜」",
-      "requires_login": true,
-      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）"],
-      "automatable": "yes",
-      "verified": "PASS（2026-06-16 真机：搜索页 TextField「搜索服务」+ StaticText「热搜榜」均命中）。关键：「热搜榜」「搜索历史」是确定性静态文本，无需 ai_assert——改用确定性 assert_exists 更快更稳（且原 ai_assert 字段名 prompt 是错的，正确为 assert_prompt）。",
-      "issue": "210",
-      "assertions": [
-        "assert_exists type:input（搜索框已聚焦）",
-        "assert_exists text_contains:「热搜榜」"
-      ]
-    },
-    {
-      "id": "AUTH-10",
-      "file": "auth/AUTH-10.dsl.json",
-      "module": "auth",
-      "description": "退出登录-已登录态走「我的」→「账号与安全」→「退出登录」→ 确认弹窗，断言回到登录页 session 已清",
-      "requires_login": true,
-      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录确保已登录态）"],
-      "automatable": "yes",
-      "issue": "209",
-      "assertions": [
-        "assert_exists text_contains:「获取验证码」（回到登录页）",
-        "assert_exists text_contains:「手机号」（session 已清，需重新登录）"
-      ],
-      "verified": "PASS（2026-06-16 真机整段重放：fresh→已登录态→我的→scroll→账号与安全→退出登录→弹窗「确定」→ 停在登录页「获取验证码」「手机号」断言通过）。注：本脚本保留 fresh+if_exists 自动登录块，因常态下 fresh 恢复已登录态走 else 分支(不触发自动登录)，无长脚本断链风险。"
-    },
-    {
       "id": "HOME-05",
       "file": "home/HOME-05.dsl.json",
       "module": "home",
       "description": "商品图片轮播-进入商品详情后在顶部图片区向左滑动，断言详情页未崩溃且仍显示商品信息（轮播区可滑动不崩弱验证）",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地 seed 已有（本地已有多图已发布商品）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "本地 seed 已有（本地已有多图已发布商品）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -127,12 +1049,43 @@
       "verified": "PASS-弱验证（2026-06-16 真机：商品357顶部图片区 swipe left 后「一键购买」「已发布」仍命中，详情页未崩）。局限：357 仅单图，无法验证图片切换；swipe 用 from/to_coords 而非 bounds_hint（后者不可靠）。本 case 本质只验证「图片区可滑动不崩」。"
     },
     {
+      "id": "HOME-06",
+      "file": "home/HOME-06.dsl.json",
+      "module": "home",
+      "description": "收藏商品-详情页点收藏图标变实心",
+      "requires_login": true,
+      "fixtures": [
+        "未收藏商品（本地已有）"
+      ],
+      "automatable": "yes",
+      "issue": "210",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "HOME-07",
+      "file": "home/HOME-07.dsl.json",
+      "module": "home",
+      "description": "取消收藏-详情页点已收藏图标变空心",
+      "requires_login": true,
+      "fixtures": [
+        "已收藏商品（需造收藏关系）"
+      ],
+      "automatable": "partial",
+      "issue": "210",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
       "id": "HOME-08",
       "file": "home/HOME-08.dsl.json",
       "module": "home",
       "description": "查看商品评价跳转-搜「机票」定位有评价商品357「任意主流航司机票官网97折」，进详情后点「查看全部」进评价列表页，断言AppBar含「评论」",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "需有评价商品 357（id=357「任意主流航司机票官网97折」$1.00，3条pass评价，本地DB已确认2026-06-16）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "需有评价商品 357（id=357「任意主流航司机票官网97折」$1.00，3条pass评价，本地DB已确认2026-06-16）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -152,7 +1105,10 @@
       "module": "home",
       "description": "评价列表加载-复用HOME-08路径走到商品357评价列表页，断言sku_name「Lite」、评价内容「不错，很有耐心」和星级评分（ai_assert弱验证）",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "需有评价商品 357（实测评价：昵称「歪楞妈真难弄」、sku_name=「Lite」、内容「不错，很有耐心」、时间「5月前」，3条 pass。注：DB 里 sku_name=「基础」是已删商品142的孤儿数据，357 实际套餐是 Lite/Pro/Deep）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "需有评价商品 357（实测评价：昵称「歪楞妈真难弄」、sku_name=「Lite」、内容「不错，很有耐心」、时间「5月前」，3条 pass。注：DB 里 sku_name=「基础」是已删商品142的孤儿数据，357 实际套餐是 Lite/Pro/Deep）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -170,7 +1126,10 @@
       "module": "home",
       "description": "查看卖家主页-首页点第一个商品卡片进详情，点详情页卖家「已认证」标签区进入卖家主页，断言粉丝数/关注按钮/我的服务 tab",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地已有已发布商品 seed（且卖家有认证标签）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "本地已有已发布商品 seed（且卖家有认证标签）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -188,7 +1147,10 @@
       "module": "home",
       "description": "卖家主页商品列表-从首页进详情再点「已认证」进卖家主页，tap「我的服务」tab，断言tab存在且出现卖家商品卡片",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地 seed 已有（卖家有已发布商品，本地已有25个，2026-06-16确认）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "本地 seed 已有（卖家有已发布商品，本地已有25个，2026-06-16确认）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -202,12 +1164,32 @@
       "verified": "PASS（2026-06-16 真机：卖家主页 tap「我的服务」tab 后出现卖家商品卡片(开锁服务$0.00/装机指南$1.00)）。关键：「我的服务」在卖家主页有两处(TabBar tab + 统计项「我的服务\\nN」)，tap 必须带 index:0 命中 TabBar 否则 AMBIGUOUS_MATCH。"
     },
     {
+      "id": "HOME-12",
+      "file": "home/HOME-12.dsl.json",
+      "module": "home",
+      "description": "搜索入口-点击首页「搜索服务」搜索栏，断言跳转搜索页并有 input 输入框 +「热搜榜」",
+      "requires_login": true,
+      "fixtures": [
+        "已登录买家账号（脚本开头 if_exists 自动登录）"
+      ],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：搜索页 TextField「搜索服务」+ StaticText「热搜榜」均命中）。关键：「热搜榜」「搜索历史」是确定性静态文本，无需 ai_assert——改用确定性 assert_exists 更快更稳（且原 ai_assert 字段名 prompt 是错的，正确为 assert_prompt）。",
+      "issue": "210",
+      "assertions": [
+        "assert_exists type:input（搜索框已聚焦）",
+        "assert_exists text_contains:「热搜榜」"
+      ]
+    },
+    {
       "id": "HOME-13",
       "file": "home/HOME-13.dsl.json",
       "module": "home",
       "description": "搜索商品显示结果-进搜索页输入「服务」触发搜索，断言结果页出现含价格的商品卡片",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地已有已发布商品 seed（名称含「服务」）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
+        "本地已有已发布商品 seed（名称含「服务」）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -221,7 +1203,9 @@
       "module": "home",
       "description": "搜索无结果空态-输入绝不命中的词「zzzzzzqqq」触发搜索，断言出现「没有找到相关的服务」并无商品卡片",
       "requires_login": true,
-      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）"],
+      "fixtures": [
+        "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）"
+      ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
@@ -229,6 +1213,783 @@
         "assert_not_exists {type:image, text_contains:「$」}（无商品卡片）"
       ],
       "verified": "PASS（2026-06-16 真机：搜「zzzzzzqqq」→ 空态文本「没有找到相关的服务」命中，无商品 image 卡片）"
+    },
+    {
+      "id": "HOME-15",
+      "file": "home/HOME-15.dsl.json",
+      "module": "home",
+      "description": "搜索历史-显示历史关键词可删除",
+      "requires_login": true,
+      "fixtures": [
+        "本地搜索历史（实测搜索页有学术/Stripe历史）"
+      ],
+      "automatable": "yes",
+      "issue": "210",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-01",
+      "file": "orders/ORD-01.dsl.json",
+      "module": "orders",
+      "description": "订单列表加载：已登录前置 → 我的 tab → 点「我的订单」→ 进订单列表全部tab → 断言订单卡片（type:image）、「待评价」tab文本渲染",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有大量订单数据（awaitingEvaluation 10、awaitingConfirmation 11 等）"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「我的订单」（订单列表 AppBar）",
+        "assert_exists text_contains:「全部」（订单列表 tab）",
+        "assert_exists type:image（订单卡片 Flutter image 元素）",
+        "assert_exists text_contains:「待评价」（tab存在）"
+      ]
+    },
+    {
+      "id": "ORD-02",
+      "file": "orders/ORD-02.dsl.json",
+      "module": "orders",
+      "description": "订单状态筛选-切换tab验证列表过滤",
+      "requires_login": true,
+      "fixtures": [
+        "多状态订单（需活跃账号，当前账号空）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-03",
+      "file": "orders/ORD-03.dsl.json",
+      "module": "orders",
+      "description": "订单列表下拉刷新",
+      "requires_login": true,
+      "fixtures": [
+        "待付款订单≥3（DEE-44；需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-04",
+      "file": "orders/ORD-04.dsl.json",
+      "module": "orders",
+      "description": "订单空状态-某tab无订单显示空态",
+      "requires_login": true,
+      "fixtures": [
+        "某tab无订单（当前账号全空，可跑空态）"
+      ],
+      "automatable": "yes",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-05",
+      "file": "orders/ORD-05.dsl.json",
+      "module": "orders",
+      "description": "查看订单详情：我的 → 我的订单 → 全部tab → 点第一个订单卡片 → 断言详情页订单编号、金额（含$符号）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有订单数据（全部tab有订单卡片）"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「订单详情」（AppBar title，i18n order_detail_title）",
+        "assert_exists text_contains:「订单编号」（i18n order_info_order_number）",
+        "assert_exists text_contains:「$」（订单金额含价格符号）"
+      ]
+    },
+    {
+      "id": "ORD-06",
+      "file": "orders/ORD-06.dsl.json",
+      "module": "orders",
+      "description": "确认收货-待收货订单确认后变待评价",
+      "requires_login": true,
+      "fixtures": [
+        "待收货订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-07",
+      "file": "orders/ORD-07.dsl.json",
+      "module": "orders",
+      "description": "取消订单-待付款订单取消后变已取消",
+      "requires_login": true,
+      "fixtures": [
+        "待付款订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-09",
+      "file": "orders/ORD-09.dsl.json",
+      "module": "orders",
+      "description": "联系卖家-从订单详情跳转聊天页",
+      "requires_login": true,
+      "fixtures": [
+        "任意订单含卖家信息（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-10",
+      "file": "orders/ORD-10.dsl.json",
+      "module": "orders",
+      "description": "发起订单评价入口：我的 → 我的订单 → 待评价tab → 断言「去评价」按钮存在 → 点「去评价」→ 断言进入评价页（「评价订单」AppBar + 输入框）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "买家1有10条 awaitingEvaluation 订单"
+      ],
+      "automatable": "yes",
+      "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
+      "issue": null,
+      "assertions": [
+        "assert_exists text_contains:「待评价」（tab）",
+        "assert_exists text_contains:「去评价」（i18n order_action_go_evaluate，订单卡片动作按钮）",
+        "assert_exists text_contains:「评价订单」（i18n order_evaluation_page_title，评价页 AppBar）",
+        "assert_exists type:input（评价内容输入框）"
+      ]
+    },
+    {
+      "id": "ORD-11",
+      "file": "orders/ORD-11.dsl.json",
+      "module": "orders",
+      "description": "提交评价-填写内容提交成功",
+      "requires_login": true,
+      "fixtures": [
+        "待评价订单（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "ORD-12",
+      "file": "orders/ORD-12.dsl.json",
+      "module": "orders",
+      "description": "上传评价图片",
+      "requires_login": true,
+      "fixtures": [
+        "待评价订单+本地图片（需活跃账号）"
+      ],
+      "automatable": "partial",
+      "issue": "213",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "PAY-01",
+      "file": "payment/PAY-01.dsl.json",
+      "module": "payment",
+      "description": "确认订单页：首页点商品 → 一键购买 → 进确认订单页 → 断言订单摘要/订单总计/Pay Now 按钮。不点 Pay Now（避免进 Stripe 真实支付）",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态",
+        "本地有已发布商品（任意商品可下单到确认页）"
+      ],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：商品「高等数学辅导」→ 一键购买 → 确认订单页「确认订单」「订单总计」「Pay Now $143.99」均命中）。关键：订单在点 Pay Now 后才创建（确认页未创建订单），Pay Now 进 Stripe WebView 真实支付——本 case 只验证到确认页为止，不触发支付。",
+      "issue": null,
+      "assertions": [
+        "tap {type:image, text_contains:「$」, index:0} 进商品详情",
+        "tap text_contains:「一键购买」",
+        "assert_exists text_contains:「确认订单」（确认订单页 AppBar）",
+        "assert_exists text_contains:「订单总计」（订单摘要）",
+        "assert_exists text_contains:「Pay Now」（支付按钮）"
+      ]
+    },
+    {
+      "id": "PAY-02",
+      "file": "payment/PAY-02.dsl.json",
+      "module": "payment",
+      "description": "订单金额计算-确认订单页各项金额正确",
+      "requires_login": true,
+      "fixtures": [
+        "已发布商品（本地已有）"
+      ],
+      "automatable": "yes",
+      "issue": "214",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "PAY-07",
+      "file": "payment/PAY-07.dsl.json",
+      "module": "payment",
+      "description": "支付成功-Stripe支付后跳结果页",
+      "requires_login": true,
+      "fixtures": [
+        "真实Stripe测试账户或mock"
+      ],
+      "automatable": "partial",
+      "issue": "214",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "PAY-08",
+      "file": "payment/PAY-08.dsl.json",
+      "module": "payment",
+      "description": "支付取消-WebView取消后返回",
+      "requires_login": true,
+      "fixtures": [
+        "Stripe WebView mock cancelUrl"
+      ],
+      "automatable": "partial",
+      "issue": "214",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "PAY-10",
+      "file": "payment/PAY-10.dsl.json",
+      "module": "payment",
+      "description": "结果页查看订单详情",
+      "requires_login": true,
+      "fixtures": [
+        "支付完成后结果页（orderId非空）"
+      ],
+      "automatable": "partial",
+      "issue": "214",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "PAY-11",
+      "file": "payment/PAY-11.dsl.json",
+      "module": "payment",
+      "description": "结果页返回订单列表",
+      "requires_login": true,
+      "fixtures": [
+        "已发布商品（本地已有）"
+      ],
+      "automatable": "partial",
+      "issue": "214",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-01",
+      "file": "seller/SELL-01.dsl.json",
+      "module": "seller",
+      "description": "卖家数据主页加载-数据概览（收入/订单/功能卡片）",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已登录）",
+        "需卖家数据：周收入、订单概览数字"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-02",
+      "file": "seller/SELL-02.dsl.json",
+      "module": "seller",
+      "description": "卖家主页下拉刷新数据",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已登录，已在卖家模式）",
+        "需卖家数据"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-03",
+      "file": "seller/SELL-03.dsl.json",
+      "module": "seller",
+      "description": "切换为买家模式-从卖家首页切回买家",
+      "requires_login": true,
+      "fixtures": [
+        "买家账号（已登录）"
+      ],
+      "automatable": "yes",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-04",
+      "file": "seller/SELL-04.dsl.json",
+      "module": "seller",
+      "description": "商品管理列表-在售商品展示",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 在售商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-05",
+      "file": "seller/SELL-05.dsl.json",
+      "module": "seller",
+      "description": "新建商品-表单填写发布",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-06",
+      "file": "seller/SELL-06.dsl.json",
+      "module": "seller",
+      "description": "编辑商品-修改名称后保存",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 在售商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-07",
+      "file": "seller/SELL-07.dsl.json",
+      "module": "seller",
+      "description": "卖家订单列表-按状态筛选",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：多状态订单"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-09",
+      "file": "seller/SELL-09.dsl.json",
+      "module": "seller",
+      "description": "统计数据-周收入图表",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需后端造：周收入数据"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-10",
+      "file": "seller/SELL-10.dsl.json",
+      "module": "seller",
+      "description": "自动回复设置-配置保存",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-11",
+      "file": "seller/SELL-11.dsl.json",
+      "module": "seller",
+      "description": "时间管理-设置在线状态",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-12",
+      "file": "seller/SELL-12.dsl.json",
+      "module": "seller",
+      "description": "收款账户入口-跳转 ConnectAccountPage",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-13",
+      "file": "seller/SELL-13.dsl.json",
+      "module": "seller",
+      "description": "售后审核-审核买家申请",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 waitAudit 售后申请"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-14",
+      "file": "seller/SELL-14.dsl.json",
+      "module": "seller",
+      "description": "商品上架-已下架商品重新上架",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 已下架商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-15",
+      "file": "seller/SELL-15.dsl.json",
+      "module": "seller",
+      "description": "商品下架-在售商品下架",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 在售商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-16",
+      "file": "seller/SELL-16.dsl.json",
+      "module": "seller",
+      "description": "商品删除-删除确认对话框（脚本取消保护数据）",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 已下架商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "SELL-17",
+      "file": "seller/SELL-17.dsl.json",
+      "module": "seller",
+      "description": "已下架商品无编辑入口-只有上架和删除",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号（已在卖家模式）",
+        "需造：≥1 已下架商品"
+      ],
+      "automatable": "partial",
+      "issue": "218",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-01",
+      "file": "wallet/WAL-01.dsl.json",
+      "module": "wallet",
+      "description": "钱包页加载-余额/待结算/累计收入",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号已登录（需切卖家模式）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-02",
+      "file": "wallet/WAL-02.dsl.json",
+      "module": "wallet",
+      "description": "余额=0-提款按钮禁用",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 bound=true + 余额=0（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-03",
+      "file": "wallet/WAL-03.dsl.json",
+      "module": "wallet",
+      "description": "余额>0-提款按钮可点弹对话框",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 bound=true + 余额>0（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-04",
+      "file": "wallet/WAL-04.dsl.json",
+      "module": "wallet",
+      "description": "刷新按钮-重拉余额与交易",
+      "requires_login": true,
+      "fixtures": [
+        "卖家账号已登录"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-05",
+      "file": "wallet/WAL-05.dsl.json",
+      "module": "wallet",
+      "description": "加载失败-错误信息+重试",
+      "requires_login": true,
+      "fixtures": [
+        "网络离线或后端错误（需模拟）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-06",
+      "file": "wallet/WAL-06.dsl.json",
+      "module": "wallet",
+      "description": "交易记录列表加载",
+      "requires_login": true,
+      "fixtures": [
+        "有交易记录的钱包（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-07",
+      "file": "wallet/WAL-07.dsl.json",
+      "module": "wallet",
+      "description": "筛选-全部/收入/支出",
+      "requires_login": true,
+      "fixtures": [
+        "多种交易类型（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-08",
+      "file": "wallet/WAL-08.dsl.json",
+      "module": "wallet",
+      "description": "日期范围筛选",
+      "requires_login": true,
+      "fixtures": [
+        "跨日期交易记录（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-09",
+      "file": "wallet/WAL-09.dsl.json",
+      "module": "wallet",
+      "description": "清除筛选-恢复全部",
+      "requires_login": true,
+      "fixtures": [
+        "足够交易记录（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-10",
+      "file": "wallet/WAL-10.dsl.json",
+      "module": "wallet",
+      "description": "触底加载更多",
+      "requires_login": true,
+      "fixtures": [
+        "记录≥pageSize（需造大量流水）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-11",
+      "file": "wallet/WAL-11.dsl.json",
+      "module": "wallet",
+      "description": "无记录空态",
+      "requires_login": true,
+      "fixtures": [
+        "无交易记录账号（需造空账号）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-12",
+      "file": "wallet/WAL-12.dsl.json",
+      "module": "wallet",
+      "description": "点击交易记录-底部弹详情",
+      "requires_login": true,
+      "fixtures": [
+        "有交易记录（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-13",
+      "file": "wallet/WAL-13.dsl.json",
+      "module": "wallet",
+      "description": "交易状态展示-completed/pending/failed",
+      "requires_login": true,
+      "fixtures": [
+        "多状态交易记录（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-14",
+      "file": "wallet/WAL-14.dsl.json",
+      "module": "wallet",
+      "description": "提款弹窗-显示可用余额",
+      "requires_login": true,
+      "fixtures": [
+        "bound=true + 余额>0（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-15",
+      "file": "wallet/WAL-15.dsl.json",
+      "module": "wallet",
+      "description": "提款金额为空/非数字-提示",
+      "requires_login": true,
+      "fixtures": [
+        "bound=true + 余额>0（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-16",
+      "file": "wallet/WAL-16.dsl.json",
+      "module": "wallet",
+      "description": "提款金额超余额-提示",
+      "requires_login": true,
+      "fixtures": [
+        "bound=true + 具体余额（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-17",
+      "file": "wallet/WAL-17.dsl.json",
+      "module": "wallet",
+      "description": "提款成功-Toast+余额刷新",
+      "requires_login": true,
+      "fixtures": [
+        "bound=true + 余额>0 + 真实支付接口（需真实环境）"
+      ],
+      "automatable": "no",
+      "issue": "344",
+      "verified": "脚本已生成（automatable=no：外部依赖/未实现，不纳入自动跑批）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-18",
+      "file": "wallet/WAL-18.dsl.json",
+      "module": "wallet",
+      "description": "提款失败-未绑定账户-跳收款页",
+      "requires_login": true,
+      "fixtures": [
+        "卖家 bound=false（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
+    },
+    {
+      "id": "WAL-19",
+      "file": "wallet/WAL-19.dsl.json",
+      "module": "wallet",
+      "description": "提款失败-其他错误-显示信息",
+      "requires_login": true,
+      "fixtures": [
+        "bound=true + 后端业务错误（需造）"
+      ],
+      "automatable": "partial",
+      "issue": "344",
+      "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
+      "assertions": []
     }
   ]
 }
