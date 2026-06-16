@@ -285,6 +285,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chat_unknown_message => '[不明なメッセージ]';
 
   @override
+  String get chat_unsupported_message => 'このメッセージはまだ表示できません';
+
+  @override
   String get chat_unknown_user => '不明なユーザー';
 
   @override
@@ -322,6 +325,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chat_expand => '展開する';
+
+  @override
+  String get chat_summary_hidden => 'この要約は生成に失敗したため非表示にしました';
 
   @override
   String get chat_admin_connection_error => 'システム管理者に接続できません';

@@ -335,6 +335,8 @@ class ProductEditState extends Equatable {
         selectedImagePaths ?? this.selectedImagePaths,
         selectedDetailImagePaths ?? this.selectedDetailImagePaths,
         initialFormData ?? this.initialFormData,
+        uploadedImageUrls ?? this.uploadedImageUrls,
+        (product ?? this.product)?.images ?? '',
       ),
     );
   }
@@ -344,8 +346,13 @@ class ProductEditState extends Equatable {
     ProductFormData currentFormData,
     List<String> currentImagePaths,
     List<String> currentDetailImagePaths,
-    ProductFormData? initialData,
-  ) {
+    ProductFormData? initialData, [
+    // #380: 已上传图（uploadedImageUrls）的删除不会进 selectedImagePaths，
+    // 原逻辑只看 currentImagePaths.isNotEmpty 会漏判 → 删已上传图后表单不 dirty →
+    // 保存不触发 → 删除丢失。这里把 uploadedImageUrls 与原始 product.images 比较纳入。
+    List<String> currentUploadedUrls = const [],
+    String originalImagesCsv = '',
+  ]) {
     // 对于新建商品（没有初始数据），只要用户进行了任何操作就算有变更
     if (initialData == null) {
       return currentFormData.name.trim().isNotEmpty ||
@@ -360,6 +367,18 @@ class ProductEditState extends Equatable {
               currentFormData.variants.every((v) => v.price > 0));
     }
     
+    // #380: 已上传图删除检测——比较当前 uploadedImageUrls 与原始 product.images。
+    // 用纯 Dart 列表比较（不引入 foundation listEquals）。
+    final normalizedUploaded =
+        currentUploadedUrls.where((s) => s.trim().isNotEmpty).toList();
+    final normalizedOriginal = originalImagesCsv
+        .split(',')
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
+    final uploadedImagesChanged = normalizedUploaded.length !=
+            normalizedOriginal.length ||
+        !_listEquals(normalizedUploaded, normalizedOriginal);
+
     // 对于编辑商品，比较与初始状态的差异
     return currentFormData.name != initialData.name ||
            currentFormData.description != initialData.description ||
@@ -369,7 +388,17 @@ class ProductEditState extends Equatable {
            currentFormData.buyerInfoItems.length != initialData.buyerInfoItems.length ||
            currentFormData.successCases.length != initialData.successCases.length ||
            currentImagePaths.isNotEmpty ||
-           currentDetailImagePaths.isNotEmpty;
+           currentDetailImagePaths.isNotEmpty ||
+           uploadedImagesChanged;
+  }
+
+  /// #380: 顺序敏感的字符串列表相等比较（避免引入 foundation.listEquals）
+  static bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 }
 

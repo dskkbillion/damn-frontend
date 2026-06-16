@@ -127,10 +127,16 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             },
           );
 
-          final opponent = chatRoom.participants.firstWhere(
-            (p) => p.id != currentUserParticipant.id,
-            orElse: () => chatRoom.participants.last,
-          );
+          // #378: 找不到「不是自己」的参与者时不再兜底到 participants.last
+          // （自聊天场景会取到错误账户），而是置 null，让 UI 显示「未知用户」。
+          final opponentMatches = chatRoom.participants
+              .where((p) => p.id != currentUserParticipant.id)
+              .toList();
+          final opponent = opponentMatches.isNotEmpty ? opponentMatches.first : null;
+          if (opponent == null) {
+            AppLogger.d('[ChatRoom] WARNING: 找不到对方参与者（疑似自聊天），room=${chatRoom.id}, '
+                'participants=${chatRoom.participants.map((p) => 'id=${p.id}').join(',')}');
+          }
 
           // Set these values immediately
           setState(() {
@@ -177,7 +183,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           }
 
           AppLogger.d('[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
-          AppLogger.d('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent.nickName}');
+          AppLogger.d('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent?.nickName}');
           AppLogger.d('[ChatRoom] Final determination - isSeller: $isSeller');
           _messageListCubit.setSellerAndConsultationMode(
             isSeller: isSeller,
@@ -186,7 +192,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
           AppLogger.d('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
           AppLogger.d('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
-          AppLogger.d('DEBUG: Opponent participant: id=${opponent.id}, type=${opponent.type}');
+          AppLogger.d('DEBUG: Opponent participant: id=${opponent?.id}, type=${opponent?.type}');
           AppLogger.d('DEBUG: Light consultation mode enabled, isSeller: $isSeller');
         },
         orElse: () {},
@@ -521,11 +527,12 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                             },
                           );
                           
-                          final opponent = chatRoom.participants.firstWhere(
-                            (p) => p.id != currentUserParticipant.id,
-                            orElse: () => chatRoom.participants.last,
-                          );
-                          
+                          // #378: 同初始化处，找不到对方时置 null 而非兜底到错误账户
+                          final opponentMatches = chatRoom.participants
+                              .where((p) => p.id != currentUserParticipant.id)
+                              .toList();
+                          final opponent = opponentMatches.isNotEmpty ? opponentMatches.first : null;
+
                           // Update current user info
                           // Use participant ID (not referId) for message comparison
                           _currentUserParticipantId = currentUserParticipant.id;

@@ -6,21 +6,15 @@
 
 1. **Created ChatRoomPageRefactored** (`chat_room_page_refactored.dart`)
    - Integrated flutter_chat_ui library
-   - Used ChatMessageAdapter for entity conversion
    - Connected with new Cubits architecture
    - Preserved all existing functionality
 
-2. **Custom Allocate Message Bubble** (`custom_allocate_bubble.dart`)
-   - Custom rendering for allocate message type
-   - Matches existing design
-   - Integrated with product navigation
-
-3. **Chat Theme Configuration** (`chat_theme_config.dart`)
+2. **Chat Theme Configuration** (`chat_theme_config.dart`)
    - Created DefaultChatTheme matching app colors
    - Configured bubble colors, text styles, spacing
    - Support for dark theme (optional)
 
-4. **Custom Input Bar** (`custom_input_bar.dart`)
+3. **Custom Input Bar** (`custom_input_bar.dart`)
    - Migrated from MessageInputBar
    - Voice recording functionality
    - Image picker integration
@@ -135,7 +129,6 @@ context.push('/chat/refactored/$chatId');
 
 ### New Files
 - `lib/features/chat/presentation/pages/chat_room_page_refactored.dart`
-- `lib/features/chat/presentation/widgets/custom_allocate_bubble.dart`
 - `lib/features/chat/presentation/widgets/custom_input_bar.dart`
 - `lib/features/chat/presentation/theme/chat_theme_config.dart`
 - `lib/features/chat/data/datasources/i_chat_local_data_source.dart`

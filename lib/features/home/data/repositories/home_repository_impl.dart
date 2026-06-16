@@ -26,10 +26,10 @@ class HomeRepositoryImpl implements IHomeRepository {
   });
 
   @override
-  Future<Either<Failure, HomePageData>> getHomePageData() async {
+  Future<Either<Failure, HomePageData>> getHomePageData({int? seed}) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteData = await remoteDataSource.getHomePageData();
+        final remoteData = await remoteDataSource.getHomePageData(seed: seed);
         localDataSource.cacheHomePageData(remoteData);
         // 临时解决方案：直接转换为同类型数据
         final homePageData = HomePageData(
@@ -86,10 +86,10 @@ class HomeRepositoryImpl implements IHomeRepository {
   }
 
   @override
-  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit) async {
+  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit, {int? seed}) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteData = await remoteDataSource.getHomeFeed(page, limit);
+        final remoteData = await remoteDataSource.getHomeFeed(page, limit, seed: seed);
         // 转换为领域实体
         final feedItems = remoteData.map((item) => HomeFeedItem(
           id: item.id.toString(),

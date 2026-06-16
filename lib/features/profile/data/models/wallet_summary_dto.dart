@@ -9,6 +9,9 @@ class WalletSummaryDto {
   final bool hasPaymentPassword;
   final int recentTransactionsCount;
 
+  /// 是否已绑定并激活 Stripe 收款账户（来自卖家余额接口）。默认 true 兼容旧来源。
+  final bool bound;
+
   const WalletSummaryDto({
     required this.balance,
     this.pendingAmount,
@@ -16,7 +19,21 @@ class WalletSummaryDto {
     this.hasBankCard = false,
     this.hasPaymentPassword = false,
     this.recentTransactionsCount = 0,
+    this.bound = true,
   });
+
+  /// 从已映射好的 WalletSummary 实体构造（卖家余额接口走此路径，单位换算已在上游完成）。
+  factory WalletSummaryDto.fromWalletSummary(WalletSummary summary) {
+    return WalletSummaryDto(
+      balance: summary.balance,
+      pendingAmount: summary.pendingAmount,
+      totalIncome: summary.totalIncome,
+      hasBankCard: summary.hasBankCard,
+      hasPaymentPassword: summary.hasPaymentPassword,
+      recentTransactionsCount: summary.recentTransactionsCount,
+      bound: summary.bound,
+    );
+  }
 
   /// 从 JSON 映射创建 WalletSummaryDto 实例
   factory WalletSummaryDto.fromJson(Map<String, dynamic> json) {
@@ -39,6 +56,7 @@ class WalletSummaryDto {
       hasBankCard: hasBankCard,
       hasPaymentPassword: hasPaymentPassword,
       recentTransactionsCount: recentTransactionsCount,
+      bound: bound,
     );
   }
 

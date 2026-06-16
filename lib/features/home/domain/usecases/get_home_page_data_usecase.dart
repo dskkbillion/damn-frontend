@@ -19,4 +19,9 @@ class GetHomePageDataUseCase implements UseCase<HomePageData, NoParams> {
   Future<Either<Failure, HomePageData>> call(NoParams params) async {
     return await repository.getHomePageData();
   }
+
+  /// #384 带随机排序种子的首页数据获取（下拉刷新时用，传新 seed 换序）。
+  Future<Either<Failure, HomePageData>> callWithSeed({int? seed}) async {
+    return await repository.getHomePageData(seed: seed);
+  }
 }

@@ -459,23 +459,35 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         ));
       }
     } else {
-      // 删除主图片
-      final currentPaths = List<String>.from(state.selectedImagePaths);
-      if (event.index < currentPaths.length) {
-        currentPaths.removeAt(event.index);
-        
-        // 同时需要删除对应的已上传URL
-        final currentUrls = List<String>.from(state.uploadedImageUrls);
-        if (event.index < currentUrls.length) {
-          currentUrls.removeAt(event.index);
+      // 删除主图片。
+      // #380: UI _buildImageGrid 把图片渲染为合并列表
+      //   allImages = [...uploadedImageUrls, ...selectedImagePaths]
+      // 删除按钮传的是【合并列表 index】。原实现错误地用该 index 去
+      // selectedImagePaths 判断/删除，而已上传图加载后 selectedImagePaths 为空，
+      // 导致已上传图（在合并列表前半段）的删除被守卫直接拦截，点 X 无反应。
+      // 这里按合并列表语义正确映射 index。
+      final uploadedUrls = List<String>.from(state.uploadedImageUrls);
+      final selectedPaths = List<String>.from(state.selectedImagePaths);
+
+      if (event.index < uploadedUrls.length) {
+        // 删除已上传图（网络 URL）。这不是上传进度事件，不动 uploadedCount/totalUploadCount。
+        uploadedUrls.removeAt(event.index);
+        emit(state.copyWith(uploadedImageUrls: uploadedUrls));
+      } else {
+        // 映射到新选择的本地图片
+        final localIndex = event.index - uploadedUrls.length;
+        if (localIndex >= 0 && localIndex < selectedPaths.length) {
+          selectedPaths.removeAt(localIndex);
+          emit(state.copyWith(
+            selectedImagePaths: selectedPaths,
+            uploadedCount: math.max(0, state.uploadedCount - 1),
+            totalUploadCount: math.max(0, state.totalUploadCount - 1),
+          ));
+        } else {
+          AppLogger.d('[#380] 删除图片 index 越界: ${event.index} '
+              '(uploaded=${uploadedUrls.length}, selected=${selectedPaths.length})');
+          return;
         }
-        
-        emit(state.copyWith(
-          selectedImagePaths: currentPaths,
-          uploadedImageUrls: currentUrls,
-          uploadedCount: math.max(0, state.uploadedCount - 1), // 减少已上传计数
-          totalUploadCount: math.max(0, state.totalUploadCount - 1), // 减少总计数
-        ));
       }
     }
   }
@@ -507,25 +519,30 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         ));
       }
     } else {
-      // 设置主图片的主图（重新排序）
-      final currentPaths = List<String>.from(state.selectedImagePaths);
-      final currentUrls = List<String>.from(state.uploadedImageUrls);
-      
-      if (event.index < currentPaths.length && event.index > 0) {
-        // 将选中的图片移动到第一位
-        final selectedPath = currentPaths.removeAt(event.index);
-        currentPaths.insert(0, selectedPath);
-        
-        // 同步URL列表
-        if (event.index < currentUrls.length) {
-          final selectedUrl = currentUrls.removeAt(event.index);
-          currentUrls.insert(0, selectedUrl);
-        }
-        
-        emit(state.copyWith(
-          selectedImagePaths: currentPaths,
-          uploadedImageUrls: currentUrls,
-        ));
+      // 设置主图（重新排序到合并列表首位）。
+      // #393(#380 孪生): UI 预览页传的是合并列表 [...uploadedImageUrls, ...selectedImagePaths]
+      // 的 index。原实现用该 index 去 selectedImagePaths 判断，已上传图（前半段）设主图
+      // 因 index >= selectedImagePaths.length 被守卫拦截而失效。这里按合并语义映射。
+      final uploadedUrls = List<String>.from(state.uploadedImageUrls);
+
+      if (event.index <= 0) {
+        // index 0 已是主图，无需重排
+        return;
+      }
+
+      if (event.index < uploadedUrls.length) {
+        // 已上传图：在 uploadedImageUrls 内移到首位（合并列表全局首位）
+        final selectedUrl = uploadedUrls.removeAt(event.index);
+        uploadedUrls.insert(0, selectedUrl);
+        emit(state.copyWith(uploadedImageUrls: uploadedUrls));
+      } else {
+        // 新选本地图：它在合并列表后半段，前面还有 uploadedImageUrls，
+        // 无法在保持"已上传/待上传"两列表分离的前提下成为全局首位。
+        // 该场景需先保存图片再设主图，这里不做跨列表迁移，记录日志。
+        final localIndex = event.index - uploadedUrls.length;
+        AppLogger.d('[#393] 新选本地图设主图暂不支持（需先保存）: '
+            'mergedIndex=${event.index}, localIndex=$localIndex');
+        return;
       }
     }
   }

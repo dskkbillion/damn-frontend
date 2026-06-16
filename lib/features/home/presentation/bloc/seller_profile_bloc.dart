@@ -85,6 +85,8 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               collectNum: currentState.seller!.collectNum,
               authenticated: currentState.seller!.authenticated,
               evaluates: currentState.seller!.evaluates,
+              // #383 保留在线状态
+              onlineFlag: currentState.seller!.onlineFlag,
             )
           : null;
 
@@ -166,6 +168,8 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
               collectNum: currentState.seller!.collectNum,
               authenticated: currentState.seller!.authenticated,
               evaluates: currentState.seller!.evaluates,
+              // #383 保留在线状态
+              onlineFlag: currentState.seller!.onlineFlag,
             )
           : null;
       

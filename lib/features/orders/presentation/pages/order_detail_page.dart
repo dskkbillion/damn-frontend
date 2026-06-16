@@ -80,8 +80,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('🔥🔥🔥 [买家OrderDetailPage] 正在构建页面，订单ID: ${widget.orderId} 🔥🔥🔥');
-    
     if (_orderIdInt == null) {
       return Scaffold(
         appBar: AppBar(title: Text(AppLocalizations.of(context).order_detail_error)),
@@ -104,8 +102,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         appBar: AppBar(
           title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
             builder: (context, state) {
-              final extractedOrder = _extractOrder(state);
-              return Text(extractedOrder != null ? AppLocalizations.of(context).order_detail_title_with_id(extractedOrder.id) : AppLocalizations.of(context).order_detail_title);
+              return Text(AppLocalizations.of(context).order_detail_title);
             },
           ),
         ),
@@ -168,7 +165,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             child: OrderPaymentMethodPage(order: state.order),
           ),
         ),
-      );
+      ).then((_) {
+        // #373 支付流程返回后（无论成功/取消/失败）重新拉取订单状态，
+        // 避免详情页停留在旧的 awaitingPayment（后端已流转到 awaitingConfirmation），
+        // 否则用户被迫再次付款（资损）。LoadOrderDetail 幂等，多拉一次无害。
+        if (_orderIdInt != null && mounted) {
+          bloc.add(LoadOrderDetail(orderId: _orderIdInt!));
+        }
+      });
     }
   }
 
@@ -269,8 +273,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 构建订单详情内容
   Widget _buildOrderDetailContent(BuildContext context, Order order) {
-    print('🎨🎨🎨 [买家OrderDetailPage] _buildOrderDetailContent 被调用，订单ID: ${order.id}, 状态: ${order.state} 🎨🎨🎨');
-    
     return Column(
       children: [
         // 时间轴头部

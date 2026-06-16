@@ -39,8 +39,12 @@ class OrderItemCardActionButtons extends StatelessWidget {
 
     switch (order.state) {
       case OrderStatus.awaitingPayment:
-        if (onCancel != null) buttons.add(_buildButton(context, l10n.order_action_cancel, onCancel!));
-        if (onPay != null) buttons.add(_buildButton(context, l10n.order_action_go_pay, onPay!, isPrimary: true));
+        final isTimedOut = order.autoCancelTime != null &&
+            order.autoCancelTime!.isBefore(DateTime.now());
+        if (!isTimedOut) {
+          if (onCancel != null) buttons.add(_buildButton(context, l10n.order_action_cancel, onCancel!));
+          if (onPay != null) buttons.add(_buildButton(context, l10n.order_action_go_pay, onPay!, isPrimary: true));
+        }
         break;
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingSubmission:

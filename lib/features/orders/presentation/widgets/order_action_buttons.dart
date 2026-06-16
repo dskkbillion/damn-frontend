@@ -28,35 +28,41 @@ class OrderDetailActionButtons extends StatelessWidget {
     // 使用 order_status.dart 中定义的实际枚举值
     switch (order.state) {
       case OrderStatus.awaitingPayment: // 待付款
-        buttons.add(_buildButton(context, l10n.order_action_cancel, () {
-          dialogs.showConfirmationDialog(
-            context: context,
-            title: l10n.order_confirm_cancel_title,
-            content: l10n.order_confirm_cancel_content,
-            onConfirm: () {
-              context.read<OrderDetailBloc>().add(
-                OrderActionRequested(
-                  action: OrderAction.cancel,
-                  orderId: order.id.toString()
-                )
+        // #374 超时未付款订单：后端 autoCancel 已生效但状态尚未刷新到 canceled 时，
+        // 不再渲染「取消订单 / 去支付」按钮（与列表页 order_item_card_action_buttons.dart 同款守卫）。
+        final isTimedOut = order.autoCancelTime != null &&
+            order.autoCancelTime!.isBefore(DateTime.now());
+        if (!isTimedOut) {
+          buttons.add(_buildButton(context, l10n.order_action_cancel, () {
+            dialogs.showConfirmationDialog(
+              context: context,
+              title: l10n.order_confirm_cancel_title,
+              content: l10n.order_confirm_cancel_content,
+              onConfirm: () {
+                context.read<OrderDetailBloc>().add(
+                  OrderActionRequested(
+                    action: OrderAction.cancel,
+                    orderId: order.id.toString()
+                  )
+                );
+              },
+            );
+          }));
+          primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
+            builder: (context, state) {
+              final isLoading = state is OrderDetailPaymentLoading;
+              return _buildButton(
+                context,
+                isLoading ? l10n.order_action_processing : l10n.order_action_go_pay,
+                isLoading ? null : () {
+                  context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
+                },
+                isPrimary: true,
+                isLoading: isLoading,
               );
             },
           );
-        }));
-        primaryButton = BlocBuilder<OrderDetailBloc, OrderDetailState>(
-          builder: (context, state) {
-            final isLoading = state is OrderDetailPaymentLoading;
-            return _buildButton(
-              context,
-              isLoading ? l10n.order_action_processing : l10n.order_action_go_pay,
-              isLoading ? null : () {
-                context.read<OrderDetailBloc>().add(GoToPayment(orderId: order.id));
-              },
-              isPrimary: true,
-              isLoading: isLoading,
-            );
-          },
-        );
+        }
         break;
 
       // 待提交状态 - 需要提交材料
@@ -95,7 +101,9 @@ class OrderDetailActionButtons extends StatelessWidget {
         }));
         break;
 
-      // 待发货/待交付，允许提醒和平台介入
+      // 待发货/待交付，允许提醒发货
+      // #375 关联：平台介入(applyingForMediation)为 disabled 功能，且正确触发应基于
+      // 售后单(refundId)而非订单(order.id)，移除从订单详情直接跳转的错误入口。
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingStart:
         buttons.add(_buildButton(context, l10n.order_action_remind_delivery, () {
@@ -103,18 +111,13 @@ class OrderDetailActionButtons extends StatelessWidget {
             SnackBar(content: Text(l10n.order_snackbar_reminded_delivery))
           );
         }));
-        buttons.add(_buildButton(context, l10n.order_action_platform_intervention, () {
-          _navigateToPlatformIntervention(context);
-        }));
         break;
 
       case OrderStatus.awaitingConfirmation: // 待收货
         buttons.add(_buildButton(context, l10n.order_action_view_delivery, () {
           dialogs.showDeliveryDialog(context);
         }));
-        buttons.add(_buildButton(context, l10n.order_action_platform_intervention, () {
-          _navigateToPlatformIntervention(context);
-        }));
+        // #375 关联：移除「平台介入」错误入口（disabled 功能 + 应基于 refundId 而非 order.id）
         buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, () {
           _navigateToAfterSales(context);
         }));
@@ -310,31 +313,6 @@ class OrderDetailActionButtons extends StatelessWidget {
     }
   }
 
-  void _navigateToPlatformIntervention(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    try {
-      Future.delayed(const Duration(milliseconds: 50), () {
-        if (context.mounted) {
-          try {
-            context.push('/platform-intervention/${order.id}', extra: {
-              'orderSn': order.orderSn,
-            });
-            print('Navigate to platform intervention for order ID: ${order.id}');
-          } catch (e) {
-            print('Error navigating to platform intervention: $e');
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.order_snackbar_nav_failed(e.toString()))),
-              );
-            }
-          }
-        }
-      });
-    } catch (e) {
-      print('Error in _navigateToPlatformIntervention: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.order_snackbar_operation_failed(e.toString()))),
-      );
-    }
-  }
+  // #375 关联：原 _navigateToPlatformIntervention 方法已随「平台介入」入口移除而删除
+  // （平台介入为 disabled 功能，正确触发应基于售后单 refundId 而非订单 order.id）。
 }

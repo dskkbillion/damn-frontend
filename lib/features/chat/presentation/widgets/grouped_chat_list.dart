@@ -6,9 +6,25 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 
 import '../../domain/entities/chat_room.dart';
+import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/participant.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import 'chat_list_item.dart';
+import 'ai_summary_message_bubble.dart'; // #377 复用 summary 安全清洗
+import 'chat_message_bubble.dart'; // #377 复用 isAiSummaryMessage 前缀表
+
+/// #377：会话列表预览安全清洗——allocate(AI summary) 不能直渲原始 context
+/// （会泄漏 **User Profile Construction** 等内部 prompt 标记）。命中泄漏前缀显示
+/// 中性占位，否则无条件 strip markdown 标记，与 AiSummaryMessageBubble 一致。
+String summaryPreviewText(ChatMessage message, AppLocalizations s) {
+  if (ChatMessageBubble.isSummaryType(message.type)) {
+    if (ChatMessageBubble.isAiSummaryMessage(message.context)) {
+      return s.chat_summary_hidden;
+    }
+    return AiSummaryMessageBubble.stripMarkdownMarkers(message.context);
+  }
+  return message.context;
+}
 
 /// 按卖家分组的聊天列表组件
 class GroupedChatList extends StatelessWidget {
@@ -530,7 +546,7 @@ class ProductChatItem extends StatelessWidget {
             ),
           if (chatRoom.lastMessage != null)
             Text(
-              chatRoom.lastMessage!.context,
+              summaryPreviewText(chatRoom.lastMessage!, s),
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -970,7 +986,7 @@ class BuyerChatItem extends StatelessWidget {
       ),
       subtitle: chatRoom.lastMessage != null
           ? Text(
-              chatRoom.lastMessage!.context,
+              summaryPreviewText(chatRoom.lastMessage!, s),
               style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

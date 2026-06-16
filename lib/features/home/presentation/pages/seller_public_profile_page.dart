@@ -290,6 +290,32 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                               color: AppColors.textSecondary,
                             ),
                           ),
+                          // #383 显示卖家在线状态（进页面时从后端实时拉取）
+                          if (seller?.onlineFlag != null) ...[
+                            const SizedBox(height: AppDimensions.spacingXs),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: seller!.onlineFlag! ? AppColors.success : AppColors.textTertiary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  seller.onlineFlag!
+                                      ? AppLocalizations.of(context).seller_profile_seller_mode_online
+                                      : AppLocalizations.of(context).seller_profile_seller_mode_offline,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: seller.onlineFlag! ? AppColors.success : AppColors.textTertiary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: AppDimensions.spacingSm),
                           Text(
                             seller?.remarks ?? AppLocalizations.of(context).seller_profile_no_description,

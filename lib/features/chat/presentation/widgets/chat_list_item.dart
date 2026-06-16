@@ -8,6 +8,8 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
 import '../../domain/constants/message_type.dart';
+import 'ai_summary_message_bubble.dart'; // #377 复用 summary 安全清洗，避免会话列表预览泄漏内部标记
+import 'chat_message_bubble.dart'; // #377 复用 isAiSummaryMessage 前缀表
 
 class ChatListItem extends StatefulWidget { // Change to StatefulWidget for initState
   final ChatRoom chatRoom;
@@ -66,9 +68,21 @@ class _ChatListItemState extends State<ChatListItem> {
     
     if (message == null) return '';
     // Limit preview length for text messages
-    const maxLength = 30; 
-    String contextPreview = message.context.length > maxLength 
-        ? '${message.context.substring(0, maxLength)}...' 
+    const maxLength = 30;
+
+    // #377：allocate（AI summary）预览不能直接渲染原始 context（含 **User Profile
+    // Construction** 等内部 prompt 标记会泄漏）。命中泄漏前缀显示中性占位；否则
+    // 无条件 strip markdown 标记后再截断，与 AiSummaryMessageBubble 一致。
+    if (ChatMessageBubble.isSummaryType(message.type)) {
+      if (ChatMessageBubble.isAiSummaryMessage(message.context)) {
+        return s.chat_summary_hidden;
+      }
+      final cleaned = AiSummaryMessageBubble.stripMarkdownMarkers(message.context);
+      return cleaned.length > maxLength ? '${cleaned.substring(0, maxLength)}...' : cleaned;
+    }
+
+    String contextPreview = message.context.length > maxLength
+        ? '${message.context.substring(0, maxLength)}...'
         : message.context;
 
     switch (message.type) {

@@ -1,11 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/events/event_bus.dart';
-import '../../../../../core/usecases/usecase.dart';
 import '../../../../../core/utils/app_logger.dart';
 import '../../data/datasources/home_local_data_source.dart';
 import '../../domain/entities/banner.dart';
@@ -27,6 +27,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   static const int defaultLimit = 10;
   int _currentPage = 1;
   StreamSubscription<LocaleChangedEvent>? _localeChangedSubscription;
+
+  /// #384 随机排序种子生成器
+  final Random _random = Random();
+
+  /// #384 生成新的随机排序种子（毫秒时间戳 + 随机扰动，避免快速连刷碰撞）。
+  /// MySQL RAND(seed) 的 seed 用正整数；控制在安全整数范围内。
+  int _generateSeed() {
+    final millis = DateTime.now().millisecondsSinceEpoch % 1000000000;
+    final jitter = _random.nextInt(1000);
+    return millis * 1000 + jitter;
+  }
 
   HomeBloc({
     required this.getHomePageData,
@@ -82,8 +93,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(const HomeLoading());
     }
 
-    // Step 2: 请求远程数据
-    final result = await getHomePageData(NoParams());
+    // Step 2: 请求远程数据（#384 带随机排序 seed）
+    final seed = _generateSeed();
+    final result = await getHomePageData.callWithSeed(seed: seed);
 
     result.fold(
       (failure) {
@@ -102,6 +114,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           feedItems: homePageData.feedItems,
           hasReachedMax: homePageData.feedItems.length < defaultLimit,
           isRefreshing: false,
+          seed: seed,
         ));
       },
     );
@@ -122,8 +135,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         hasReachedMax: currentState.hasReachedMax,
       ));
       
-      final result = await getHomePageData(NoParams());
-      
+      // #384 下拉刷新生成【新】seed → 换一批随机顺序，让用户感知刷新
+      final seed = _generateSeed();
+      final result = await getHomePageData.callWithSeed(seed: seed);
+
       result.fold(
         (failure) => emit(HomeError(message: _mapFailureToMessage(failure))),
         (homePageData) {
@@ -133,6 +148,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             categories: homePageData.categories,
             feedItems: homePageData.feedItems,
             hasReachedMax: homePageData.feedItems.length < defaultLimit,
+            seed: seed,
           ));
         },
       );
@@ -154,8 +170,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     emit(currentState.copyWith(isLoadingMore: true));
     final nextPage = _currentPage + 1;
+    // #384 loadMore 复用首屏/刷新时的 seed，保证同一次浏览会话内分页顺序稳定（不重复/漏项）
     final result = await getHomeFeed(
-      HomeFeedParams(page: nextPage, limit: defaultLimit),
+      HomeFeedParams(page: nextPage, limit: defaultLimit, seed: currentState.seed),
     );
 
     result.fold(

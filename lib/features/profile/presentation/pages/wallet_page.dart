@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../../core/widgets/loading_indicator.dart';
 import '../../data/models/transaction_dto.dart';
@@ -399,19 +400,38 @@ class _WalletPageState extends State<WalletPage> {
             ),
             const SizedBox(height: 16),
             const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: summary.balance > 0 ? () {
-                  _showWithdrawDialog(summary.balance);
-                } : null,
-                icon: const Icon(Icons.account_balance),
-                label: Text(AppLocalizations.of(context).profile_wallet_withdraw),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            // 未绑定/未激活 Stripe 收款账户：引导绑定，提现按钮不可用（bound 来自卖家余额接口）。
+            if (!summary.bound) ...[
+              const Text(
+                '提现前需先绑定收款账户',
+                style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/seller/connect-account'),
+                  icon: const Icon(Icons.link),
+                  label: const Text('绑定收款账户'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
                 ),
               ),
-            ),
+            ] else
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: summary.balance > 0 ? () {
+                    _showWithdrawDialog(summary.balance);
+                  } : null,
+                  icon: const Icon(Icons.account_balance),
+                  label: Text(AppLocalizations.of(context).profile_wallet_withdraw),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -606,6 +626,11 @@ class _WalletPageState extends State<WalletPage> {
   void _showWithdrawDialog(double availableBalance) {
     final TextEditingController amountController = TextEditingController();
     final walletBloc = context.read<WalletBloc>();
+    // 幂等 token：绑定到「本次提现弹窗 = 一次提现意图」，在弹窗打开时生成一次并锁定。
+    // 弹窗内的任何重试（连点确认、超时后再点）都复用此 token；只有关闭后重新打开弹窗
+    // 才视为新意图换新 token。这样"同一次意图的所有重试沿用同一 token"，根治后端
+    // 60s 限频窗口外的重复打款双发（详见后端契约 docs/dev/wallet_seller_api_contract.md）。
+    final String idempotencyToken = const Uuid().v4();
 
     showDialog(
       context: context,
@@ -659,7 +684,11 @@ class _WalletPageState extends State<WalletPage> {
               }
 
               Navigator.pop(context);
-              walletBloc.add(SubmitWithdrawal(amount: amount));
+              // 复用弹窗级 token（见 _showWithdrawDialog 顶部），不在此处新生成。
+              walletBloc.add(SubmitWithdrawal(
+                amount: amount,
+                idempotencyToken: idempotencyToken,
+              ));
             },
             child: Text(AppLocalizations.of(context).profile_wallet_confirm_withdraw),
           ),

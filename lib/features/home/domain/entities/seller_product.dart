@@ -129,6 +129,8 @@ class SellerInfo {
   final int collectNum;
   final bool authenticated;
   final List<dynamic>? evaluates;
+  // #383 买家端展示卖家实时在线状态
+  final bool? onlineFlag;
 
   SellerInfo({
     required this.id,
@@ -143,6 +145,7 @@ class SellerInfo {
     this.collectNum = 0,
     this.authenticated = false,
     this.evaluates,
+    this.onlineFlag,
   });
 
   factory SellerInfo.fromJson(Map<String, dynamic> json) {
@@ -160,6 +163,7 @@ class SellerInfo {
       collectNum: (json['collectNum'] as num?)?.toInt() ?? 0,
       authenticated: authList is List && authList.isNotEmpty,
       evaluates: json['memberEvaluateNewVos'] as List?,
+      onlineFlag: json['onlineFlag'] as bool?,
     );
   }
 }

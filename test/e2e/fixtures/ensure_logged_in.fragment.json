@@ -1,0 +1,19 @@
+[
+  {
+    "_comment": "ensure_logged_in.fragment.json — 可复用「确保已登录」轻量前置片段",
+    "_note": "这是一个 steps 数组片段，供人工/workflow 参考拼接。每个完整 .dsl.json 须内联展开（mobai DSL 不支持 import）。",
+    "_design": "2026-06-16 实跑决策：HOME 系列不再每个脚本都 fresh 重启+自动登录——实测「fresh 冷启动+登录网络往返」在整段长脚本里 settle 时间不够，会断链回登录页（分步跑则成功）。改由【跑批器保证已登录前置】：跑批先跑 AUTH-01 建立 session，后续 HOME case 复用已登录态。",
+    "_precondition": "调用前提：跑批器已通过 AUTH-01 或上一条 case 使 app 处于已登录态，且当前在首页（底部 4 tab 可见）。",
+    "_behavior": "本片段不做 fresh 重启（避免冷启动登录不稳）。仅断言当前在已登录首页；若不在（误跑到登录页），assert 会 FAIL 并提示『需先跑 AUTH-01 建立登录态』。需要从登录页自动登录的场景请用 login.fragment.json。"
+  },
+  {
+    "action": "wait_for",
+    "stable": true,
+    "timeout_ms": 3000
+  },
+  {
+    "action": "assert_exists",
+    "predicate": { "text_contains": "搜索服务" },
+    "timeout_ms": 8000
+  }
+]

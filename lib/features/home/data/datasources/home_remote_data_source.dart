@@ -16,17 +16,19 @@ abstract class HomeRemoteDataSource {
   /// 调用 API 获取首页数据
   ///
   /// 返回 [HomePageDataModel] 包含轮播图、分类和首屏信息流数据
+  /// [seed] #384 随机排序种子，下拉刷新换序、分页内复用保持稳定
   /// 抛出 [ServerException] 表示服务器错误
-  Future<HomePageDataModel> getHomePageData();
+  Future<HomePageDataModel> getHomePageData({int? seed});
 
   /// 调用 API 获取信息流分页数据
   ///
   /// [page] 页码，从1开始
   /// [limit] 每页数量
+  /// [seed] #384 随机排序种子（可选）
   ///
   /// 返回 [List<HomeFeedItemModel>] 包含分页的信息流数据
   /// 抛出 [ServerException] 表示服务器错误
-  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit);
+  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit, {int? seed});
 
   /// 获取商品详情
   ///
@@ -93,12 +95,12 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   }
 
   @override
-  Future<HomePageDataModel> getHomePageData() async {
+  Future<HomePageDataModel> getHomePageData({int? seed}) async {
     // 获取轮播图数据
     final bannerResponse = await _getBanners();
 
     // 首页首屏和后续分页统一走同一套商品列表接口，避免出现“加载更多重复”的体感。
-    var productsResponse = await getHomeFeed(1, 10);
+    var productsResponse = await getHomeFeed(1, 10, seed: seed);
 
     // 商品列表为空时，再退回到推荐接口，保留新用户兜底体验。
     if (productsResponse.isEmpty) {
@@ -114,7 +116,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   }
 
   @override
-  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit) async {
+  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit, {int? seed}) async {
     final url = Uri.parse('$baseUrl/api/shop/product/list');
 
     try {
@@ -126,11 +128,13 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           'statusAudit': 'SUCCESS',
           'pageNum': page,
           'pageSize': limit,
+          // #384 随机排序种子，非空时后端 ORDER BY top DESC, RAND(seed)
+          if (seed != null) 'seed': seed,
         }),
       );
 
       AppLogger.d('首页商品列表API请求URL: $url');
-      AppLogger.d('首页商品列表API请求页码: page=$page, limit=$limit');
+      AppLogger.d('首页商品列表API请求页码: page=$page, limit=$limit, seed=$seed');
       AppLogger.d('首页商品列表API响应状态码: ${response.statusCode}');
 
       if (response.statusCode == 200) {

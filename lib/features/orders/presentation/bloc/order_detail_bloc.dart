@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart'; // #391 restartable: 新 load 取消旧 load，杜绝乱序
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
@@ -88,7 +89,9 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
         // _logisticsRepository = logisticsRepository,
         super(OrderDetailInitial()) {
 
-    on<LoadOrderDetail>(_onLoadOrderDetail);
+    // #391 restartable: 多处会触发 LoadOrderDetail(initState/状态变化/#373 支付后刷新)，
+    // 并发时旧 GET 可能晚于新 GET 到达造成 stale 覆盖；restartable 让新 load 取消旧 load。
+    on<LoadOrderDetail>(_onLoadOrderDetail, transformer: restartable());
     on<LoadOrderMaterials>(_onLoadOrderMaterials);
     on<OrderActionRequested>(_onOrderActionRequested);
     on<SubmitRequirementsSubmitted>(_onSubmitRequirementsSubmitted);
