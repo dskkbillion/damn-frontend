@@ -14,6 +14,20 @@ mobai 控制的是单台物理/模拟器设备。同一时间只能有一个 DSL
 
 ---
 
+## 约束：登录前置顺序（2026-06-16 实跑结论）
+
+`requires_login=true` 的 case（HOME 系列）**自身不再 fresh 自动登录**——实测「fresh 冷启动 + 自动登录」整段一次跑会断链（settle 时间不够），所以这些脚本改为只断言「已在已登录首页」。
+
+**因此跑批顺序硬约束：必须先跑一个能建立 session 的 case（AUTH-01），再跑 HOME 系列。** 推荐顺序：
+
+1. **AUTH-01**（登录，建立 session）—— 跑完后设备处于已登录首页
+2. HOME-01 / HOME-04 / HOME-10 / HOME-12 / HOME-13 / HOME-14（复用已登录态；每条结尾若离开首页，下一条开头的 `assert_exists{搜索服务}` 前需先回首页 tab「逛逛」）
+3. **AUTH-04 / AUTH-06 / AUTH-10 放最后**（它们会登出或停在登录页，跑完破坏已登录态）
+
+跑批器在每条 HOME case 前应确保设备在已登录首页：若上一条停在子页，先 `tap{text_contains:"逛逛"}` 回首页再继续。AUTH-10 跑完会登出——之后若还要跑 HOME，需重新跑 AUTH-01。
+
+---
+
 ## Case 分类
 
 从 `manifest.json` 读取 `automatable` 字段分三类：
@@ -24,16 +38,20 @@ mobai 控制的是单台物理/模拟器设备。同一时间只能有一个 DSL
 | `partial` | 跳过自动执行，报告中标注「需人工辅助 / fixtures 未就绪」 |
 | `no` | 跳过，报告中标注「不可自动化」并说明原因 |
 
-当前 manifest 的 automatable 分布（6 条，均已 2026-06-16 真机实跑校正，verified 字段见 manifest）：
+当前 manifest 的 automatable 分布（10 条，均已 2026-06-16 真机实跑校正，verified 字段见 manifest）：
 
-| Case | automatable | verified | 备注 |
-|------|-------------|----------|------|
-| AUTH-01 | yes | PASS | 自动跑（自动登出→登录→首页断言）|
-| AUTH-04 | yes | PASS | 自动跑（瞬态 SnackBar 断言，tap 后不可插 wait_for stable）|
-| AUTH-06 | partial | 环境受限 | 万能码不触发倒计时，跳过或只跑确定性弱断言 |
-| HOME-01 | yes | PASS | 自动跑 |
-| HOME-04 | yes | PASS | 自动跑 |
-| HOME-12 | yes | PASS | 自动跑 |
+| Case | automatable | verified | 跑批顺序建议 | 备注 |
+|------|-------------|----------|--------------|------|
+| AUTH-01 | yes | PASS | 1（先跑，建 session）| 自动登出→登录→首页断言 |
+| HOME-01 | yes | PASS | 2 | 复用已登录态 |
+| HOME-04 | yes | PASS | 2 | 复用已登录态 |
+| HOME-10 | yes | PASS | 2 | 复用已登录态（卖家主页）|
+| HOME-12 | yes | PASS | 2 | 复用已登录态 |
+| HOME-13 | yes | PASS | 2 | 复用已登录态（搜索结果）|
+| HOME-14 | yes | PASS | 2 | 复用已登录态（搜索空态）|
+| AUTH-04 | yes | PASS | 3（破坏登录态）| 瞬态 SnackBar，tap 后不可插 wait_for stable |
+| AUTH-10 | yes | PASS | 3（会登出）| 登出全链路 |
+| AUTH-06 | partial | 环境受限 | 跳过 | 万能码不触发倒计时 |
 
 ---
 

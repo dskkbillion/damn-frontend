@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "description": "DSKK E2E 测试用例清单。每条记录对应一个自包含的 .dsl.json 脚本，可由 workflow 串行调用 execute_dsl 执行。verified 字段记录真机实跑状态（2026-06-16，设备 DSKK-QA-iPhone17）。",
+  "description": "DSKK E2E 测试用例清单。每条记录对应一个自包含的 .dsl.json 脚本，可由 workflow 串行调用 execute_dsl 执行。verified 字段记录真机实跑状态（2026-06-16，设备 DSKK-QA-iPhone17）。登录前置约定：需登录的 case（requires_login=true）不再各自 fresh 自动登录（实测长脚本会断链），改由跑批器先跑 AUTH-01 建立 session 后复用已登录态，脚本开头仅断言已在已登录首页（见 fixtures/ensure_logged_in.fragment.json）。",
   "cases": [
     {
       "id": "AUTH-01",
@@ -91,6 +91,68 @@
         "assert_exists type:input（搜索框已聚焦）",
         "assert_exists text_contains:「热搜榜」"
       ]
+    },
+    {
+      "id": "AUTH-10",
+      "file": "auth/AUTH-10.dsl.json",
+      "module": "auth",
+      "description": "退出登录-已登录态走「我的」→「账号与安全」→「退出登录」→ 确认弹窗，断言回到登录页 session 已清",
+      "requires_login": true,
+      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录确保已登录态）"],
+      "automatable": "yes",
+      "issue": "209",
+      "assertions": [
+        "assert_exists text_contains:「获取验证码」（回到登录页）",
+        "assert_exists text_contains:「手机号」（session 已清，需重新登录）"
+      ],
+      "verified": "PASS（2026-06-16 真机整段重放：fresh→已登录态→我的→scroll→账号与安全→退出登录→弹窗「确定」→ 停在登录页「获取验证码」「手机号」断言通过）。注：本脚本保留 fresh+if_exists 自动登录块，因常态下 fresh 恢复已登录态走 else 分支(不触发自动登录)，无长脚本断链风险。"
+    },
+    {
+      "id": "HOME-10",
+      "file": "home/HOME-10.dsl.json",
+      "module": "home",
+      "description": "查看卖家主页-首页点第一个商品卡片进详情，点详情页卖家「已认证」标签区进入卖家主页，断言粉丝数/关注按钮/我的服务 tab",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地已有已发布商品 seed（且卖家有认证标签）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "tap {type:image, text_contains:「$」, index:0} 进商品详情",
+        "tap {text_contains:「已认证」, index:0}（卖家区是合并 StaticText「卖家名\\n已认证\\nN」，tap 该 StaticText 即触发外层 GestureDetector 跳转 /seller-profile/{id}）",
+        "assert_exists text_contains:「粉丝」（格式「N粉丝」）",
+        "assert_exists text_contains:「关注」（关注按钮，已关注时变「已关注」仍 contains）",
+        "assert_exists text_contains:「我的服务」（TabBar tab）"
+      ],
+      "verified": "PASS（2026-06-16 真机：tap StaticText「已认证」成功触发跳转卖家主页(瑞123)，「0粉丝」「关注」「我的服务」均命中）。关键：详情页卖家区「卖家名\\n已认证\\nN」是单个 StaticText 不是独立元素，但 tap 它能触发外层 GestureDetector onTap。"
+    },
+    {
+      "id": "HOME-13",
+      "file": "home/HOME-13.dsl.json",
+      "module": "home",
+      "description": "搜索商品显示结果-进搜索页输入「服务」触发搜索，断言结果页出现含价格的商品卡片",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地已有已发布商品 seed（名称含「服务」）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "assert_exists {type:image, text_contains:「$」}（搜索结果页出现含价格的商品卡片）"
+      ],
+      "verified": "PASS（2026-06-16 真机：搜「服务」返回 5 个含「服务」商品(开锁/装机/机票/留学服务等)，底部「已经到底了」）。搜索页搜索触发用 tap{text:「搜索」}按钮。"
+    },
+    {
+      "id": "HOME-14",
+      "file": "home/HOME-14.dsl.json",
+      "module": "home",
+      "description": "搜索无结果空态-输入绝不命中的词「zzzzzzqqq」触发搜索，断言出现「没有找到相关的服务」并无商品卡片",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "assert_exists text_contains:「没有找到相关的服务」（search_no_results i18n key 源码确认）",
+        "assert_not_exists {type:image, text_contains:「$」}（无商品卡片）"
+      ],
+      "verified": "PASS（2026-06-16 真机：搜「zzzzzzqqq」→ 空态文本「没有找到相关的服务」命中，无商品 image 卡片）"
     }
   ]
 }
