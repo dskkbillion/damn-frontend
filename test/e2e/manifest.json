@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "description": "DSKK E2E 测试用例清单。每条记录对应一个自包含的 .dsl.json 脚本，可由 workflow 串行调用 execute_dsl 执行。verified 字段记录真机实跑状态（2026-06-16，设备 DSKK-QA-iPhone17）。",
+  "cases": [
+    {
+      "id": "AUTH-01",
+      "file": "auth/AUTH-01.dsl.json",
+      "module": "auth",
+      "description": "手机号登录-中国大陆号码正常登录（幂等：fresh 启动后自动判断是否已登录，若已登录先登出再执行登录流程）",
+      "requires_login": false,
+      "fixtures": ["买家账号（18888888888 + 万能码 565656）"],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机整段重放：已登录态→自动登出→登录→跳首页「搜索服务」断言通过）",
+      "issue": "209",
+      "assertions": [
+        "跳转首页后可见「搜索服务」文本（SnackBar「登录成功!」约 2s 消失，不作为终态断言）"
+      ]
+    },
+    {
+      "id": "AUTH-04",
+      "file": "auth/AUTH-04.dsl.json",
+      "module": "auth",
+      "description": "无效手机号格式-输入 123 点获取验证码，断言 SnackBar 错误提示，确保未登录态（脚本开头 if_exists 自动登出）",
+      "requires_login": false,
+      "fixtures": ["未登录态（脚本开头自动确保登出）"],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：tap 后命中 SnackBar「请输入11位手机号」。关键：tap 与 assert 之间不能插 wait_for stable，否则 SnackBar(~2s 瞬态)已消失导致 FAIL）",
+      "issue": "209",
+      "assertions": [
+        "text_regex 断言「11位手机号|有效的电话号码|有效的手机」覆盖多种错误提示文案",
+        "assert_not_exists「登录成功!」"
+      ]
+    },
+    {
+      "id": "AUTH-06",
+      "file": "auth/AUTH-06.dsl.json",
+      "module": "auth",
+      "description": "发送验证码-输入有效手机号点「获取验证码」，确保未登录态（脚本开头 if_exists 自动登出）",
+      "requires_login": false,
+      "fixtures": ["未登录态（脚本开头自动确保登出）"],
+      "automatable": "partial",
+      "verified": "环境受限（2026-06-16 真机实测：万能码 565656 环境下点「获取验证码」按钮 14s 后仍是「获取验证码」，不进入 60s 倒计时——倒计时这一核心行为在测试环境不可复现）。脚本已改为确定性弱断言：点击后验证码 input 仍存在 + 无「异常」报错，不再硬断言倒计时。倒计时本身需真实短信环境才能验证。",
+      "issue": "209",
+      "assertions": [
+        "assert_exists {type:input, index:1}（验证码输入框仍在，点击未崩）",
+        "assert_not_exists text_contains:「异常」（无原始异常泄漏到 UI）"
+      ]
+    },
+    {
+      "id": "HOME-01",
+      "file": "home/HOME-01.dsl.json",
+      "module": "home",
+      "description": "首页加载-已登录态进入首页，断言搜索栏 placeholder「搜索服务」和瀑布流商品卡片渲染",
+      "requires_login": true,
+      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）", "本地已有已发布商品 seed"],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：「搜索服务」命中 [Other]，商品卡片命中 [Image]）。关键：Flutter 瀑布流商品卡片在 a11y tree 里是 XCUIElementTypeImage 不是 cell，且 banner 图也是 Image——用 {type:image, text_contains:\"$\"} 锚定含价格的商品卡片以排除 banner。",
+      "issue": "210",
+      "assertions": [
+        "assert_exists text_contains:「搜索服务」",
+        "assert_exists {type:image, text_contains:「$」}（商品卡片含价格，排除 banner）"
+      ]
+    },
+    {
+      "id": "HOME-04",
+      "file": "home/HOME-04.dsl.json",
+      "module": "home",
+      "description": "进入商品详情-首页点第一个商品卡片，断言详情页含「已发布」状态文本和「一键购买」按钮",
+      "requires_login": true,
+      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）", "本地已有已发布商品 seed"],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：tap 商品卡片→详情页「已发布」「一键购买 ($343.99)」均命中）。关键：tap 多元素匹配会 AMBIGUOUS_MATCH 报错，商品卡片定位必须带 index——用 {type:image, text_contains:\"$\", index:0} 点第一个商品（assert_exists 不报错但 tap 必须消歧）。",
+      "issue": "210",
+      "assertions": [
+        "tap {type:image, text_contains:「$」, index:0} 进入详情",
+        "assert_exists text_contains:「已发布」",
+        "assert_exists text_contains:「一键购买」"
+      ]
+    },
+    {
+      "id": "HOME-12",
+      "file": "home/HOME-12.dsl.json",
+      "module": "home",
+      "description": "搜索入口-点击首页「搜索服务」搜索栏，断言跳转搜索页并有 input 输入框 +「热搜榜」",
+      "requires_login": true,
+      "fixtures": ["已登录买家账号（脚本开头 if_exists 自动登录）"],
+      "automatable": "yes",
+      "verified": "PASS（2026-06-16 真机：搜索页 TextField「搜索服务」+ StaticText「热搜榜」均命中）。关键：「热搜榜」「搜索历史」是确定性静态文本，无需 ai_assert——改用确定性 assert_exists 更快更稳（且原 ai_assert 字段名 prompt 是错的，正确为 assert_prompt）。",
+      "issue": "210",
+      "assertions": [
+        "assert_exists type:input（搜索框已聚焦）",
+        "assert_exists text_contains:「热搜榜」"
+      ]
+    }
+  ]
+}

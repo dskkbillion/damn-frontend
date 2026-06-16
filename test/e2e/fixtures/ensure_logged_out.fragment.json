@@ -1,0 +1,58 @@
+[
+  {
+    "_comment": "ensure_logged_out.fragment.json — 可复用「确保登出」步骤片段",
+    "_note": "这是一个 steps 数组片段，供人工/workflow 参考拼接。每个完整 .dsl.json 须内联展开这些步骤（mobai DSL 不支持 import）。",
+    "_logic": "用 if_exists 检测「获取验证码」是否存在：若存在 → 当前已在登录页，无需登出；若不存在 → 当前是已登录态，走底部「我的」→ scroll 到「账号与安全」→ 进入 →「退出登录」→ 确认弹窗点「确定」→ 回登录页。",
+    "_precondition": "调用前提：app 已启动（fresh=true 之后），可能处于登录页或已登录首页任意状态",
+    "_verified": "2026-06-16 真机实跑校正：①「账号与安全」在「我的」页底部「设置」分组，进入前必须 scroll；②确认弹窗标题是「确认退出」但按钮文案是「确定」，必须用 text=确定 精确匹配点按钮，否则会误命中标题文本。"
+  },
+  {
+    "action": "if_exists",
+    "predicate": { "text_contains": "获取验证码" },
+    "then": [],
+    "else": [
+      {
+        "action": "tap",
+        "predicate": { "text_contains": "我的" }
+      },
+      {
+        "action": "wait_for",
+        "stable": true,
+        "timeout_ms": 3000
+      },
+      {
+        "action": "scroll",
+        "direction": "down",
+        "to_element": { "predicate": { "text_contains": "账号与安全" } },
+        "max_scrolls": 8
+      },
+      {
+        "action": "tap",
+        "predicate": { "text_contains": "账号与安全" }
+      },
+      {
+        "action": "wait_for",
+        "predicate": { "text_contains": "退出登录" },
+        "timeout_ms": 5000
+      },
+      {
+        "action": "tap",
+        "predicate": { "text_contains": "退出登录" }
+      },
+      {
+        "action": "wait_for",
+        "predicate": { "text": "确定" },
+        "timeout_ms": 3000
+      },
+      {
+        "action": "tap",
+        "predicate": { "text": "确定" }
+      },
+      {
+        "action": "wait_for",
+        "predicate": { "text_contains": "获取验证码" },
+        "timeout_ms": 8000
+      }
+    ]
+  }
+]
