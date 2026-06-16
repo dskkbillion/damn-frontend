@@ -19,13 +19,17 @@ test/e2e/
   home/
     HOME-01.dsl.json                 # 首页加载断言
     HOME-04.dsl.json                 # 进入商品详情
+    HOME-05.dsl.json                 # 商品图片轮播（弱验证）
+    HOME-08.dsl.json                 # 查看商品评价跳转
+    HOME-09.dsl.json                 # 评价列表内容（商品357）
     HOME-10.dsl.json                 # 查看卖家主页
+    HOME-11.dsl.json                 # 卖家主页商品列表
     HOME-12.dsl.json                 # 搜索入口跳转
     HOME-13.dsl.json                 # 搜索显示结果
     HOME-14.dsl.json                 # 搜索无结果空态
 ```
 
-> 全部 10 条 case 已于 2026-06-16 真机实跑校正（manifest.verified 字段记录结果，9 PASS + 1 partial）。
+> 全部 14 条 case 已于 2026-06-16 真机实跑校正（manifest.verified 字段记录结果，13 PASS + 1 partial）。
 > ⚠️ 跑批顺序有硬约束：见 `run_batch.workflow.md`——需登录的 HOME case 依赖先跑 AUTH-01 建立 session。
 
 ## 怎么跑

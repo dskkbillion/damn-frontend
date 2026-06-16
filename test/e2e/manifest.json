@@ -108,6 +108,63 @@
       "verified": "PASS（2026-06-16 真机整段重放：fresh→已登录态→我的→scroll→账号与安全→退出登录→弹窗「确定」→ 停在登录页「获取验证码」「手机号」断言通过）。注：本脚本保留 fresh+if_exists 自动登录块，因常态下 fresh 恢复已登录态走 else 分支(不触发自动登录)，无长脚本断链风险。"
     },
     {
+      "id": "HOME-05",
+      "file": "home/HOME-05.dsl.json",
+      "module": "home",
+      "description": "商品图片轮播-进入商品详情后在顶部图片区向左滑动，断言详情页未崩溃且仍显示商品信息（轮播区可滑动不崩弱验证）",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地 seed 已有（本地已有多图已发布商品）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "tap {type:image, text_contains:「$」, index:0} 进商品详情",
+        "assert_exists text_contains:「已发布」（进详情后主断言）",
+        "swipe from_coords{300,63}→to_coords{80,63} 顶部图片区（bounds_hint 不可靠，改坐标）",
+        "assert_exists text_contains:「一键购买」（swipe 后详情页未崩）",
+        "assert_exists text_contains:「已发布」（详情页仍在）",
+        "ai_assert「详情页顶部展示商品图片，滑动后未崩溃」（弱验证）"
+      ],
+      "verified": "PASS-弱验证（2026-06-16 真机：商品357顶部图片区 swipe left 后「一键购买」「已发布」仍命中，详情页未崩）。局限：357 仅单图，无法验证图片切换；swipe 用 from/to_coords 而非 bounds_hint（后者不可靠）。本 case 本质只验证「图片区可滑动不崩」。"
+    },
+    {
+      "id": "HOME-08",
+      "file": "home/HOME-08.dsl.json",
+      "module": "home",
+      "description": "查看商品评价跳转-搜「机票」定位有评价商品357「任意主流航司机票官网97折」，进详情后点「查看全部」进评价列表页，断言AppBar含「评论」",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "需有评价商品 357（id=357「任意主流航司机票官网97折」$1.00，3条pass评价，本地DB已确认2026-06-16）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "进搜索页 tap「搜索服务」",
+        "type「机票」→ tap「搜索」",
+        "tap {type:image, text_contains:「航司」, index:0}（锚定商品357，需实跑确认卡片文案是否命中「航司」）",
+        "assert_exists text_contains:「已发布」（进详情确认）",
+        "assert_exists text_contains:「查看全部」（评价区入口）",
+        "tap「查看全部」进评价列表",
+        "assert_exists text_contains:「评论」（评价列表页 AppBar）"
+      ],
+      "verified": "PASS（2026-06-16 真机：搜「机票」→ 商品357「任意主流航司机票官网97折」排第一(text含「航司」可锚定)→ 进详情「评论(3)」「查看全部」→ tap 进评价列表页 AppBar「评论」命中）"
+    },
+    {
+      "id": "HOME-09",
+      "file": "home/HOME-09.dsl.json",
+      "module": "home",
+      "description": "评价列表加载-复用HOME-08路径走到商品357评价列表页，断言sku_name「Lite」、评价内容「不错，很有耐心」和星级评分（ai_assert弱验证）",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "需有评价商品 357（实测评价：昵称「歪楞妈真难弄」、sku_name=「Lite」、内容「不错，很有耐心」、时间「5月前」，3条 pass。注：DB 里 sku_name=「基础」是已删商品142的孤儿数据，357 实际套餐是 Lite/Pro/Deep）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "进搜索页→搜「机票」→进商品357详情→点「查看全部」（同HOME-08路径）",
+        "assert_exists text_contains:「评论」（评价列表页 AppBar）",
+        "assert_exists text_contains:「Lite」（sku_name套餐名，确定性锚点）",
+        "assert_exists text_contains:「不错，很有耐心」（评价内容，确定性锚点）",
+        "ai_assert「每条评价显示昵称/套餐名/时间/内容」（星级是无文本 Icon，只能弱验证）"
+      ],
+      "verified": "PASS（2026-06-16 真机：评价列表页 3 条「歪楞妈真难弄\\nLite\\n5月前\\n不错，很有耐心」，「评论」「Lite」「不错，很有耐心」均命中）。关键纠正：agent 原断言「基础」「留言意见」来自已删商品142的孤儿评价数据，357 实际是「Lite」「不错，很有耐心」——锚点必须来自实跑而非 DB JOIN 推断。星级评分在 a11y tree 无独立文本(Icon)，只能 ai_assert。"
+    },
+    {
       "id": "HOME-10",
       "file": "home/HOME-10.dsl.json",
       "module": "home",
@@ -124,6 +181,25 @@
         "assert_exists text_contains:「我的服务」（TabBar tab）"
       ],
       "verified": "PASS（2026-06-16 真机：tap StaticText「已认证」成功触发跳转卖家主页(瑞123)，「0粉丝」「关注」「我的服务」均命中）。关键：详情页卖家区「卖家名\\n已认证\\nN」是单个 StaticText 不是独立元素，但 tap 它能触发外层 GestureDetector onTap。"
+    },
+    {
+      "id": "HOME-11",
+      "file": "home/HOME-11.dsl.json",
+      "module": "home",
+      "description": "卖家主页商品列表-从首页进详情再点「已认证」进卖家主页，tap「我的服务」tab，断言tab存在且出现卖家商品卡片",
+      "requires_login": true,
+      "fixtures": ["跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）", "本地 seed 已有（卖家有已发布商品，本地已有25个，2026-06-16确认）"],
+      "automatable": "yes",
+      "issue": "210",
+      "assertions": [
+        "tap {type:image, text_contains:「$」, index:0} 进商品详情",
+        "tap {text_contains:「已认证」, index:0} 进卖家主页（同HOME-10已验证路径）",
+        "assert_exists text_contains:「我的服务」（TabBar tab）",
+        "tap「我的服务」tab",
+        "assert_exists text_contains:「我的服务」（切换后 tab 仍选中）",
+        "assert_exists {type:image, text_contains:「$」}（MasonryGridView 卖家商品卡片含价格）"
+      ],
+      "verified": "PASS（2026-06-16 真机：卖家主页 tap「我的服务」tab 后出现卖家商品卡片(开锁服务$0.00/装机指南$1.00)）。关键：「我的服务」在卖家主页有两处(TabBar tab + 统计项「我的服务\\nN」)，tap 必须带 index:0 命中 TabBar 否则 AMBIGUOUS_MATCH。"
     },
     {
       "id": "HOME-13",
