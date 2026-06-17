@@ -22,7 +22,7 @@
     },
     {
       "action": "type",
-      "text": "机票",
+      "text": "服务",
       "predicate": { "type": "input" },
       "clear_first": true
     },
@@ -42,7 +42,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "type": "image", "text_contains": "航司", "index": 0 }
+      "predicate": { "type": "image", "text_contains": "$", "index": 0 }
     },
     {
       "action": "wait_for",

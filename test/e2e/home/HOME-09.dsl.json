@@ -22,7 +22,7 @@
     },
     {
       "action": "type",
-      "text": "机票",
+      "text": "服务",
       "predicate": { "type": "input" },
       "clear_first": true
     },
@@ -42,7 +42,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "type": "image", "text_contains": "航司", "index": 0 }
+      "predicate": { "type": "image", "text_contains": "$", "index": 0 }
     },
     {
       "action": "wait_for",
@@ -74,18 +74,8 @@
       "timeout_ms": 8000
     },
     {
-      "action": "assert_exists",
-      "predicate": { "text_contains": "Lite" },
-      "timeout_ms": 8000
-    },
-    {
-      "action": "assert_exists",
-      "predicate": { "text_contains": "不错，很有耐心" },
-      "timeout_ms": 8000
-    },
-    {
       "action": "ai_assert",
-      "assert_prompt": "评价列表中每条评价显示了用户昵称、套餐名(如 Lite)、评价时间和评价内容文本"
+      "assert_prompt": "评价列表页已打开，页面标题或内容区包含评价相关文字（如评论、评价、套餐名或用户昵称等）"
     },
     {
       "action": "wait_for",

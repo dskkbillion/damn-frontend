@@ -7,13 +7,34 @@
       "timeout_ms": 3000
     },
     {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
       "action": "assert_exists",
-      "predicate": { "text_contains": "搜索服务" },
+      "predicate": { "text_contains": "欢迎使用AI助手" },
       "timeout_ms": 8000
     },
     {
-      "action": "tap",
-      "predicate": { "text_contains": "看看", "index": 0 }
+      "action": "if_exists",
+      "predicate": { "text_contains": "新建聊天" },
+      "then": [
+        {
+          "action": "tap",
+          "predicate": { "text_contains": "新建聊天" }
+        },
+        {
+          "action": "wait_for",
+          "stable": true,
+          "timeout_ms": 2000
+        }
+      ],
+      "else": []
     },
     {
       "action": "wait_for",
