@@ -33,12 +33,22 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
   int _pollAttempt = 0;
   static const int _maxPolls = 6;
 
+  // success 分支专用计数器/上限，与 pending 的 _pollAttempt 隔离，避免串到 pending 的进度文案。
+  int _successPollAttempt = 0;
+  static const int _maxSuccessPolls = 3;
+
   @override
   void initState() {
     super.initState();
     _status = widget.initialStatus;
     if (_status == PaymentResultStatus.pending) {
       _startPolling();
+    } else if (_status == PaymentResultStatus.success) {
+      // success 直跳时 Stripe webhook 可能尚未把订单落库，#373 在返回详情页时会拉一次，
+      // 但那一拉可能早于 webhook。这里用一次短轮询「预热」后端状态（≤9s），
+      // 待订单流转出 awaitingPayment 后用户再点「查看订单详情」，详情页便能拿到新状态。
+      // TODO(中期): 迁移到 OrderDetailPage 的 RouteAware didPopNext 自刷新，届时可删除本预热轮询。
+      _startSuccessPolling();
     }
   }
 
@@ -88,6 +98,45 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
         );
       } catch (e) {
         AppLogger.d('[PaymentResult] poll #$_pollAttempt exception: $e');
+      }
+    });
+  }
+
+  // success 直跳场景：后台静默轮询订单状态，等 Stripe webhook 落库（每 3s 一次，最多 3 次 = 9s）。
+  // 命中即停，不修改 _status（页面已是 success），仅用于让后端状态先于「查看订单详情」翻转，
+  // 这样返回详情页时 #373 的 LoadOrderDetail 能拉到新状态而非 awaitingPayment。
+  void _startSuccessPolling() {
+    final orderIdInt = int.tryParse(widget.orderId ?? '');
+    if (orderIdInt == null) return;
+    final getOrderDetail = getIt<GetOrderDetailUseCase>();
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      _successPollAttempt++;
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_successPollAttempt > _maxSuccessPolls) {
+        timer.cancel();
+        return;
+      }
+      try {
+        final result = await getOrderDetail(orderIdInt);
+        if (!mounted) return;
+        result.fold(
+          (failure) => AppLogger.d(
+              '[PaymentResult] success-poll #$_successPollAttempt failed: $failure'),
+          (order) {
+            AppLogger.d(
+                '[PaymentResult] success-poll #$_successPollAttempt state=${order.state}');
+            if (order.state != OrderStatus.awaitingPayment &&
+                order.state != OrderStatus.canceled) {
+              timer.cancel();
+            }
+          },
+        );
+      } catch (e) {
+        AppLogger.d(
+            '[PaymentResult] success-poll #$_successPollAttempt exception: $e');
       }
     });
   }
