@@ -14,10 +14,8 @@ class OrderItemsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('🔍 OrderItemsSection: 商品数量 ${order.items.length}');
     final items = order.items;
     if (items.isEmpty) {
-      print('⚠️ OrderItemsSection: 商品列表为空');
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
@@ -95,7 +93,11 @@ class OrderItemsSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8),
             child: Column(
-              children: items.map((item) => OrderDetailItemTile(item: item)).toList(),
+              // 买家端订单详情不展示交付天数/可修改次数（轻咨询形态旧字段）
+              children: items
+                  .map((item) =>
+                      OrderDetailItemTile(item: item, showDeliveryMeta: false))
+                  .toList(),
             ),
           ),
         ],
