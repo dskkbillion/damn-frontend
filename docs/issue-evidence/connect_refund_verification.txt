@@ -1,0 +1,25 @@
+# Connect 退款 reverse_transfer 全链路验证证据 (#25) — 2026-06-19
+
+## 订单780(Connect分账) → 售后退款 → reverse_transfer反转
+
+### 1. Connect Destination Charge
+PaymentIntent pi_3Tk4AHCa1WwJc0lE1rcwSh4N: transfer_data.destination=acct_1TNxwUE77k5O6Dj9, application_fee=50($0.50); 订单tenant_id=10373, pay_price=5.00
+
+### 2. 售后退款申请 refund id=71
+id=71 order_id=780 type=only_money price=5.00 state=audit_pass final=pass
+
+### 3. Stripe refund + transfer reversal
+refund re_3Tk4AHCa1WwJc0lE1lfE41fl amount=500 succeeded
+reversal trr_1Tk4GtCa1WwJc0lE1X1Yx0S5 amount=500 transfer=tr_3Tk4AHCa1WwJc0lE1jDmfev3
+
+### 4. webhook 状态机
+charge.refunded -> DONE
+transfer.reversed -> DONE
+transfer.created -> DONE
+
+### 5. seller_ledger_entry (INCOME +500 / REFUND -500 净额0)
+id=3 member=10373 REFUND -500 obj=trr_1Tk4GtCa1WwJc0lE1X1Yx0S5 order_id=NULL
+id=2 member=10373 INCOME 500 obj=tr_3Tk4AHCa1WwJc0lE1jDmfev3 order_id=NULL
+id=1 member=NULL PAYOUT -1000 obj=po_1Tk1R3E77k5O6Dj9cfJJ2jVz order_id=NULL
+
+### 结论: reverse_transfer=true 生效,全额从卖家账户原路反转,零垫资。遗留: ledger order_id=NULL(同#26回填断链)
