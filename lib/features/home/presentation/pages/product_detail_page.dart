@@ -23,6 +23,7 @@ import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
 // 导入聊天模块
 import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 // 导入事件总线
 import '../../../../core/events/event_bus.dart';
@@ -54,11 +55,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   bool _isDescriptionExpanded = false;
   // 评价提交事件订阅
   StreamSubscription<EvaluationSubmittedEvent>? _evaluationSubscription;
+  // #387: 当前登录用户的 member.id（= product.sellerId 同体系），用于判断是否自己的商品。
+  // 必须取 AuthenticatedUser.id（member.id），不能用 IUserRepository.getCurrentUser().id
+  // ——后者返回的是聊天体系的 commonUserId（另一套 ID），与 product.sellerId 不可比（ID Schema #358）。
+  int? _currentMemberId;
 
   @override
   void initState() {
     super.initState();
     // Don't initialize TabController here, wait for product data
+
+    // #387: 取当前用户 member.id，用于隐藏「咨询卖家」入口（自己的商品不该咨询自己）。
+    // getLoggedInUserSync 同步返回 AuthenticatedUser，其 id 即 member.id。
+    final authResult = GetIt.I<IAuthRepository>().getLoggedInUserSync();
+    authResult.fold(
+      (failure) => AppLogger.d('[#387] 取当前登录用户失败，咨询卖家按钮按默认显示: ${failure.message}'),
+      (user) {
+        if (user != null) {
+          _currentMemberId = user.id;
+          AppLogger.d('[#387] 当前用户 member.id=${user.id}');
+        }
+      },
+    );
 
     // 监听评价提交事件
     _evaluationSubscription = EventBus().evaluationSubmittedStream.listen((event) {
@@ -427,24 +445,27 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
           
           // 咨询卖家按钮，添加点击事件
-          GestureDetector(
-            onTap: () => _contactSeller(context, product.sellerId),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.borderPrimary,
-                borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.chat_bubble_outline, size: 16),
-                  const SizedBox(width: 4),
-                  Text(AppLocalizations.of(context).product_detail_contact_seller),
-                ],
+          // #387: 自己的商品不显示「咨询卖家」入口（不能咨询自己；后端 #20 也已拦截创建自聊天）。
+          // _currentMemberId 与 product.sellerId 同为 member.id 体系，可直接比较。
+          if (_currentMemberId == null || _currentMemberId != product.sellerId)
+            GestureDetector(
+              onTap: () => _contactSeller(context, product.sellerId),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.borderPrimary,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.chat_bubble_outline, size: 16),
+                    const SizedBox(width: 4),
+                    Text(AppLocalizations.of(context).product_detail_contact_seller),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
