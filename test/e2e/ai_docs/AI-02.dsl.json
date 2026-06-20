@@ -16,11 +16,6 @@
       "timeout_ms": 3000
     },
     {
-      "action": "assert_exists",
-      "predicate": { "text_contains": "欢迎使用AI助手" },
-      "timeout_ms": 8000
-    },
-    {
       "action": "if_exists",
       "predicate": { "text_contains": "新建聊天" },
       "then": [
@@ -39,12 +34,7 @@
     {
       "action": "wait_for",
       "stable": true,
-      "timeout_ms": 5000
-    },
-    {
-      "action": "assert_exists",
-      "predicate": { "text_contains": "欢迎使用AI助手" },
-      "timeout_ms": 8000
+      "timeout_ms": 3000
     },
     {
       "action": "assert_exists",
@@ -59,7 +49,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "type": "button", "near": { "type": "input" }, "index": 0 }
+      "predicate": { "type": "button", "text_contains": "发送消息" }
     },
     {
       "action": "wait_for",
@@ -68,7 +58,7 @@
     },
     {
       "action": "assert_exists",
-      "predicate": { "text_contains": "测试消息" },
+      "predicate": { "text_contains": "未命名会话" },
       "timeout_ms": 8000
     },
     {

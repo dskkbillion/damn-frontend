@@ -32,7 +32,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "type": "other", "index": 0 }
+      "predicate": { "text_contains": "已认证" }
     },
     {
       "action": "wait_for",
