@@ -23,7 +23,7 @@ import '../../../../features/favorites/presentation/bloc/favorites_state.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
 // 导入聊天模块
 import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
-import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
+import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 // 导入事件总线
 import '../../../../core/events/event_bus.dart';
@@ -56,8 +56,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   // 评价提交事件订阅
   StreamSubscription<EvaluationSubmittedEvent>? _evaluationSubscription;
   // #387: 当前登录用户的 member.id（= product.sellerId 同体系），用于判断是否自己的商品。
-  // 注意取 user.id（member.id）而非 commonUserId——product.sellerId 来自 tenant.id=member.id，
-  // 与 commonUserId 不是同一套 ID（见 ID Schema #358）。
+  // 必须取 AuthenticatedUser.id（member.id），不能用 IUserRepository.getCurrentUser().id
+  // ——后者返回的是聊天体系的 commonUserId（另一套 ID），与 product.sellerId 不可比（ID Schema #358）。
   int? _currentMemberId;
 
   @override
@@ -65,19 +65,18 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     super.initState();
     // Don't initialize TabController here, wait for product data
 
-    // #387: 异步取当前用户 member.id，用于隐藏「咨询卖家」入口（自己的商品不该咨询自己）
-    GetIt.I<IUserRepository>().getCurrentUser().then((result) {
-      result.fold(
-        (failure) => AppLogger.d('[#387] 取当前用户失败，咨询卖家按钮按默认显示: ${failure.message}'),
-        (user) {
-          if (mounted) {
-            setState(() {
-              _currentMemberId = user.id;
-            });
-          }
-        },
-      );
-    });
+    // #387: 取当前用户 member.id，用于隐藏「咨询卖家」入口（自己的商品不该咨询自己）。
+    // getLoggedInUserSync 同步返回 AuthenticatedUser，其 id 即 member.id。
+    final authResult = GetIt.I<IAuthRepository>().getLoggedInUserSync();
+    authResult.fold(
+      (failure) => AppLogger.d('[#387] 取当前登录用户失败，咨询卖家按钮按默认显示: ${failure.message}'),
+      (user) {
+        if (user != null) {
+          _currentMemberId = user.id;
+          AppLogger.d('[#387] 当前用户 member.id=${user.id}');
+        }
+      },
+    );
 
     // 监听评价提交事件
     _evaluationSubscription = EventBus().evaluationSubmittedStream.listen((event) {
