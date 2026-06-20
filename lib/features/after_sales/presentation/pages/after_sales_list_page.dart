@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 // Import GetIt instance
 import 'package:dskk_flutter_refactor/features/after_sales/presentation/bloc/after_sales_bloc.dart';
 import '../../domain/entities/after_sales_application.dart'; // Import entity for list item
@@ -22,12 +23,10 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
   @override
   void initState() {
     super.initState();
-    // Initial load
-    // Consider using context.read if Bloc is provided above, or handle creation/access
-     // For simplicity, assuming it's accessible via context.read for now
-     // This still requires a BlocProvider higher up.
-    // context.read<AfterSalesBloc>().add(const LoadAfterSalesListRequested(pageSize: 10));
-    // TODO: Ensure Bloc is provided before calling context.read
+    // #399: 触发首屏加载。Bloc 由 /afterSales 路由的 BlocProvider 注入，此处可安全 read。
+    context
+        .read<AfterSalesBloc>()
+        .add(const LoadAfterSalesListRequested(pageSize: _defaultListPageSize));
   }
 
   @override
@@ -99,9 +98,9 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
               trailing: Text(application.refundPrice != null ? RegionConfig.formatPrice(application.refundPrice!) : 'N/A'),
               isThreeLine: true,
               onTap: () {
-                 // TODO: Navigate to AfterSalesDetailPage
-                 // context.go('/afterSalesDetail/${application.id}');
-                 print('Tapped on AfterSales application ID: ${application.id}');
+                 // #399: 详情页路由 :id 期望 order.id（详情页用 LoadAfterSalesDetailByOrderId 反查），
+                 // 不是 refund.id。历史注释代码传 application.id 是错的。
+                 context.push('/afterSalesDetail/${application.orderId}');
               },
            );
         },

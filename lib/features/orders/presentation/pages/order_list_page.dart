@@ -272,8 +272,12 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                             OrderStatus.applyingForMediation,
                          };
 
-                         // Determine if the current order is in an after-sales state
-                         final bool isAfterSalesOrder = afterSalesStatuses.contains(order.state);
+                         // Determine if the current order is in an after-sales state.
+                         // #399: 退款完成后订单变 canceled，退出了 afterSalesStatuses 集合，
+                         // 但只要带有 refundId 就说明走过售后流程，应允许点进售后详情回看退款结果。
+                         final bool isAfterSalesOrder =
+                             afterSalesStatuses.contains(order.state) ||
+                             (order.state == OrderStatus.canceled && order.refundId != null);
 
                          return OrderItemCard(
                            order: order,
