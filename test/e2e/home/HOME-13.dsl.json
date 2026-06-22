@@ -1,5 +1,7 @@
 {
   "version": "0.2",
+  "_case": "HOME-13",
+  "_fix": "2026-06-22 修复：tap {text_contains:搜索服务} 会命中 Other 容器导致跳「我的」tab，改用坐标 (201,90) 直接点搜索框。",
   "steps": [
     {
       "action": "wait_for",
@@ -12,8 +14,9 @@
       "timeout_ms": 8000
     },
     {
+      "_note": "用坐标 tap 搜索框中心点，避免 Other 容器穿透跳 tab",
       "action": "tap",
-      "predicate": { "text_contains": "搜索服务" }
+      "coords": { "x": 201, "y": 90 }
     },
     {
       "action": "wait_for",
