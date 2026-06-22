@@ -1,0 +1,79 @@
+{
+  "version": "0.2",
+  "_note": "partial — 推荐服务列表依赖后端 /get_related_services 接口返回数据；需真实会话消息历史或 mock；blocker：无消息时「匹配」按钮为禁用态，无法触发",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "欢迎使用AI助手" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "input" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "type",
+      "text": "我需要找一个设计服务",
+      "predicate": { "type": "input" },
+      "clear_first": true
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "near": { "type": "input" }, "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "我需要找一个设计服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "匹配" }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 6000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "推荐服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

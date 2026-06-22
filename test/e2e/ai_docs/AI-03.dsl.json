@@ -1,0 +1,75 @@
+{
+  "version": "0.2",
+  "_note": "partial — AI 流式响应依赖真实 AI 服务，无法在纯本地/mock 环境稳定复现逐字渲染；blocker：需真实后端 AI 流或 mock 流服务",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "欢迎使用AI助手" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "input" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "type",
+      "text": "你好",
+      "predicate": { "type": "input" },
+      "clear_first": true
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "near": { "type": "input" }, "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "你好" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 10000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "页面中存在 AI 回复的消息气泡，显示在用户消息「你好」之后，左对齐",
+      "timeout_ms": 12000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

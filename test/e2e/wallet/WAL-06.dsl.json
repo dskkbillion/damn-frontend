@@ -1,0 +1,22 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 6000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "账户余额" }, "timeout_ms": 8000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "交易记录列表中至少有一条记录，每条记录显示：交易金额（带货币符号如$）、交易描述文本、日期（格式 yyyy-MM-dd HH:mm）、以及状态图标和状态文本（已完成/处理中/失败之一）",
+      "timeout_ms": 8000
+    },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

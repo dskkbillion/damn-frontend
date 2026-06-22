@@ -273,7 +273,10 @@ class WalletBloc extends Bloc<WalletEvent, WalletState> {
       return;
     }
     emit(const WithdrawalSubmitting());
-    final result = await walletRepository!.submitWithdrawal(amount: event.amount);
+    final result = await walletRepository!.submitWithdrawal(
+      amount: event.amount,
+      idempotencyToken: event.idempotencyToken,
+    );
     result.fold(
       (failure) => emit(WithdrawalFailed(_mapFailureToMessage(failure))),
       (_) => emit(const WithdrawalSuccess()),

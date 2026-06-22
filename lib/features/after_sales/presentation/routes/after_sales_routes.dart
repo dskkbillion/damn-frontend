@@ -28,8 +28,12 @@ class AfterSalesRoutes {
     GoRoute(
       path: '/afterSales',
       name: 'afterSales',
+      // #399: 孤儿页激活 —— 注入 AfterSalesBloc，列表页 initState 才能触发加载。
       pageBuilder: (context, state) => state.buildSmartPage(
-        const AfterSalesListPage(),
+        BlocProvider(
+          create: (_) => getIt<AfterSalesBloc>(),
+          child: const AfterSalesListPage(),
+        ),
         name: 'afterSales',
         source: 'after_sales_routes',
       ),

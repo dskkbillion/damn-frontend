@@ -365,7 +365,9 @@ class ProfilePreloaderService {
   /// 预加载首页数据（通过 Repository 写入本地缓存）
   Future<void> _preloadHomeData() async {
     try {
-      final result = await _homeRepository.getHomePageData();
+      // #384 预加载缓存暖身也带随机 seed，使缓存首屏顺序与展示一致（避免预热缓存恒为固定排序）。
+      final seed = DateTime.now().millisecondsSinceEpoch % 1000000000;
+      final result = await _homeRepository.getHomePageData(seed: seed);
       result.fold(
         (failure) => AppLogger.d('[ProfilePreloader] 预加载首页数据失败: ${failure.message}'),
         (homePageData) => AppLogger.d('[ProfilePreloader] 首页数据预加载完成'),

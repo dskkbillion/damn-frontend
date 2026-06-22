@@ -1,0 +1,43 @@
+{
+  "version": "0.2",
+  "_case": "SETTINGS-LANG-01",
+  "_desc": "语言切换：中文→English（UI 实时英文化 + 首页商品自动刷新成英文，守 bug 6ea9b49）→ 切回简体中文恢复。自包含，结尾必须恢复中文，避免污染后续中文断言。",
+  "_precondition": "跑批器已通过 AUTH-01 建立已登录态，当前在已登录首页（底部 4 tab 可见）。",
+  "_selectors_note": "2026-06-22 真机实测校正：①语言选项是 Button（简体中文/English/日本語/한국어/Tiếng Việt），可直接 text 命中。②底部 tab 用 type:button + text_contains 第N个标签消歧（中文「我的」会与「我的服务」AMBIGUOUS）。③语言设置入口在「我的」页『设置』分组，首屏不可见，必须先 swipe 向上滚。④切英文后底部 tab 变 Look/Browse/Chat/Profile，搜索框变 Search services。",
+  "steps": [
+    { "_step": "0. 前置：确认在已登录首页", "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+
+    { "_step": "1. 进「我的」tab（精确消歧底部 tab）", "action": "tap", "predicate": { "type": "button", "text_contains": "第 4 个标签" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+
+    { "_step": "2. 滚到底露出『设置』分组的「语言设置」", "action": "swipe", "from_coords": { "x": 200, "y": 650 }, "to_coords": { "x": 200, "y": 200 }, "duration_ms": 500 },
+    { "action": "wait_for", "stable": true, "timeout_ms": 2000 },
+    { "action": "tap", "predicate": { "text": "语言设置" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "简体中文" }, "timeout_ms": 5000 },
+
+    { "_step": "3. 选 English，断言 UI 实时英文化", "action": "tap", "predicate": { "type": "button", "text": "English" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "Language Settings" }, "timeout_ms": 5000 },
+
+    { "_step": "4. 回首页（Browse tab），断言英文化 + 商品已刷新（守 bug 6ea9b49）", "action": "tap", "predicate": { "type": "button", "text_contains": "Browse" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "Search services" }, "timeout_ms": 8000 },
+    { "_assert_bugguard": "商品卡片重新拉成英文内容，证明切语言后首页自动刷新而非白屏/旧中文数据", "action": "assert_exists", "predicate": { "type": "image", "text_contains": "$" }, "timeout_ms": 8000 },
+
+    { "_step": "5. 切回简体中文（自包含恢复，绝不留非中文态）", "action": "tap", "predicate": { "type": "button", "text_contains": "Profile" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "swipe", "from_coords": { "x": 200, "y": 650 }, "to_coords": { "x": 200, "y": 200 }, "duration_ms": 500 },
+    { "action": "wait_for", "stable": true, "timeout_ms": 2000 },
+    { "action": "tap", "predicate": { "text": "Language Settings" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "type": "button", "text": "简体中文" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "_step": "6. 断言已恢复中文", "action": "assert_exists", "predicate": { "text_contains": "语言设置" }, "timeout_ms": 5000 },
+
+    { "_step": "7. 回首页确认中文恢复（清理收尾）", "action": "tap", "predicate": { "type": "button", "text_contains": "第 2 个标签" } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 }
+  ]
+}

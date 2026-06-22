@@ -1,0 +1,90 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "聊聊", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "聊天列表" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "image" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "输入消息..." },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "input", "index": 0 }
+    },
+    {
+      "action": "type",
+      "text": "你好，这是测试消息"
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "你好，这是测试消息" },
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "text_contains": "发送", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "你好，这是测试消息" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "发送的消息「你好，这是测试消息」显示为右对齐的消息气泡（isMe=true），输入框已清空",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

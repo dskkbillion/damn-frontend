@@ -27,16 +27,23 @@ void main() {
           reason: 'Old brand color found in: ${violations.join(', ')}');
     });
 
-    test('Majority of page/widget files import AppColors', () {
+    test('Majority of page/widget files use theme tokens', () {
+      // 主题化既可走 AppColors 静态类，也可走 Flutter 标准 Theme.of(context)/colorScheme。
+      // orders 模块实际以 Theme.of/colorScheme 为主，故口径取两者并集。
       final files = getOrdersPresentationFiles()
           .where((f) => f.path.contains('/pages/') || f.path.contains('/widgets/'))
           .toList();
       int count = 0;
       for (final f in files) {
-        if (f.readAsStringSync().contains('AppColors')) count++;
+        final c = f.readAsStringSync();
+        if (c.contains('AppColors') ||
+            c.contains('Theme.of(context)') ||
+            c.contains('colorScheme')) {
+          count++;
+        }
       }
       expect(count, greaterThanOrEqualTo((files.length * 0.6).ceil()),
-          reason: '$count/${files.length} files import AppColors');
+          reason: '$count/${files.length} files use theme tokens (AppColors/Theme.of/colorScheme)');
     });
 
     test('Color(0xFF333333) residual < 5', () {

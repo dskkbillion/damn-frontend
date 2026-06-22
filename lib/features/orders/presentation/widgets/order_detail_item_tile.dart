@@ -8,7 +8,15 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 class OrderDetailItemTile extends StatelessWidget {
   final OrderItem item;
 
-  const OrderDetailItemTile({super.key, required this.item});
+  /// 是否展示交付天数 / 可修改次数。轻咨询形态下买家端不再需要这两个旧服务型字段，
+  /// 买家侧（OrderItemsSection）传 false 隐藏；卖家端走独立渲染路径，默认 true 不受影响。
+  final bool showDeliveryMeta;
+
+  const OrderDetailItemTile({
+    super.key,
+    required this.item,
+    this.showDeliveryMeta = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +70,8 @@ class OrderDetailItemTile extends StatelessWidget {
                   ],
                 ),
                 // 显示交付天数和可修改次数
-                if (item.deliveryDay != null || item.editNum != null) ...[
+                if (showDeliveryMeta &&
+                    (item.deliveryDay != null || item.editNum != null)) ...[
                   const SizedBox(height: 8.0),
                   Row(
                     children: [

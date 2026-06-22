@@ -1,0 +1,124 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "我的", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "我的订单" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "我的订单", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "全部" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "售后中", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "image" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "After-sales Details" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "After-Sales Application Rejected" },
+      "timeout_ms": 5000
+    },
+    {
+      "action": "swipe",
+      "direction": "up",
+      "distance": 400
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 2000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "Platform Intervention" },
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "Platform Intervention", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "已触发平台介入操作：弹出填写原因输入框或跳转到平台介入填写页，或出现相关提示",
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

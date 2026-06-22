@@ -1,0 +1,26 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "绑定收款账户", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 6000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "收款账户已激活" }, "timeout_ms": 8000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "收款功能" }, "timeout_ms": 5000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "提款功能" }, "timeout_ms": 5000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "收款功能和提款功能各自显示状态（已开通/未开通），带对应图标（check_circle 绿色 或 cancel 灰色）",
+      "timeout_ms": 5000
+    },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

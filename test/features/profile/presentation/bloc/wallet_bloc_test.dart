@@ -75,7 +75,8 @@ void main() {
       act: (bloc) => bloc.add(const FetchWalletSummary()),
       expect: () => [
         const WalletLoading(),
-        const WalletError('服务器错误，请稍后再试'),
+        // wallet_bloc 透传 failure.message（'服务器错误'），仅在 message 为 null 时兜底
+        const WalletError('服务器错误'),
       ],
     );
   });

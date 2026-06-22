@@ -1,0 +1,31 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "绑定收款账户", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "开始绑定", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 10000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "WebView 已加载 Stripe Onboarding 页面，当前 URL 使用 HTTPS 协议",
+      "timeout_ms": 12000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "当 WebView 内出现 HTTP（非 HTTPS）请求跳转时，WebView 拦截该请求，不加载 HTTP 资源，保持在 HTTPS 页面",
+      "timeout_ms": 8000
+    },
+    { "action": "tap", "predicate": { "type": "button", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

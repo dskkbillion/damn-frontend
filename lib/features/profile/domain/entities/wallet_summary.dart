@@ -20,6 +20,10 @@ class WalletSummary extends Equatable {
   /// 最近交易记录数量
   final int recentTransactionsCount;
 
+  /// 是否已绑定并激活 Stripe 收款账户。false → UI 引导绑定。
+  /// 默认 true 以兼容旧 member 钱包来源（无此概念）。
+  final bool bound;
+
   const WalletSummary({
     required this.balance,
     this.pendingAmount,
@@ -27,6 +31,7 @@ class WalletSummary extends Equatable {
     this.hasBankCard = false,
     this.hasPaymentPassword = false,
     this.recentTransactionsCount = 0,
+    this.bound = true,
   });
 
   @override
@@ -37,5 +42,6 @@ class WalletSummary extends Equatable {
         hasBankCard,
         hasPaymentPassword,
         recentTransactionsCount,
+        bound,
       ];
 }

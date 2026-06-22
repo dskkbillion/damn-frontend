@@ -1,0 +1,20 @@
+# #24 payout.failed 覆盖已到账态 — staging 复测证据 (2026-06-20)
+staging 部署: Zeabur 6a3578e7 RUNNING, commit 5ea61df (含 #24 修复 621e256)
+
+## 对比
+旧bug cashId=13: payout failed 但 DB state=payed (错)
+修复后 cashId=14: payout failed → DB state=rejected (对)
+
+## cashId=14 (新提现, payoutId=po_1Tk6S4E77k5O6Dj9owdvRNxT)
+Stripe payout: status=failed, failure=insufficient_funds
+DB: state=rejected reason=Stripe Payout ??: Your account has insufficient funds to cover the transfer.
+
+## webhook (payout.paid + payout.failed 均 DONE)
+payout.paid -> DONE
+payout.failed -> DONE
+
+## ledger 冲正 (PAYOUT -1000 + PAYOUT_REVERSED +1000 净额0)
+id=4 PAYOUT -1000 po_1Tk6S4E77k5O6Dj9owdvRNxT
+id=5 PAYOUT_REVERSED 1000 po_1Tk6S4E77k5O6Dj9owdvRNxT
+
+## 结论: payout.failed 覆盖PAYED→rejected + ledger冲正,均生效。用户不再误见已到账。

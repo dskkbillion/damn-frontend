@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verific
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 // TODO: 需要根据 design-info/HTML原型/HTML-new/outer/login/login.html 和 RN 代码实现具体 UI
 
@@ -46,8 +47,9 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
   @override
   Widget build(BuildContext context) {
     // Define Theme Colors
-    const Color primaryColor = Color(0xFFB66D0E);
-    const Color buttonBackgroundColor = Color(0xFFC58C4A);
+    // 统一到 DeepStream 主题 token（与 unified_login_page 一致，去旧品牌色 #B66D0E）
+    const Color primaryColor = AppColors.primary;
+    const Color buttonBackgroundColor = AppColors.primaryVariant;
     final Color linkColor = Colors.grey[600]!;
 
     // TODO: 使用 BlocProvider 提供 SmsLoginCubit 实例

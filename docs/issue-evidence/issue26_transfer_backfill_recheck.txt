@@ -1,0 +1,14 @@
+# #26 transfer.created 回填断链 — staging 复测证据 (2026-06-20)
+staging部署: a6b2b54 RUNNING (Closes #26)
+
+## 对比(同链路:买家10588买卖家10373商品372)
+修复前 订单780: stripe_transfer_id/platform_fee/seller_income 全NULL, ledger order_id=NULL(孤儿INCOME)
+修复后 订单781: 全部正确回填
+
+## 订单781 (修复后)
+order_sn=2026062002022804933699 state=awaitingConfirmation stripe_transfer_id=tr_3Tk6qMCa1WwJc0lE0ul4IzNw platform_fee=0.00 seller_income=5.00
+
+## ledger INCOME 回填 order_id (关键)
+id=6 member=10373 INCOME 500 obj=tr_3Tk6qMCa1WwJc0lE0ul4IzNw order_id=781
+
+## 结论: transfer.created 按 paylog orderNo 解析订单id 生效,order_id非NULL+订单分账字段回填,无孤儿INCOME告警。

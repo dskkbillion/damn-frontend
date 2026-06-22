@@ -139,3 +139,5 @@ config/payment_keys.yaml
 config/*_keys.yaml
 .gstack/
 .omx/
+.omc/
+.worktrees/

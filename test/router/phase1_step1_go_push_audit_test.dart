@@ -10,27 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// 此测试通过静态分析源码确保 go() 没有在子页面导航场景被误用。
 void main() {
-  /// 已审计的合法 go() 使用列表
-  /// 每项格式：文件相对路径 + 行内容片段
-  final allowedGoUsages = <String>[
-    // 登出清栈
-    "context.go('/auth/login')",
-    // 底部 Tab 切换 (favorites_page)
-    "context.go('/ai-docs')",
-    "context.go('/home')",
-    "context.go('/chat')",
-    "context.go('/profile')",
-    "context.go('/dev')",
-    // 底部 Tab 切换 (seller_public_profile_page)
-    "context.go('/ai_chat')",
-    "context.go('/dev_menu')",
-    // canPop 失败兜底
-    "context.go('/seller')",
-    "context.go('/orders')",
-    // 支付结果清栈 (payment_navigation_service)
-    "context.go('/orders?status=awaitingPayment')",
-    "context.go('/orders?status=\$statusString')",
-  ];
+  // 合法 go() 场景（参考）：登出清栈 /auth/login；Tab 切换 /home /chat /profile
+  // /ai-docs /ai_chat /dev /dev_menu；canPop 兜底 /seller /orders；
+  // 支付清栈 /profile/orders?status=...；跨 Shell /chat/refactored（#349）。
 
   group('Step 1.1: go() → push() audit', () {
     test('profile_page.dart has no go() calls except logout', () {
@@ -73,22 +55,23 @@ void main() {
     test('product_detail_content.dart uses push() for reviews', () {
       final file = File('lib/features/home/presentation/widgets/product_detail_content.dart');
       final content = file.readAsStringSync();
-      expect(content.contains("context.push('/home/product/\$productId/reviews')"), isTrue);
-      expect(content.contains("context.go('/home/product/\$productId/reviews')"), isFalse);
+      // 路径已去 /home 前缀（reviews 走 /product/$id/reviews），仍是 push（子页面递进）
+      expect(content.contains("context.push('/product/\$productId/reviews')"), isTrue);
+      expect(content.contains("context.go('/product/\$productId/reviews')"), isFalse);
     });
 
     test('product_detail_page.dart uses push() for reviews', () {
       final file = File('lib/features/home/presentation/pages/product_detail_page.dart');
       final content = file.readAsStringSync();
-      expect(content.contains("context.push('/home/product/\$productId/reviews')"), isTrue);
-      expect(content.contains("context.go('/home/product/\$productId/reviews')"), isFalse);
+      expect(content.contains("context.push('/product/\$productId/reviews')"), isTrue);
+      expect(content.contains("context.go('/product/\$productId/reviews')"), isFalse);
     });
 
     test('seller_public_profile_page.dart uses push() for product detail', () {
       final file = File('lib/features/home/presentation/pages/seller_public_profile_page.dart');
       final content = file.readAsStringSync();
-      expect(content.contains("context.push('/home/product/\${product.id}')"), isTrue);
-      expect(content.contains("context.go('/home/product/\${product.id}')"), isFalse);
+      expect(content.contains("context.push('/product/\${product.id}')"), isTrue);
+      expect(content.contains("context.go('/product/\${product.id}')"), isFalse);
     });
 
     test('seller_home_page.dart uses push() for sub-pages', () {
@@ -107,16 +90,16 @@ void main() {
       expect(content.contains('context.go(route)'), isFalse);
     });
 
-    test('seller order widgets use push() for chat navigation', () {
+    test('seller order widgets use go() for cross-Shell chat navigation', () {
+      // #349: /chat/refactored 是跨 Shell 路由，从 seller Shell 跳 chat 必须用 go()
+      // （push 跨 Shell 会出问题）。买家侧 notification/global_message 同样用 go()。
       final file1 = File('lib/features/orders/presentation/seller/widgets/seller_order_item_card_action_buttons.dart');
       final file2 = File('lib/features/orders/presentation/seller/widgets/seller_order_detail_actions.dart');
       final content1 = file1.readAsStringSync();
       final content2 = file2.readAsStringSync();
 
-      expect(content1.contains("context.push('/chat/refactored/\${room.id}')"), isTrue);
-      expect(content1.contains("context.go('/chat/refactored/"), isFalse);
-      expect(content2.contains("context.push('/chat/refactored/\${room.id}')"), isTrue);
-      expect(content2.contains("context.go('/chat/refactored/"), isFalse);
+      expect(content1.contains("context.go('/chat/refactored/\${room.id}')"), isTrue);
+      expect(content2.contains("context.go('/chat/refactored/\${room.id}')"), isTrue);
     });
 
     test('payment_navigation_service.dart uses push() for orderDetail', () {
@@ -128,8 +111,8 @@ void main() {
       expect(orderDetailGoPattern.hasMatch(content), isFalse,
           reason: 'orderDetail navigation should use push(), not go()');
 
-      // orders list go is OK (payment clear-stack)
-      final ordersGoPattern = RegExp(r"context\.go\('/orders");
+      // orders list go is OK (payment clear-stack)；路径现为 /profile/orders
+      final ordersGoPattern = RegExp(r"context\.go\('/profile/orders");
       expect(ordersGoPattern.hasMatch(content), isTrue,
           reason: 'orders list navigation should use go() (clear-stack after payment)');
     });

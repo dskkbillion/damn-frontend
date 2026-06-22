@@ -1,0 +1,160 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "我的", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "我的订单" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "我的订单", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "全部" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "待收货", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "image" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "订单详情" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "申请售后", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "选择售后类型" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "I want a remake", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "Apply for Remake" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "申请页面显示原因下拉选择框（Reason）和描述输入框（Description）",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "input", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 2000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "原因选择下拉框已展开，显示可选原因列表",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "text", "index": 1 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 2000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "原因下拉框已选中一个原因，选中值已更新显示",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "input", "index": 1 }
+    },
+    {
+      "action": "type",
+      "text": "测试售后描述内容"
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 2000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "描述输入框已显示输入的文字「测试售后描述内容」",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

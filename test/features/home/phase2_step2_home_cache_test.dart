@@ -33,6 +33,12 @@ class _StubGetHomePageDataUseCase implements GetHomePageDataUseCase {
     return _result!;
   }
 
+  // HomeBloc 现走 callWithSeed(seed:)（随机排序，#384），stub 复用同一结果。
+  @override
+  Future<Either<Failure, HomePageData>> callWithSeed({int? seed}) async {
+    return _result!;
+  }
+
   // GetHomePageDataUseCase extends UseCase which only requires `call` —
   // expose the repository field to satisfy the class contract.
   @override

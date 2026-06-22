@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "绑定收款账户", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "开始绑定", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 15000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "Onboarding 完成后已自动返回收款账户页面，页面显示[银行账号已绑定]（审核中状态）或[收款账户已激活]（已激活状态），或出现加载刷新状态",
+      "timeout_ms": 15000
+    },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

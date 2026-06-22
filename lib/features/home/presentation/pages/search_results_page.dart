@@ -44,7 +44,9 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
             onPressed: () => context.pop(),
           ),
           title: GestureDetector(
-            onTap: () => context.push('/home/search'),
+            // #396: 结果页搜索框用 go 重置回搜索页,避免 push 重复压入 /home/search
+            // 导致两个 SearchPage 争用同一确定性 GlobalKey 触发红屏崩溃。
+            onTap: () => context.go('/home/search'),
             child: Container(
               height: 40,
               padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),

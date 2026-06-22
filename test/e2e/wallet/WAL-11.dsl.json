@@ -1,0 +1,18 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 6000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "账户余额" }, "timeout_ms": 8000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "暂无交易记录" }, "timeout_ms": 8000 },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

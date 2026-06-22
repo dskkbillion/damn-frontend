@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -34,19 +36,57 @@ class SellerPublicProfilePage extends ConsumerStatefulWidget {
   ConsumerState<SellerPublicProfilePage> createState() => _SellerPublicProfilePageState();
 }
 
-class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePage> with SingleTickerProviderStateMixin {
+class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePage>
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
+
+  // #383 卖家在线状态轮询：进页面起、离页面停，仅前台轮询。
+  late final SellerProfileBloc _bloc;
+  Timer? _onlineStatusTimer;
+  static const Duration _onlinePollInterval = Duration(seconds: 20);
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _bloc = GetIt.I<SellerProfileBloc>()
+      ..add(LoadSellerProducts(sellerId: widget.sellerId));
+    WidgetsBinding.instance.addObserver(this);
+    _startOnlineStatusPolling();
   }
 
   @override
   void dispose() {
+    _stopOnlineStatusPolling();
+    WidgetsBinding.instance.removeObserver(this);
+    _bloc.close();
     _tabController.dispose();
     super.dispose();
+  }
+
+  // #383 仅前台轮询：后台暂停、回前台恢复，避免无意义请求与电量消耗（参考 background_refresh_service）。
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _startOnlineStatusPolling();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
+      _stopOnlineStatusPolling();
+    }
+  }
+
+  void _startOnlineStatusPolling() {
+    _onlineStatusTimer?.cancel();
+    _onlineStatusTimer = Timer.periodic(_onlinePollInterval, (_) {
+      _bloc.add(RefreshSellerOnlineStatus(sellerId: widget.sellerId));
+    });
+  }
+
+  void _stopOnlineStatusPolling() {
+    _onlineStatusTimer?.cancel();
+    _onlineStatusTimer = null;
   }
 
   // 底部导航栏点击处理
@@ -131,9 +171,8 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => GetIt.I<SellerProfileBloc>()
-        ..add(LoadSellerProducts(sellerId: widget.sellerId)),
+    return BlocProvider.value(
+      value: _bloc,
       child: Scaffold(
         body: MultiBlocListener(
           listeners: [

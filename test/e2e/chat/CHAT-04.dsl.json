@@ -1,0 +1,91 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "聊聊", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "聊天列表" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "image" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "输入消息..." },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "输入栏右侧或输入栏旁边有附件/图片发送按钮（attach_file或image图标）",
+      "timeout_ms": 5000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "index": 1 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "已打开图片选择器或相册，或出现图片/文件选择对话框",
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "image", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "图片已发送到聊天室，消息列表中出现图片消息气泡（右对齐），或出现图片上传中的进度提示",
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

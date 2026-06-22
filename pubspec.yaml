@@ -16,7 +16,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+202605171
+version: 1.0.0+202606221
 
 environment:
   sdk: ">=3.4.0 <4.0.0" # Use higher constraint
@@ -48,6 +48,7 @@ dependencies:
   # Domain/Data - Merged
   dartz: ^0.10.1
   equatable: ^2.0.5
+  uuid: ^4.5.1 # 提现幂等 token 生成（原为传递依赖，提升为直接依赖）
   freezed_annotation: ^2.4.1
   json_annotation: ^4.9.0
 

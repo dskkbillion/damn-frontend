@@ -1,0 +1,24 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "绑定收款账户", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 8000 },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "页面显示错误状态：error_outline 图标可见，存在错误信息文本，存在[重试]按钮",
+      "timeout_ms": 8000
+    },
+    { "action": "assert_exists", "predicate": { "text_contains": "重试" }, "timeout_ms": 5000 },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

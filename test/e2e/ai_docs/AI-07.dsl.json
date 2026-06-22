@@ -1,0 +1,96 @@
+{
+  "version": "0.2",
+  "_note": "yes — 纯 UI 交互；侧边栏 Drawer 通过左上角 menu 按钮（AppBar leading）打开；切换会话通过 ListTile tap；需账号下有 ≥2 条历史会话",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "欢迎使用AI助手" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "新建聊天" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "list_item", "index": 0 },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "list_item", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "新建聊天" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "list_item", "index": 1 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "欢迎使用AI助手" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

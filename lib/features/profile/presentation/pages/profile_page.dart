@@ -178,6 +178,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         context.push('/favorites');
                       },
                     ),
+                    // #399: 售后常驻入口 —— 买家退款后可主动回看售后详情
+                    MenuItem(
+                      icon: Icons.assignment_return_outlined,
+                      text: appLocalizations.profile_refund,
+                      onTap: () {
+                        context.push('/afterSales');
+                      },
+                    ),
                   ],
                 ),
 

@@ -163,7 +163,10 @@ class MockProfileRemoteDataSource implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<void> submitWithdrawal({required double amount}) async {
+  Future<void> submitWithdrawal({
+    required double amount,
+    required String idempotencyToken,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 500));
   }
 }

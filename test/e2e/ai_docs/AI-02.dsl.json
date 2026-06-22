@@ -1,0 +1,75 @@
+{
+  "version": "0.2",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "if_exists",
+      "predicate": { "text_contains": "新建聊天" },
+      "then": [
+        {
+          "action": "tap",
+          "predicate": { "text_contains": "新建聊天" }
+        },
+        {
+          "action": "wait_for",
+          "stable": true,
+          "timeout_ms": 2000
+        }
+      ],
+      "else": []
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "input" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "type",
+      "text": "测试消息",
+      "predicate": { "type": "input" },
+      "clear_first": true
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "text_contains": "发送消息" }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "未命名会话" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

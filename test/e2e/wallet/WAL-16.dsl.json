@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "steps": [
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "搜索服务" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "我的", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "tap", "predicate": { "text_contains": "切换到卖家模式", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "tap", "predicate": { "text_contains": "钱包", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 6000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "账户余额" }, "timeout_ms": 8000 },
+    { "action": "tap", "predicate": { "text_contains": "提现", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 4000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "可提现余额" }, "timeout_ms": 5000 },
+    { "action": "type", "text": "999999", "predicate": { "type": "input", "index": 0 }, "clear_first": true },
+    { "action": "tap", "predicate": { "text_contains": "确认提现", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "assert_exists", "predicate": { "text_contains": "提现金额不能超过可用余额" }, "timeout_ms": 5000 },
+    { "action": "tap", "predicate": { "text_contains": "取消", "index": 0 } },
+    { "action": "wait_for", "stable": true, "timeout_ms": 3000 },
+    { "action": "observe", "include": ["ui_tree"] }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}

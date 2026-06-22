@@ -1,0 +1,98 @@
+{
+  "version": "0.2",
+  "_note": "partial — 点击推荐卡片触发 TriggerOptimizedAllocation 分配商品进聊天依赖后端真实分配接口；DEE-40 匹配度不足；分配成功后按钮变「进入聊天」（绿色）；blocker：需后端分配接口正常响应 + 推荐数据",
+  "steps": [
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "搜索服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 5000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "欢迎使用AI助手" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "input" },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "type",
+      "text": "我需要找一个设计服务",
+      "predicate": { "type": "input" },
+      "clear_first": true
+    },
+    {
+      "action": "tap",
+      "predicate": { "type": "button", "near": { "type": "input" }, "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "我需要找一个设计服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "匹配" }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 6000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "text_contains": "推荐服务" },
+      "timeout_ms": 8000
+    },
+    {
+      "action": "assert_exists",
+      "predicate": { "type": "image", "index": 0 },
+      "timeout_ms": 6000
+    },
+    {
+      "action": "tap",
+      "predicate": { "text_contains": "让ta看看", "index": 0 }
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 8000
+    },
+    {
+      "action": "ai_assert",
+      "assert_prompt": "推荐卡片上的按钮变为「进入聊天」或显示加载中状态，说明分配操作已触发",
+      "timeout_ms": 10000
+    },
+    {
+      "action": "wait_for",
+      "stable": true,
+      "timeout_ms": 3000
+    },
+    {
+      "action": "observe",
+      "include": ["ui_tree"]
+    }
+  ],
+  "on_fail": { "strategy": "retry", "max_retries": 2 }
+}
