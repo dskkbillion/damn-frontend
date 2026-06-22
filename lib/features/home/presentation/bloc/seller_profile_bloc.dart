@@ -23,8 +23,53 @@ class SellerProfileBloc extends Bloc<SellerProfileEvent, SellerProfileState> {
     required this.getSellerInfo,
   }) : super(SellerProfileInitial()) {
     on<LoadSellerProducts>(_onLoadSellerProducts);
+    on<RefreshSellerOnlineStatus>(_onRefreshSellerOnlineStatus);
     on<FollowSellerEvent>(_onFollowSeller);
     on<UnfollowSellerEvent>(_onUnfollowSeller);
+  }
+
+  /// #383 静默轮询刷新卖家在线状态：只在已加载态下重拉 getSellerInfo，
+  /// 用最新 onlineFlag 重建 seller，其余字段保留；不 emit Loading、不动 products。
+  /// 轮询失败静默（仅记日志），不打扰用户。
+  Future<void> _onRefreshSellerOnlineStatus(
+    RefreshSellerOnlineStatus event,
+    Emitter<SellerProfileState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! SellerProfileLoaded || currentState.seller == null) {
+      return;
+    }
+    final sellerInfoResult = await getSellerInfo.execute(event.sellerId);
+    sellerInfoResult.fold(
+      (failure) {
+        AppLogger.d('[SellerProfileBloc] #383 轮询在线状态失败(静默): ${failure.message}');
+      },
+      (latest) {
+        if (latest == null || emit.isDone) return;
+        final old = currentState.seller!;
+        // 只让在线状态跟随后端最新值变化，其余展示字段保持当前已加载值，避免轮询造成无关闪烁。
+        if (latest.onlineFlag == old.onlineFlag) return;
+        AppLogger.d('[SellerProfileBloc] #383 在线状态变更: ${old.onlineFlag} -> ${latest.onlineFlag}');
+        emit(SellerProfileLoaded(
+          products: currentState.products,
+          seller: SellerInfo(
+            id: old.id,
+            nickName: old.nickName,
+            trueName: old.trueName,
+            avatar: old.avatar,
+            remarks: old.remarks,
+            memberAttention: old.memberAttention,
+            fansCount: old.fansCount,
+            levelName: old.levelName,
+            score: old.score,
+            collectNum: old.collectNum,
+            authenticated: old.authenticated,
+            evaluates: old.evaluates,
+            onlineFlag: latest.onlineFlag,
+          ),
+        ));
+      },
+    );
   }
 
   Future<void> _onLoadSellerProducts(
