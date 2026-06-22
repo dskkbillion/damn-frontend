@@ -14,6 +14,11 @@ import '../bloc/wallet_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
+import 'package:dskk_flutter_refactor/features/seller/data/datasources/stripe_connect_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_event.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/quick_connect_sheet.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -31,6 +36,8 @@ class _WalletPageState extends State<WalletPage> {
   String _transactionType = 'all';
   DateTime? _startDate;
   DateTime? _endDate;
+  // #385 绑定成功后显示 KYC 提醒 banner，直到用户关闭
+  bool _showKycBanner = false;
 
   @override
   void initState() {
@@ -161,11 +168,8 @@ class _WalletPageState extends State<WalletPage> {
             context.read<WalletBloc>().add(const RefreshWalletSummary());
           } else if (state is WithdrawalFailed) {
             if (state.message.contains('绑定收款账户')) {
-              // 未绑定收款账户，跳转到 Stripe Connect 绑定页面
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('请先绑定收款账户，即将跳转...')),
-              );
-              context.push('/seller/connect-account');
+              // #385 未绑定：弹 sheet 而非跳页
+              _showQuickConnectSheet();
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('提现失败：${state.message}')),
@@ -225,6 +229,8 @@ class _WalletPageState extends State<WalletPage> {
 
           return Column(
             children: [
+              // #385 KYC 未完成提醒 banner
+              if (_showKycBanner) _buildKycBanner(),
               // 钱包摘要信息
               if (walletSummary != null) _buildWalletSummary(walletSummary),
 
@@ -353,6 +359,79 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
+  // #385 弹快速绑定 sheet，绑定成功后刷新钱包状态
+  Future<void> _showQuickConnectSheet() async {
+    final dio = sl<CoreDioClient>().dio;
+    final dataSource = StripeConnectRemoteDataSourceImpl(dio);
+    final bloc = ConnectAccountBloc(dataSource: dataSource)
+      ..add(CheckConnectAccountStatus());
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => BlocProvider.value(
+        value: bloc,
+        child: const QuickConnectSheet(),
+      ),
+    );
+    if (!mounted) return;
+    if (result == true) {
+      setState(() => _showKycBanner = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('账户已绑定，请在 3 天内完成身份验证以确保提现到账'),
+          duration: Duration(seconds: 4),
+        ),
+      );
+      context.read<WalletBloc>().add(const RefreshWalletSummary());
+    }
+  }
+
+  // #385 KYC 未完成提醒 banner（pendingVerification 状态时显示）
+  Widget _buildKycBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.warning),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              '请尽快完成身份验证，以确保提现资金正常到账',
+              style: TextStyle(fontSize: 12, height: 1.4),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() => _showKycBanner = false);
+              context.push('/seller/connect-account');
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text('去完成', style: TextStyle(fontSize: 12)),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: () => setState(() => _showKycBanner = false),
+          ),
+        ],
+      ),
+    );
+  }
+
   // 构建钱包摘要卡片
   Widget _buildWalletSummary(WalletSummary summary) {
     return Card(
@@ -400,17 +479,12 @@ class _WalletPageState extends State<WalletPage> {
             ),
             const SizedBox(height: 16),
             const SizedBox(height: 16),
-            // 未绑定/未激活 Stripe 收款账户：引导绑定，提现按钮不可用（bound 来自卖家余额接口）。
+            // #385 未绑定：点击提现直接弹 QuickConnectSheet，绑定后立即可提现
             if (!summary.bound) ...[
-              const Text(
-                '提现前需先绑定收款账户',
-                style: TextStyle(fontSize: 13, color: AppColors.textTertiary),
-              ),
-              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.push('/seller/connect-account'),
+                  onPressed: () => _showQuickConnectSheet(),
                   icon: const Icon(Icons.link),
                   label: const Text('绑定收款账户'),
                   style: ElevatedButton.styleFrom(
@@ -432,34 +506,6 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                 ),
               ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 构建操作按钮
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isEnabled = true,
-  }) {
-    return InkWell(
-      onTap: isEnabled ? onTap : null,
-      child: Opacity(
-        opacity: isEnabled ? 1.0 : 0.5,
-        child: Column(
-          children: [
-            Icon(icon, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: isEnabled ? null : AppColors.textTertiary,
-              ),
-            ),
           ],
         ),
       ),
@@ -697,13 +743,4 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  // 显示功能未实现提示
-  void _showNotImplemented() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context).profile_wallet_not_implemented),
-        duration: const Duration(seconds: 1),
-      ),
-    );
-  }
 }
