@@ -1990,6 +1990,26 @@
       "issue": "344",
       "verified": "脚本已生成-待真机校正（多数需活跃账号数据，当前测试账号 18888888888 部分模块为空，详见 fixtures）",
       "assertions": []
+    },
+    {
+      "id": "SETTINGS-LANG-01",
+      "file": "settings/SETTINGS-LANG-01.dsl.json",
+      "module": "settings",
+      "description": "语言切换：中文→English（UI 实时英文化 + 首页商品自动刷新成英文，守 bug 6ea9b49）→ 切回简体中文恢复。自包含，结尾必须恢复中文，避免污染后续中文断言。",
+      "requires_login": true,
+      "fixtures": [
+        "跑批器保证已登录态（AUTH-01 先跑）"
+      ],
+      "automatable": "yes",
+      "verified": "2026-06-22 真机全段通过（设备 5EEB52BF-3A70-48A7-A64C-5492FD941CAA）",
+      "assertions": [
+        "assert_exists text_contains:简体中文（进语言设置页，默认中文）",
+        "assert_exists text_contains:Language Settings（切英文后 UI 实时英文化）",
+        "assert_exists text_contains:Search services（Browse 首页搜索框英文化）",
+        "assert_exists type:image text_contains:$（商品卡片英文内容，守 bug 6ea9b49 首页自动刷新）",
+        "assert_exists text_contains:语言设置（切回简体中文恢复）",
+        "assert_exists text_contains:搜索服务（首页搜索框恢复中文）"
+      ]
     }
   ]
 }
