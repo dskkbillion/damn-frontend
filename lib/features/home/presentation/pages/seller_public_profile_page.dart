@@ -298,14 +298,17 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 卖家头像
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: seller?.avatar != null
-                          ? NetworkImage(seller!.avatar!)
-                          : null,
-                      child: seller?.avatar == null
-                          ? const Icon(Icons.person, size: 40, color: Colors.white)
-                          : null,
+                    Semantics(
+                      label: 'seller-avatar',
+                      child: CircleAvatar(
+                        radius: 40,
+                        backgroundImage: seller?.avatar != null
+                            ? NetworkImage(seller!.avatar!)
+                            : null,
+                        child: seller?.avatar == null
+                            ? const Icon(Icons.person, size: 40, color: Colors.white)
+                            : null,
+                      ),
                     ),
                     const SizedBox(width: AppDimensions.spacingLg),
 

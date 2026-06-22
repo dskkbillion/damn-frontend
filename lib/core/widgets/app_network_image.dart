@@ -46,6 +46,10 @@ class AppNetworkImage extends StatelessWidget {
   final int? memCacheWidth;
   final int? memCacheHeight;
 
+  /// a11y label，透传给 Semantics.label；传入后 XCUIElementTypeImage 的 text 属性
+  /// 会带上该值，E2E 选择器可精确定位商品图 vs 头像图。
+  final String? semanticsLabel;
+
   const AppNetworkImage({
     super.key,
     required this.imageUrl,
@@ -63,6 +67,7 @@ class AppNetworkImage extends StatelessWidget {
     this.useShimmerPlaceholder = true,
     this.memCacheWidth,
     this.memCacheHeight,
+    this.semanticsLabel,
   });
 
   Widget _buildPlaceholder(BuildContext context) {
@@ -135,6 +140,10 @@ class AppNetworkImage extends StatelessWidget {
 
     if (heroTag != null) {
       image = Hero(tag: heroTag!, child: image);
+    }
+
+    if (semanticsLabel != null) {
+      image = Semantics(label: semanticsLabel, child: image);
     }
 
     return image;

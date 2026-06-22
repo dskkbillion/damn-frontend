@@ -139,16 +139,19 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             onTap: widget.isPreviewMode ? null : () {
               context.push('/seller-profile/${widget.product.sellerId}');
             },
-            child: CircleAvatar(
-              radius: 20,
-              backgroundImage: widget.product.sellerAvatar != null
-                  ? NetworkImage(widget.product.sellerAvatar!)
-                  : null,
-              child: widget.product.sellerAvatar == null
-                  ? Text(widget.product.sellerName.isNotEmpty
-                      ? widget.product.sellerName[0].toUpperCase()
-                      : '?')
-                  : null,
+            child: Semantics(
+              label: 'seller-avatar',
+              child: CircleAvatar(
+                radius: 20,
+                backgroundImage: widget.product.sellerAvatar != null
+                    ? NetworkImage(widget.product.sellerAvatar!)
+                    : null,
+                child: widget.product.sellerAvatar == null
+                    ? Text(widget.product.sellerName.isNotEmpty
+                        ? widget.product.sellerName[0].toUpperCase()
+                        : '?')
+                    : null,
+              ),
             ),
           ),
           const SizedBox(width: AppDimensions.spacingMd),

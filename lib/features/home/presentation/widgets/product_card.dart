@@ -178,6 +178,7 @@ class ProductCard extends StatelessWidget {
         imageUrl: item.images.first,
         fit: BoxFit.cover,
         heroTag: 'product-image-${item.id}',
+        semanticsLabel: item.name,
       );
     } else {
       // 如果没有图片URL，显示占位图
