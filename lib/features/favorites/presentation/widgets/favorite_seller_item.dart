@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../domain/entities/favorite_seller.dart';
@@ -40,7 +41,7 @@ class FavoriteSellerItem extends StatelessWidget {
               // 卖家头像
               CircleAvatar(
                 radius: 30,
-                backgroundColor: Colors.grey[300],
+                backgroundColor: AppColors.backgroundSecondary,
                 backgroundImage: seller.avatar != null
                     ? NetworkImage(seller.avatar!)
                     : null,
@@ -48,7 +49,7 @@ class FavoriteSellerItem extends StatelessWidget {
                     ? Icon(
                         Icons.person,
                         size: 30,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       )
                     : null,
               ),
@@ -75,7 +76,7 @@ class FavoriteSellerItem extends StatelessWidget {
                         seller.trueName!,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -91,14 +92,14 @@ class FavoriteSellerItem extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.blue[100],
+                            color: AppColors.info.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             _getSellerTypeText(context, seller.type),
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.blue[800],
+                              color: AppColors.info,
                             ),
                           ),
                         ),
@@ -134,7 +135,7 @@ class FavoriteSellerItem extends StatelessWidget {
                   icon: const Icon(Icons.person_remove),
                   label: Text(AppLocalizations.of(context).favorites_unfollow),
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.grey[700],
+                    foregroundColor: AppColors.textSecondary,
                   ),
                 ),
             ],
@@ -182,13 +183,13 @@ class FavoriteSellerItem extends StatelessWidget {
       case 'ACTIVE':
         return [Colors.green[100]!, Colors.green[800]!];
       case 'INACTIVE':
-        return [Colors.orange[100]!, Colors.orange[800]!];
+        return [AppColors.warning.withOpacity(0.15), AppColors.warning];
       case 'SUSPENDED':
         return [Colors.red[100]!, Colors.red[800]!];
       case 'BANNED':
-        return [Colors.grey[300]!, Colors.grey[800]!];
+        return [AppColors.backgroundSecondary, AppColors.textSecondary];
       default:
-        return [Colors.grey[300]!, Colors.grey[800]!];
+        return [AppColors.backgroundSecondary, AppColors.textSecondary];
     }
   }
 }

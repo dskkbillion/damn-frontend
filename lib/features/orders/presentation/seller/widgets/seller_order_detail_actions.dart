@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
@@ -102,9 +103,9 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
     // 检查是否已达到限制
     if (_invitationStatus?.hasReachedLimit == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('今日邀请次数已达上限（3次），请明天再试'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: const Text('今日邀请次数已达上限（3次），请明天再试'),
+          backgroundColor: AppColors.warning,
         ),
       );
       return;
@@ -251,7 +252,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                     bloc.add(SellerRejectRequested(params: params)); 
                 } else {
                      ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text(AppLocalizations.of(context).order_seller_reject_reason_required), backgroundColor: Colors.orange),
+                       SnackBar(content: Text(AppLocalizations.of(context).order_seller_reject_reason_required), backgroundColor: AppColors.warning),
                     );
                 }
              } // User cancelled dialog
@@ -319,7 +320,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                } else {
                  // Content was empty, even if dialog was confirmed
                   ScaffoldMessenger.of(context).showSnackBar(
-                   SnackBar(content: Text(AppLocalizations.of(context).order_seller_delivery_desc_required), backgroundColor: Colors.orange),
+                   SnackBar(content: Text(AppLocalizations.of(context).order_seller_delivery_desc_required), backgroundColor: AppColors.warning),
                  );
                }
              } // If deliveryInfo is null, user canceled dialog - do nothing
@@ -520,23 +521,23 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                                   Container(
                                     padding: const EdgeInsets.symmetric(vertical: 24),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[50],
+                                      color: AppColors.backgroundSecondary,
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                        color: Colors.grey[300]!,
+                                        color: AppColors.backgroundSecondary,
                                         style: BorderStyle.solid,
                                       ),
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(Icons.cloud_upload_outlined, 
-                                          size: 40, 
-                                          color: Colors.grey[400]
+                                        Icon(Icons.cloud_upload_outlined,
+                                          size: 40,
+                                          color: AppColors.textTertiary
                                         ),
                                         const SizedBox(height: 8),
                                         Text(
                                           l10n.order_seller_delivery_select_file,
-                                          style: TextStyle(color: Colors.grey[600]),
+                                          style: TextStyle(color: AppColors.textSecondary),
                                         ),
                                       ],
                                     ),

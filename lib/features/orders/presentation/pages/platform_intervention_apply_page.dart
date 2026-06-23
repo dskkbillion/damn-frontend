@@ -138,22 +138,22 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.blue[50],
+                  color: AppColors.info.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue[200]!),
+                  border: Border.all(color: AppColors.info.withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                        Icon(Icons.info_outline, color: AppColors.info, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           '关于平台介入',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.blue[700],
+                            color: AppColors.info,
                           ),
                         ),
                       ],
@@ -257,9 +257,9 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: AppColors.backgroundSecondary,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[300]!),
+                    border: Border.all(color: AppColors.backgroundSecondary),
                   ),
                   child: Column(
                     children: _evidenceFiles.asMap().entries.map((entry) {
@@ -313,15 +313,15 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
+                  color: AppColors.warning.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange[200]!),
+                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.warning_amber_outlined, 
-                      color: Colors.orange[700], 
+                    Icon(Icons.warning_amber_outlined,
+                      color: AppColors.warning,
                       size: 20
                     ),
                     const SizedBox(width: 8),
@@ -333,7 +333,7 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
                             '重要提示',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.orange[700],
+                              color: AppColors.warning,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -341,7 +341,7 @@ class _PlatformInterventionApplyPageState extends State<PlatformInterventionAppl
                             '• 申请提交后无法撤销\n• 每个订单最多可申请2次平台介入\n• 请确保提供真实、完整的信息',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.orange[700],
+                              color: AppColors.warning,
                             ),
                           ),
                         ],

@@ -190,9 +190,9 @@ class OrderActionDialogs {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.orange[50],
+                          color: AppColors.warning.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.orange[200]!),
+                          border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                         ),
                         child: Text(
                           l10n.order_intervention_tip,
@@ -338,9 +338,9 @@ class OrderActionDialogs {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.blue[50],
+                              color: AppColors.info.withOpacity(0.06),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.blue[200]!),
+                              border: Border.all(color: AppColors.info.withOpacity(0.3)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +422,7 @@ class OrderActionDialogs {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppColors.backgroundSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -473,13 +473,13 @@ class OrderActionDialogs {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.backgroundSecondary),
         ),
         child: Text(
           l10n.order_dialog_no_seller_delivery,
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
       );
     }
@@ -526,13 +526,13 @@ class OrderActionDialogs {
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey[50],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.backgroundSecondary),
         ),
         child: Text(
           l10n.order_dialog_no_buyer_materials,
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: AppColors.textSecondary),
         ),
       );
     }
@@ -543,9 +543,9 @@ class OrderActionDialogs {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: AppColors.info.withOpacity(0.06),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue[200]!),
+          border: Border.all(color: AppColors.info.withOpacity(0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,7 +610,7 @@ class OrderActionDialogs {
       // Needs seller approval
       infoText = l10n.order_demand_edit_info_approval(currentDeliveryCount);
       iconData = Icons.access_time;
-      iconColor = Colors.orange;
+      iconColor = AppColors.warning;
     }
     
     return Row(

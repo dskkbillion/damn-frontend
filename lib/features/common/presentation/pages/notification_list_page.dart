@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -164,7 +165,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           controller: _tabController,
           isScrollable: true,
           labelColor: Theme.of(context).primaryColor,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: Theme.of(context).primaryColor,
           tabs: [
             Tab(text: AppLocalizations.of(context).notification_tab_all ?? 'All'),
@@ -284,9 +285,9 @@ class _NotificationListContentState extends State<NotificationListContent> with 
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.notifications_off, size: 64, color: Colors.grey),
+          Icon(Icons.notifications_off, size: 64, color: AppColors.textSecondary),
           const SizedBox(height: 16),
-          Text(message, style: const TextStyle(color: Colors.grey)),
+          Text(message, style: TextStyle(color: AppColors.textSecondary)),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
@@ -367,7 +368,7 @@ class _NotificationListContentState extends State<NotificationListContent> with 
           children: [
             Text(
               DateFormat('yyyy-MM-dd HH:mm').format(notification.createdAt),
-              style: const TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
             const SizedBox(height: 16),
             Text(displayContent),
@@ -443,7 +444,7 @@ class _NotificationItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: notification.isRead ? null : Colors.blue.withOpacity(0.05),
+          color: notification.isRead ? null : AppColors.info.withOpacity(0.05),
           border: const Border(bottom: BorderSide(color: Colors.black12)),
         ),
         child: Row(
@@ -487,7 +488,7 @@ class _NotificationItem extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.grey.shade700,
+                      color: AppColors.textSecondary,
                       fontSize: 14,
                     ),
                   ),
@@ -495,7 +496,7 @@ class _NotificationItem extends StatelessWidget {
                   Text(
                     _formatDateTime(context, notification.createdAt),
                     style: const TextStyle(
-                      color: Colors.grey,
+                      color: AppColors.textSecondary,
                       fontSize: 12,
                     ),
                   ),
@@ -516,7 +517,7 @@ class _NotificationItem extends StatelessWidget {
     switch (notification.type) {
       case NotificationType.order:
         iconData = Icons.shopping_bag;
-        iconColor = Colors.blue;
+        iconColor = AppColors.info;
         break;
       case NotificationType.system:
         iconData = Icons.notifications;
@@ -524,7 +525,7 @@ class _NotificationItem extends StatelessWidget {
         break;
       case NotificationType.refund:
         iconData = Icons.assignment_return;
-        iconColor = Colors.orange;
+        iconColor = AppColors.warning;
         break;
       case NotificationType.message:
         iconData = Icons.message;
@@ -540,7 +541,7 @@ class _NotificationItem extends StatelessWidget {
         break;
       default:
         iconData = Icons.info;
-        iconColor = Colors.grey;
+        iconColor = AppColors.textSecondary;
     }
     
     return Container(

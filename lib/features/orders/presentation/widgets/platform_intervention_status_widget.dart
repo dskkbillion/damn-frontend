@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 平台介入状态显示组件
@@ -54,7 +55,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.support_agent,
-                  color: Colors.blue[600],
+                  color: AppColors.info,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -62,7 +63,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                   AppLocalizations.of(context).order_platform_intervention_title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue[600],
+                    color: AppColors.info,
                   ),
                 ),
               ],
@@ -71,7 +72,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             Text(
               AppLocalizations.of(context).order_platform_intervention_desc,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 12),
@@ -82,8 +83,8 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                 icon: const Icon(Icons.report_problem, size: 18),
                 label: Text(AppLocalizations.of(context).order_platform_intervention_apply),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.blue[600],
-                  side: BorderSide(color: Colors.blue[300]!),
+                  foregroundColor: AppColors.info,
+                  side: BorderSide(color: AppColors.info),
                 ),
               ),
             ),
@@ -97,7 +98,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
   Widget _buildStatusSection(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      color: Colors.orange[50],
+      color: AppColors.warning.withOpacity(0.05),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -107,7 +108,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.support_agent,
-                  color: Colors.orange[700],
+                  color: AppColors.warning,
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -115,20 +116,20 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                   AppLocalizations.of(context).order_platform_intervention_in_progress,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange[700],
+                    color: AppColors.warning,
                   ),
                 ),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.orange[200],
+                    color: AppColors.warning.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     AppLocalizations.of(context).order_platform_intervention_processing,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.orange[800],
+                      color: AppColors.warning,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -139,7 +140,7 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             Text(
               AppLocalizations.of(context).order_platform_intervention_processing_msg,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.orange[700],
+                color: AppColors.warning,
               ),
             ),
             const SizedBox(height: 12),
@@ -148,21 +149,21 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               AppLocalizations.of(context).order_platform_intervention_step1,
               AppLocalizations.of(context).order_platform_intervention_step1_desc,
               true,
-              Colors.orange,
+              AppColors.warning,
             ),
             _buildTimelineStep(
               context,
               AppLocalizations.of(context).order_platform_intervention_step2,
               AppLocalizations.of(context).order_platform_intervention_step2_desc,
               false,
-              Colors.grey,
+              AppColors.textSecondary,
             ),
             _buildTimelineStep(
               context,
               AppLocalizations.of(context).order_platform_intervention_step3,
               AppLocalizations.of(context).order_platform_intervention_step3_desc,
               false,
-              Colors.grey,
+              AppColors.textSecondary,
             ),
           ],
         ),
@@ -187,9 +188,9 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
             height: 12,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isCompleted ? color : Colors.grey[300],
+              color: isCompleted ? color : AppColors.backgroundSecondary,
               border: Border.all(
-                color: isCompleted ? color : Colors.grey[400]!,
+                color: isCompleted ? color : AppColors.textTertiary,
                 width: 2,
               ),
             ),
@@ -210,13 +211,13 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: isCompleted ? FontWeight.bold : FontWeight.normal,
-                    color: isCompleted ? color : Colors.grey[600],
+                    color: isCompleted ? color : AppColors.textSecondary,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey[500],
+                    color: AppColors.textTertiary,
                   ),
                 ),
               ],

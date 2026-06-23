@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Import Bloc
 import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_detail_bloc.dart'; // Import Bloc and Events
 import 'package:dskk_flutter_refactor/features/orders/domain/usecases/submit_evaluation_use_case.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 // Import dart:io for File
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -34,7 +35,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         return IconButton(
           icon: Icon(
             starNumber <= _score ? Icons.star : Icons.star_border,
-            color: starNumber <= _score ? Colors.amber : Colors.grey,
+            color: starNumber <= _score ? Colors.amber : AppColors.textSecondary,
             size: 32, // Adjust size as needed
           ),
           onPressed: () {
@@ -139,7 +140,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
                       hintText: AppLocalizations.of(context).order_evaluation_hint,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: AppColors.backgroundSecondary,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                     maxLines: 5,
@@ -220,7 +221,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: AppColors.backgroundSecondary,
             borderRadius: BorderRadius.circular(8),
             image: DecorationImage(
               // Use the final processed file
@@ -294,11 +295,11 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey[200],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[400]!)
+          border: Border.all(color: AppColors.textTertiary),
         ),
-        child: Icon(Icons.add_a_photo, color: Colors.grey[600], size: 30),
+        child: Icon(Icons.add_a_photo, color: AppColors.textSecondary, size: 30),
       ),
     );
   }
@@ -354,7 +355,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).order_evaluation_failed_count(errorCount)),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.warning,
             ),
           );
         }
@@ -377,9 +378,9 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[400]!),
+        border: Border.all(color: AppColors.textTertiary),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -392,7 +393,7 @@ class _OrderEvaluationFormState extends State<OrderEvaluationForm> {
           const SizedBox(height: 4),
           Text(
             AppLocalizations.of(context).order_evaluation_processing,
-            style: const TextStyle(fontSize: 10, color: Colors.grey),
+            style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),

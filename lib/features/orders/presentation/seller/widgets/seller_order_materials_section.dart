@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../domain/entities/order.dart';
 import '../../../domain/entities/order_status.dart';
@@ -84,9 +85,9 @@ class SellerOrderMaterialsSection extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.blue[50],
+          color: AppColors.info.withOpacity(0.06),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.blue[200]!),
+          border: Border.all(color: AppColors.info.withOpacity(0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,7 +102,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
                     Text(
                       feature.question,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -121,7 +122,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
               Text(
                 AppLocalizations.of(context).order_seller_attachment_label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -152,7 +153,7 @@ class SellerOrderMaterialsSection extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.backgroundSecondary),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -167,21 +168,21 @@ class SellerOrderMaterialsSection extends StatelessWidget {
             Icon(
               _getFileIcon(fileName),
               size: 16,
-              color: Colors.blue[600],
+              color: AppColors.info,
             ),
             const SizedBox(width: 6),
             Text(
               fileName,
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.grey[800],
+                color: AppColors.textSecondary,
               ),
             ),
             const SizedBox(width: 6),
             Icon(
               Icons.download_outlined,
               size: 14,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/services/file_upload_service.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -188,7 +189,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
             return Container(
               width: 80,
               height: 80,
-              color: Colors.grey[300],
+              color: AppColors.backgroundSecondary,
               child: const Icon(Icons.broken_image, size: 30),
             );
           },
@@ -200,14 +201,14 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
         width: 80,
         height: 80,
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
+          border: Border.all(color: AppColors.backgroundSecondary),
         ),
         child: Icon(
           _getFileIcon(_item.fileName),
           size: 30,
-          color: Colors.grey[600],
+          color: AppColors.textSecondary,
         ),
       );
     }
@@ -236,9 +237,9 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _item.status == FileUploadStatus.failed 
-            ? Colors.red[300]! 
-            : Colors.grey[300]!,
+          color: _item.status == FileUploadStatus.failed
+            ? Colors.red[300]!
+            : AppColors.backgroundSecondary,
         ),
       ),
       child: Row(
@@ -271,7 +272,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                       _formatFileSize(_item.fileSize),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -287,7 +288,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: _item.progress,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: AppColors.backgroundSecondary,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       Theme.of(context).primaryColor,
                     ),
@@ -335,7 +336,7 @@ class _FileUploadItemWidgetState extends State<FileUploadItemWidget> {
             IconButton(
               icon: const Icon(Icons.close, size: 20),
               onPressed: widget.onRemove,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
         ],
       ),

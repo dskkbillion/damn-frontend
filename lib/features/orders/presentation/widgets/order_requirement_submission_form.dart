@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import shared_pr
 import 'dart:convert'; // Import dart:convert for json handling
 import 'file_upload_item.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -246,7 +247,7 @@ class _OrderRequirementSubmissionFormState
                       const SizedBox(height: 4),
                       Text(
                         AppLocalizations.of(context).order_requirement_attachment_limit(_maxFileCount, _maxFileSize ~/ (1024 * 1024)),
-                        style: textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
@@ -282,19 +283,19 @@ class _OrderRequirementSubmissionFormState
                   child: Container(
                     height: 100,
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
+                      color: AppColors.backgroundSecondary,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
+                      border: Border.all(color: AppColors.backgroundSecondary),
                     ),
                     child: Center(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.cloud_upload_outlined, size: 32, color: Colors.grey[400]),
+                          Icon(Icons.cloud_upload_outlined, size: 32, color: AppColors.textTertiary),
                           const SizedBox(height: 8),
                           Text(
                             AppLocalizations.of(context).order_requirement_click_select_file,
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                           ),
                         ],
                       ),
@@ -464,18 +465,18 @@ class _OrderRequirementSubmissionFormState
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue[50],
+            color: AppColors.info.withOpacity(0.06),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue[200]!),
+            border: Border.all(color: AppColors.info.withOpacity(0.3)),
           ),
           child: Row(
             children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+              Icon(Icons.info_outline, size: 16, color: AppColors.info),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   AppLocalizations.of(context).order_requirement_service_selected(_getLocalizedSkuName(context, item.skuName), item.price.toStringAsFixed(2)),
-                  style: TextStyle(fontSize: 14, color: Colors.blue[700]),
+                  style: TextStyle(fontSize: 14, color: AppColors.info),
                 ),
               ),
             ],
@@ -491,10 +492,10 @@ class _OrderRequirementSubmissionFormState
             hintText: AppLocalizations.of(context).order_requirement_q1_hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
-            fillColor: Colors.grey[100],
+            fillColor: AppColors.backgroundSecondary,
             contentPadding: const EdgeInsets.all(12),
             helperText: AppLocalizations.of(context).order_requirement_q1_helper,
-            helperStyle: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            helperStyle: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
           maxLines: 4,
         ),
@@ -508,7 +509,7 @@ class _OrderRequirementSubmissionFormState
             hintText: AppLocalizations.of(context).order_requirement_q2_hint,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             filled: true,
-            fillColor: Colors.grey[100],
+            fillColor: AppColors.backgroundSecondary,
             contentPadding: const EdgeInsets.all(12),
           ),
           maxLines: 3,
@@ -519,17 +520,17 @@ class _OrderRequirementSubmissionFormState
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.orange[50],
+            color: AppColors.warning.withOpacity(0.08),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
             children: [
-              Icon(Icons.warning_amber, size: 14, color: Colors.orange[700]),
+              Icon(Icons.warning_amber, size: 14, color: AppColors.warning),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   AppLocalizations.of(context).order_requirement_warning,
-                  style: TextStyle(fontSize: 12, color: Colors.orange[700]),
+                  style: TextStyle(fontSize: 12, color: AppColors.warning),
                 ),
               ),
             ],
