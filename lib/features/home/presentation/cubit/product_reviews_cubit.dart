@@ -13,7 +13,6 @@ class ProductReviewsCubit extends Cubit<ProductReviewsState> {
 
   Future<void> getProductReviews(int productId) async {
     emit(ProductReviewsLoading());
-
     final result = await _getProductReviewsUseCase(
       GetProductReviewsParams(productId: productId),
     );
