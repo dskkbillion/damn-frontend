@@ -75,6 +75,8 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/pages/connect
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_event.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/stripe_connect_remote_data_source.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/pages/after_sales_review_page.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/pages/chat_list_page.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
@@ -549,6 +551,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => state.buildSmartPage(
           OrderDeliveryPage(orderId: int.parse(state.pathParameters['id'] ?? '0')),
           name: 'sellerOrderDelivery',
+          source: 'app_navigation_seller_non_shell',
+        ),
+      ),
+      // 售后审核列表路由
+      GoRoute(
+        path: SellerRoutes.afterSalesReview,
+        name: 'sellerAfterSalesReview',
+        pageBuilder: (context, state) => state.buildSmartPage(
+          BlocProvider(
+            create: (_) => GetIt.I<AfterSalesReviewBloc>(),
+            child: const AfterSalesReviewPage(),
+          ),
+          name: 'sellerAfterSalesReview',
           source: 'app_navigation_seller_non_shell',
         ),
       ),

@@ -563,6 +563,12 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   label: AppLocalizations.of(context).seller_home_auto_reply,
                   onTap: () => context.push(SellerRoutes.autoReply),
                 ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.assignment_return_outlined,
+                  label: '售后审核',
+                  onTap: () => context.push(SellerRoutes.afterSalesReview),
+                ),
               ],
             ),
           ],
