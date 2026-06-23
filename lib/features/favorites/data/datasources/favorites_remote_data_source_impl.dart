@@ -1,641 +1,270 @@
 import 'dart:convert';
+
+import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
-import 'package:http/http.dart' as http;
-
-import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/failures.dart';
 import '../models/favorite_model.dart';
 import '../models/favorite_service_model.dart';
 import '../models/favorite_seller_model.dart';
 import '../models/common_user_model.dart';
 import 'favorites_remote_data_source.dart';
 
-/// 收藏远程数据源实现
 class FavoritesRemoteDataSourceImpl implements FavoritesRemoteDataSource {
-  final http.Client client;
-  final String baseUrl;
-  final Future<String> Function() getToken;
-  final Future<String> Function() getUserId;
+  final CoreDioClient coreDioClient;
 
-  /// 构造函数
-  FavoritesRemoteDataSourceImpl({
-    required this.client,
-    required this.baseUrl,
-    required this.getToken,
-    required this.getUserId,
-  });
+  FavoritesRemoteDataSourceImpl({required this.coreDioClient});
 
-  /// 获取请求头
-  Future<Map<String, String>> _getHeaders() async {
-    final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': token,
-      'clienttype': '1',
-      'client': 'android',
-      'version': '100',
-    };
-  }
-
-  /// 打印请求信息
-  void _logRequest(String method, Uri uri, Map<String, String> headers, [String? body]) {
-    AppLogger.d('===== API请求 =====');
-    AppLogger.d('方法: $method');
-    AppLogger.d('URL: $uri');
-    AppLogger.d('请求头: $headers');
-    if (body != null) {
-      AppLogger.d('请求体: $body');
-    }
-    AppLogger.d('=================');
-  }
-
-  /// 打印响应信息
-  void _logResponse(int statusCode, String body) {
-    AppLogger.d('===== API响应 =====');
-    AppLogger.d('状态码: $statusCode');
-    AppLogger.d('响应体: $body');
-    AppLogger.d('=================');
-  }
-
-  /// 获取收藏的服务列表
   @override
   Future<List<FavoriteServiceModel>> getFavoriteServices({
     int? pageNum = 1,
     int? pageSize = 10,
   }) async {
     try {
-      final userId = await getUserId();
-      final queryParams = {
-        'type': 'org_product',
-        'memberId': userId,
-        'pageNum': (pageNum ?? 1).toString(),
-        'pageSize': (pageSize ?? 10).toString(),
-      };
-
-      final uri = Uri.parse('$baseUrl/api/collect/list').replace(
-        queryParameters: queryParams,
+      final response = await coreDioClient.get(
+        '/api/collect/list',
+        queryParameters: {
+          'type': 'org_product',
+          'pageNum': pageNum ?? 1,
+          'pageSize': pageSize ?? 10,
+        },
       );
 
-      final headers = await _getHeaders();
-      
-      _logRequest('GET', uri, headers);
-      
-      final response = await client.get(uri, headers: headers);
-      
-      _logResponse(response.statusCode, response.body);
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['code'] == 200) {
+        final rows = response.data['rows'] as List<dynamic>? ?? [];
+        final favorites = rows.map((r) => FavoriteModel.fromJson(r as Map<String, dynamic>)).toList();
 
-      // 由于认证问题，暂时返回模拟数据
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
-          final List<dynamic> rows = jsonResponse['rows'];
-          
-          // 获取收藏记录
-          final favorites = rows.map((row) => FavoriteModel.fromJson(row)).toList();
-          
-          // 获取服务详情
-          final List<FavoriteServiceModel> services = [];
-          for (final favorite in favorites) {
-            try {
-              // 获取服务详情
-              final serviceDetail = await _getServiceDetail(favorite.objectId);
-              services.add(serviceDetail);
-            } catch (e) {
-              AppLogger.d('获取服务详情出错: $e');
-              // 如果获取详情失败，使用基本信息构造模型
-              services.add(FavoriteServiceModel(
-                id: favorite.objectId,
-                title: '服务 ${favorite.objectId}',
-                description: '服务描述',
-                imageUrl: '',
-                price: 0.0,
-                isFavorite: true,
-              ));
-            }
-          }
-          
-          return services;
-        } else {
-          // 返回模拟数据
-          AppLogger.d('使用模拟数据 - 认证失败或数据格式不正确');
-          return [
-            const FavoriteServiceModel(
-              id: 1,
-              title: '专业清洗服务',
-              description: '提供专业的清洗服务，包括家居、办公室等',
-              imageUrl: 'https://example.com/image1.jpg',
-              price: 100.0,
-              isFavorite: true,
-            ),
-            const FavoriteServiceModel(
-              id: 2,
-              title: '上门维修服务',
-              description: '提供各类家电、设备的上门维修服务',
-              imageUrl: 'https://example.com/image2.jpg',
-              price: 150.0,
-              isFavorite: true,
-            ),
-          ];
-        }
-      } else {
-        // 返回模拟数据
-        AppLogger.d('使用模拟数据 - HTTP状态码不是200');
-        return [
-          const FavoriteServiceModel(
-            id: 1,
-            title: '专业清洗服务',
-            description: '提供专业的清洗服务，包括家居、办公室等',
-            imageUrl: 'https://example.com/image1.jpg',
-            price: 100.0,
-            isFavorite: true,
-          ),
-          const FavoriteServiceModel(
-            id: 2,
-            title: '上门维修服务',
-            description: '提供各类家电、设备的上门维修服务',
-            imageUrl: 'https://example.com/image2.jpg',
-            price: 150.0,
-            isFavorite: true,
-          ),
-        ];
-      }
-    } catch (e) {
-      AppLogger.d('获取收藏服务列表出错: $e');
-      // 返回模拟数据
-      AppLogger.d('使用模拟数据 - 发生异常');
-      return [
-        const FavoriteServiceModel(
-          id: 1,
-          title: '专业清洗服务',
-          description: '提供专业的清洗服务，包括家居、办公室等',
-          imageUrl: 'https://example.com/image1.jpg',
-          price: 100.0,
-          isFavorite: true,
-        ),
-        const FavoriteServiceModel(
-          id: 2,
-          title: '上门维修服务',
-          description: '提供各类家电、设备的上门维修服务',
-          imageUrl: 'https://example.com/image2.jpg',
-          price: 150.0,
-          isFavorite: true,
-        ),
-      ];
-    }
-  }
-
-  /// 获取服务详情
-  Future<FavoriteServiceModel> _getServiceDetail(int serviceId) async {
-    final uri = Uri.parse('$baseUrl/api/shop/product/get?id=$serviceId');
-    final headers = await _getHeaders();
-    
-    _logRequest('GET', uri, headers);
-    
-    final response = await client.get(uri, headers: headers);
-    
-    _logResponse(response.statusCode, response.body);
-
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['code'] == 200 && jsonResponse['data'] != null) {
-        final data = jsonResponse['data'];
-        
-        // 解析图片URL
-        String? imageUrl;
-        if (data['images'] != null) {
+        final List<FavoriteServiceModel> services = [];
+        for (final fav in favorites) {
           try {
-            // 处理服务器返回的复杂图片格式
-            if (data['images'] is List && data['images'].isNotEmpty) {
-              String rawImage = data['images'][0];
-              if (rawImage.startsWith('[') && rawImage.endsWith(']')) {
-                // 嵌套的JSON字符串
-                List<dynamic> parsedImages = json.decode(rawImage);
-                if (parsedImages.isNotEmpty) {
-                  imageUrl = parsedImages[0];
-                }
-              } else {
-                imageUrl = rawImage;
-              }
-            }
+            services.add(await _getServiceDetail(fav.objectId));
           } catch (e) {
-            AppLogger.d('解析图片URL失败: $e');
+            AppLogger.d('[Favorites] 获取服务详情失败 objectId=${fav.objectId}: $e');
           }
         }
-        
-        return FavoriteServiceModel(
-          id: data['id'],
-          title: data['name'] ?? '未知服务',
-          description: data['description'] ?? '',
-          imageUrl: imageUrl,
-          price: data['sellingPrice'] != null
-              ? (data['sellingPrice'] is int
-                  ? data['sellingPrice'].toDouble()
-                  : data['sellingPrice'])
-              : 0.0,
-          isFavorite: true,
-        );
-      } else {
-        throw ServerException(message: jsonResponse['msg'] ?? 'Failed to get service detail');
+        return services;
       }
-    } else {
-      throw ServerException(message: 'Failed to get service detail');
+      throw ServerFailure(message: response.data?['msg'] ?? '获取收藏列表失败');
+    } on ServerFailure {
+      rethrow;
+    } catch (e) {
+      throw ServerFailure(message: '获取收藏服务列表出错: $e');
     }
   }
 
-  /// 获取收藏的卖家列表
+  Future<FavoriteServiceModel> _getServiceDetail(int productId) async {
+    final response = await coreDioClient.get(
+      '/api/shop/product/get',
+      queryParameters: {'id': productId},
+    );
+
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      final data = response.data['data'] as Map<String, dynamic>;
+
+      String? imageUrl;
+      final images = data['images'];
+      if (images is List && images.isNotEmpty) {
+        final raw = images[0].toString();
+        if (raw.startsWith('[')) {
+          try {
+            final parsed = json.decode(raw) as List;
+            if (parsed.isNotEmpty) imageUrl = parsed[0].toString();
+          } catch (_) {}
+        } else {
+          imageUrl = raw;
+        }
+      }
+
+      // 价格在 variants[0].sellingPrice，data 顶层无此字段
+      double price = 0.0;
+      final variants = data['variants'] as List<dynamic>?;
+      if (variants != null && variants.isNotEmpty) {
+        final rawPrice = (variants[0] as Map<String, dynamic>)['sellingPrice'];
+        if (rawPrice != null) {
+          price = rawPrice is int ? rawPrice.toDouble() : (rawPrice as num).toDouble();
+        }
+      }
+
+      return FavoriteServiceModel(
+        id: data['id'] as int,
+        title: (data['name'] as String?) ?? '未知服务',
+        description: data['description'] as String?,
+        imageUrl: imageUrl,
+        price: price,
+        isFavorite: true,
+      );
+    }
+    throw ServerFailure(message: response.data?['msg'] ?? '获取服务详情失败');
+  }
+
   @override
   Future<List<FavoriteSellerModel>> getFavoriteSellers({
     int? pageNum = 1,
     int? pageSize = 10,
   }) async {
     try {
-      final userId = await getUserId();
-      final queryParams = {
-        'type': 'attentionMember', // 🔥 统一使用collect接口的类型
-        'memberId': userId,
-        'pageNum': (pageNum ?? 1).toString(),
-        'pageSize': (pageSize ?? 10).toString(),
-      };
-
-      final uri = Uri.parse('$baseUrl/api/collect/list').replace(
-        queryParameters: queryParams,
+      final response = await coreDioClient.get(
+        '/api/collect/list',
+        queryParameters: {
+          'type': 'attentionMember',
+          'pageNum': pageNum ?? 1,
+          'pageSize': pageSize ?? 10,
+        },
       );
 
-      final headers = await _getHeaders();
-      
-      _logRequest('GET', uri, headers);
-      
-      final response = await client.get(uri, headers: headers);
-      
-      _logResponse(response.statusCode, response.body);
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['code'] == 200) {
+        final rows = response.data['rows'] as List<dynamic>? ?? [];
+        final records = rows.map((r) => FavoriteModel.fromJson(r as Map<String, dynamic>)).toList();
 
-      // 获取关注的卖家列表
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
-          final List<dynamic> rows = jsonResponse['rows'];
-          
-          AppLogger.d('获取到关注记录数: ${rows.length}');
-          
-          // 获取关注记录
-          final attentionRecords = rows.map((row) => FavoriteModel.fromJson(row)).toList();
-          
-          // 获取卖家详情
-          final List<FavoriteSellerModel> sellers = [];
-          for (final record in attentionRecords) {
-            try {
-              // 获取卖家详情
-              final sellerDetail = await _getSellerDetail(record.objectId);
-              sellers.add(sellerDetail);
-            } catch (e) {
-              AppLogger.d('获取卖家详情出错: $e');
-              
-              // 🔥 如果是API返回错误用户信息的异常，跳过这条记录
-              if (e.toString().contains('API返回了错误的用户信息')) {
-                AppLogger.d('⚠️ 跳过有问题的关注记录 (objectId: ${record.objectId})');
-                continue;
-              }
-              
-              // 🔥 对于其他异常（网络错误等），使用基本信息构造模型
-              sellers.add(FavoriteSellerModel(
-                id: record.objectId,
-                referId: record.objectId,
-                nickName: '卖家 ${record.objectId}',
-                type: 'MEMBER',
-                isFavorite: true, // 关注的卖家在收藏页面显示为已关注
-              ));
-            }
+        final List<FavoriteSellerModel> sellers = [];
+        for (final rec in records) {
+          try {
+            sellers.add(await _getSellerDetail(rec.objectId));
+          } catch (e) {
+            AppLogger.d('[Favorites] 获取卖家详情失败 objectId=${rec.objectId}: $e');
           }
-          
-          AppLogger.d('成功获取关注的卖家数: ${sellers.length}');
-          return sellers;
-        } else {
-          // API调用成功但没有数据，返回空列表
-          AppLogger.d('API调用成功但没有关注的卖家数据');
-          return [];
         }
-      } else {
-        // 如果API调用失败，返回空列表
-        AppLogger.d('获取关注卖家列表API调用失败 - HTTP状态码: ${response.statusCode}');
-        return [];
+        return sellers;
       }
+      // API 成功但无数据时返回空列表
+      return [];
     } catch (e) {
-      AppLogger.d('获取关注卖家列表出错: $e');
-      // 发生异常时返回空列表
+      AppLogger.d('[Favorites] 获取收藏卖家列表出错: $e');
       return [];
     }
   }
 
-  /// 获取卖家详情
-  Future<FavoriteSellerModel> _getSellerDetail(int sellerId) async {
-    final uri = Uri.parse('$baseUrl/api/project/details?memberId=$sellerId');
-    final headers = await _getHeaders();
-    
-    _logRequest('GET', uri, headers);
-    
-    final response = await client.get(uri, headers: headers);
-    
-    _logResponse(response.statusCode, response.body);
+  Future<FavoriteSellerModel> _getSellerDetail(int memberId) async {
+    final response = await coreDioClient.get(
+      '/api/project/details',
+      queryParameters: {'memberId': memberId},
+    );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = json.decode(response.body);
-      if (jsonResponse['code'] == 200 && jsonResponse['data'] != null) {
-        final data = jsonResponse['data'];
-        
-        return FavoriteSellerModel(
-          id: sellerId,
-          referId: sellerId,
-          nickName: data['nickName'] ?? '未知卖家',
-          trueName: data['trueName'],
-          avatar: data['avatar'],
-          mobile: data['mobile'],
-          gender: data['gender'],
-          type: data['type'] ?? 'MEMBER',
-          status: data['status'],
-          isFavorite: true,
-        );
-      } else {
-        throw ServerException(message: jsonResponse['msg'] ?? 'Failed to get seller detail');
-      }
-    } else {
-      throw ServerException(message: 'Failed to get seller detail');
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      return FavoriteSellerModel(
+        id: memberId,
+        referId: memberId,
+        nickName: data['nickName'] as String? ?? '未知卖家',
+        trueName: data['trueName'] as String?,
+        avatar: data['avatar'] as String?,
+        mobile: data['mobile'] as String?,
+        gender: data['gender'] as String?,
+        type: data['type'] as String? ?? 'MEMBER',
+        status: data['status'] as String?,
+        isFavorite: true,
+      );
     }
+    throw ServerFailure(message: response.data?['msg'] ?? '获取卖家详情失败');
   }
 
-  /// 添加收藏
   @override
   Future<void> addToFavorites(
     String type,
     int objectId,
     Map<String, dynamic>? feature,
   ) async {
-    try {
-      final userId = await getUserId();
-      final uri = Uri.parse('$baseUrl/api/collect/add');
-
-      final body = json.encode({
-        'memberId': int.parse(userId),
-        'objectId': objectId,
-        'type': type,
-        'feature': feature,
-      });
-
-      final headers = await _getHeaders();
-      
-      AppLogger.d('添加收藏API请求URL: $uri');
-      AppLogger.d('添加收藏API请求体: $body');
-      
-      final response = await client.post(
-        uri,
-        headers: headers,
-        body: body,
-      );
-      
-      AppLogger.d('添加收藏API响应状态码: ${response.statusCode}');
-      AppLogger.d('添加收藏API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] != 200) {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to add to favorites');
-        }
-      } else {
-        throw ServerException(message: 'Failed to add to favorites');
-      }
-    } catch (e) {
-      AppLogger.d('添加收藏出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
+    final response = await coreDioClient.post(
+      '/api/collect/add',
+      data: {'objectId': objectId, 'type': type, 'feature': feature},
+    );
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      return;
     }
+    throw ServerFailure(message: response.data?['msg'] ?? '添加收藏失败');
   }
 
-  /// 从收藏中移除
   @override
   Future<void> removeFromFavorites(List<int> favoriteIds) async {
-    try {
-      final uri = Uri.parse('$baseUrl/api/collect/delete');
-
-      final body = json.encode(favoriteIds);
-
-      final headers = await _getHeaders();
-      
-      AppLogger.d('移除收藏API请求URL: $uri');
-      AppLogger.d('移除收藏API请求体: $body');
-      
-      final response = await client.post(
-        uri,
-        headers: headers,
-        body: body,
-      );
-      
-      AppLogger.d('移除收藏API响应状态码: ${response.statusCode}');
-      AppLogger.d('移除收藏API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] != 200) {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to remove from favorites');
-        }
-      } else {
-        throw ServerException(message: 'Failed to remove from favorites');
-      }
-    } catch (e) {
-      AppLogger.d('移除收藏出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
+    final response = await coreDioClient.post(
+      '/api/collect/delete',
+      data: favoriteIds,
+    );
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      return;
     }
+    throw ServerFailure(message: response.data?['msg'] ?? '移除收藏失败');
   }
 
-  /// 检查对象是否已收藏
+  @override
+  Future<void> removeFromFavoritesByObjectId(String type, int objectId) async {
+    final response = await coreDioClient.get(
+      '/api/collect/list',
+      queryParameters: {'type': type, 'pageNum': 1, 'pageSize': 100},
+    );
+
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      final rows = response.data['rows'] as List<dynamic>? ?? [];
+      for (final row in rows) {
+        if (row['objectId'] == objectId && row['type'] == type) {
+          await removeFromFavorites([row['id'] as int]);
+          return;
+        }
+      }
+      // 未找到记录，视为已删除
+      return;
+    }
+    throw ServerFailure(message: response.data?['msg'] ?? '查询收藏列表失败');
+  }
+
   @override
   Future<Map<int, bool>> checkIsFavorite(
     String type,
     List<int> objectIds,
   ) async {
-    try {
-      final uri = Uri.parse('$baseUrl/api/collect/isCollect');
+    final response = await coreDioClient.post(
+      '/api/collect/isCollect',
+      data: {'type': type, 'searchIds': objectIds},
+    );
 
-      final body = json.encode({
-        'type': type,
-        'searchIds': objectIds,
-      });
-
-      final headers = await _getHeaders();
-      
-      AppLogger.d('检查收藏API请求URL: $uri');
-      AppLogger.d('检查收藏API请求体: $body');
-      
-      final response = await client.post(
-        uri,
-        headers: headers,
-        body: body,
-      );
-      
-      AppLogger.d('检查收藏API响应状态码: ${response.statusCode}');
-      AppLogger.d('检查收藏API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] == 200) {
-          final Map<String, dynamic> data = jsonResponse['data'];
-          
-          // 将字符串键转换为整数键
-          final Map<int, bool> result = {};
-          data.forEach((key, value) {
-            result[int.parse(key)] = value;
-          });
-          
-          return result;
-        } else {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to check if favorite');
-        }
-      } else {
-        throw ServerException(message: 'Failed to check if favorite');
-      }
-    } catch (e) {
-      AppLogger.d('检查收藏状态出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      return data.map((k, v) => MapEntry(int.parse(k), v as bool));
     }
+    throw ServerFailure(message: response.data?['msg'] ?? '检查收藏状态失败');
   }
 
-  /// 关注卖家
   @override
   Future<void> followSeller(CommonUserModel user) async {
-    try {
-      final uri = Uri.parse('$baseUrl/api/collect/add');
-
-      // 🔥 统一使用collect接口：构造收藏请求体
-      final body = json.encode({
-        'objectId': user.referId, // 被关注者的ID
-        'type': 'attentionMember', // 关注用户类型
+    final response = await coreDioClient.post(
+      '/api/collect/add',
+      data: {
+        'objectId': user.referId,
+        'type': 'attentionMember',
         'feature': {
           'id': user.referId,
           'name': user.nickName ?? '未知用户',
           'avatar': user.avatar,
           'type': user.type,
         },
-      });
-
-      final headers = await _getHeaders();
-      
-      AppLogger.d('关注卖家API请求URL: $uri');
-      AppLogger.d('关注卖家API请求体: $body');
-      
-      final response = await client.post(
-        uri,
-        headers: headers,
-        body: body,
-      );
-      
-      AppLogger.d('关注卖家API响应状态码: ${response.statusCode}');
-      AppLogger.d('关注卖家API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] != 200) {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to follow seller');
-        }
-      } else {
-        throw ServerException(message: 'Failed to follow seller');
-      }
-    } catch (e) {
-      AppLogger.d('关注卖家出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
+      },
+    );
+    if (response.statusCode == 200 &&
+        response.data != null &&
+        response.data['code'] == 200) {
+      return;
     }
+    throw ServerFailure(message: response.data?['msg'] ?? '关注卖家失败');
   }
 
-  /// 取消关注卖家
   @override
   Future<void> unfollowSeller(CommonUserModel user) async {
-    try {
-      // 🔥 统一使用collect接口：先查询收藏记录ID，然后删除
-      AppLogger.d('[UnfollowSeller] 开始取消关注: referId=${user.referId}');
-      await removeFromFavoritesByObjectId('attentionMember', user.referId);
-      AppLogger.d('[UnfollowSeller] 取消关注成功');
-    } catch (e) {
-      AppLogger.d('取消关注卖家出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
-    }
-  }
-
-  /// 按对象ID从收藏中移除
-  @override
-  Future<void> removeFromFavoritesByObjectId(String type, int objectId) async {
-    try {
-      AppLogger.d('[Debug] 开始按objectId删除收藏: type=$type, objectId=$objectId');
-      
-      // 步骤1: 获取收藏列表以找到收藏记录ID
-      final userId = await getUserId();
-      final queryParams = {
-        'type': type,
-        'memberId': userId,
-        'pageNum': '1',
-        'pageSize': '100', // 获取足够多的记录
-      };
-
-      final uri = Uri.parse('$baseUrl/api/collect/list').replace(
-        queryParameters: queryParams,
-      );
-
-      final headers = await _getHeaders();
-      
-      AppLogger.d('[Debug] 查询收藏列表API请求URL: $uri');
-      
-      final response = await client.get(uri, headers: headers);
-      
-      AppLogger.d('[Debug] 查询收藏列表API响应状态码: ${response.statusCode}');
-      AppLogger.d('[Debug] 查询收藏列表API响应内容: ${response.body}');
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['code'] == 200 && jsonResponse['rows'] != null) {
-          final List<dynamic> rows = jsonResponse['rows'];
-          
-          // 步骤2: 查找匹配的收藏记录
-          int? favoriteRecordId;
-          for (final row in rows) {
-            if (row['objectId'] == objectId && row['type'] == type) {
-              favoriteRecordId = row['id'];
-              AppLogger.d('[Debug] 找到匹配的收藏记录: recordId=$favoriteRecordId, objectId=$objectId');
-              break;
-            }
-          }
-          
-          if (favoriteRecordId == null) {
-            AppLogger.d('[Debug] 未找到匹配的收藏记录，可能已经被删除');
-            // 不抛出错误，认为删除成功
-            return;
-          }
-          
-          // 步骤3: 使用收藏记录ID删除
-          await removeFromFavorites([favoriteRecordId]);
-          AppLogger.d('[Debug] 成功删除收藏记录: $favoriteRecordId');
-          
-        } else {
-          throw ServerException(message: jsonResponse['msg'] ?? 'Failed to get favorites list');
-        }
-      } else {
-        throw ServerException(message: 'Failed to get favorites list');
-      }
-    } catch (e) {
-      AppLogger.d('[Debug] 按objectId删除收藏出错: $e');
-      if (e is ServerException) {
-        rethrow;
-      }
-      throw ServerException(message: e.toString());
-    }
+    await removeFromFavoritesByObjectId('attentionMember', user.referId);
   }
 }

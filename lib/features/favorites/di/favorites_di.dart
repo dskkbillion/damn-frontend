@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/network/core_dio_client.dart';
 import '../../../core/network/network_info.dart';
 import '../data/datasources/favorites_local_data_source.dart';
 import '../data/datasources/favorites_local_data_source_impl.dart';
@@ -59,16 +59,7 @@ class FavoritesDI {
     // Data sources
     sl.registerLazySingleton<FavoritesRemoteDataSource>(
       () => FavoritesRemoteDataSourceImpl(
-        client: sl<http.Client>(),
-        baseUrl: sl<String>(instanceName: 'baseUrl'),
-        getToken: () async {
-          final tokenGetter = sl<Future<String?> Function()>(instanceName: 'getAuthToken');
-          return await tokenGetter() ?? '';
-        },
-        getUserId: () async {
-          final userIdGetter = sl<Future<String?> Function()>(instanceName: 'getUserId');
-          return await userIdGetter() ?? '';
-        },
+        coreDioClient: sl<CoreDioClient>(),
       ),
     );
 
@@ -77,11 +68,6 @@ class FavoritesDI {
         sharedPreferences: sl<SharedPreferences>(),
       ),
     );
-
-    // External
-    if (!sl.isRegistered<http.Client>()) {
-      sl.registerLazySingleton(() => http.Client());
-    }
   }
 
   /// 注册Mock依赖（用于测试和预览）
