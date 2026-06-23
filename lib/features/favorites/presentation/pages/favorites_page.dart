@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -147,7 +148,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
+          colorFilter: ColorFilter.mode(AppColors.textSecondary, BlendMode.srcIn),
         ),
         activeIcon: SvgPicture.asset(
           'assets/icons/nav/dskk_logo.svg',
