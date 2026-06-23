@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 // 导入国际化
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/translatable_text.dart';
 
 import '../../domain/entities/product_review.dart';
@@ -30,7 +31,7 @@ class ProductReviewsPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(AppLocalizations.of(context).home_reviews_title),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
             onPressed: () => context.pop(),
           ),
         ),
@@ -119,9 +120,9 @@ class ProductReviewsPage extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         review.skuName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -132,9 +133,9 @@ class ProductReviewsPage extends StatelessWidget {
             // 评论时间
             Text(
               _formatDateTime(context, review.createTime),
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -162,7 +163,7 @@ class ProductReviewsPage extends StatelessWidget {
             margin: const EdgeInsets.only(top: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: AppColors.backgroundSecondary,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Column(
@@ -189,9 +190,9 @@ class ProductReviewsPage extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         _formatDateTime(context, review.sellerReplyTime!),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -248,7 +249,7 @@ class ProductReviewsPage extends StatelessWidget {
                   placeholder: (context, url) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey[200],
+                    color: AppColors.backgroundSecondary,
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -256,7 +257,7 @@ class ProductReviewsPage extends StatelessWidget {
                   errorWidget: (context, url, error) => Container(
                     width: 80,
                     height: 80,
-                    color: Colors.grey[200],
+                    color: AppColors.backgroundSecondary,
                     child: const Icon(Icons.error),
                   ),
                 ),

@@ -322,16 +322,16 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                                   _isDescriptionExpanded
                                     ? AppLocalizations.of(context).product_detail_collapse
                                     : AppLocalizations.of(context).product_detail_more,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
-                                    color: Colors.blue[600],
+                                    color: AppColors.textLink,
                                   ),
                                 ),
                                 Icon(
                                   _isDescriptionExpanded
                                     ? Icons.keyboard_arrow_up
                                     : Icons.keyboard_arrow_down,
-                                  color: Colors.blue[600],
+                                  color: AppColors.textLink,
                                   size: 16,
                                 ),
                               ],
