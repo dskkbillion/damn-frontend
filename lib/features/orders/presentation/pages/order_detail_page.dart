@@ -45,7 +45,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).order_detail_invalid_id), backgroundColor: Colors.red),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).order_detail_invalid_id),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
           Navigator.of(context).pop();
         }
@@ -126,7 +129,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -150,7 +152,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         ..showSnackBar(
           SnackBar(
             content: Text(state.message),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -242,7 +244,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Theme.of(context).colorScheme.shadow.withOpacity(0.08),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -262,7 +264,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         // Loading overlay for action processing
         if (state is OrderDetailActionLoading)
           Container(
-            color: Colors.black.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.scrim.withOpacity(0.4),
             child: const Center(
               child: CircularProgressIndicator(),
             ),

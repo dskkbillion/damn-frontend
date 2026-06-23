@@ -5,6 +5,8 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/currency/presentation/cubit/currency_cubit.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/product_card_skeleton.dart';
+
 import '../../domain/entities/home_feed_item.dart';
 import 'product_card.dart';
 
@@ -161,10 +163,15 @@ class _HomeFeedListState extends State<HomeFeedList> {
           ),
         ),
         if (widget.isLoadingMore)
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Center(
-              child: CircularProgressIndicator(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: ProductCardSkeleton(aspectRatio: 0.8 + (widget.feedItems.length % 3) * 0.2)),
+                const SizedBox(width: 10),
+                Expanded(child: ProductCardSkeleton(aspectRatio: 0.8 + ((widget.feedItems.length + 1) % 3) * 0.2)),
+              ],
             ),
           ),
         if (!widget.hasMore)

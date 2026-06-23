@@ -427,11 +427,11 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       case 'wait_audit':
         return colorScheme.primary;
       case 'audit_pass':
-        return Colors.green;
+        return colorScheme.tertiary;
       case 'audit_reject':
         return colorScheme.error;
       case 'refund_success':
-        return Colors.green;
+        return colorScheme.tertiary;
       default:
         return colorScheme.onSurfaceVariant;
     }

@@ -68,7 +68,38 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
           // Handle Loaded State
           if (state is AfterSalesListLoaded) {
              if (state.applications.isEmpty) {
-                return Center(child: Text(AppLocalizations.of(context).after_sales_list_empty));
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(40.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 48,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              AppLocalizations.of(context).after_sales_list_empty,
+                              style: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
              }
             // TODO: Implement pagination/infinite scroll later
             return _buildApplicationsList(context, state.applications);
@@ -83,25 +114,86 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
 
   // Helper method to build the list view
   Widget _buildApplicationsList(BuildContext context, List<AfterSalesApplication> applications) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     // TODO: Add logic for pagination (hasReachedMax, bottom loader)
     return ListView.builder(
+        padding: const EdgeInsets.all(16.0),
         itemCount: applications.length,
         itemBuilder: (context, index) {
            final application = applications[index];
-           // TODO: Create a dedicated AfterSalesItemCard widget
-           return ListTile(
-              leading: application.productImage != null
-                ? AppNetworkImage(imageUrl: application.productImage!, width: 50, height: 50)
-                : const Icon(Icons.image, size: 50),
-              title: Text(application.productName ?? AppLocalizations.of(context).after_sales_list_unknown_product),
-              subtitle: Text('${AppLocalizations.of(context).after_sales_list_status(application.refundStateText ?? application.refundState)}\n${AppLocalizations.of(context).after_sales_list_apply_time(application.createTime?.toLocal().toString() ?? '-')}'),
-              trailing: Text(application.refundPrice != null ? RegionConfig.formatPrice(application.refundPrice!) : 'N/A'),
-              isThreeLine: true,
-              onTap: () {
+           return Card(
+             margin: const EdgeInsets.symmetric(vertical: 8.0),
+             elevation: 0,
+             shape: RoundedRectangleBorder(
+               borderRadius: BorderRadius.circular(12.0),
+               side: BorderSide(
+                 color: colorScheme.outline.withOpacity(0.3),
+               ),
+             ),
+             child: InkWell(
+               borderRadius: BorderRadius.circular(12.0),
+               onTap: () {
                  // #399: 详情页路由 :id 期望 order.id（详情页用 LoadAfterSalesDetailByOrderId 反查），
                  // 不是 refund.id。历史注释代码传 application.id 是错的。
                  context.push('/afterSalesDetail/${application.orderId}');
-              },
+               },
+               child: Padding(
+                 padding: const EdgeInsets.all(16.0),
+                 child: Row(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     // 商品图片
+                     ClipRRect(
+                       borderRadius: BorderRadius.circular(8.0),
+                       child: application.productImage != null
+                         ? AppNetworkImage(
+                             imageUrl: application.productImage!,
+                             width: 64,
+                             height: 64,
+                             fit: BoxFit.cover,
+                           )
+                         : Container(
+                             width: 64,
+                             height: 64,
+                             color: colorScheme.surfaceContainerHighest,
+                             child: Icon(Icons.image, color: colorScheme.onSurfaceVariant),
+                           ),
+                     ),
+                     const SizedBox(width: 12),
+                     // 文字信息
+                     Expanded(
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           Text(
+                             application.productName ?? AppLocalizations.of(context).after_sales_list_unknown_product,
+                             style: textTheme.titleSmall,
+                             maxLines: 2,
+                             overflow: TextOverflow.ellipsis,
+                           ),
+                           const SizedBox(height: 6),
+                           Text(
+                             AppLocalizations.of(context).after_sales_list_status(application.refundStateText ?? application.refundState),
+                             style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                           ),
+                           const SizedBox(height: 2),
+                           Text(
+                             AppLocalizations.of(context).after_sales_list_apply_time(application.createTime?.toLocal().toString() ?? '-'),
+                             style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                           ),
+                         ],
+                       ),
+                     ),
+                     // 退款金额
+                     Text(
+                       application.refundPrice != null ? RegionConfig.formatPrice(application.refundPrice!) : 'N/A',
+                       style: textTheme.titleSmall?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                     ),
+                   ],
+                 ),
+               ),
+             ),
            );
         },
     );

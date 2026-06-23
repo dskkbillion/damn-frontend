@@ -81,7 +81,6 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_canceled),
-              backgroundColor: Colors.green,
             ),
           );
           if (context.mounted) {
@@ -94,7 +93,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_cancel_failed(state.message)),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         } else if (state is OrderDetailError) {
@@ -103,7 +102,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_load_detail_failed(state.message)),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -115,7 +114,7 @@ class OrderItemCard extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.order_card_cancel_failed(e.toString())),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -196,10 +195,9 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_deleted),
-              backgroundColor: Colors.green,
             ),
           );
-          
+
           // 刷新订单列表，保持当前的筛选状态
           if (context.mounted) {
             final orderListBloc = context.read<OrderListBloc>();
@@ -210,13 +208,13 @@ class OrderItemCard extends StatelessWidget {
           print('[OrderItemCard] 删除失败: ${state.message}');
           // 取消订阅
           streamSubscription.cancel();
-          
+
           // 删除失败
           ScaffoldMessenger.of(context).hideCurrentSnackBar();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_delete_failed(state.message)),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         } else if (state is OrderDetailError) {
@@ -229,7 +227,7 @@ class OrderItemCard extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.order_card_load_detail_failed(state.message)),
-              backgroundColor: Colors.red,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -238,14 +236,14 @@ class OrderItemCard extends StatelessWidget {
       // 先加载订单详情
       print('[OrderItemCard] 先加载订单详情');
       orderDetailBloc.add(LoadOrderDetail(orderId: order.id));
-      
+
     } catch (e) {
       print('[OrderItemCard] 删除操作异常: $e');
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.order_card_delete_failed(e.toString())),
-          backgroundColor: Colors.red,
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
@@ -304,7 +302,7 @@ class OrderItemCard extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 16,
                               backgroundImage: NetworkImage(order.tenant!.avatar!),
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor: colorScheme.surfaceContainerHighest,
                               onBackgroundImageError: (_, __) {},
                             ),
                           )
@@ -370,8 +368,8 @@ class OrderItemCard extends StatelessWidget {
                   else // 如果没有图片URL，显示占位符
                      Container(
                           width: 80, height: 80,
-                          color: Colors.grey[200],
-                          child: Icon(Icons.image, color: Colors.grey[400]),
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Icon(Icons.image, color: colorScheme.onSurfaceVariant),
                         ),
                   const SizedBox(width: 12.0),
                   // 商品详情
@@ -437,7 +435,7 @@ class OrderItemCard extends StatelessWidget {
                     ],
                   ),
                 ),
-              Divider(height: 1, color: Colors.grey[200]), // 分隔线
+              Divider(height: 1, color: Theme.of(context).dividerColor), // 分隔线
               const SizedBox(height: 8.0), // Reduced spacing slightly
               // 时间戳单独一行，靠左
               Align(

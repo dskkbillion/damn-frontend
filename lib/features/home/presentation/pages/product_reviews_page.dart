@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/review_item_skeleton.dart';
 import 'package:dskk_flutter_refactor/core/widgets/translatable_text.dart';
 
 import '../../domain/entities/product_review.dart';
@@ -38,7 +39,12 @@ class ProductReviewsPage extends StatelessWidget {
         body: BlocBuilder<ProductReviewsCubit, ProductReviewsState>(
           builder: (context, state) {
             if (state is ProductReviewsLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: 5,
+                separatorBuilder: (_, __) => const Divider(height: 32),
+                itemBuilder: (_, __) => const ReviewItemSkeleton(),
+              );
             } else if (state is ProductReviewsError) {
               return Center(
                 child: Column(

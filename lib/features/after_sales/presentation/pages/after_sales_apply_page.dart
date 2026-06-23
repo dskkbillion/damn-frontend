@@ -98,7 +98,6 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).after_sales_image_process_success(successCount, avgCompression.toStringAsFixed(1))),
-              backgroundColor: Colors.green,
             ),
           );
         }
@@ -107,7 +106,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context).after_sales_image_process_failed(errorCount)),
-              backgroundColor: Colors.orange,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
         }
@@ -312,12 +311,14 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                   top: -4, // Adjust position
                   right: -4, // Adjust position
                   child: IconButton(
-                    icon: const Icon(Icons.remove_circle, color: Colors.red, size: 20),
+                    icon: Icon(Icons.remove_circle, color: Theme.of(context).colorScheme.error, size: 20),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     tooltip: AppLocalizations.of(context).after_sales_remove_image,
                     onPressed: () => _removeImage(idx),
-                    splashRadius: 15,
+                    style: IconButton.styleFrom(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                   ),
                 ),
               ],
@@ -332,11 +333,11 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(4.0),
-                border: Border.all(color: Colors.grey[400]!)
+                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.4)),
               ),
-              child: Icon(Icons.add_a_photo_outlined, color: Colors.grey[600]),
+              child: Icon(Icons.add_a_photo_outlined, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
       ],
@@ -346,34 +347,48 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
 
   // Add method to display order item info (copied & adapted from SelectAfterSalesTypePage)
   Widget _buildOrderItemInfo(BuildContext context, OrderItem item) {
-     return Card(
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Card(
       elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            Container(
-              width: 60, height: 60,
-              color: Colors.grey[300],
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4.0),
               child: item.imageUrl.isNotEmpty
-                 ? AppNetworkImage(
-                     imageUrl: item.imageUrl,
-                     fit: BoxFit.cover,
-                     borderRadius: BorderRadius.circular(4.0),
-                   )
-                 : Icon(Icons.image, color: Colors.grey[500]),
+                ? AppNetworkImage(
+                    imageUrl: item.imageUrl,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(4.0),
+                  )
+                : Container(
+                    width: 60,
+                    height: 60,
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(Icons.image, color: colorScheme.onSurfaceVariant),
+                  ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(item.productName, style: textTheme.titleSmall),
                   const SizedBox(height: 4),
-                  Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    item.skuName ?? '',
+                    style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
                   const SizedBox(height: 4),
-                  Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    '${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}',
+                    style: textTheme.titleSmall?.copyWith(color: colorScheme.primary),
+                  ),
                 ],
               ),
             ),
