@@ -20,9 +20,16 @@ class ProductReviewModel extends ProductReview {
     required super.buyer,
     super.sellerReply,
     super.sellerReplyTime,
+    super.contentTranslated,
+    super.translationSourceLang,
+    super.translationProvider,
   });
 
   factory ProductReviewModel.fromJson(Map<String, dynamic> json) {
+    // 翻译字段来自响应顶层 _translations/_translationMeta（#301）
+    final translations = json['_translations'] as Map<String, dynamic>?;
+    final translationMeta = json['_translationMeta'] as Map<String, dynamic>?;
+
     return ProductReviewModel(
       id: json['id'] ?? json['orderId'] ?? 0,  // API 可能没有 id 字段，用 orderId 作为 fallback
       merchantId: json['merchantId'] ?? 0,  // merchantId 可能为 null
@@ -43,6 +50,9 @@ class ProductReviewModel extends ProductReview {
       buyer: ReviewBuyerModel.fromJson(json['buyer'] ?? {}),
       sellerReply: json['sellerReply'] ?? json['replyContent'],  // 卖家回复
       sellerReplyTime: json['sellerReplyTime'] ?? json['replyTime'],  // 卖家回复时间
+      contentTranslated: translations?['content'] as String?,
+      translationSourceLang: translationMeta?['sourceLang'] as String?,
+      translationProvider: translationMeta?['provider'] as String?,
     );
   }
 }

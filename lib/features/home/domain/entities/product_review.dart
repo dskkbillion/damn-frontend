@@ -19,6 +19,9 @@ class ProductReview extends Equatable {
   final ReviewBuyer buyer;
   final String? sellerReply;  // 卖家回复
   final String? sellerReplyTime;  // 卖家回复时间
+  final String? contentTranslated;  // 评论内容翻译（#301）
+  final String? translationSourceLang;  // 原始语言（如 "zh"）
+  final String? translationProvider;  // 翻译提供方（如 "google"）
 
   const ProductReview({
     required this.id,
@@ -38,6 +41,9 @@ class ProductReview extends Equatable {
     required this.buyer,
     this.sellerReply,
     this.sellerReplyTime,
+    this.contentTranslated,
+    this.translationSourceLang,
+    this.translationProvider,
   });
 
   @override
@@ -59,6 +65,9 @@ class ProductReview extends Equatable {
     buyer,
     sellerReply,
     sellerReplyTime,
+    contentTranslated,
+    translationSourceLang,
+    translationProvider,
   ];
 }
 

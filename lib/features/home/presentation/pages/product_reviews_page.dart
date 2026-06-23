@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 // 导入国际化
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
+import 'package:dskk_flutter_refactor/core/widgets/translatable_text.dart';
+
 import '../../domain/entities/product_review.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
@@ -138,13 +140,13 @@ class ProductReviewsPage extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        // 显示评论内容
-        Text(
-          review.content ?? AppLocalizations.of(context).home_reviews_default_content,
-          style: const TextStyle(
-            fontSize: 14,
-            height: 1.5,
-          ),
+        // 显示评论内容（#301 支持翻译 toggle）
+        TranslatableText(
+          originalText: review.content ?? AppLocalizations.of(context).home_reviews_default_content,
+          translatedText: review.contentTranslated,
+          sourceLang: review.translationSourceLang,
+          provider: review.translationProvider,
+          style: const TextStyle(fontSize: 14, height: 1.5),
         ),
         
         // 评论图片
