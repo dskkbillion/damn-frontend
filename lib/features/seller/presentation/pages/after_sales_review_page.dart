@@ -496,7 +496,7 @@ class _RefundCard extends StatelessWidget {
                   errorWidget: (_, __, ___) => Container(
                     width: double.infinity,
                     height: 300,
-                    color: Colors.grey[300],
+                    color: AppColors.backgroundSecondary,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

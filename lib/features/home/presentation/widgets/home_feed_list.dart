@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/currency/presentation/cubit/currency_cubit.dart';
 import 'package:dskk_flutter_refactor/core/currency/domain/entities/currency.dart';
 
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/product_card_skeleton.dart';
 
 import '../../domain/entities/home_feed_item.dart';
@@ -181,7 +182,7 @@ class _HomeFeedListState extends State<HomeFeedList> {
               child: Text(
                 AppLocalizations.of(context).home_reached_end,
                 style: const TextStyle(
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                   fontSize: 14,
                 ),
               ),
