@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -147,25 +148,25 @@ class _BannerCarouselState extends State<BannerCarousel> {
                             fit: BoxFit.cover,
                             placeholder: (context, url) => ShimmerEffect(
                               child: Container(
-                                color: Colors.grey[200],
+                                color: AppColors.backgroundSecondary,
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              color: Colors.grey[200],
+                              color: AppColors.backgroundSecondary,
                               child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.error_outline,
-                                      color: Colors.grey[400],
+                                      color: AppColors.textTertiary,
                                       size: 50,
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
                                       AppLocalizations.of(context).home_image_load_failed,
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: AppColors.textSecondary,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -177,21 +178,21 @@ class _BannerCarouselState extends State<BannerCarousel> {
                         } else {
                           // 如果没有图片URL，显示占位图
                           return Container(
-                            color: Colors.grey[200],
+                            color: AppColors.backgroundSecondary,
                             child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.image,
-                                    color: Colors.grey[400],
+                                    color: AppColors.textTertiary,
                                     size: 50,
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
                                     AppLocalizations.of(context).home_banner_placeholder(index + 1),
                                     style: TextStyle(
-                                      color: Colors.grey[600],
+                                      color: AppColors.textSecondary,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -222,7 +223,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
                 shape: BoxShape.circle,
                 color: _currentIndex == index
                     ? Theme.of(context).primaryColor
-                    : Colors.grey[300],
+                    : AppColors.backgroundSecondary,
               ),
             ),
           ),

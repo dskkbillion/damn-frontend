@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 认证状态枚举
 enum AuthenticationStatus {
@@ -61,15 +62,15 @@ extension AuthStatusExtension on AuthenticationStatus {
   Color get color {
     switch (this) {
       case AuthenticationStatus.notSubmitted:
-        return Colors.grey;
+        return AppColors.textTertiary;
       case AuthenticationStatus.pending:
-        return Colors.orange;
+        return AppColors.warning;
       case AuthenticationStatus.approved:
-        return Colors.green;
+        return AppColors.success;
       case AuthenticationStatus.rejected:
-        return Colors.red;
+        return AppColors.error;
       case AuthenticationStatus.expired:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
   

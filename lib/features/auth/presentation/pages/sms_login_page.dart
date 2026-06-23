@@ -50,7 +50,7 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     // 统一到 DeepStream 主题 token（与 unified_login_page 一致，去旧品牌色 #B66D0E）
     const Color primaryColor = AppColors.primary;
     const Color buttonBackgroundColor = AppColors.primaryVariant;
-    final Color linkColor = Colors.grey[600]!;
+    const Color linkColor = AppColors.textSecondary;
 
     // TODO: 使用 BlocProvider 提供 SmsLoginCubit 实例
     // final cubit = BlocProvider.of<SmsLoginCubit>(context);

@@ -757,7 +757,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                                 child: Text(
                                   material.answer!,
                                   style: TextStyle(
-                                    color: Colors.grey[700],
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -846,8 +846,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(AppLocalizations.of(context).product_detail_view_all, style: const TextStyle(color: Colors.grey)),
-                        const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                        Text(AppLocalizations.of(context).product_detail_view_all, style: const TextStyle(color: AppColors.textSecondary)),
+                        const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
                       ],
                     ),
                   ),
@@ -873,7 +873,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Text(
                       state.message,
-                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                     ),
                   ),
                 )
@@ -884,7 +884,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           child: Text(
                             AppLocalizations.of(context).product_detail_no_reviews,
-                            style: const TextStyle(color: Colors.grey, fontSize: 14),
+                            style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
                           ),
                         ),
                       )
@@ -943,7 +943,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   const SizedBox(width: 8),
                   Text(
                     _formatReviewTime(review.createTime),
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                   ),
                 ],
               ),
@@ -954,7 +954,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                   children: [
                     Text(
                       review.skuName,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
                     ),
                   ],
                 ),
@@ -965,7 +965,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: review.content == null ? Colors.grey : null,
+                  color: review.content == null ? AppColors.textSecondary : null,
                 ),
               ),
               // 显示评价图片（如果有）
@@ -987,12 +987,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                             height: 60,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.image, color: Colors.grey),
+                              color: AppColors.backgroundSecondary,
+                              child: const Icon(Icons.image, color: AppColors.textTertiary),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              color: Colors.grey[200],
-                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                              color: AppColors.backgroundSecondary,
+                              child: const Icon(Icons.broken_image, color: AppColors.textTertiary),
                             ),
                           ),
                         ),
@@ -1029,7 +1029,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
       margin: const EdgeInsets.all(16.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: AppColors.backgroundSecondary,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -1047,7 +1047,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             Text(
               '卖家暂未设置需要买家提供的信息',
               style: TextStyle(
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
                 fontSize: 14,
               ),
             )
@@ -1060,7 +1060,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 Icon(
                   _getMaterialIcon(material.type),
                   size: 20,
-                  color: Colors.grey[700],
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -1078,7 +1078,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                           material.answer!,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: AppColors.textSecondary,
                           ),
                         ),
                     ],
