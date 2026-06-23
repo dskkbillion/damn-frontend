@@ -509,7 +509,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     final List<Widget> actionButtons = [];
 
     // 撤销申请：待审核或审核通过时可撤销
-    if (application.refundState == 'WAIT_AUDIT' || application.refundState == 'AUDIT_PASS') {
+    if (application.refundState == 'wait_audit' || application.refundState == 'audit_pass') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
@@ -522,8 +522,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
 
     // 主操作按钮：待审核时可修改（主要按钮），非终态的其他状态显示平台介入（次要按钮）
     // 终态（audit_pass / audit_refused / cancel）不显示任何操作按钮
-    const terminalStates = {'AUDIT_PASS', 'AUDIT_REFUSED', 'CANCEL'};
-    if (application.refundState == 'WAIT_AUDIT') {
+    const terminalStates = {'audit_pass', 'audit_refused', 'cancel'};
+    if (application.refundState == 'wait_audit') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
