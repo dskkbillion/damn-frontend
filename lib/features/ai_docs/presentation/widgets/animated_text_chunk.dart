@@ -79,7 +79,7 @@ class _AnimatedTextChunkState extends State<AnimatedTextChunk>
                     : widget.textStyle?.color,
               ) ?? TextStyle(
                 color: widget.isStreaming
-                    ? Colors.grey[600]
+                    ? AppColors.textSecondary
                     : Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),

@@ -276,7 +276,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
   Color _getStatusColor(OrderStatus status, ColorScheme colorScheme) {
     switch (status) {
       case OrderStatus.awaitingPayment:
-        return Colors.orange;
+        return AppColors.warning;
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
         return Colors.blue;

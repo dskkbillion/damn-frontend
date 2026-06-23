@@ -152,7 +152,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
               Text(
                 '当前状态：${status.statusText}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: status.hasReachedLimit ? Colors.orange : Colors.green,
+                  color: status.hasReachedLimit ? AppColors.warning : AppColors.success,
                 ),
               ),
               if (remaining > 0) ...[
@@ -160,7 +160,7 @@ class _SellerOrderDetailActionsState extends State<SellerOrderDetailActions> {
                 Text(
                   '邀请后今日还可邀请 ${remaining - 1} 次',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],

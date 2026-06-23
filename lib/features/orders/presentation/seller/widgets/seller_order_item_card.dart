@@ -78,7 +78,7 @@ class SellerOrderItemCard extends StatelessWidget {
                             child: CircleAvatar(
                               radius: 16,
                               backgroundImage: NetworkImage(order.buyer!.avatar!),
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor: AppColors.backgroundSecondary,
                               onBackgroundImageError: (_, __) {},
                             ),
                           )

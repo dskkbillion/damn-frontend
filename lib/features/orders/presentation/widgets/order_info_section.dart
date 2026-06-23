@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import '../../domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -93,7 +94,7 @@ class OrderInfoSection extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
+          Text(label, style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
           const SizedBox(width: 8),
           Expanded(child: Text(value, style: textTheme.bodyMedium)),
         ],

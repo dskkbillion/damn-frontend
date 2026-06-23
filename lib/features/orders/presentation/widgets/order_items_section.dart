@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import '../../domain/entities/order.dart';
 import 'order_detail_item_tile.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -20,7 +21,7 @@ class OrderItemsSection extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
+          color: AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(

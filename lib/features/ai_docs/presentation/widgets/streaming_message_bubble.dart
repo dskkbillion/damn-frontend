@@ -26,9 +26,9 @@ class StreamingMessageBubble extends StatelessWidget {
     // 确定气泡颜色
     Color bubbleColor;
     if (isUser) {
-      bubbleColor = Colors.blue[100]!;
+      bubbleColor = AppColors.info.withOpacity(0.15);
     } else {
-      bubbleColor = Colors.grey[100]!;
+      bubbleColor = AppColors.backgroundSecondary;
     }
 
     return Container(
