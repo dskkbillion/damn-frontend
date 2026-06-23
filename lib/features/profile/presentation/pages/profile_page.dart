@@ -220,8 +220,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icons.notifications_none,
                       text: appLocalizations.profile_message_notifications,
                       onTap: () {
-                        // TODO: 导航到消息通知页面
-                        // navigationService.navigateToNotifications();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('消息通知功能开发中')),
+                        );
                       },
                     ),
                     // 添加语言设置选项
