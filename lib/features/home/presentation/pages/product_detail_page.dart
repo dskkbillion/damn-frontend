@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/translatable_text.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -472,9 +473,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildProductBasicInfo(ProductDetail product, [ProductTranslation? translation]) {
-    final displayName = translation?.nameOrOriginal(product.name) ?? product.name;
-    final displayDescription = translation?.descriptionOrOriginal(product.description) ?? product.description;
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -497,12 +495,13 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             ),
           ),
 
-          Text(
-            displayName,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          // 商品名称（#301 支持翻译 toggle）
+          TranslatableText(
+            originalText: product.name,
+            translatedText: translation?.translatedName,
+            sourceLang: translation?.sourceLang,
+            provider: translation?.provider,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 8),
@@ -517,8 +516,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Text(
-                    displayDescription,
+                // 商品描述（#301 支持翻译 toggle）
+                TranslatableText(
+                    originalText: product.description,
+                    translatedText: translation?.translatedDescription,
+                    sourceLang: translation?.sourceLang,
+                    provider: translation?.provider,
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
