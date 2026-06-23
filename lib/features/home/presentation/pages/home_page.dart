@@ -7,12 +7,10 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
-import '../../domain/entities/banner.dart' as home_banner;
 import '../../domain/entities/home_feed_item.dart';
 import '../bloc/home_bloc.dart';
 import '../bloc/home_event.dart';
 import '../bloc/home_state.dart';
-import '../widgets/banner_carousel.dart';
 import '../widgets/product_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
@@ -103,7 +101,6 @@ class _HomeViewState extends State<HomeView> {
               itemBuilder: (_, __) => const SkeletonCard(),
             );
           } else if (state is HomeLoaded || state is HomeRefreshing) {
-            final banners = _getBanners(state);
             final feedItems = _getFeedItems(state);
 
             return RefreshIndicator(
@@ -122,29 +119,22 @@ class _HomeViewState extends State<HomeView> {
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  // 轮播图
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: BannerCarousel(
-                        banners: banners,
-                        onBannerClicked: (banner) {
-                          context.read<HomeBloc>().add(BannerClicked(
-                                bannerId: banner.id,
-                                targetType: banner.targetType,
-                                targetValue: banner.targetValue,
-                              ));
-                          // 显示点击信息
-                          // ScaffoldMessenger.of(context).showSnackBar(
-                          //   SnackBar(
-                          //     content: Text(appLocalizations.home_banner_clicked(banner.targetType, banner.targetValue)),
-                          //     duration: const Duration(seconds: 1),
-                          //   ),
-                          // );
-                        },
-                      ),
-                    ),
-                  ),
+                  // 轮播图（暂时隐藏，后期按需启用）
+                  // SliverToBoxAdapter(
+                  //   child: Padding(
+                  //     padding: const EdgeInsets.only(top: 16.0),
+                  //     child: BannerCarousel(
+                  //       banners: banners,
+                  //       onBannerClicked: (banner) {
+                  //         context.read<HomeBloc>().add(BannerClicked(
+                  //               bannerId: banner.id,
+                  //               targetType: banner.targetType,
+                  //               targetValue: banner.targetValue,
+                  //             ));
+                  //       },
+                  //     ),
+                  //   ),
+                  // ),
 
                   // 信息流列表 - 使用SliverPadding和SliverMasonryGrid
                   if (feedItems.isEmpty)
@@ -332,16 +322,6 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  /// 获取轮播图列表
-  List<home_banner.Banner> _getBanners(HomeState state) {
-    if (state is HomeLoaded) {
-      return state.banners;
-    } else if (state is HomeRefreshing) {
-      return state.banners;
-    }
-    return [];
-  }
-  
   /// 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
     // 获取国际化资源
