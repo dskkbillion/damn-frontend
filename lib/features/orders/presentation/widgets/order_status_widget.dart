@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
@@ -26,19 +27,19 @@ class OrderStatusWidget extends StatelessWidget {
         break;
       case OrderStatus.awaitingSubmission:
         statusText = l10n.order_status_awaiting_submission;
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         break;
       case OrderStatus.buyAwaitingSubmission:
         statusText = l10n.order_status_buy_awaiting_submission;
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         break;
       case OrderStatus.awaitingStart:
         statusText = l10n.order_status_awaiting_start;
-        statusColor = Colors.blue;
+        statusColor = AppColors.info;
         break;
       case OrderStatus.awaitingDelivery: // 待发货
         statusText = l10n.order_status_awaiting_delivery;
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         break;
       case OrderStatus.awaitingConfirmation: // 待收货
         statusText = l10n.order_status_awaiting_confirmation;
@@ -54,7 +55,7 @@ class OrderStatusWidget extends StatelessWidget {
         break;
       case OrderStatus.canceled: // 已取消
         statusText = l10n.order_status_canceled;
-        statusColor = Colors.grey;
+        statusColor = AppColors.textSecondary;
         break;
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
@@ -68,7 +69,7 @@ class OrderStatusWidget extends StatelessWidget {
       case OrderStatus.unknown:
       default:
         statusText = l10n.order_status_unknown;
-        statusColor = Colors.grey;
+        statusColor = AppColors.textSecondary;
         break;
     }
 

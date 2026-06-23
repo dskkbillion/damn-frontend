@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'; // Import GoRouter
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
@@ -51,14 +52,14 @@ class SelectAfterSalesTypePage extends StatelessWidget {
             // Use item.imageUrl
             Container(
               width: 60, height: 60,
-              color: Colors.grey[300],
+              color: AppColors.backgroundSecondary,
               child: item.imageUrl.isNotEmpty
                  ? AppNetworkImage(
                      imageUrl: item.imageUrl,
                      fit: BoxFit.cover,
                      borderRadius: BorderRadius.circular(4.0),
                    )
-                 : Icon(Icons.image, color: Colors.grey[500]),
+                 : Icon(Icons.image, color: AppColors.textTertiary),
             ),
             const SizedBox(width: 16),
             // Use item fields for text
@@ -68,7 +69,7 @@ class SelectAfterSalesTypePage extends StatelessWidget {
                 children: [
                   Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   const SizedBox(height: 4),
                   Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],

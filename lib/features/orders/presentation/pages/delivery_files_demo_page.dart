@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../widgets/delivery_file_viewer.dart';
 
@@ -133,7 +134,7 @@ class DeliveryFilesDemoPage extends StatelessWidget {
                         const Icon(
                           Icons.description,
                           size: 18,
-                          color: Colors.grey,
+                          color: AppColors.textSecondary,
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -141,7 +142,7 @@ class DeliveryFilesDemoPage extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/data/datasources/simple_mock_order_data_source.dart';
 import 'package:dskk_flutter_refactor/core/config/app_config.dart';
@@ -30,7 +31,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
             ),
           ],
         ),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppColors.warning,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -49,7 +50,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
                   Text(
                     '点击下方任意订单状态，预览对应的订单详情页',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -73,7 +74,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
           
           // 快捷测试区
           Card(
-            color: Colors.blue[50],
+            color: AppColors.backgroundSecondary,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -81,12 +82,12 @@ class MockOrdersPreviewPage extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.speed, color: Colors.blue[700]),
+                      Icon(Icons.speed, color: AppColors.info),
                       const SizedBox(width: 8),
                       Text(
                         '快捷测试',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.blue[700],
+                          color: AppColors.info,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -200,7 +201,7 @@ class MockOrdersPreviewPage extends StatelessWidget {
                   context.push('/orderDetail/${order.id}');
                 },
               ),
-              if (orders.last != order) Divider(height: 1, color: Colors.grey[200]),
+              if (orders.last != order) Divider(height: 1, color: AppColors.backgroundSecondary),
             ],
           )),
         ],
@@ -211,10 +212,10 @@ class MockOrdersPreviewPage extends StatelessWidget {
   Color _getStatusColor(OrderStatus status) {
     switch (status) {
       case OrderStatus.awaitingPayment:
-        return Colors.orange;
+        return AppColors.warning;
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
-        return Colors.blue;
+        return AppColors.info;
       case OrderStatus.awaitingStart:
         return Colors.indigo;
       case OrderStatus.awaitingDelivery:
@@ -226,12 +227,12 @@ class MockOrdersPreviewPage extends StatelessWidget {
       case OrderStatus.orderCompleted:
         return Colors.green;
       case OrderStatus.canceled:
-        return Colors.grey;
+        return AppColors.textSecondary;
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
         return Colors.red;
       default:
-        return Colors.grey;
+        return AppColors.textSecondary;
     }
   }
   

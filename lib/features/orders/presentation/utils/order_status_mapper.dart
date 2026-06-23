@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 
 /// 订单状态映射器 - 用于轻咨询模式的状态简化
@@ -85,7 +86,7 @@ class OrderStatusMapper {
       case OrderStatus.awaitingStart:
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingConfirmation:
-        return Colors.orange; // 橙色 - 进行中
+        return AppColors.warning; // 橙色 - 进行中
 
       case OrderStatus.awaitingEvaluation:
         return Colors.green; // 绿色 - 待评价
@@ -103,11 +104,11 @@ class OrderStatusMapper {
         return Colors.blueGrey; // 蓝灰色 - 平台介入
 
       case OrderStatus.canceled:
-        return Colors.grey; // 灰色 - 已取消
+        return AppColors.textSecondary; // 灰色 - 已取消
 
       case OrderStatus.unknown:
       default:
-        return Colors.grey;
+        return AppColors.textSecondary;
     }
   }
 
@@ -197,11 +198,11 @@ class OrderStatusMapper {
         return colorScheme.error;
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
-        return Colors.orange;
+        return AppColors.warning;
       case OrderStatus.awaitingStart:
-        return Colors.blue;
+        return AppColors.info;
       case OrderStatus.awaitingDelivery:
-        return Colors.orange;
+        return AppColors.warning;
       case OrderStatus.awaitingConfirmation:
         return colorScheme.primary;
       case OrderStatus.awaitingEvaluation:
@@ -209,7 +210,7 @@ class OrderStatusMapper {
       case OrderStatus.orderCompleted:
         return colorScheme.secondary;
       case OrderStatus.canceled:
-        return Colors.grey;
+        return AppColors.textSecondary;
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
         return Colors.deepOrange;
@@ -219,7 +220,7 @@ class OrderStatusMapper {
       case OrderStatus.applyForRefuse:
       case OrderStatus.unknown:
       default:
-        return Colors.grey;
+        return AppColors.textSecondary;
     }
   }
 

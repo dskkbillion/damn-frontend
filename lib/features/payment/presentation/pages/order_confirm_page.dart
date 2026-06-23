@@ -154,18 +154,18 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                           vertical: AppDimensions.spacingSm,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: AppColors.warning.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                          border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.info_outline, size: 16, color: Colors.orange),
+                            Icon(Icons.info_outline, size: 16, color: AppColors.warning),
                             SizedBox(width: AppDimensions.spacingSm),
                             Expanded(
                               child: Text(
                                 '注意：信用卡支付将以美元结算，具体汇率以银行为准',
-                                style: TextStyle(fontSize: 12, color: Colors.orange),
+                                style: TextStyle(fontSize: 12, color: AppColors.warning),
                               ),
                             ),
                           ],
@@ -453,7 +453,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     switch (method) {
       case payment_models.PaymentMethod.alipay:
         iconData = Icons.payment;
-        iconColor = Colors.blue; // 支付宝品牌色
+        iconColor = AppColors.info; // 支付宝品牌色
         logoAsset = 'assets/images/alipay_logo.png';
         subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
         break;
@@ -646,7 +646,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   Color _getButtonColor() {
     switch (_selectedPaymentMethod) {
       case payment_models.PaymentMethod.alipay:
-        return Colors.blue; // 支付宝品牌色
+        return AppColors.info; // 支付宝品牌色
       case payment_models.PaymentMethod.wechat:
         return Colors.green; // 微信品牌色
       case payment_models.PaymentMethod.stripe:

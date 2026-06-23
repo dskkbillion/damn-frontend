@@ -160,7 +160,7 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
   Color get _iconColor => switch (_status) {
         PaymentResultStatus.success => AppColors.success,
         PaymentResultStatus.failure => AppColors.error,
-        PaymentResultStatus.pending => Colors.orange,
+        PaymentResultStatus.pending => AppColors.warning,
       };
 
   String get _detailText {
@@ -234,20 +234,20 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.spacingMd),
                       decoration: BoxDecoration(
-                        color: Colors.orange[50],
+                        color: AppColors.warning.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                        border: Border.all(color: Colors.orange[200]!),
+                        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+                          Icon(Icons.info_outline, color: AppColors.warning, size: 20),
                           const SizedBox(width: AppDimensions.spacingSm),
                           Expanded(
                             child: Text(
                               '提示:订单状态可能需要几分钟更新,请稍后查看',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.orange[800],
+                                color: AppColors.warning,
                               ),
                             ),
                           ),

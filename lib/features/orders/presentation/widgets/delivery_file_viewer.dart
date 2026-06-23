@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -131,11 +132,11 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
       case 'pdf':
         return Colors.red;
       case 'word':
-        return Colors.blue;
+        return AppColors.info;
       case 'excel':
         return Colors.green.shade700;
       case 'powerpoint':
-        return Colors.orange;
+        return AppColors.warning;
       case 'archive':
         return Colors.purple;
       case 'video':
@@ -143,7 +144,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
       case 'audio':
         return Colors.cyan;
       default:
-        return Colors.grey;
+        return AppColors.textSecondary;
     }
   }
 
@@ -335,14 +336,14 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                           : (l10n.tapToOpen ?? 'Tap to open'),
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                     ),
                     if (_isDownloading) ...[
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: _downloadProgress,
-                        backgroundColor: Colors.grey[300],
+                        backgroundColor: AppColors.backgroundSecondary,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           Theme.of(context).primaryColor,
                         ),
@@ -352,7 +353,7 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
                         '${(_downloadProgress * 100).toStringAsFixed(0)}%',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_it/get_it.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
@@ -146,7 +147,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                   height: 80,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: Colors.grey[200],
+                    color: AppColors.backgroundSecondary,
                   ),
                   child: item.imageUrl.isNotEmpty
                       ? AppNetworkImage(
@@ -154,7 +155,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                           fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(8),
                         )
-                      : Icon(Icons.image, color: Colors.grey[500], size: 40),
+                      : Icon(Icons.image, color: AppColors.textTertiary, size: 40),
                 ),
                 const SizedBox(width: 16),
                 
@@ -178,7 +179,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                           item.skuName!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       const SizedBox(height: 8),

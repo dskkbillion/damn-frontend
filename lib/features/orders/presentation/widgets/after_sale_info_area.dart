@@ -2,6 +2,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// Widget displaying information related to the after-sale process.
@@ -43,7 +44,7 @@ class AfterSaleInfoArea extends StatelessWidget {
         // Placeholder details for mediation
         detailsSection = Padding(
            padding: const EdgeInsets.only(top: 16.0),
-           child: Text(l10n.order_after_sale_add_evidence_tip, style: textTheme.bodySmall?.copyWith(color: Colors.grey[600])),
+           child: Text(l10n.order_after_sale_add_evidence_tip, style: textTheme.bodySmall?.copyWith(color: AppColors.textSecondary)),
         );
          actionButtons = [
           TextButton(onPressed: () {}, child: Text(l10n.order_after_sale_contact_platform)),
@@ -116,7 +117,7 @@ class AfterSaleInfoArea extends StatelessWidget {
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
      children: [
-       _buildDetailRow(context, AppLocalizations.of(context).order_after_sale_refund_status, status, valueColor: Colors.orange[700]),
+       _buildDetailRow(context, AppLocalizations.of(context).order_after_sale_refund_status, status, valueColor: AppColors.warning),
        const SizedBox(height: 8),
        _buildDetailRow(context, AppLocalizations.of(context).order_after_sale_refund_amount, amount, valueStyle: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
      ],
@@ -128,7 +129,7 @@ class AfterSaleInfoArea extends StatelessWidget {
    return Column(
      crossAxisAlignment: CrossAxisAlignment.start,
      children: [
-       Text(AppLocalizations.of(context).order_after_sale_reject_reason, style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
+       Text(AppLocalizations.of(context).order_after_sale_reject_reason, style: textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
        const SizedBox(height: 4),
        Text(reason, style: textTheme.bodyMedium?.copyWith(color: Colors.red[700])), 
      ],
@@ -141,7 +142,7 @@ class AfterSaleInfoArea extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label ', style: textTheme.labelMedium?.copyWith(color: Colors.grey[600])),
+        Text('$label ', style: textTheme.labelMedium?.copyWith(color: AppColors.textSecondary)),
         Expanded(
           child: Text(
             value,

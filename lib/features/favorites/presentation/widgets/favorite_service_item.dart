@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
@@ -52,12 +53,12 @@ class FavoriteServiceItem extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.backgroundSecondary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
                     Icons.image,
-                    color: Colors.grey,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               const SizedBox(width: 12),
@@ -83,7 +84,7 @@ class FavoriteServiceItem extends StatelessWidget {
                         service.description!,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

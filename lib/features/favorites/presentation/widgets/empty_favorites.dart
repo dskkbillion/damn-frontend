@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 收藏为空时的展示组件
@@ -22,7 +23,7 @@ class EmptyFavorites extends StatelessWidget {
           Icon(
             Icons.favorite_border,
             size: 80,
-            color: Colors.grey[400],
+            color: AppColors.textTertiary,
           ),
           const SizedBox(height: 16),
           // 空状态文本
@@ -31,7 +32,7 @@ class EmptyFavorites extends StatelessWidget {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -42,7 +43,7 @@ class EmptyFavorites extends StatelessWidget {
                 : AppLocalizations.of(context).favorites_empty_sellers_hint,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: AppColors.textTertiary,
             ),
           ),
         ],
