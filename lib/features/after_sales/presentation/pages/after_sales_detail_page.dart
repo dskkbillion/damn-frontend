@@ -520,7 +520,9 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       );
     }
 
-    // 主操作按钮：待审核时可修改（主要按钮），其他状态显示平台介入（次要按钮）
+    // 主操作按钮：待审核时可修改（主要按钮），非终态的其他状态显示平台介入（次要按钮）
+    // 终态（audit_pass / audit_refused / cancel）不显示任何操作按钮
+    const terminalStates = {'AUDIT_PASS', 'AUDIT_REFUSED', 'CANCEL'};
     if (application.refundState == 'WAIT_AUDIT') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
@@ -530,7 +532,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
           isPrimary: true,
         ),
       );
-    } else {
+    } else if (!terminalStates.contains(application.refundState)) {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
