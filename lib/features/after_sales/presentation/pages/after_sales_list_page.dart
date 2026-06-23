@@ -20,6 +20,17 @@ class AfterSalesListPage extends StatefulWidget {
 
 class _AfterSalesListPageState extends State<AfterSalesListPage> {
 
+  String _localizeRefundState(BuildContext context, String state) {
+    final s = AppLocalizations.of(context);
+    switch (state) {
+      case 'wait_audit': return s.after_sales_status_wait_audit;
+      case 'audit_pass': return s.after_sales_status_audit_pass;
+      case 'audit_refused': return s.after_sales_status_refused;
+      case 'cancel': return s.after_sales_status_canceled;
+      default: return s.after_sales_status_unknown;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -174,7 +185,7 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
                            ),
                            const SizedBox(height: 6),
                            Text(
-                             AppLocalizations.of(context).after_sales_list_status(application.refundStateText ?? application.refundState),
+                             AppLocalizations.of(context).after_sales_list_status(_localizeRefundState(context, application.refundState)),
                              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
                            ),
                            const SizedBox(height: 2),
