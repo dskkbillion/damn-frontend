@@ -278,11 +278,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           return FavoriteServiceItem(
             service: service,
             onTap: () {
-              // 跳转到服务详情页
-              // 这里需要通过导航服务实现
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   SnackBar(content: Text('查看服务详情: ${service.title}')),
-              // );
+              context.push('/product/${service.id}');
             },
             onRemove: () {
               // 使用正确的事件类型，通过服务ID删除收藏
@@ -331,11 +327,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
           return FavoriteSellerItem(
             seller: seller,
             onTap: () {
-              // 跳转到卖家详情页
-              // 这里需要通过导航服务实现
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   SnackBar(content: Text('查看卖家详情: ${seller.nickName}')),
-              // );
+              context.push('/seller-profile/${seller.referId}');
             },
             onUnfollow: () {
               // 取消关注卖家
