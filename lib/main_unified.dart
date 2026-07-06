@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -72,6 +73,7 @@ Future<void> main() async {
       'BACKEND_BASE_URL environment variable is not set. Please configure it in $_envFile.',
     );
   }
+  _guardReleaseBackendConfig(backendBaseUrl);
   
   AppLogger.d('[Unified Production] Using API: $backendBaseUrl');
   AppLogger.d('[Unified Production] Model API: ${RegionConfig.modelBaseUrl}');
@@ -162,6 +164,24 @@ Future<void> main() async {
       ),
     ),
   );
+}
+
+void _guardReleaseBackendConfig(String backendBaseUrl) {
+  if (!kReleaseMode) return;
+
+  final host = Uri.tryParse(backendBaseUrl)?.host.toLowerCase();
+  final isLocalBackend = _envFile == '.env.local-debug' ||
+      host == 'localhost' ||
+      host == '127.0.0.1' ||
+      host == '0.0.0.0' ||
+      host == '::1';
+
+  if (isLocalBackend) {
+    throw StateError(
+      'Release build is using a local backend ($backendBaseUrl from $_envFile). '
+      'Use .env.staging for TestFlight or .env for production.',
+    );
+  }
 }
 
 

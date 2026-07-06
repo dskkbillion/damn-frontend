@@ -1,2 +1,7 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+
+// Internal TestFlight archives from this branch must use Zeabur staging.
+// This overrides stale Generated.xcconfig values left by local flutter run.
+DART_DEFINES=RU5WX0ZJTEU9LmVudi5zdGFnaW5n
+FLUTTER_BUILD_NUMBER=202607061
