@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/core/widgets/translatable_text.dart';
 
 // 导入国际化
@@ -25,7 +26,6 @@ import '../../../../features/favorites/presentation/bloc/favorites_event.dart';
 // 导入聊天模块
 import '../../../../features/chat/domain/repositories/i_chat_repository.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_auth_repository.dart';
-import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 // 导入事件总线
 import '../../../../core/events/event_bus.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -573,13 +573,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     }
   }
 
-  // 获取档位价格显示（包含名称和价格）
-  String _getTierPriceDisplay(BuildContext context, ProductVariant variant) {
-    final tierName = _getTierDisplayName(variant.name, context);
-    final price = '${RegionConfig.currencySymbol}${variant.sellingPrice.toStringAsFixed(2)}';
-    return '$tierName $price';
-  }
-
   Widget _buildVariantTabs(ProductDetail product) {
     // 根据要求显示价格而不是档位名称
     return Column(
@@ -592,9 +585,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
           child: TabBar(
             controller: _tabController!,
-            tabs: product.variants!.map((variant) => Tab(
-              text: _getTierPriceDisplay(context, variant), // 显示价格
-            )).toList(),
+            tabs: product.variants!.map(_buildVariantTab).toList(),
             labelColor: Theme.of(context).colorScheme.primary,
             unselectedLabelColor: AppColors.textTertiary,
             indicatorColor: Theme.of(context).colorScheme.primary,
@@ -602,6 +593,40 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVariantTab(ProductVariant variant) {
+    final tierName = _getTierDisplayName(variant.name, context);
+    final selectedColor = Theme.of(context).colorScheme.primary;
+    return Tab(
+      height: 58,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              tierName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            PriceDisplayWidget(
+              price: variant.sellingPrice,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: selectedColor,
+              ),
+              secondaryStyle: const TextStyle(
+                fontSize: 10,
+                color: AppColors.textTertiary,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -667,7 +692,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
       width: double.infinity,
-      height: 50,
+      height: 58,
       child: ElevatedButton(
         onPressed: () {
           AppLogger.d('[ProductDetailPage] 一键购买按钮被点击');
@@ -698,13 +723,32 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
             borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
           ),
         ),
-        child: Text(
-          '一键购买 (${RegionConfig.currencySymbol}${variant.sellingPrice.toStringAsFixed(2)})',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              '一键购买',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 8),
+            PriceDisplayWidget(
+              price: variant.sellingPrice,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              secondaryStyle: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+                color: Colors.white.withValues(alpha: 0.78),
+              ),
+            ),
+          ],
         ),
       ),
     );
