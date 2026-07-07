@@ -96,7 +96,8 @@ class _PriceDisplayWidgetState extends State<PriceDisplayWidget> {
 
     final priceKey =
         '${widget.sourceCurrency.code}_${selectedCurrency.code}_${widget.price}';
-    final convertedMoney = convertedPrices[priceKey];
+    final convertedMoney = convertedPrices[priceKey] ??
+        _convertFromCachedCurrencyPair(selectedCurrency, convertedPrices);
     if (convertedMoney == null) {
       // 缓存 miss：下一帧触发补算，避免在 build 中同步改状态
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -130,6 +131,30 @@ class _PriceDisplayWidgetState extends State<PriceDisplayWidget> {
         ),
       ],
     );
+  }
+
+  Money? _convertFromCachedCurrencyPair(
+    Currency selectedCurrency,
+    Map<String, Money> convertedPrices,
+  ) {
+    final prefix = '${widget.sourceCurrency.code}_${selectedCurrency.code}_';
+    for (final entry in convertedPrices.entries) {
+      if (!entry.key.startsWith(prefix)) continue;
+      if (entry.value.currency.code != selectedCurrency.code) continue;
+
+      final sourceAmountText = entry.key.substring(prefix.length);
+      final sourceAmount = double.tryParse(sourceAmountText);
+      if (sourceAmount == null || sourceAmount <= 0) continue;
+
+      final rate = entry.value.amount / sourceAmount;
+      if (!rate.isFinite || rate <= 0) continue;
+
+      return Money(
+        amount: widget.price * rate,
+        currency: selectedCurrency,
+      );
+    }
+    return null;
   }
 
   Widget _buildPrimaryOnly() {

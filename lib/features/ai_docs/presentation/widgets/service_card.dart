@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import '../../domain/entities/related_service_entity.dart';
 
@@ -61,8 +62,8 @@ class ServiceCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: AppDimensions.spacingXs),
-                      Text(
-                        '￥${service.price.toStringAsFixed(2)}',
+                      PriceDisplayWidget(
+                        price: service.price,
                         style: TextStyle(
                           fontSize: 14,
                           color: Theme.of(context).colorScheme.primary,

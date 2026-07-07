@@ -76,13 +76,15 @@ class MyApp extends ConsumerWidget { // Changed to ConsumerWidget
       builder: (context, child) {
         // #348 根注入 CurrencyCubit，全 app 共享一份汇率状态。
         // 按用户 locale 推断默认副币种，启动即触发双显折算。
+        final effectiveLocale = locale ??
+            Localizations.maybeLocaleOf(context) ??
+            WidgetsBinding.instance.platformDispatcher.locale;
+        final secondary = _secondaryCurrencyForLocale(effectiveLocale) ?? Currency.usd;
         return BlocProvider<CurrencyCubit>(
+          key: ValueKey('currency-${secondary.code}'),
           create: (_) {
             final cubit = GetIt.I<CurrencyCubit>();
-            final secondary = _secondaryCurrencyForLocale(locale);
-            if (secondary != null) {
-              cubit.selectCurrency(secondary);
-            }
+            cubit.selectCurrency(secondary);
             return cubit;
           },
           child: GlobalMessageNotification(
