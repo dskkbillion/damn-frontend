@@ -27,8 +27,15 @@
       "clear_first": true
     },
     {
-      "action": "tap",
-      "predicate": { "text": "搜索" }
+      "_note": "Typing may auto-submit and remove the search button; tap it only when it is still visible.",
+      "action": "if_exists",
+      "predicate": { "text": "搜索" },
+      "then": [
+        {
+          "action": "tap",
+          "predicate": { "text": "搜索" }
+        }
+      ]
     },
     {
       "action": "wait_for",

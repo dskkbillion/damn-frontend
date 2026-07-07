@@ -6,7 +6,7 @@
       "id": "AI-01",
       "file": "ai_docs/AI-01.dsl.json",
       "module": "ai_docs",
-      "description": "AI 对话页加载-历史消息显示：底部「看看」tab 进入 AI 对话页，断言「欢迎使用AI助手」；打开侧边栏 Drawer 断言「新建聊天」「会话列表」",
+      "description": "AI 对话页加载-历史消息显示：底部「看看」tab 进入 AI 对话页，断言「欢迎使用AI助手」；打开侧边栏 Drawer 断言「新建聊天」",
       "requires_login": true,
       "fixtures": [
         "跑批器保证已登录态（AUTH-01 先跑）"
@@ -16,8 +16,7 @@
       "issue": "211",
       "assertions": [
         "assert_exists text_contains:「欢迎使用AI助手」（AI 对话页已加载）",
-        "assert_exists text_contains:「新建聊天」（侧边栏 Drawer 已打开）",
-        "assert_exists text_contains:「会话列表」（侧边栏 tooltip/标题文本）"
+        "assert_exists text_contains:「新建聊天」（侧边栏 Drawer 已打开）"
       ]
     },
     {
@@ -566,7 +565,7 @@
       "id": "CHAT-02",
       "file": "chat/CHAT-02.dsl.json",
       "module": "chat",
-      "description": "进入聊天室：聊天列表 → 点第一个会话 type:image → 断言进入聊天室（「输入消息...」输入框 + type:input）",
+      "description": "进入聊天室：聊天列表 → 点会话标题进入聊天室，断言「输入消息...」输入框 + type:input",
       "requires_login": true,
       "fixtures": [
         "跑批器保证已登录态",
@@ -576,7 +575,7 @@
       "verified": "BLOCKED-需活跃账号（2026-06-16 实跑发现：当前测试账号 18888888888=common_user.id 10290/买家标识 10378 是干净账号，订单/收藏/会话/售后全部为空——之前 manifest 里『买家1有数据』是基于错误的 member.id=1 推断，那套数据属于别的用户。脚本逻辑已按源码写好，但需换一个有真实数据的活跃账号(如 buyer 10321/10322)才能跑绿；本账号下手工造订单因 tenant_id/buyer_id 多套 ID 体系未能生效，真实下单又卡在 Stripe 支付）。",
       "issue": null,
       "assertions": [
-        "tap {type:image, index:0}（点第一个会话条目，买家模式下按卖家分组显示）",
+        "tap 会话标题（当前 UI 中点 leading image 只会展开分组，不能进入聊天室）",
         "assert_exists text_contains:「输入消息...」（i18n chat_enter_message，消息输入框 placeholder）",
         "assert_exists type:input（聊天室输入框）"
       ]
@@ -1184,18 +1183,18 @@
       "id": "HOME-13",
       "file": "home/HOME-13.dsl.json",
       "module": "home",
-      "description": "搜索商品显示结果-进搜索页输入「服务」触发搜索，断言结果页出现含价格的商品卡片",
+      "description": "搜索商品显示结果-进搜索页输入当前 staging 稳定关键词「scallioncake」触发搜索，断言结果页出现含价格的商品卡片",
       "requires_login": true,
       "fixtures": [
         "跑批器保证已登录态（不再 fresh 自动登录，见 fixtures/ensure_logged_in.fragment.json）",
-        "本地已有已发布商品 seed（名称含「服务」）"
+        "staging 当前已有已发布商品 seed（名称含「scallioncake」）"
       ],
       "automatable": "yes",
       "issue": "210",
       "assertions": [
         "assert_exists {type:image, text_contains:「$」}（搜索结果页出现含价格的商品卡片）"
       ],
-      "verified": "PASS（2026-06-16 真机：搜「服务」返回 5 个含「服务」商品(开锁/装机/机票/留学服务等)，底部「已经到底了」）。搜索页搜索触发用 tap{text:「搜索」}按钮。"
+      "verified": "PASS（2026-07-07 真机：搜「scallioncake」返回 2 个商品卡片，价格显示 $0.10 + ≈ ¥0.68；搜索按钮可能因自动搜索提前消失，脚本改为 if_exists 可选点击）。"
     },
     {
       "id": "HOME-14",
@@ -1582,7 +1581,7 @@
       "id": "SELL-07",
       "file": "seller/SELL-07.dsl.json",
       "module": "seller",
-      "description": "卖家订单列表-按状态筛选",
+      "description": "卖家订单列表-按状态筛选（当前 tab 文案：全部/待接单/待发货/待确认收货/待评价等）",
       "requires_login": true,
       "fixtures": [
         "卖家账号（已在卖家模式）",

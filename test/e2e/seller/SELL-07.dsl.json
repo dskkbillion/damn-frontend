@@ -32,7 +32,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "text_contains": "待处理", "index": 0 }
+      "predicate": { "text_contains": "待接单", "index": 0 }
     },
     {
       "action": "wait_for",
@@ -41,7 +41,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "text_contains": "已完成", "index": 0 }
+      "predicate": { "text_contains": "待发货", "index": 0 }
     },
     {
       "action": "wait_for",
@@ -50,7 +50,7 @@
     },
     {
       "action": "tap",
-      "predicate": { "text_contains": "已取消", "index": 0 }
+      "predicate": { "text_contains": "待评价", "index": 0 }
     },
     {
       "action": "wait_for",

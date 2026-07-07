@@ -26,13 +26,21 @@
       "timeout_ms": 8000
     },
     {
-      "action": "assert_exists",
-      "predicate": { "type": "image" },
-      "timeout_ms": 8000
-    },
-    {
-      "action": "tap",
-      "predicate": { "type": "image", "index": 0 }
+      "_note": "Tap the conversation title rather than the leading image/icon; tapping image only expands the group on the current Flutter UI.",
+      "action": "if_exists",
+      "predicate": { "text_contains": "清迈街头美食烹饪课" },
+      "then": [
+        {
+          "action": "tap",
+          "predicate": { "text_contains": "清迈街头美食烹饪课" }
+        }
+      ],
+      "else": [
+        {
+          "action": "tap",
+          "predicate": { "type": "cell", "index": 0 }
+        }
+      ]
     },
     {
       "action": "wait_for",

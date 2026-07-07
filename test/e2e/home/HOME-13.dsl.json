@@ -1,7 +1,7 @@
 {
   "version": "0.2",
   "_case": "HOME-13",
-  "_fix": "2026-06-22 修复：tap {text_contains:搜索服务} 会命中 Other 容器导致跳「我的」tab，改用坐标 (201,90) 直接点搜索框。",
+  "_fix": "2026-07-07 修复：staging 当前「服务」/「设计」关键词可返回空结果，改用已实测有结果的 scallioncake；搜索按钮可能因自动搜索提前消失，改为可选点击。",
   "steps": [
     {
       "action": "wait_for",
@@ -25,13 +25,19 @@
     },
     {
       "action": "type",
-      "text": "服务",
+      "text": "scallioncake",
       "predicate": { "type": "input" },
       "clear_first": true
     },
     {
-      "action": "tap",
-      "predicate": { "text": "搜索" }
+      "action": "if_exists",
+      "predicate": { "text": "搜索" },
+      "then": [
+        {
+          "action": "tap",
+          "predicate": { "text": "搜索" }
+        }
+      ]
     },
     {
       "action": "wait_for",
