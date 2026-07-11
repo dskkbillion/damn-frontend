@@ -354,7 +354,11 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    widget.group.chatRooms.first.productName ?? AppLocalizations.of(context).chat_product_conversation,
+                                    widget.group.chatRooms.first.hasProduct &&
+                                            !widget.group.chatRooms.first.hasAvailableProduct
+                                        ? AppLocalizations.of(context).chat_product_info_incomplete
+                                        : widget.group.chatRooms.first.productName ??
+                                            AppLocalizations.of(context).chat_product_conversation,
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: AppColors.textSecondary,
@@ -528,7 +532,9 @@ class ProductChatItem extends StatelessWidget {
               child: const Icon(Icons.shopping_bag, color: AppColors.textTertiary),
             ),
       title: Text(
-        chatRoom.productName ?? s.chat_unknown_product,
+        chatRoom.hasProduct && !chatRoom.hasAvailableProduct
+            ? s.chat_product_info_incomplete
+            : chatRoom.productName ?? s.chat_unknown_product,
         style: const TextStyle(fontWeight: FontWeight.w500),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -536,7 +542,7 @@ class ProductChatItem extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (chatRoom.productPrice != null)
+          if (chatRoom.hasAvailableProduct)
             Text(
               '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
               style: const TextStyle(
@@ -747,7 +753,8 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                       children: [
                         // 商品名称
                         Text(
-                          widget.group.productName ?? AppLocalizations.of(context).chat_unknown_product,
+                          widget.group.productName ??
+                              AppLocalizations.of(context).chat_product_info_incomplete,
                           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -756,7 +763,9 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
                         const SizedBox(height: 4),
                         
                         // 商品价格
-                        if (widget.group.productPrice != null)
+                        if (widget.group.productName != null &&
+                            widget.group.productPrice != null &&
+                            widget.group.productPrice! > 0)
                           Text(
                             '¥${widget.group.productPrice!.toStringAsFixed(2)}',
                             style: const TextStyle(

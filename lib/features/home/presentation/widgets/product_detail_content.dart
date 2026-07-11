@@ -241,6 +241,10 @@ class _ProductDetailContentState extends State<ProductDetailContent>
   }
 
   Widget _buildProductBasicInfo() {
+    final isPublished = widget.product.status.toLowerCase() == 'normal' &&
+        widget.product.variants != null &&
+        widget.product.variants!.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
@@ -257,7 +261,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
             child: Text(
               widget.isPreviewMode
                   ? '预览模式'
-                  : AppLocalizations.of(context).product_detail_published_status,
+                  : isPublished
+                      ? AppLocalizations.of(context).product_detail_published_status
+                      : AppLocalizations.of(context).chat_product_info_incomplete,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textPrimary,
               ),

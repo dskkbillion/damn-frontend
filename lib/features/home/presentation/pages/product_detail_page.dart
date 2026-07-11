@@ -474,6 +474,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
   }
 
   Widget _buildProductBasicInfo(ProductDetail product, [ProductTranslation? translation]) {
+    final isPublished = product.status.toLowerCase() == 'normal' &&
+        product.variants != null &&
+        product.variants!.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -488,7 +492,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             ),
             child: Text(
-              AppLocalizations.of(context).product_detail_published_status,
+              isPublished
+                  ? AppLocalizations.of(context).product_detail_published_status
+                  : AppLocalizations.of(context).chat_product_info_incomplete,
               style: const TextStyle(
                 fontSize: 12,
                 color: AppColors.textPrimary,
