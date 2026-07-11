@@ -123,11 +123,11 @@ class AppColors {
   static const Color statusDoNotDisturb = error;
 
   // ==================== 卖家模块强调色 ====================
-  /// 卖家强调色 - 琥珀金
-  static const Color sellerAccent = Color(0xFFBF7D2A);
+  /// 卖家强调色 - 品牌蓝变体
+  static const Color sellerAccent = primaryVariant;
 
   /// 卖家强调色 - 浅底 (10% 透明度)
-  static const Color sellerAccentLight = Color(0x1ABF7D2A);
+  static const Color sellerAccentLight = Color(0x1A0284C7);
 
   // ==================== 聊天模块颜色 ====================
   /// 聊天发送方气泡色
@@ -268,11 +268,11 @@ class AppColorsDark {
   static const Color info = Color(0xFF58A6FF);
 
   // ==================== 卖家模块强调色（暗色） ====================
-  /// 卖家强调色 - 暗色模式琥珀金（略亮）
-  static const Color sellerAccent = Color(0xFFD4A04A);
+  /// 卖家强调色 - 暗色模式品牌蓝
+  static const Color sellerAccent = accentLight;
 
   /// 卖家强调色 - 暗色浅底 (10% 透明度)
-  static const Color sellerAccentLight = Color(0x1AD4A04A);
+  static const Color sellerAccentLight = Color(0x1A79C0FF);
 
   // ==================== 聊天模块颜色（暗色） ====================
   /// 聊天发送方气泡色 - 暗色模式
