@@ -45,7 +45,7 @@ class SellerStatisticsDataSourceImpl implements ISellerStatisticsDataSource {
   }
 
   @override
-  Future<SellerIndexStatisticsDto> getIndexStatistics() async {
+  Future<SellerIndexStatisticsResponseDto> getIndexStatistics() async {
     try {
       final response = await dio.post('/api/project/statistics/index');
       AppLogger.d('[SellerStatistics] index response: ${response.data}');
@@ -62,7 +62,15 @@ class SellerStatisticsDataSourceImpl implements ISellerStatisticsDataSource {
           AppLogger.d('[SellerStatistics] index data is null');
           throw ServerException(message: '指标统计数据为空');
         }
-        return SellerIndexStatisticsDto.fromJson(data as Map<String, dynamic>);
+        final dataMap = data as Map<String, dynamic>;
+        final weeklyIncome = (dataMap['weeklyIncome'] as List<dynamic>? ?? const [])
+            .whereType<Map>()
+            .map((item) => SellerWeeklyIncomeDto.fromJson(Map<String, dynamic>.from(item)))
+            .toList(growable: false);
+        return SellerIndexStatisticsResponseDto(
+          statistics: SellerIndexStatisticsDto.fromJson(dataMap),
+          weeklyIncome: weeklyIncome,
+        );
       } else {
         throw ServerException(message: '服务器响应错误: ${response.statusCode}');
       }

@@ -37,6 +37,32 @@ class SellerIndexStatisticsDto with _$SellerIndexStatisticsDto {
       _$SellerIndexStatisticsDtoFromJson(json);
 }
 
+/// 统计接口返回的周收入条目。
+class SellerWeeklyIncomeDto {
+  final String date;
+  final double amount;
+
+  const SellerWeeklyIncomeDto({required this.date, required this.amount});
+
+  factory SellerWeeklyIncomeDto.fromJson(Map<String, dynamic> json) {
+    return SellerWeeklyIncomeDto(
+      date: json['date']?.toString() ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+/// 统计接口的指标与趋势数据。
+class SellerIndexStatisticsResponseDto {
+  final SellerIndexStatisticsDto statistics;
+  final List<SellerWeeklyIncomeDto> weeklyIncome;
+
+  const SellerIndexStatisticsResponseDto({
+    required this.statistics,
+    required this.weeklyIncome,
+  });
+}
+
 /// 百分比统计指标DTO
 @freezed
 class SellerPercentStatisticsDto with _$SellerPercentStatisticsDto {

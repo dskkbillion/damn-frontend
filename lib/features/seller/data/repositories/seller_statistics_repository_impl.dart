@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/error/failures.dart';
 import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/i_seller_statistics_data_source.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_statistics.dart';
+import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_dashboard_data.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/repositories/i_seller_statistics_repository.dart';
 
 /// 卖家统计数据仓库实现
@@ -47,7 +48,8 @@ class SellerStatisticsRepositoryImpl implements ISellerStatisticsRepository {
   Future<Either<Failure, SellerIndexStatistics>> getIndexStatistics() async {
     if (await networkInfo.isConnected) {
       try {
-        final dto = await dataSource.getIndexStatistics();
+        final response = await dataSource.getIndexStatistics();
+        final dto = response.statistics;
         final entity = SellerIndexStatistics(
           totalEarnings: dto.totalEarnings,
           thisMonthTotalEarnings: dto.thisMonthTotalEarnings,
@@ -57,6 +59,9 @@ class SellerStatisticsRepositoryImpl implements ISellerStatisticsRepository {
           receiptOrderNum: dto.receiptOrderNum,
           earlyTime: dto.earlyTime,
           latenessTime: dto.latenessTime,
+          weeklyIncome: response.weeklyIncome
+              .map((item) => WeeklyIncomeItem(date: item.date, amount: item.amount))
+              .toList(growable: false),
         );
         return Right(entity);
       } on ServerException catch (e) {

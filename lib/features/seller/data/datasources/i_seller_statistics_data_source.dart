@@ -6,7 +6,7 @@ abstract class ISellerStatisticsDataSource {
   Future<SellerUpgradeStatisticsDto> getUpgradeStatistics();
   
   /// 获取主要指标统计数据
-  Future<SellerIndexStatisticsDto> getIndexStatistics();
+  Future<SellerIndexStatisticsResponseDto> getIndexStatistics();
   
   /// 获取百分比统计数据
   Future<SellerPercentStatisticsDto> getPercentStatistics();

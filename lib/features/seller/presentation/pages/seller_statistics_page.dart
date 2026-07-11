@@ -8,6 +8,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_s
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_statistics/seller_statistics_state.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -51,6 +52,8 @@ class SellerStatisticsPage extends ConsumerWidget {
                           _buildUpgradeSection(context, state.upgradeStats),
                           const SizedBox(height: 24),
                           _buildIndicatorsSection(context, state.indexStats),
+                          const SizedBox(height: 24),
+                          _buildWeeklyIncomeSection(context, state.indexStats),
                           const SizedBox(height: 24),
                           _buildPendingSection(context, state.indexStats),
                         ],
@@ -312,6 +315,94 @@ class SellerStatisticsPage extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  /// 构建最近七天收入趋势图
+  Widget _buildWeeklyIncomeSection(BuildContext context, SellerIndexStatistics stats) {
+    final weeklyIncome = stats.weeklyIncome;
+    final maxAmount = weeklyIncome.fold<double>(
+      0.0,
+      (max, item) => item.amount > max ? item.amount : max,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          AppLocalizations.of(context).seller_home_recent_income,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: AppDimensions.spacingLg),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          decoration: BoxDecoration(
+            color: AppColors.backgroundCard,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.borderSecondary,
+                spreadRadius: 1,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: weeklyIncome.isEmpty
+              ? SizedBox(
+                  height: 120,
+                  child: Center(child: Text(AppLocalizations.of(context).seller_home_no_income_data)),
+                )
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: 180,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: weeklyIncome.map((item) {
+                          final height = maxAmount > 0 ? 130 * item.amount / maxAmount : 0.0;
+                          return Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Tooltip(
+                                  message: PriceFormatter.format(item.amount),
+                                  child: Container(
+                                    height: height,
+                                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.78),
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(AppDimensions.radiusSm),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: AppDimensions.spacingSm),
+                                Text(
+                                  _formatIncomeDate(item.date),
+                                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  String _formatIncomeDate(String date) {
+    try {
+      final parsed = DateTime.parse(date);
+      return '${parsed.month}/${parsed.day}';
+    } catch (_) {
+      return date;
+    }
   }
   
   /// 构建待处理部分（未完成订单数、距离下次邀交日）

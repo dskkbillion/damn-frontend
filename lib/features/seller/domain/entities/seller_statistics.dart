@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'seller_dashboard_data.dart';
 
 /// 升级统计数据实体
 class SellerUpgradeStatistics extends Equatable {
@@ -32,6 +33,7 @@ class SellerIndexStatistics extends Equatable {
   final int receiptOrderNum;         // 回单订单数
   final int earlyTime;               // 最早时间
   final int latenessTime;            // 最晚时间
+  final List<WeeklyIncomeItem> weeklyIncome;
   
   const SellerIndexStatistics({
     required this.totalEarnings,
@@ -42,10 +44,11 @@ class SellerIndexStatistics extends Equatable {
     required this.receiptOrderNum,
     required this.earlyTime,
     required this.latenessTime,
+    this.weeklyIncome = const [],
   });
   
   @override
-  List<Object?> get props => [totalEarnings, thisMonthTotalEarnings, totalOrderNum, activeOrderNum, pendingOrderNum, receiptOrderNum, earlyTime, latenessTime];
+  List<Object?> get props => [totalEarnings, thisMonthTotalEarnings, totalOrderNum, activeOrderNum, pendingOrderNum, receiptOrderNum, earlyTime, latenessTime, weeklyIncome];
 }
 
 /// 百分比统计指标实体
