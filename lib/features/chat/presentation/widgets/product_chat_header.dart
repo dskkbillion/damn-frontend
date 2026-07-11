@@ -95,7 +95,9 @@ class ProductChatHeader extends StatelessWidget {
                     children: [
                       // 商品名称
                       Text(
-                        chatRoom.productName ?? AppLocalizations.of(context).chat_product_default,
+                        chatRoom.hasAvailableProduct
+                            ? chatRoom.productName!
+                            : AppLocalizations.of(context).chat_product_info_incomplete,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -108,7 +110,7 @@ class ProductChatHeader extends StatelessWidget {
                       const SizedBox(height: 4),
 
                       // 商品价格
-                      if (chatRoom.productPrice != null)
+                      if (chatRoom.hasAvailableProduct)
                         Text(
                           '¥${chatRoom.productPrice!.toStringAsFixed(2)}',
                           style: const TextStyle(
@@ -159,4 +161,4 @@ class ProductChatHeader extends StatelessWidget {
       ),
     );
   }
-} 
+}

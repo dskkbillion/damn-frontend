@@ -60,6 +60,10 @@ class ChatRoom extends Equatable {
   // Derived: Check if this chat room is associated with a product
   bool get hasProduct => productId != null && productId!.isNotEmpty;
 
+  /// 商品仍然由后端公开返回时才允许跳转详情或展示价格。
+  bool get hasAvailableProduct =>
+      hasProduct && productName != null && productPrice != null && productPrice! > 0;
+
   ChatRoom copyWith({
     int? id,
     Participant? participant1,
@@ -162,4 +166,4 @@ class ChatRoom extends Equatable {
       referId: json['referId'] as int?,
     );
   }
-} 
+}

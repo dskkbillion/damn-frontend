@@ -272,8 +272,8 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                         if (chatRoom != null && chatRoom.hasProduct) {
                           return ProductChatHeader(
                             chatRoom: chatRoom,
-                            actionText: s.chat_view_details,
-                            onProductTap: () {
+                            actionText: chatRoom.hasAvailableProduct ? s.chat_view_details : null,
+                            onProductTap: chatRoom.hasAvailableProduct ? () {
                               // 导航到商品详情页
                               if (chatRoom.productId != null) {
                                 print('导航到商品详情页: ${chatRoom.productName}, ID: ${chatRoom.productId}');
@@ -285,14 +285,18 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   SnackBar(content: Text(s.chat_product_info_incomplete)),
                                 );
                               }
+                            } : () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(s.chat_product_info_incomplete)),
+                              );
                             },
-                            onActionTap: () {
+                            onActionTap: chatRoom.hasAvailableProduct ? () {
                               // 处理操作按钮点击（如查看详情）
                               if (chatRoom.productId != null) {
                                 print('点击操作按钮: ${chatRoom.productName}');
                                 context.push('/product/${chatRoom.productId}');
                               }
-                            },
+                            } : null,
                           );
                         }
                       }
@@ -466,4 +470,4 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
       ),
     );
   }
-} 
+}

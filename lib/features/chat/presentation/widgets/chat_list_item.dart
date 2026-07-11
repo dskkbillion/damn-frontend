@@ -174,7 +174,9 @@ class _ChatListItemState extends State<ChatListItem> {
                   // 商品名称
                   Flexible(
                     child: Text(
-                      widget.chatRoom.productName ?? s.chat_product_default,
+                      widget.chatRoom.hasAvailableProduct
+                          ? widget.chatRoom.productName!
+                          : s.chat_product_info_incomplete,
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.primary,
@@ -185,7 +187,7 @@ class _ChatListItemState extends State<ChatListItem> {
                   ),
                   
                   // 商品价格
-                  if (widget.chatRoom.productPrice != null) ...[
+                  if (widget.chatRoom.hasAvailableProduct) ...[
                     const SizedBox(width: 4),
                     Text(
                       '¥${widget.chatRoom.productPrice!.toStringAsFixed(2)}',
@@ -244,4 +246,4 @@ class _ChatListItemState extends State<ChatListItem> {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding
     );
   }
-} 
+}
