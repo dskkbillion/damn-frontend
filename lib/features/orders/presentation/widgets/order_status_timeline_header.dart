@@ -25,6 +25,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
     
     // 判断是否为轻咨询订单
     final isLightConsultation = OrderStatusMapper.isLightConsultationOrder(widget.order);
+    final displayStatus = widget.order.displayState;
 
     // 轻咨询模式：简化的时间线步骤
     final List<String> steps = isLightConsultation
@@ -32,14 +33,14 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
         : ['已拍下', '已提交', '已接单', '已交付', '已收货', '待评价'];  // 原有6个步骤
         
     int currentStepIndex = isLightConsultation 
-        ? _getSimplifiedStepIndex(widget.order.state)
-        : _getCurrentStepIndex(widget.order.state);
-    bool showTimeline = widget.order.state != OrderStatus.canceled &&
-                       widget.order.state != OrderStatus.applyingForMediation &&
-                       widget.order.state != OrderStatus.afterSale &&
-                       widget.order.state != OrderStatus.AfterSaleRejection &&
-                       widget.order.state != OrderStatus.sellerSupplementaryMaterials &&
-                       widget.order.state != OrderStatus.applyForRefuse;
+        ? _getSimplifiedStepIndex(displayStatus)
+        : _getCurrentStepIndex(displayStatus);
+    bool showTimeline = displayStatus != OrderStatus.canceled &&
+                       displayStatus != OrderStatus.applyingForMediation &&
+                       displayStatus != OrderStatus.afterSale &&
+                       displayStatus != OrderStatus.AfterSaleRejection &&
+                       displayStatus != OrderStatus.sellerSupplementaryMaterials &&
+                       displayStatus != OrderStatus.applyForRefuse;
 
     return SizedBox(
       width: double.infinity,
@@ -52,7 +53,7 @@ class _OrderStatusTimelineHeaderState extends State<OrderStatusTimelineHeader> {
         // 状态说明卡片
         if (showTimeline)
           const SizedBox(height: AppDimensions.spacingLg),
-        _buildStatusInfoCard(context, widget.order.state),
+        _buildStatusInfoCard(context, displayStatus),
         ],
       ),
     );

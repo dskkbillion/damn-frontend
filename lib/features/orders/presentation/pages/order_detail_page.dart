@@ -64,19 +64,24 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
   /// 从各种状态中提取订单数据
   Order? _extractOrder(OrderDetailState state) {
+    Order? normalize(Order? order) {
+      if (order == null || !order.isPaymentExpired) return order;
+      return order.copyWith(state: OrderStatus.canceled);
+    }
+
     if (state is OrderDetailLoaded) {
-      return state.order;
+      return normalize(state.order);
     } else if (state is OrderDetailActionLoading && state.previousState != null) {
-      return state.previousState!.order;
+      return normalize(state.previousState!.order);
     } else if (state is OrderDetailActionSuccess && state.updatedState != null) {
-      return state.updatedState!.order;
+      return normalize(state.updatedState!.order);
     } else if (state is OrderDetailActionFailure && state.previousState != null) {
-      return state.previousState!.order;
+      return normalize(state.previousState!.order);
     } else if (state is OrderDetailNavigateToPaymentSelection) {
       // #324 之前漏掉这个分支会让页面闪显"订单不可用"
-      return state.order;
+      return normalize(state.order);
     } else if (state is OrderDetailPaymentLoading && state.previousState != null) {
-      return state.previousState!.order;
+      return normalize(state.previousState!.order);
     }
     return null;
   }

@@ -261,6 +261,7 @@ class OrderItemCard extends StatelessWidget {
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
+    final displayState = order.displayState;
 
     // Define the callback for navigating to detail page (used by multiple buttons)
     void navigateToDetail() {
@@ -347,8 +348,10 @@ class OrderItemCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   // 使用增强版状态标签，显示倒计时
                   EnhancedOrderStatusWidget(
-                    status: order.state,
-                    countdownEndTime: _getCountdownEndTime(order),
+                    status: displayState,
+                    countdownEndTime: displayState == order.state
+                        ? _getCountdownEndTime(order)
+                        : null,
                   ),
                 ],
               ),
@@ -659,4 +662,4 @@ class OrderItemCard extends StatelessWidget {
         return null;
     }
   }
-} 
+}

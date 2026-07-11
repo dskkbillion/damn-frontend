@@ -380,7 +380,7 @@ class OrderDetailBloc extends Bloc<OrderDetailEvent, OrderDetailState> {
      final order = currentState.order;
 
      // 检查订单状态是否允许支付
-     if (order.state != OrderStatus.awaitingPayment) {
+     if (order.isPaymentExpired || order.state != OrderStatus.awaitingPayment) {
         AppLogger.d('[OrderDetailBloc] 订单状态不允许支付: ${order.state}');
         emit(OrderDetailActionFailure(
           message: '该订单状态不允许支付',

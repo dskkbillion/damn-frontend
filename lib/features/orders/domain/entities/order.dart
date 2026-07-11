@@ -122,6 +122,15 @@ class Order extends Equatable {
     this.feeRate,
   });
 
+  /// 待付款订单超过后端约定的自动取消时间时，先按已取消状态展示。
+  /// 后端定时任务每分钟收敛一次状态，前端不能在这段窗口继续展示支付入口。
+  bool get isPaymentExpired =>
+      state == OrderStatus.awaitingPayment &&
+      autoCancelTime != null &&
+      !autoCancelTime!.isAfter(DateTime.now());
+
+  OrderStatus get displayState => isPaymentExpired ? OrderStatus.canceled : state;
+
   Order copyWith({
     int? id,
     String? orderSn,
