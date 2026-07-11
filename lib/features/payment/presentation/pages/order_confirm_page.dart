@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart'; // For launchUrl
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../../../core/config/region_config.dart';
 import '../../../../core/utils/price_formatter.dart';
@@ -375,7 +376,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
 
               // 支付方式
               Text(
-                RegionConfig.currentRegion == RegionType.domestic ? '支付方式' : 'Payment Method',
+                AppLocalizations.of(context).payment_method,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
