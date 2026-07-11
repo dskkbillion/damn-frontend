@@ -19,6 +19,7 @@ class ProductDetailModel extends Equatable {
   final String categoryName;
   final int sellerId;
   final String sellerName;
+  final bool authenticated;
   final String? sellerAvatar;
   final String? sellerRemarks;
   final bool? recoverFlag;
@@ -49,6 +50,7 @@ class ProductDetailModel extends Equatable {
     required this.categoryName,
     required this.sellerId,
     required this.sellerName,
+    this.authenticated = false,
     this.sellerAvatar,
     this.sellerRemarks,
     this.recoverFlag,
@@ -81,6 +83,7 @@ class ProductDetailModel extends Equatable {
         categoryName,
         sellerId,
         sellerName,
+        authenticated,
         sellerAvatar,
         sellerRemarks,
         recoverFlag,
@@ -223,6 +226,7 @@ class ProductDetailModel extends Equatable {
     // 处理卖家信息
     int sellerId = 0;
     String sellerName = '';
+    bool authenticated = false;
     String? sellerAvatar;
     String? sellerRemarks;
     bool? recoverFlag;
@@ -232,6 +236,8 @@ class ProductDetailModel extends Equatable {
       final tenant = json['tenant'] as Map<String, dynamic>;
       sellerId = tenant['id'] ?? 0;
       sellerName = tenant['nickName'] ?? '';
+      final attestationVo = tenant['attestationVo'] ?? tenant['authenticationVos'];
+      authenticated = attestationVo is List && attestationVo.isNotEmpty;
       sellerAvatar = tenant['avatar'];
       sellerRemarks = tenant['remarks'];
       recoverFlag = tenant['recoverFlag'];
@@ -257,6 +263,7 @@ class ProductDetailModel extends Equatable {
       categoryName: json['categoryName'] ?? '',
       sellerId: sellerId,
       sellerName: sellerName,
+      authenticated: authenticated,
       sellerAvatar: sellerAvatar,
       sellerRemarks: sellerRemarks,
       recoverFlag: recoverFlag,
@@ -292,6 +299,7 @@ class ProductDetailModel extends Equatable {
       categoryName: categoryName,
       sellerId: sellerId,
       sellerName: sellerName,
+      authenticated: authenticated,
       sellerAvatar: sellerAvatar,
       sellerRemarks: sellerRemarks,
       recoverFlag: recoverFlag,
@@ -335,6 +343,7 @@ class ProductDetailModel extends Equatable {
       categoryName: categoryName,
       sellerId: sellerId,
       sellerName: sellerName,
+      authenticated: authenticated,
       sellerAvatar: sellerAvatar,
       variants: domainVariants,
       materials: domainMaterials,
@@ -441,4 +450,4 @@ class ProductMaterialModel extends Equatable {
       type: type,
     );
   }
-} 
+}

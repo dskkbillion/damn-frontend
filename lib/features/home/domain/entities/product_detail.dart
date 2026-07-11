@@ -15,6 +15,7 @@ class ProductDetail extends Equatable {
   final String categoryName;
   final int sellerId;
   final String sellerName;
+  final bool authenticated;
   final String? sellerAvatar;
   final String? sellerRemarks;
   final bool? recoverFlag;
@@ -44,6 +45,7 @@ class ProductDetail extends Equatable {
     required this.categoryName,
     required this.sellerId,
     required this.sellerName,
+    this.authenticated = false,
     this.sellerAvatar,
     this.sellerRemarks,
     this.recoverFlag,
@@ -75,6 +77,7 @@ class ProductDetail extends Equatable {
         categoryName,
         sellerId,
         sellerName,
+        authenticated,
         sellerAvatar,
         sellerRemarks,
         recoverFlag,
@@ -132,4 +135,3 @@ class ProductMaterial extends Equatable {
   List<Object?> get props => [id, question, answer, type];
 }
 
- 

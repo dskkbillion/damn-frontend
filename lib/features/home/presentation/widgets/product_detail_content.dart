@@ -176,7 +176,8 @@ class _ProductDetailContentState extends State<ProductDetailContent>
                         overflow: TextOverflow.ellipsis,
                       ),
                       // 验证标签
-                      Container(
+                      if (widget.product.authenticated)
+                        Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.success.withOpacity(0.1),

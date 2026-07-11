@@ -405,7 +405,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                         overflow: TextOverflow.ellipsis,
                       ),
                       // 添加验证标签
-                      Container(
+                      if (product.authenticated)
+                        Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.success.withValues(alpha: 0.1),
