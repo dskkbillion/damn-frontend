@@ -416,23 +416,23 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                             children: [
                               ProductChatHeader(
                                 chatRoom: chatRoom,
-                                actionText: '查看详情',
-                                onProductTap: () {
+                                actionText: chatRoom.hasAvailableProduct ? '查看详情' : null,
+                                onProductTap: chatRoom.hasAvailableProduct ? () {
                                   if (chatRoom.productId != null) {
                                     context.push(
                                       '/product/${chatRoom.productId}',
                                       extra: {'chatRoomId': chatRoom.id},
                                     );
                                   }
-                                },
-                                onActionTap: () {
+                                } : null,
+                                onActionTap: chatRoom.hasAvailableProduct ? () {
                                   if (chatRoom.productId != null) {
                                     context.push(
                                       '/product/${chatRoom.productId}',
                                       extra: {'chatRoomId': chatRoom.id},
                                     );
                                   }
-                                },
+                                } : null,
                               ),
                               ChatOrderStatusBar(chatRoom: chatRoom),
                             ],
