@@ -124,7 +124,9 @@ class ProductChatHeader extends StatelessWidget {
 
                       // 额外信息（可以根据需要添加）
                       Text(
-                        AppLocalizations.of(context).chat_tap_to_view_product,
+                        chatRoom.hasAvailableProduct
+                            ? AppLocalizations.of(context).chat_tap_to_view_product
+                            : AppLocalizations.of(context).payment_unavailable,
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,

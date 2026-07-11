@@ -285,11 +285,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                                   SnackBar(content: Text(s.chat_product_info_incomplete)),
                                 );
                               }
-                            } : () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(s.chat_product_info_incomplete)),
-                              );
-                            },
+                            } : null,
                             onActionTap: chatRoom.hasAvailableProduct ? () {
                               // 处理操作按钮点击（如查看详情）
                               if (chatRoom.productId != null) {
