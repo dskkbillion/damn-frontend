@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class MainShellPage extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -53,7 +54,8 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     if (targetTab == null) return;
 
     final lastTime = _lastPrefetchTime[targetTab];
-    if (lastTime != null && DateTime.now().difference(lastTime) < _prefetchDebounce) {
+    if (lastTime != null &&
+        DateTime.now().difference(lastTime) < _prefetchDebounce) {
       return;
     }
 
@@ -91,7 +93,8 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
           'assets/icons/nav/dskk_logo.svg',
           width: 24,
           height: 24,
-          colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+          colorFilter:
+              const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
         ),
         label: appLocalizations.nav_ai_assistant,
       ),
@@ -122,14 +125,20 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
     return Scaffold(
       body: widget.navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textTertiary,
-        showUnselectedLabels: true,
-        items: items,
-        currentIndex: widget.navigationShell.currentIndex,
-        onTap: (index) => _onTap(context, index),
+      bottomNavigationBar: GlassSurface(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(16),
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textTertiary,
+          showUnselectedLabels: true,
+          items: items,
+          currentIndex: widget.navigationShell.currentIndex,
+          onTap: (index) => _onTap(context, index),
+        ),
       ),
     );
   }

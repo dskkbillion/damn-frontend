@@ -12,21 +12,24 @@ import '../../core/services/profile_preloader_service.dart';
 import '../../core/storage/secure_storage_repository.dart';
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../core/config/theme/app_colors.dart';
+import '../../core/widgets/glass_surface.dart';
 
 /// 双模式导航 Shell，支持买家和卖家模式切换而不重新加载页面
 class DualModeNavigationShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
-  
+
   const DualModeNavigationShell({
     required this.navigationShell,
     super.key,
   });
-  
+
   @override
-  ConsumerState<DualModeNavigationShell> createState() => _DualModeNavigationShellState();
+  ConsumerState<DualModeNavigationShell> createState() =>
+      _DualModeNavigationShellState();
 }
 
-class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShell> {
+class _DualModeNavigationShellState
+    extends ConsumerState<DualModeNavigationShell> {
   final Map<int, DateTime> _lastSellerPrefetchTime = {};
   static const _prefetchDebounce = Duration(seconds: 30);
 
@@ -48,7 +51,8 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
     if (targetTab == null) return;
 
     final lastTime = _lastSellerPrefetchTime[targetTab];
-    if (lastTime != null && DateTime.now().difference(lastTime) < _prefetchDebounce) {
+    if (lastTime != null &&
+        DateTime.now().difference(lastTime) < _prefetchDebounce) {
       return;
     }
 
@@ -60,9 +64,11 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
 
       final preloaderService = GetIt.instance<ProfilePreloaderService>();
       preloaderService.preloadCoreData().then((_) {
-        AppLogger.d('[SellerTabPrefetch] Prefetched data for seller tab $targetTab');
+        AppLogger.d(
+            '[SellerTabPrefetch] Prefetched data for seller tab $targetTab');
       }).catchError((e) {
-        AppLogger.d('[SellerTabPrefetch] Failed to prefetch seller tab $targetTab: $e');
+        AppLogger.d(
+            '[SellerTabPrefetch] Failed to prefetch seller tab $targetTab: $e');
       });
     } catch (e) {
       AppLogger.d('[SellerTabPrefetch] Error in prefetch: $e');
@@ -74,41 +80,44 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
     final showDevTab = ref.watch(showDevTabProvider);
     return showDevTab ? 5 : 4; // AI, Home, Chat, Profile, (Dev)
   }
-  
+
   /// 预加载指定模式的数据并触发BLoC缓存加载
   void _preloadModeData(AppMode mode) {
     try {
       final preloaderService = GetIt.instance<ProfilePreloaderService>();
       // 异步预加载，不阻塞UI
       preloaderService.preloadForMode(mode).then((_) {
-        AppLogger.d('[ModeSwitch] Successfully preloaded data for ${mode.name} mode');
-        
+        AppLogger.d(
+            '[ModeSwitch] Successfully preloaded data for ${mode.name} mode');
+
         // 触发ProfileBloc使用缓存数据
         try {
           final profileBloc = GetIt.instance<ProfileBloc>();
           profileBloc.add(GetUserProfileCachedEvent(mode: mode));
-          AppLogger.d('[ModeSwitch] Triggered ProfileBloc cached load for ${mode.name}');
+          AppLogger.d(
+              '[ModeSwitch] Triggered ProfileBloc cached load for ${mode.name}');
         } catch (e) {
           AppLogger.d('[ModeSwitch] Failed to trigger ProfileBloc: $e');
         }
       }).catchError((error) {
-        AppLogger.d('[ModeSwitch] Failed to preload data for ${mode.name} mode: $error');
+        AppLogger.d(
+            '[ModeSwitch] Failed to preload data for ${mode.name} mode: $error');
       });
     } catch (e) {
       AppLogger.d('[ModeSwitch] Error getting ProfilePreloader service: $e');
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(appModeProvider);
-    
+
     // 监听模式切换
     ref.listen<AppMode>(appModeProvider, (previous, next) {
       if (previous != next) {
         // 预加载新模式的数据
         _preloadModeData(next);
-        
+
         // 切换模式时，根据模式跳转到对应的"我的"页面
         if (next == AppMode.buyer) {
           // 跳转到买家的"我的"页面 (index 3)
@@ -120,7 +129,7 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
         }
       }
     });
-    
+
     // 根据当前模式直接返回对应的 Shell，不使用 IndexedStack
     if (currentMode == AppMode.buyer) {
       return MainShellPage(navigationShell: widget.navigationShell);
@@ -128,58 +137,66 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
       return _buildSellerShell();
     }
   }
-  
+
   Widget _buildSellerShell() {
     final wrapper = _SellerNavigationShellWrapper(
       navigationShell: widget.navigationShell,
       buyerBranchCount: _buyerBranchCount,
     );
-    
+
     return Scaffold(
       body: widget.navigationShell,
       bottomNavigationBar: _buildSellerBottomNavigationBar(wrapper),
     );
   }
-  
-  Widget _buildSellerBottomNavigationBar(_SellerNavigationShellWrapper wrapper) {
+
+  Widget _buildSellerBottomNavigationBar(
+      _SellerNavigationShellWrapper wrapper) {
     return Consumer(
       builder: (context, ref, child) {
         final appLocalizations = AppLocalizations.of(context);
-        
-        return BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textTertiary,
-          showUnselectedLabels: true,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.analytics_outlined),
-              activeIcon: const Icon(Icons.analytics),
-              label: appLocalizations.nav_seller_analytics,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.inventory_2_outlined),
-              activeIcon: const Icon(Icons.inventory_2),
-              label: appLocalizations.nav_seller_products,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.chat_bubble_outline),
-              activeIcon: const Icon(Icons.chat_bubble),
-              label: appLocalizations.nav_seller_messages,
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.account_circle_outlined),
-              activeIcon: const Icon(Icons.account_circle),
-              label: appLocalizations.nav_seller_profile,
-            ),
-          ],
-          currentIndex: wrapper.currentIndex,
-          onTap: (index) {
-            // 添加轻微震动反馈
-            HapticUtils.lightTabFeedback();
-            _prefetchAdjacentSellerTab(index);
-            wrapper.goBranch(index, initialLocation: index == wrapper.currentIndex);
-          },
+
+        return GlassSurface(
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(16),
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.textTertiary,
+            showUnselectedLabels: true,
+            items: [
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.analytics_outlined),
+                activeIcon: const Icon(Icons.analytics),
+                label: appLocalizations.nav_seller_analytics,
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.inventory_2_outlined),
+                activeIcon: const Icon(Icons.inventory_2),
+                label: appLocalizations.nav_seller_products,
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.chat_bubble_outline),
+                activeIcon: const Icon(Icons.chat_bubble),
+                label: appLocalizations.nav_seller_messages,
+              ),
+              BottomNavigationBarItem(
+                icon: const Icon(Icons.account_circle_outlined),
+                activeIcon: const Icon(Icons.account_circle),
+                label: appLocalizations.nav_seller_profile,
+              ),
+            ],
+            currentIndex: wrapper.currentIndex,
+            onTap: (index) {
+              // 添加轻微震动反馈
+              HapticUtils.lightTabFeedback();
+              _prefetchAdjacentSellerTab(index);
+              wrapper.goBranch(index,
+                  initialLocation: index == wrapper.currentIndex);
+            },
+          ),
         );
       },
     );
@@ -190,12 +207,12 @@ class _DualModeNavigationShellState extends ConsumerState<DualModeNavigationShel
 class _SellerNavigationShellWrapper {
   final StatefulNavigationShell navigationShell;
   final int buyerBranchCount;
-  
+
   _SellerNavigationShellWrapper({
     required this.navigationShell,
     required this.buyerBranchCount,
   });
-  
+
   int get currentIndex {
     // 将全局索引转换为卖家本地索引
     final globalIndex = navigationShell.currentIndex;
@@ -204,7 +221,7 @@ class _SellerNavigationShellWrapper {
     }
     return 0;
   }
-  
+
   void goBranch(int index, {bool initialLocation = false}) {
     // 将卖家本地索引转换为全局索引
     final globalIndex = index + buyerBranchCount;
