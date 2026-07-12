@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:path/path.dart' as path;
 
 /// 文件选择组件
@@ -79,8 +80,9 @@ class FileSelectionWidget extends StatelessWidget {
               final fileName = path.basename(filePath);
               final fileExtension = path.extension(filePath).toLowerCase();
               
-              return Card(
+              return GlassCard(
                 margin: const EdgeInsets.only(bottom: 8),
+                padding: EdgeInsets.zero,
                 child: ListTile(
                   leading: _buildFileIcon(fileExtension),
                   title: Text(
