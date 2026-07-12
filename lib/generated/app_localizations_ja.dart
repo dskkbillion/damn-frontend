@@ -208,7 +208,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ai_docs_title_empty => 'タイトルは空にできません';
 
   @override
-  String get nav_ai_assistant => '多少看看';
+  String get nav_ai_assistant => 'DeepStream';
 
   @override
   String get nav_home => 'ホーム';
@@ -273,7 +273,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chat_file_message => '【ファイル】';
 
   @override
-  String get chat_allocate_message => '【多少看看】';
+  String get chat_allocate_message => '【DeepStream】';
 
   @override
   String get chat_payment_prompt_message => '【支払いリクエスト】';
@@ -4882,7 +4882,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get app_dev_common_entries => 'よく使う入口';
 
   @override
-  String get app_dev_dskk => '多少看看';
+  String get app_dev_dskk => 'DeepStream';
 
   @override
   String get app_dev_order_module_buyer => '注文モジュール（購入者）';

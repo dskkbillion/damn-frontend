@@ -1,11 +1,11 @@
 {
-    "name": "多少看看",
-    "short_name": "DSKK",
+    "name": "DeepStream",
+    "short_name": "DeepStream",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "多少看看 - DSKK",
+    "description": "DeepStream",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

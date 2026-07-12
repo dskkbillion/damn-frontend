@@ -599,7 +599,7 @@ abstract class AppLocalizations {
   /// No description provided for @chat_allocate_message.
   ///
   /// In zh, this message translates to:
-  /// **'【多少看看】'**
+  /// **'【DeepStream】'**
   String get chat_allocate_message;
 
   /// No description provided for @chat_payment_prompt_message.
@@ -8951,7 +8951,7 @@ abstract class AppLocalizations {
   /// No description provided for @app_dev_dskk.
   ///
   /// In zh, this message translates to:
-  /// **'多少看看'**
+  /// **'DeepStream'**
   String get app_dev_dskk;
 
   /// No description provided for @app_dev_order_module_buyer.

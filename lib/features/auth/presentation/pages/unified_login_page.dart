@@ -147,7 +147,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             ),
                             const SizedBox(height: 16),
                             const Text(
-                              '多少看看',
+                              'DeepStream',
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,

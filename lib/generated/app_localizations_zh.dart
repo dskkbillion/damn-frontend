@@ -269,7 +269,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chat_file_message => '【文件】';
 
   @override
-  String get chat_allocate_message => '【多少看看】';
+  String get chat_allocate_message => '【DeepStream】';
 
   @override
   String get chat_payment_prompt_message => '【付费提示】';
@@ -4833,7 +4833,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get app_dev_common_entries => '常用入口';
 
   @override
-  String get app_dev_dskk => '多少看看';
+  String get app_dev_dskk => 'DeepStream';
 
   @override
   String get app_dev_order_module_buyer => '订单模块 (买家)';
