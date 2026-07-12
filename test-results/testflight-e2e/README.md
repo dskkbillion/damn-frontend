@@ -35,3 +35,4 @@
 8. [通知中心](08-notifications.png)
 9. [会话详情](09-chat-detail.png)
 10. [商品详情](10-product-detail.png)
+11. [卖家数据主题色修复后](11-seller-statistics-blue.png)

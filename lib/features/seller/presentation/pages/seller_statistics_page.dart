@@ -104,10 +104,10 @@ class SellerStatisticsPage extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_heat_value, stats.heatPercent, AppColors.warning),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_reply_rate, stats.recoverPercent, AppColors.warning),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_completion_rate, stats.completePercent, AppColors.textSecondary),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_positive_rate, stats.goodPercent, AppColors.textSecondary),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_heat_value, stats.heatPercent, AppColors.sellerAccent),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_reply_rate, stats.recoverPercent, AppColors.sellerAccent),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_completion_rate, stats.completePercent, AppColors.sellerAccent),
+            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_positive_rate, stats.goodPercent, AppColors.sellerAccent),
           ],
         ),
       ],
@@ -225,7 +225,7 @@ class SellerStatisticsPage extends ConsumerWidget {
         Text(
           progress,
           style: const TextStyle(
-            color: AppColors.warning,
+            color: AppColors.sellerAccent,
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
@@ -302,7 +302,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
-            color: AppColors.warning,
+            color: AppColors.sellerAccent,
           ),
         ),
         const SizedBox(height: 8),
