@@ -14,6 +14,7 @@ import '../widgets/profile_header.dart';
 import '../widgets/order_status_section.dart';
 import '../widgets/profile_menu_section.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
@@ -76,7 +77,9 @@ class _ProfilePageState extends State<ProfilePage> {
               if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
                 return _buildLoginPrompt(context);
               }
-              return const SkeletonPage(itemCount: 3);
+              return const GlassBackdrop(
+                child: SafeArea(child: SkeletonPage(itemCount: 3)),
+              );
             }
 
             if (state is ProfileLoading) {
@@ -133,9 +136,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final appLocalizations = AppLocalizations.of(context);
     
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
+        child: GlassBackdrop(
+          child: RefreshIndicator(
+            onRefresh: () async {
             // 下拉刷新时强制从服务器获取最新数据
             AppLogger.d('[ProfilePage] User initiated refresh - fetching fresh data from server');
 
@@ -155,11 +160,13 @@ class _ProfilePageState extends State<ProfilePage> {
             // 等待一下让状态更新
             await Future.delayed(const Duration(milliseconds: 500));
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 // 用户信息头部
                 const ProfileHeader(),
 
@@ -250,8 +257,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 // 底部空间
-                const SizedBox(height: 30),
-              ],
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
             ),
           ),
         ),

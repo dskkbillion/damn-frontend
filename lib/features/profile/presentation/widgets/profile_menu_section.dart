@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class MenuItem {
   final IconData icon;
@@ -28,20 +28,9 @@ class ProfileMenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

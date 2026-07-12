@@ -37,3 +37,9 @@
 10. [商品详情](10-product-detail.png)
 11. [卖家数据主题色修复后](11-seller-statistics-blue.png)
 12. [卖家数据玻璃/磨砂效果](12-seller-statistics-glass.png)
+
+## Issue #415 验收截图
+
+- [买家个人中心统一卡片](../e2e/buyer-profile-glass.png)
+- [卖家个人中心统一卡片](../e2e/seller-profile-glass.png)
+- [卖家中心 Shimmer 骨架屏](../e2e/seller-home-skeleton.png)

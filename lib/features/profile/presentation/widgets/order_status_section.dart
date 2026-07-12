@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class OrderStatusSection extends StatelessWidget {
   const OrderStatusSection({super.key});
@@ -13,20 +14,9 @@ class OrderStatusSection extends StatelessWidget {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
     
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

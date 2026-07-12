@@ -20,6 +20,7 @@ import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class SellerProfilePage extends ConsumerStatefulWidget {
   final VoidCallback? onSwitchToBuyer;
@@ -123,7 +124,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             if (state is ProfileInitial ||
                 (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
               return const Scaffold(
-                body: SkeletonPage(itemCount: 4),
+                backgroundColor: Colors.transparent,
+                body: GlassBackdrop(
+                  child: SafeArea(child: SkeletonPage(itemCount: 4)),
+                ),
               );
             }
             
@@ -131,14 +135,16 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
             // 这样可以避免页面闪烁
             
             return Scaffold(
-              body: SafeArea(
-                child: Column(
-                  children: [
-                    _buildProfileHeader(state),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
+              backgroundColor: Colors.transparent,
+              body: GlassBackdrop(
+                child: SafeArea(
+                  child: Column(
+                    children: [
+                      _buildProfileHeader(state),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
                             _buildOrderSection(),
                             // TODO(#306): 认证功能暂未完善，隐藏入口
                             // _buildMenuSection(AppLocalizations.of(context)!.seller_profile_auth_management, Icons.verified_user, ''),
@@ -165,11 +171,12 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                             const SizedBox(height: 10),
                             _buildSectionTitle(AppLocalizations.of(context).seller_profile_about_us),
                             _buildMenuSection(AppLocalizations.of(context).seller_profile_mission, Icons.emoji_objects_outlined, ''),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -186,9 +193,11 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
     } else if (state is ProfileUpdated) {
       profile = state.profile;
     }
-    return Container(
+    return GlassCard(
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
-      color: Theme.of(context).colorScheme.primary,
+      tintColor: Theme.of(context).colorScheme.primary,
+      tintOpacity: 0.76,
       child: Column(
         children: [
           // 用户信息
@@ -341,20 +350,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   }
 
   Widget _buildOrderSection() {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.all(AppDimensions.spacingLg),
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -440,12 +438,8 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: AppDimensions.spacingMd),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundSecondary,
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, left: 16, right: 16, bottom: 4),
       child: Text(
         title,
         style: const TextStyle(
@@ -458,13 +452,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   }
 
   Widget _buildMenuSection(String title, IconData icon, String badge, {VoidCallback? onTap}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderPrimary, width: 1),
-        ),
-      ),
+    return GlassCard(
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg, vertical: 4),
+      padding: EdgeInsets.zero,
       child: ListTile(
         leading: Icon(
           icon,
@@ -502,6 +492,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
       ),
     );
   }
+
 
   void _showNotImplemented(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(

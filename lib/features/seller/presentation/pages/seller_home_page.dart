@@ -22,7 +22,8 @@ import '../../domain/entities/seller_dashboard_data.dart';
 import '../../data/datasources/stripe_connect_remote_data_source.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/loading_state.dart';
+import '../widgets/seller_home_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 
 /// 卖家中心首页
@@ -80,10 +81,11 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBodyBehindAppBar: true,
-      body: SafeArea(
-        top: true,
-        bottom: false,
-        child: RefreshIndicator(
+      body: GlassBackdrop(
+        child: SafeArea(
+          top: true,
+          bottom: false,
+          child: RefreshIndicator(
           onRefresh: () async {
             AppLogger.d('[SellerHomePage] Refresh triggered: Dispatching RefreshDashboardData');
             context.read<SellerHomeBloc>().add(const RefreshDashboardData());
@@ -93,7 +95,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
             builder: (context, state) {
               AppLogger.d('[SellerHomePage] BlocBuilder received state: ${state.runtimeType}');
               if (state.isLoading) {
-                return LoadingState.list();
+                return const SellerHomeSkeleton();
               }
               
               if (state.hasError) {
@@ -157,6 +159,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               );
             },
           ),
+          ),
         ),
       ),
     );
@@ -165,7 +168,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   // 店铺信息卡片
   Widget _buildStoreProfileCard(BuildContext context, SellerHomeState state) {
     if (state.storeProfile == null) {
-      return Card(
+      return GlassCard(
+        padding: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Center(
@@ -177,8 +181,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
 
     final profile = state.storeProfile!;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Stack(
         children: [
           Container(
@@ -381,7 +385,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   
   // 收入信息卡片
   Widget _buildIncomeCard(BuildContext context, dynamic dashboardData) {
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -433,7 +438,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   
   // 订单概览卡片
   Widget _buildOrdersCard(BuildContext context, dynamic dashboardData) {
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -511,7 +517,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
   
   // 功能列表卡片
   Widget _buildFunctionsCard(BuildContext context) {
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -584,7 +591,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         List<WeeklyIncomeItem>.from(dashboardData.statistics.weeklyIncome ?? []);
     
     if (weeklyIncome.isEmpty) {
-      return Card(
+      return GlassCard(
+        padding: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Center(child: Text(AppLocalizations.of(context).seller_home_no_recent_income)), 
@@ -598,7 +606,8 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       (max, item) => (item.amount ?? 0.0) > max ? (item.amount ?? 0.0) : max,
     );
     
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -797,4 +806,4 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       ),
     );
   }
-} 
+}

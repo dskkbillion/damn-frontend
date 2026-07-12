@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +9,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/seller_s
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -25,7 +24,7 @@ class SellerStatisticsPage extends ConsumerWidget {
       create: (context) => GetIt.I<SellerStatisticsBloc>()..add(const LoadSellerStatistics()),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: _buildGlassBackdrop(
+        body: GlassBackdrop(
           child: BlocBuilder<SellerStatisticsBloc, SellerStatisticsState>(
             builder: (context, state) {
               if (state is SellerStatisticsLoading) {
@@ -93,87 +92,6 @@ class SellerStatisticsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildGlassBackdrop({required Widget child}) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(gradient: AppColors.gradientAtmosphere),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          Positioned(
-            top: -90,
-            left: -70,
-            child: _buildAmbientOrb(
-              color: AppColors.primaryLight.withValues(alpha: 0.30),
-              size: 260,
-            ),
-          ),
-          Positioned(
-            top: 250,
-            right: -100,
-            child: _buildAmbientOrb(
-              color: AppColors.primary.withValues(alpha: 0.16),
-              size: 230,
-            ),
-          ),
-          Positioned(
-            bottom: 120,
-            left: 30,
-            child: _buildAmbientOrb(
-              color: AppColors.accentGlow.withValues(alpha: 0.18),
-              size: 180,
-            ),
-          ),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAmbientOrb({required Color color, required double size}) {
-    return ImageFiltered(
-      imageFilter: ImageFilter.blur(sigmaX: 42, sigmaY: 42),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry padding = const EdgeInsets.all(AppDimensions.spacingXl)}) {
-    return SizedBox(
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: AppColors.backgroundCard.withValues(alpha: 0.58),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-              border: Border.all(
-                color: AppColors.onPrimary.withValues(alpha: 0.82),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: child,
-          ),
-        ),
-      ),
-    );
-  }
-  
   /// 构建百分比部分（热度值、回复率、完成率、好评率）
   Widget _buildPercentSection(BuildContext context, SellerPercentStatistics stats) {
     return Column(
@@ -187,7 +105,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        _buildGlassCard(
+        GlassCard(
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingSm),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -261,7 +179,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _buildGlassCard(
+        GlassCard(
           padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingXl),
           child: Column(
             children: [
@@ -322,7 +240,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        _buildGlassCard(
+        GlassCard(
           child: Column(
             children: [
               Row(
@@ -393,7 +311,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        _buildGlassCard(
+        GlassCard(
           padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: weeklyIncome.isEmpty
               ? SizedBox(
@@ -473,7 +391,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        _buildGlassCard(
+        GlassCard(
           child: Column(
             children: [
               _buildPendingItem(

@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/app/app_mode.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 // 导入卖家主页
 import 'package:dskk_flutter_refactor/core/services/mode_transition_service.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 
 class ProfileHeader extends ConsumerWidget {
@@ -53,42 +54,23 @@ class ProfileHeader extends ConsumerWidget {
         AppLogger.d('[ProfileHeader] Extracted profile nickname: ${profile?.nickName}');
         AppLogger.d('[ProfileHeader] Avatar URL: ${profile?.avatarUrl}, Has URL: ${profile?.avatarUrl?.isNotEmpty == true}, IsUploading: $isUploading');
 
-        return Container(
-          margin: const EdgeInsets.all(12.0),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).primaryColor.withOpacity(0.8),
-                Theme.of(context).primaryColor.withOpacity(0.6),
-              ],
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                blurRadius: 5,
-                offset: Offset(0, 2),
+        return GlassCard(
+          margin: const EdgeInsets.only(top: 12.0),
+          padding: const EdgeInsets.all(16.0),
+          tintColor: Theme.of(context).primaryColor,
+          tintOpacity: 0.76,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _buildAvatar(context, profile, state, pendingAvatarUrl),
+                  const SizedBox(width: 16),
+                  _buildNameAndStatus(context, profile, appLocalizations),
+                ],
               ),
+              const SizedBox(height: 16),
+              _buildSwitchToSellerButton(context, ref, appLocalizations),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    _buildAvatar(context, profile, state, pendingAvatarUrl),
-                    const SizedBox(width: 16),
-                    _buildNameAndStatus(context, profile, appLocalizations),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildSwitchToSellerButton(context, ref, appLocalizations),
-              ],
-            ),
           ),
         );
       },
