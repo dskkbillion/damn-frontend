@@ -146,19 +146,19 @@ class GlassBackdrop extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Positioned(
-            top: -90,
-            left: -70,
-            child: _AmbientOrb(color: light.withValues(alpha: 0.12), size: 260),
+            top: -140,
+            left: -130,
+            child: _AmbientOrb(color: light.withValues(alpha: 0.18), size: 360),
           ),
           Positioned(
-            top: 250,
-            right: -100,
-            child: _AmbientOrb(color: primary.withValues(alpha: 0.07), size: 230),
+            top: 280,
+            right: -150,
+            child: _AmbientOrb(color: primary.withValues(alpha: 0.10), size: 320),
           ),
           Positioned(
-            bottom: 120,
-            left: 30,
-            child: _AmbientOrb(color: light.withValues(alpha: 0.06), size: 180),
+            bottom: 100,
+            left: -60,
+            child: _AmbientOrb(color: light.withValues(alpha: 0.08), size: 260),
           ),
           child,
         ],

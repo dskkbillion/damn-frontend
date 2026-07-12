@@ -49,21 +49,21 @@ class AppColors {
   /// 链接文字颜色
   static const Color textLink = primary;
 
-  // ==================== 背景颜色（stone 系） ====================
-  /// 主背景色 - stone-50（暖石灰）
-  static const Color backgroundPrimary = Color(0xFFFAFAF9);
+  // ==================== 背景颜色（冰蓝雾面） ====================
+  /// 主背景色 - 为玻璃卡片提供可感知但克制的冷调底色。
+  static const Color backgroundPrimary = Color(0xFFEAF6FC);
 
-  /// 次要背景色 - stone-100
-  static const Color backgroundSecondary = Color(0xFFF5F5F4);
+  /// 次要背景色 - 用于输入、列表的内层表面。
+  static const Color backgroundSecondary = Color(0xFFDFF1FA);
 
-  /// 三级背景色 - stone-200
-  static const Color backgroundTertiary = Color(0xFFE7E5E4);
+  /// 三级背景色 - 用于弱分隔与禁用区域。
+  static const Color backgroundTertiary = Color(0xFFC8E8F5);
 
-  /// 卡片背景色 - 纯白浮于暖石灰底
+  /// 卡片背景色 - 半透明白色玻璃的基础表面。
   static const Color backgroundCard = Color(0xFFFFFFFF);
 
-  /// 悬停背景色 - stone-100
-  static const Color backgroundHover = Color(0xFFF5F5F4);
+  /// 悬停背景色 - 比页面底色略亮，避免回到中性灰。
+  static const Color backgroundHover = Color(0xFFE6F4FB);
 
   // ==================== 边框颜色 ====================
   /// 主要边框颜色 - slate-200
@@ -195,11 +195,12 @@ class AppColors {
     radius: 0.8,
   );
 
-  /// 氛围渐变（垂直，用于页面背景）
+  /// 氛围渐变（用于玻璃页面的底层光感）
   static const LinearGradient gradientAtmosphere = LinearGradient(
-    colors: [Color(0xFFFAFAF9), Color(0xFFF0F9FF)],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    colors: [Color(0xFFE4F4FC), Color(0xFFF4FAFD), Color(0xFFD9EEF8)],
+    stops: [0, 0.54, 1],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 }
 
