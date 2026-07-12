@@ -26,6 +26,7 @@ import '../widgets/seller_order_fee_breakdown.dart';
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class SellerOrderDetailPage extends StatelessWidget {
   final int orderId;
@@ -188,16 +189,10 @@ class SellerOrderDetailPage extends StatelessWidget {
               const SizedBox(height: 24), // 调整间距
               // 2. 移除状态描述卡片，直接显示订单商品
               // 3. Order Items Section
-              Card(
+              GlassCard(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  elevation: 0,
-                    shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-                  ),
-                  child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), 
-                      child: Column(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Column(
                         children: List.generate(order.items.length, (index) {
                             final item = order.items[index];
                             return Column(
@@ -209,20 +204,13 @@ class SellerOrderDetailPage extends StatelessWidget {
                           );
                         }),
                       ),
-                    ),
                 ),
                 const SizedBox(height: 16),
               // 4. Price Summary Section
-              Card(
+              GlassCard(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                       children: [
                         _buildPriceRow(context, AppLocalizations.of(context).order_price_total_amount, order.priceSummary.totalPrice),
                         if (order.priceSummary.deliveryPrice > 0)
@@ -233,22 +221,15 @@ class SellerOrderDetailPage extends StatelessWidget {
                         _buildPriceRow(context, AppLocalizations.of(context).order_price_actual_paid, order.priceSummary.payPrice, isTotal: true),
                       ],
                     ),
-                  ),
                 ),
                 // 卖家佣金拆分（仅当后端返回佣金数据时显示）
                 SellerOrderFeeBreakdown(order: order),
                 const SizedBox(height: 16),
               // 5. Time Info Section
-               Card(
+               GlassCard(
                   margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.0),
-                    side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildInfoRow(context, AppLocalizations.of(context).order_seller_order_number, order.orderSn ?? 'N/A'),
@@ -261,7 +242,6 @@ class SellerOrderDetailPage extends StatelessWidget {
                             _buildTimeRow(context, AppLocalizations.of(context).order_seller_cancel_time, order.cancelTime),
                       ],
                     ),
-                  ),
                 ),
                 const SizedBox(height: 16), // Spacing after time card
                 

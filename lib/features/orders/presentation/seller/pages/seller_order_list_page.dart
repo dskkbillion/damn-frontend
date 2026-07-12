@@ -8,6 +8,7 @@ import '../../../domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/widgets/seller_order_item_card.dart';
 import '../bloc/seller_order_list_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class SellerOrderListPage extends StatefulWidget {
   /// 初始状态参数，可以为null
@@ -196,17 +197,9 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                return Center(
                  child: Padding(
                    padding: const EdgeInsets.all(32.0),
-                   child: Card(
-                     elevation: 0,
-                     shape: RoundedRectangleBorder(
-                       borderRadius: BorderRadius.circular(12.0),
-                       side: BorderSide(
-                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                       ),
-                     ),
-                     child: Padding(
-                       padding: const EdgeInsets.all(32.0),
-                       child: Column(
+                   child: GlassCard(
+                     padding: const EdgeInsets.all(32.0),
+                     child: Column(
                          mainAxisSize: MainAxisSize.min,
                          children: [
                            Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
@@ -221,7 +214,6 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                            ),
                          ],
                        ),
-                     ),
                    ),
                  ),
                );
@@ -234,18 +226,9 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                return Center(
                  child: Padding(
                    padding: const EdgeInsets.all(32.0),
-                   child: Card(
-                     elevation: 0,
-                     shape: RoundedRectangleBorder(
-                       borderRadius: BorderRadius.circular(12.0),
-                       side: BorderSide(
-                         color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                       ),
-                     ),
-                     child: Padding(
-                       padding: const EdgeInsets.all(48.0),
-                       child: Text(AppLocalizations.of(context).order_seller_empty, style: Theme.of(context).textTheme.bodyLarge),
-                     ),
+                   child: GlassCard(
+                     padding: const EdgeInsets.all(48.0),
+                     child: Text(AppLocalizations.of(context).order_seller_empty, style: Theme.of(context).textTheme.bodyLarge),
                    ),
                  ),
                );
@@ -267,15 +250,10 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
                       if (_hasPendingOrders(successState))
                         Container(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                          child: Card(
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                              ),
-                            ),
-                            color: Theme.of(context).colorScheme.primaryContainer,
+                          child: GlassCard(
+                            padding: EdgeInsets.zero,
+                            tintColor: Theme.of(context).colorScheme.primaryContainer,
+                            tintOpacity: 0.72,
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: Theme.of(context).colorScheme.primary,
@@ -452,4 +430,3 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     return order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
   }
 }
-
