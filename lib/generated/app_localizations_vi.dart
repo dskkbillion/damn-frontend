@@ -214,7 +214,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get ai_docs_title_empty => 'Tiêu đề không được để trống';
 
   @override
-  String get nav_ai_assistant => 'DSKK';
+  String get nav_ai_assistant => 'DeepStream';
 
   @override
   String get nav_home => 'Trang chủ';

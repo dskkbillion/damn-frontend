@@ -214,7 +214,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ai_docs_title_empty => 'Title cannot be empty';
 
   @override
-  String get nav_ai_assistant => 'Look';
+  String get nav_ai_assistant => 'DeepStream';
 
   @override
   String get nav_home => 'Browse';

@@ -434,7 +434,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "home_title": MessageLookupByLibrary.simpleMessage("首页"),
         "language_settings": MessageLookupByLibrary.simpleMessage("语言设置"),
         "materialsInfo": MessageLookupByLibrary.simpleMessage("材料信息"),
-        "nav_ai_assistant": MessageLookupByLibrary.simpleMessage("多少看看"),
+        "nav_ai_assistant": MessageLookupByLibrary.simpleMessage("DeepStream"),
         "nav_dev": MessageLookupByLibrary.simpleMessage("开发"),
         "nav_home": MessageLookupByLibrary.simpleMessage("主页"),
         "nav_messages": MessageLookupByLibrary.simpleMessage("消息"),

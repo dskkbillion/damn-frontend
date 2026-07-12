@@ -112,7 +112,7 @@
     },
     "ai_docs_title_too_long": "제목은 50자를 초과할 수 없습니다",
     "ai_docs_title_empty": "제목을 입력해 주세요",
-    "nav_ai_assistant": "다소칸칸",
+    "nav_ai_assistant": "DeepStream",
     "nav_home": "홈",
     "nav_messages": "메시지",
     "nav_profile": "내 정보",

@@ -207,7 +207,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get ai_docs_title_empty => '제목을 입력해 주세요';
 
   @override
-  String get nav_ai_assistant => '다소칸칸';
+  String get nav_ai_assistant => 'DeepStream';
 
   @override
   String get nav_home => '홈';

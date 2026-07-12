@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @nav_ai_assistant.
   ///
   /// In zh, this message translates to:
-  /// **'看看'**
+  /// **'DeepStream'**
   String get nav_ai_assistant;
 
   /// No description provided for @nav_home.
