@@ -23,6 +23,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -933,8 +934,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
 
   /// 构建基本信息表单
   Widget _buildBasicInfoForm(ProductEditState state) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1013,8 +1013,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 构建服务档位设置区域
   Widget _buildServiceTiersSection() {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
@@ -1069,8 +1068,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 构建常见问题部分
   Widget _buildCommonQuestionsSection(ProductEditState state) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -1223,8 +1221,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
   
   /// 构建买家需要提供的信息部分
   Widget _buildBuyerInfoSection(ProductEditState state) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16.0),
       child: Column(

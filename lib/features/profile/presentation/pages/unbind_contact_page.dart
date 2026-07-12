@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/profile/presentation/bloc/profile_bloc.dart';
@@ -207,20 +208,10 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
               ),
               const SizedBox(height: 24),
               // Main card
-              Container(
-                width: double.infinity,
+              GlassCard(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundCard,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.overlay.withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                tintOpacity: 0.62,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -298,4 +289,3 @@ class _UnbindContactPageState extends State<UnbindContactPage> {
       );
   }
 }
-

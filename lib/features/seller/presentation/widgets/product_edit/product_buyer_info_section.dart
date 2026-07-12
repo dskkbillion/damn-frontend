@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_ed
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 买家需要提供信息的 section。
 ///
@@ -54,8 +55,7 @@ class _ProductBuyerInfoSectionState extends State<ProductBuyerInfoSection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(

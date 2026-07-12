@@ -8,6 +8,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 成功案例 section，完全由 BLoC state 驱动，无本地状态。
 ///
@@ -58,8 +59,7 @@ class ProductSuccessCasesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 import 'package:go_router/go_router.dart';
 
@@ -347,19 +348,11 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
   }
 
   Widget _buildShell(BuildContext context, {required Widget child}) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 12,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+      tintOpacity: 0.62,
       child: child,
     );
   }

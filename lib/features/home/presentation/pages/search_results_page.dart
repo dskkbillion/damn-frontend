@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 
 import '../cubit/search_cubit.dart';
 import '../widgets/home_feed_list.dart';
@@ -74,7 +76,10 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
         body: BlocBuilder<SearchCubit, SearchState>(
           builder: (context, state) {
             if (state is SearchLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return SkeletonPage(
+                itemCount: 5,
+                itemBuilder: (_, __) => const SkeletonCard(),
+              );
             } else if (state is SearchError) {
               return Center(
                 child: Column(

@@ -2,6 +2,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Widget displaying the delivered content and actions for awaiting confirmation state.
 class DeliveryConfirmationArea extends StatelessWidget {
@@ -12,8 +13,6 @@ class DeliveryConfirmationArea extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
     // TODO: Fetch actual delivery data based on order.id or info within order object
     // Placeholder data structure for delivery items
     final List<Map<String, dynamic>> deliveryItems = [
@@ -40,11 +39,10 @@ class DeliveryConfirmationArea extends StatelessWidget {
           itemCount: deliveryItems.length,
           itemBuilder: (context, index) {
             final delivery = deliveryItems[index];
-            return Card(
-              // 使用统一Card主题
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+            return GlassCard(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Delivery Header (Title and Timestamp)
@@ -94,7 +92,6 @@ class DeliveryConfirmationArea extends StatelessWidget {
 
 
                   ],
-                ),
               ),
             );
           },
@@ -236,4 +233,4 @@ class DeliveryConfirmationArea extends StatelessWidget {
   }
 
 
-} 
+}

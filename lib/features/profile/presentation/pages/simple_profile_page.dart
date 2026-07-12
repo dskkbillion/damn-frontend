@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 import 'package:dskk_flutter_refactor/core/usecases/usecase.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/usecases/get_time_settings_usecase.dart';
 
 class SimpleProfilePage extends StatefulWidget {
@@ -264,13 +265,11 @@ class _SimpleProfilePageState extends State<SimpleProfilePage> {
   }
 
   Widget _buildProfileSection(BuildContext context, String title, Widget content) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(top: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

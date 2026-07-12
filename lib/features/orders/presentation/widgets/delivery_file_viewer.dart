@@ -10,6 +10,7 @@ import 'package:open_file/open_file.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 交付文件查看器组件
 class DeliveryFileViewer extends StatefulWidget {
@@ -284,7 +285,8 @@ class _DeliveryFileViewerState extends State<DeliveryFileViewer> {
     final l10n = AppLocalizations.of(context);
     final fileType = _getFileType();
     
-    return Card(
+    return GlassCard(
+      padding: EdgeInsets.zero,
       child: InkWell(
         onTap: () {
           if (fileType == 'image') {

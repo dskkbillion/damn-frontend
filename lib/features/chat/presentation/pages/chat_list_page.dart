@@ -13,6 +13,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
 import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
@@ -245,7 +246,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         future: _referIdFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonCard());
           }
 
           // #335 SecureStorage 超时或异常 → 提供重试入口,不再卡死白屏
@@ -584,4 +585,4 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       );
     }).toList();
   }
-} 
+}

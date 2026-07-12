@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
 /// 商品详情内容组件 - 可在详情页和预览页复用
@@ -565,9 +566,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ?.where((m) => m.type == 'ATTACHMENT' || m.type == 'TEXT')
         .toList() ?? [];
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(top: AppDimensions.spacingSm),
-      color: AppColors.backgroundCard,
+      padding: EdgeInsets.zero,
       child: ExpansionTile(
         title: Text(
           '买家需要提供',
@@ -653,9 +654,9 @@ class _ProductDetailContentState extends State<ProductDetailContent>
         ?.where((m) => m.type == 'PROBLEM')
         .toList() ?? [];
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(top: AppDimensions.spacingSm),
-      color: AppColors.backgroundCard,
+      padding: EdgeInsets.zero,
       child: ExpansionTile(
         initiallyExpanded: true, // 默认展开
         title: Text(

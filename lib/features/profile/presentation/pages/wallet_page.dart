@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/widgets/loading_indicator.dart';
+import '../../../../core/widgets/skeleton/skeleton_page.dart';
+import '../../../../core/widgets/skeleton/skeleton_card.dart';
+import '../../../../core/widgets/glass_surface.dart';
 import '../../data/models/transaction_dto.dart';
 import '../../domain/entities/wallet_summary.dart';
 import '../bloc/wallet_bloc.dart';
@@ -181,7 +184,7 @@ class _WalletPageState extends State<WalletPage> {
         },
         builder: (context, state) {
           if (state is WalletInitial || state is WalletLoading) {
-            return const Center(child: LoadingIndicator());
+            return SkeletonPage(itemCount: 3, itemBuilder: (_, __) => const SkeletonCard());
           } else if (state is WalletError) {
             return Center(
               child: Column(
@@ -434,11 +437,12 @@ class _WalletPageState extends State<WalletPage> {
 
   // 构建钱包摘要卡片
   Widget _buildWalletSummary(WalletSummary summary) {
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.all(16.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -508,7 +512,6 @@ class _WalletPageState extends State<WalletPage> {
               ),
           ],
         ),
-      ),
     );
   }
 
@@ -541,8 +544,11 @@ class _WalletPageState extends State<WalletPage> {
         statusColor = AppColors.textTertiary;
     }
 
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isIncome ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),

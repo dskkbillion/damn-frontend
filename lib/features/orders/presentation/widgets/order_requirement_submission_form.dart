@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Widget for submitting order requirements (text and attachments).
 class OrderRequirementSubmissionForm extends StatefulWidget {
@@ -186,7 +187,6 @@ class _OrderRequirementSubmissionFormState
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
     // Assuming only one item per order for requirement submission view, adjust if needed
     final item = widget.order.items.isNotEmpty ? widget.order.items.first : null;
 
@@ -202,11 +202,9 @@ class _OrderRequirementSubmissionFormState
       },
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Card(
-          // 使用统一Card主题
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
+        child: GlassCard(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
             // --- Product Info ---
@@ -298,11 +296,11 @@ class _OrderRequirementSubmissionFormState
                             style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                           ),
                         ],
+          ),
                       ),
                     ),
                   ),
                 ),
-              ),
             const SizedBox(height: 24),
 
             // --- Action Buttons for this Form ---
@@ -422,8 +420,7 @@ class _OrderRequirementSubmissionFormState
           ),
         ),
       ),
-    ),
-  );
+    );
 }
 
   // Helper for seller question text style
@@ -680,4 +677,4 @@ class _OrderRequirementSubmissionFormState
       default: return Icons.insert_drive_file_outlined;
     }
   }
-} 
+}

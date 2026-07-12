@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 小帮手的使命页面
 class AssistantMissionPage extends StatelessWidget {
@@ -159,21 +160,10 @@ class AssistantMissionPage extends StatelessWidget {
     required String content,
     required IconData icon,
   }) {
-    return Container(
-      width: double.infinity,
+    return GlassCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.borderPrimary.withValues(alpha: 0.5),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -206,4 +196,4 @@ class AssistantMissionPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

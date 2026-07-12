@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart'
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../pages/bind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
@@ -182,9 +183,8 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     final String? avatarUrl = profile?.avatarUrl;
     final bool hasAvatarUrl = avatarUrl != null && avatarUrl.isNotEmpty;
     
-    return Container(
-      width: double.infinity,
-      color: AppColors.backgroundCard,
+    return GlassCard(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 30),
       child: Column(
         children: [
@@ -335,8 +335,9 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
     final String nickname = profile?.nickName ?? AppLocalizations.of(context).profile_default_name;
     final String phoneNumber = profile?.mobile ?? '';
     
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           _buildMenuItem(

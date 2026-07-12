@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../../domain/entities/related_service_entity.dart';
 
 /// {@template service_card}
@@ -17,19 +17,11 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+      tintOpacity: 0.62,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLg),

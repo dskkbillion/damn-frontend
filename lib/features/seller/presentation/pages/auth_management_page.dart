@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 认证管理页面
 class AuthManagementPage extends StatefulWidget {
@@ -148,19 +149,10 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
 
   /// 构建认证项目列表项
   Widget _buildAuthItem(BuildContext context, SellerAuthenticationInfo auth) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       child: InkWell(
         onTap: () => _navigateToAuthDetail(context, auth),
         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),

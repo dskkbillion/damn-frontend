@@ -3,6 +3,7 @@ import '../../domain/entities/order.dart';
 import '../../domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 平台介入状态显示组件
 class PlatformInterventionStatusWidget extends StatelessWidget {
@@ -44,11 +45,10 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -89,19 +89,18 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               ),
             ),
           ],
-        ),
       ),
     );
   }
 
   /// 构建平台介入状态显示UI
   Widget _buildStatusSection(BuildContext context) {
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      color: AppColors.warning.withOpacity(0.05),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      tintColor: AppColors.warning,
+      tintOpacity: 0.10,
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -166,7 +165,6 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
               AppColors.textSecondary,
             ),
           ],
-        ),
       ),
     );
   }
@@ -242,4 +240,4 @@ class PlatformInterventionStatusWidget extends StatelessWidget {
         return false;
     }
   }
-} 
+}

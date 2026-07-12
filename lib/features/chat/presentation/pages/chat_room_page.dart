@@ -11,6 +11,8 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/message
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart'; // 导入商品头部组件
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'; // For MessageStatus
 import 'package:dskk_flutter_refactor/features/chat/domain/constants/chat_constants.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
+import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_list_item.dart';
 
 class ChatRoomPage extends StatefulWidget {
   final int chatId;
@@ -367,7 +369,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   builder: (context, state) {
                     if (state is ChatMessagesLoading && state is! ChatMessagesLoaded) {
                       // 显示加载中
-                      return const Center(child: CircularProgressIndicator());
+                      return SkeletonPage(itemCount: 6, itemBuilder: (_, __) => const SkeletonListItem());
                     } else if (state is ChatMessagesLoaded) {
                       if (state.messages.isEmpty) {
                         return Center(child: Text(s.chat_no_messages));

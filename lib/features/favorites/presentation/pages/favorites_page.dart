@@ -15,6 +15,8 @@ import '../widgets/favorite_service_item.dart';
 import '../../../../app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/widgets/skeleton/skeleton_page.dart';
+import '../../../../core/widgets/skeleton/skeleton_card.dart';
 
 /// 收藏页面
 class FavoritesPage extends ConsumerStatefulWidget {
@@ -249,7 +251,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
   /// 构建服务标签页
   Widget _buildServicesTab(BuildContext context, FavoritesState state) {
     if (state.isServicesLoading && state.services.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return SkeletonPage(itemCount: 4, itemBuilder: (_, __) => const SkeletonCard());
     }
 
     if (state.services.isEmpty) {
@@ -298,7 +300,7 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
   /// 构建卖家标签页
   Widget _buildSellersTab(BuildContext context, FavoritesState state) {
     if (state.isSellersLoading && state.sellers.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return SkeletonPage(itemCount: 4, itemBuilder: (_, __) => const SkeletonCard());
     }
 
     if (state.sellers.isEmpty) {

@@ -11,6 +11,7 @@ import '../../../seller/presentation/pages/seller_profile_page.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 class BlocProfilePage extends StatefulWidget {
   const BlocProfilePage({super.key});
@@ -222,8 +223,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       builder: (context, state) {
         final bool isLoading = state is WalletSummaryLoading;
 
-        return Card(
+        return GlassCard(
           margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.zero,
           child: InkWell(
             onTap: () {
               // 导航到钱包详情页
@@ -315,20 +317,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   }
 
   Widget _buildOrderStatusSection() {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.borderPrimary.withValues(alpha: 0.5),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           Padding(
@@ -438,20 +429,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       {'icon': Icons.feedback, 'title': s.profile_feedback, 'route': '/feedback'},
     ];
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.borderPrimary.withValues(alpha: 0.5),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),

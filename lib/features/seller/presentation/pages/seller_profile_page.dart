@@ -299,12 +299,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
           ),
           const SizedBox(height: 16),
           // 卖家模式开关
-          Container(
+          GlassCard(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundCard,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-            ),
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

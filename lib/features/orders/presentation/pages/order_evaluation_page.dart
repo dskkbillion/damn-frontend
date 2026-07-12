@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../bloc/order_detail_bloc.dart';
 import '../widgets/order_evaluation_form.dart';
 import '../../domain/entities/order_item.dart';
@@ -92,19 +93,9 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   Widget _buildOrderItemCard() {
     final item = widget.orderItem!;
     
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

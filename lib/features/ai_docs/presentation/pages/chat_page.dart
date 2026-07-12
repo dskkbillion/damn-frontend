@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 添加FlutterSecureStorage导入
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 // Import Bloc and State/Event files
@@ -322,11 +323,10 @@ class RecommendationBottomSheetContent extends StatelessWidget {
     final appLocalizations = AppLocalizations.of(context);
 
     // 移除不需要的BlocListener，不显示SnackBar提示
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusLg)),
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusLg)),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -539,18 +539,10 @@ class ServiceGridItem extends StatelessWidget {
         // 获取当前服务的分配状态
         final allocationStatus = state.serviceAllocationStatus[service.id] ?? AllocationStatus.initial;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 3,
-            offset: Offset(0, 1),
-          ),
-        ],
-      ),
+    return GlassCard(
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      tintOpacity: 0.62,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../../domain/entities/chat_room.dart';
 
 /// 商品聊天头部组件
@@ -27,19 +28,11 @@ class ProductChatHeader extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlayLight.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

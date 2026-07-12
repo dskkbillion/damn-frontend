@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../../domain/entities/order.dart';
 import 'order_detail_item_tile.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -17,32 +17,18 @@ class OrderItemsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = order.items;
     if (items.isEmpty) {
-      return Container(
+      return GlassCard(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.backgroundSecondary,
-          borderRadius: BorderRadius.circular(8),
-        ),
         child: Center(
           child: Text(AppLocalizations.of(context).order_items_empty),
         ),
       );
     }
     
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

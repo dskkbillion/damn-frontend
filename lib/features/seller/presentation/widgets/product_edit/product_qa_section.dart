@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/product_edit_models.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 常见问题编辑 section。
 ///
@@ -128,8 +129,7 @@ class _ProductQASectionState extends State<ProductQASection> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
       margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
       padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
