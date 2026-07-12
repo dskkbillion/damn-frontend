@@ -25,6 +25,7 @@ import '../widgets/seller_order_fee_breakdown.dart';
 // Import entities
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 class SellerOrderDetailPage extends StatelessWidget {
   final int orderId;
@@ -81,8 +82,8 @@ class SellerOrderDetailPage extends StatelessWidget {
               } 
               // Loading state
               else if (state is SellerOrderDetailLoading && state.loadingOrderId == orderId) {
-                // Show loading indicator only during initial load
-                return const Center(child: CircularProgressIndicator());
+                // Show the order structure during the initial load.
+                return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
               } 
               // Failure state
               else if (state is SellerOrderDetailLoadFailure && state.failedOrderId == orderId) {

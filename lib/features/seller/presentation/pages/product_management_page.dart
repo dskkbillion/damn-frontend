@@ -10,12 +10,12 @@ import '../bloc/product_management/product_management_event.dart';
 import '../bloc/product_management/product_management_state.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/loading_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -371,7 +371,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         }
         
         if (state.isLoading && _getProductListByStatus(state, status) == null) {
-          return const LoadingState();
+          return const SellerPageSkeleton(variant: SellerSkeletonVariant.list);
         }
         
         // Always wrap content in RefreshIndicator to enable pull-to-refresh
@@ -974,4 +974,4 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       ),
     );
   }
-} 
+}

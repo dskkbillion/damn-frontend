@@ -10,7 +10,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/product_
 import 'package:dskk_flutter_refactor/features/auth/domain/usecases/get_logged_in_user.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_info_repository.dart';
 import 'product_edit_page.dart'; // 导入ExtendedProductFormData
-import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 商品预览页面 - 使用与商品详情页一致的UI
@@ -233,7 +233,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
               bloc: _bloc,
               builder: (context, state) {
                 if (state.isLoading) {
-                  return LoadingState(text: AppLocalizations.of(context).seller_product_preview_loading ?? 'Loading product info...');
+                  return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
                 }
                 
                 if (state.hasError) {
@@ -264,7 +264,7 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
                 
                 // 如果没有错误但产品为空，显示加载中
                 if (state.product == null) {
-                  return LoadingState(text: AppLocalizations.of(context).seller_product_preview_fetching ?? 'Fetching product data...');
+                  return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
                 }
                 
                 // 从状态中的产品数据构建ProductDetail

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart'; // Import GetIt
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
-import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
@@ -80,7 +80,7 @@ class TimeManagementBody extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is TimeManagementInitial || state is TimeManagementLoading) { // Handle Initial state
-          return const Center(child: LoadingIndicator());
+          return const SellerPageSkeleton(variant: SellerSkeletonVariant.form);
         }
 
         if (state is TimeManagementLoaded || state is TimeManagementUpdating) {
@@ -229,4 +229,4 @@ class TimeManagementBody extends StatelessWidget {
     );
   }
   
-} 
+}

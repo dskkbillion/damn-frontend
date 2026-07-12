@@ -7,6 +7,7 @@ import '../../../domain/entities/order.dart'; // Import Order
 import '../../../domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/seller/widgets/seller_order_item_card.dart';
 import '../bloc/seller_order_list_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 class SellerOrderListPage extends StatefulWidget {
   /// 初始状态参数，可以为null
@@ -189,7 +190,7 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
 
             // Handle initial loading and initial error states separately
             if (state is SellerOrderListLoading && state.previousState == null) {
-               return const Center(child: CircularProgressIndicator());
+               return const SellerPageSkeleton(variant: SellerSkeletonVariant.list);
             }
             if (state is SellerOrderListFailure && state.previousState == null) {
                return Center(
@@ -451,5 +452,4 @@ class _SellerOrderListPageState extends State<SellerOrderListPage> with SingleTi
     return order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
   }
 }
-
 

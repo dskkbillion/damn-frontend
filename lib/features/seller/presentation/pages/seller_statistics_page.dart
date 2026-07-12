@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
@@ -28,7 +29,7 @@ class SellerStatisticsPage extends ConsumerWidget {
           child: BlocBuilder<SellerStatisticsBloc, SellerStatisticsState>(
             builder: (context, state) {
               if (state is SellerStatisticsLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
               } else if (state is SellerStatisticsLoaded) {
                 return RefreshIndicator(
                   onRefresh: () async {

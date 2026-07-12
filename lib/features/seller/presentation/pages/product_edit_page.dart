@@ -22,6 +22,7 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 // 输入验证常量
 class ValidationConstants {
@@ -875,7 +876,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
             },
             builder: (context, state) {
               if (state.isLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SellerPageSkeleton(variant: SellerSkeletonVariant.form);
               }
               
               return GestureDetector(

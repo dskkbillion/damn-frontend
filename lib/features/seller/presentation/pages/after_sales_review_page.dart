@@ -4,7 +4,7 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
-import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/order_refund_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refund_type.dart';
@@ -115,7 +115,7 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
       },
       builder: (context, state) {
         if (state is AfterSalesReviewInitial || state is AfterSalesReviewLoading) {
-          return const Center(child: LoadingIndicator());
+          return const SellerPageSkeleton(variant: SellerSkeletonVariant.list);
         }
         
         if (state is AfterSalesReviewEmpty) {
@@ -514,4 +514,4 @@ class _RefundCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

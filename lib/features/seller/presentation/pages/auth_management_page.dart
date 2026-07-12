@@ -7,7 +7,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_management/auth_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/empty_state.dart';
-import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/loading_state.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 
@@ -46,7 +46,7 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
           body: BlocBuilder<AuthManagementBloc, AuthManagementState>(
             builder: (blocContext, state) {
               if (state is AuthManagementInitial || state is AuthManagementLoading) {
-                return const Center(child: LoadingState());
+                return const SellerPageSkeleton(variant: SellerSkeletonVariant.list);
               } else if (state is AuthManagementError) {
                 return _buildErrorState(blocContext, state.message);
               } else if (state is AuthManagementEmpty) {
@@ -458,4 +458,4 @@ class _AuthManagementPageState extends State<AuthManagementPage> {
       });
     }
   }
-} 
+}

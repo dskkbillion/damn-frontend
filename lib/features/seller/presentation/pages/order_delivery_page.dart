@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
@@ -84,7 +85,7 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
       },
       builder: (context, state) {
         if (state is OrderDeliveryInitial) {
-          return const Center(child: LoadingIndicator());
+          return const SellerPageSkeleton(variant: SellerSkeletonVariant.form);
         }
         
         if (state is OrderDeliveryFormState) {
@@ -223,4 +224,4 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
       ),
     );
   }
-} 
+}

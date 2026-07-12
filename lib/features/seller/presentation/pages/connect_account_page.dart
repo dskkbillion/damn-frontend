@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 import '../bloc/connect_account/connect_account_bloc.dart';
 import '../bloc/connect_account/connect_account_event.dart';
@@ -46,7 +47,7 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
         },
         builder: (context, state) {
           if (state is ConnectAccountLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
           }
           if (state is ConnectAccountActive) {
             return _buildActiveState(context, state);

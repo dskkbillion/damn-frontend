@@ -1,4 +1,4 @@
-import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/order_refund_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/enums/refund_type.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/order_refund.dart';
@@ -96,7 +96,7 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         future: _refundFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: LoadingIndicator());
+            return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
           }
 
           if (snapshot.hasError) {
