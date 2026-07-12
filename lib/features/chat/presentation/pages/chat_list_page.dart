@@ -194,13 +194,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     final currentAppMode = ref.watch(appModeProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFEDEDED),
+      backgroundColor: AppColors.backgroundPrimary,
       appBar: AppBar(
         title: Text(s.chat_list_title),
-        backgroundColor: AppColors.backgroundCard,
+        backgroundColor: AppColors.backgroundPrimary,
         foregroundColor: AppColors.textPrimary,
-        elevation: 0.5,
-        shadowColor: AppColors.borderInput,
+        elevation: 0,
         actions: [
           TextButton.icon(
             icon: Icon(
@@ -455,14 +454,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 构建系统条目（始终显示）
   Widget _buildSystemItems(BuildContext context, int currentUserId) {
     return SliverToBoxAdapter(
-      child: Container(
-        color: AppColors.backgroundCard,
-        child: Column(
+      child: Column(
           children: [
             _buildNotificationItem(context, currentUserId),
-            const Divider(height: 8, thickness: 8, color: Color(0xFFEDEDED)),
+            const SizedBox(height: 4),
           ],
-        ),
       ),
     );
   }

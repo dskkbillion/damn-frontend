@@ -318,13 +318,12 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          backgroundColor: AppColors.backgroundSecondary,
+          backgroundColor: AppColors.backgroundPrimary,
           // FAB will be added later when we have access to scroll controller
           appBar: AppBar(
-          backgroundColor: AppColors.backgroundCard,
+          backgroundColor: AppColors.backgroundPrimary,
           foregroundColor: AppColors.textPrimary,
-          elevation: 0.5,
-          shadowColor: AppColors.borderInput,
+          elevation: 0,
           centerTitle: true,
           leading: BackButton(
             onPressed: () {

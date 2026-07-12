@@ -300,10 +300,10 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
     final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
-    // Updated bubble colors based on frontend.md alignment
+    // 发送方向保留蓝色强调，同时统一为半透明玻璃材质。
     final bubbleColor = isCurrentUser
-        ? const Color(0xFFC9E6FF) // Light blue for current user
-        : AppColors.backgroundCard;          // White for opponent
+        ? AppColors.primary.withValues(alpha: 0.18)
+        : AppColors.backgroundCard.withValues(alpha: 0.74);
     // Consistent text color for both bubble types
     const textColor = AppColors.textPrimary;
 
@@ -380,7 +380,19 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
         decoration: BoxDecoration(
           color: bubbleColor,
-          borderRadius: BorderRadius.circular(16.0), // Keep consistent radius
+          borderRadius: BorderRadius.circular(18.0),
+          border: Border.all(
+            color: isCurrentUser
+                ? AppColors.primary.withValues(alpha: 0.22)
+                : Colors.white.withValues(alpha: 0.88),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: isCurrentUser ? 0.10 : 0.05),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.7, // Keep max width constraint
@@ -938,4 +950,4 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     // 如果无法获取对方名称，返回默认值
     return s.chat_buyer;
   }
-} 
+}

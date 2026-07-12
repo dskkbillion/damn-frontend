@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/features/chat/domain/constants/participant_type.dart';
 
 import '../../domain/entities/chat_room.dart';
@@ -242,8 +243,11 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
       (sum, room) => sum + room.unreadCount,
     );
     
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(18),
+      tintOpacity: 0.62,
       child: Column(
         children: [
           // 主要内容区域
@@ -434,7 +438,11 @@ class _SellerGroupItemState extends State<SellerGroupItem> with SingleTickerProv
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: AppColors.backgroundSecondary,
+              margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary.withValues(alpha: 0.52),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(
@@ -696,8 +704,11 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
       (sum, room) => sum + room.unreadCount,
     );
     
-    return Container(
-      color: AppColors.backgroundCard,
+    return GlassCard(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(18),
+      tintOpacity: 0.62,
       child: Column(
         children: [
           // 主要内容区域
@@ -903,7 +914,11 @@ class _ProductGroupItemState extends State<ProductGroupItem> with SingleTickerPr
           SizeTransition(
             sizeFactor: _expandAnimation,
             child: Container(
-              color: AppColors.backgroundSecondary,
+              margin: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundSecondary.withValues(alpha: 0.52),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Column(
                 children: widget.group.chatRooms.map((chatRoom) {
                   return Container(

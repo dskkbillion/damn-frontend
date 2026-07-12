@@ -555,14 +555,17 @@ class _CustomInputBarState extends State<CustomInputBar> {
     if (_isRecording) {
       // Recording UI
       return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: AppColors.backgroundCard,
+        margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundCard.withValues(alpha: 0.76),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.borderSecondary,
-              blurRadius: 4,
-              offset: Offset(0, -2),
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -611,14 +614,17 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
     // Normal input UI
     return Container(
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundCard,
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCard.withValues(alpha: 0.76),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.84)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 4,
-            offset: Offset(0, -2),
+            color: AppColors.primary.withValues(alpha: 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -652,7 +658,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundSecondary,
+                        color: AppColors.backgroundSecondary.withValues(alpha: 0.86),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
                       ),
                       child: const Center(
@@ -682,7 +688,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: AppColors.backgroundSecondary,
+                        fillColor: AppColors.backgroundSecondary.withValues(alpha: 0.86),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 10,

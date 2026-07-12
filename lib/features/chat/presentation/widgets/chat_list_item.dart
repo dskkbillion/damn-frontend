@@ -4,6 +4,7 @@ import 'package:intl/intl.dart'; // For date formatting
 import 'package:intl/date_symbol_data_local.dart'; // Import for initializing locale data
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/chat_room.dart';
@@ -111,7 +112,14 @@ class _ChatListItemState extends State<ChatListItem> {
     final timestampText = _formatTimestamp(widget.chatRoom.lastActivityTime);
     final lastMessageText = _getLastMessagePreview(widget.chatRoom.lastMessage);
 
-    return ListTile(
+    return GlassCard(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(18),
+      tintOpacity: 0.62,
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
       leading: CircleAvatar(
         radius: 25, // Standard ListTile leading size adjust if needed
         backgroundImage: (opponent.avatar != null && opponent.avatar!.isNotEmpty)
@@ -244,6 +252,8 @@ class _ChatListItemState extends State<ChatListItem> {
       ),
       onTap: widget.onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // Adjust padding
+        ),
+      ),
     );
   }
 }
