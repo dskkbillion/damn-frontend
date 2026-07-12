@@ -294,7 +294,6 @@ class _RefundCard extends StatelessWidget {
               ),
           ],
         ),
-      ),
     );
   }
   
