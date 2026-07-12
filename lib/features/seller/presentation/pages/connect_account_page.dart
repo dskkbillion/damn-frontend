@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 import '../bloc/connect_account/connect_account_bloc.dart';
 import '../bloc/connect_account/connect_account_event.dart';
@@ -214,14 +215,10 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
           ),
           const SizedBox(height: 32),
           // 账户摘要卡片
-          Container(
-            width: double.infinity,
+          GlassCard(
             padding: const EdgeInsets.all(AppDimensions.spacingLg),
-            decoration: BoxDecoration(
-              color: AppColors.backgroundCard,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+            tintOpacity: 0.62,
             child: Column(
               children: [
                 _buildStatusRow('收款功能', status.chargesEnabled),

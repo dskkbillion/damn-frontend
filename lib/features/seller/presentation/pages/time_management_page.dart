@@ -7,6 +7,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/selle
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/time_settings.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 卖家时间管理页面
 class TimeManagementPage extends StatelessWidget {
@@ -143,12 +144,12 @@ class TimeManagementBody extends StatelessWidget {
   /// 构建在线状态切换部分
   Widget _buildOnlineStatusSection(BuildContext context, TimeSettings settings, bool isUpdating) {
     // No changes needed here, context.read will work correctly
-    return Card(
-      elevation: 1,
+    return GlassCard(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
@@ -188,19 +189,18 @@ class TimeManagementBody extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
   /// 构建状态说明部分
   Widget _buildStatusDescription(BuildContext context, bool isOnline) {
     // This widget needs context for localization
-    return Card(
-      elevation: 1,
+    return GlassCard(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -225,7 +225,6 @@ class TimeManagementBody extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
   

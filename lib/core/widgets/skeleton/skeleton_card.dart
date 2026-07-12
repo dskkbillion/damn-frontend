@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_dimensions.dart';
 import 'shimmer_effect.dart';
+import '../glass_surface.dart';
 
 /// 瀑布流卡片骨架
 ///
@@ -16,8 +17,12 @@ class SkeletonCard extends StatelessWidget {
         ? AppColorsDark.backgroundCard
         : AppColors.backgroundTertiary;
 
-    return ShimmerEffect(
-      child: Column(
+    return GlassCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingSm),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      tintOpacity: 0.48,
+      child: ShimmerEffect(
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 图片占位
@@ -50,6 +55,7 @@ class SkeletonCard extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -16,6 +16,7 @@ import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 商品管理页面
 class ProductManagementPage extends StatefulWidget {
@@ -570,8 +571,11 @@ class _ProductManagementPageState extends State<ProductManagementPage>
       );
     }
     
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 12.0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: InkWell(
         onTap: () {
           // 防抖检查：防止快速重复点击导致重复导航

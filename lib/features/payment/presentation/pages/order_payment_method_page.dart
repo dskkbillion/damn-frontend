@@ -9,6 +9,7 @@ import '../../../../core/config/region_config.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
 import '../../../../core/payment/presentation/pages/stripe_payment_webview_page.dart';
 import '../../../../core/widgets/custom_loading_dialog.dart';
+import '../../../../core/widgets/glass_surface.dart';
 import '../../../../features/orders/domain/entities/order.dart';
 import '../../../orders/presentation/bloc/order_detail_bloc.dart';
 
@@ -135,10 +136,10 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 订单信息卡片
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              GlassCard(
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                tintOpacity: 0.62,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -184,7 +185,6 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                     ],
                   ),
                 ),
-              ),
 
               const SizedBox(height: 32),
 

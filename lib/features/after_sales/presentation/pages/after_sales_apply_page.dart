@@ -7,6 +7,7 @@ import '../bloc/after_sales_bloc.dart'; // Import Bloc/Event
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 /// 售后申请表单页面
@@ -349,13 +350,13 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
   Widget _buildOrderItemInfo(BuildContext context, OrderItem item) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return Card(
-      elevation: 0,
-      color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
+    return GlassCard(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintColor: colorScheme.surfaceContainerHighest,
+      tintOpacity: 0.3,
+      child: Row(
+        children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(4.0),
               child: item.imageUrl.isNotEmpty
@@ -394,8 +395,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
             ),
           ],
         ),
-      ),
     );
   }
 
-} 
+}

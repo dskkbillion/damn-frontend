@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // For date formatting
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Widget displaying summary information for completed or canceled orders.
 class OrderCompletionSummary extends StatelessWidget {
@@ -42,19 +43,11 @@ class OrderCompletionSummary extends StatelessWidget {
             .toList() ??
         const <String>[];
 
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.borderSecondary,
-            blurRadius: 10,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

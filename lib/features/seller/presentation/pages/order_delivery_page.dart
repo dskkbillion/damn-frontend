@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 import 'package:dskk_flutter_refactor/core/widgets/loading_indicator.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/order_delivery/order_delivery_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/file_selection_widget.dart';
 import 'package:get_it/get_it.dart';
@@ -37,9 +38,9 @@ class OrderDeliveryPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                orderSn != null 
-                  ? l10n.order_delivery_title_with_sn(orderSn!) ?? 'Order Delivery: $orderSn'
-                  : l10n.order_delivery_title ?? 'Order Delivery'
+              orderSn != null
+                ? l10n.order_delivery_title_with_sn(orderSn!) ?? 'Order Delivery: $orderSn'
+                : l10n.order_delivery_title ?? 'Order Delivery'
               ),
             ),
             body: const _OrderDeliveryForm(),
@@ -124,11 +125,12 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 表单说明
-          Card(
+          GlassCard(
             margin: const EdgeInsets.only(bottom: 16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+            padding: const EdgeInsets.all(16),
+            borderRadius: BorderRadius.circular(12),
+            tintOpacity: 0.62,
+            child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -149,7 +151,6 @@ class _OrderDeliveryFormState extends State<_OrderDeliveryForm> {
                 ],
               ),
             ),
-          ),
           
           // 交付内容输入
           Text(

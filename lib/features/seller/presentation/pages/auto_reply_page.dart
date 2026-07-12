@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/seller/domain/entities/auto_reply
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 自动回复设置页面
 class AutoReplyPage extends StatelessWidget {
@@ -150,12 +151,12 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
 
   /// 构建自动回复开关部分
   Widget _buildAutoReplySwitch(BuildContext context, AutoReplySettings settings, bool isUpdating) {
-    return Card(
-      elevation: 1,
+    return GlassCard(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
@@ -179,18 +180,17 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
           ],
         ),
-      ),
     );
   }
 
   /// 构建自动回复内容部分
   Widget _buildAutoReplyContent(BuildContext context, AutoReplySettings settings, bool isUpdating) {
-    return Card(
-      elevation: 1,
+    return GlassCard(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -231,7 +231,6 @@ class _AutoReplyBodyState extends State<AutoReplyBody> {
             ),
           ],
         ),
-      ),
     );
   }
 

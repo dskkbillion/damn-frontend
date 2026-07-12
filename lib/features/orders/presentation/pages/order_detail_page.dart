@@ -16,6 +16,7 @@ import '../widgets/order_items_section.dart';
 import '../widgets/order_info_section.dart';
 import '../widgets/order_materials_section.dart';
 import '../widgets/order_price_details_section.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 /// 订单详情页面
 class OrderDetailPage extends StatefulWidget {
@@ -186,7 +187,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   /// 构建主要内容
   Widget _buildContent(BuildContext context, OrderDetailState state) {
     if (state is OrderDetailLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
     }
 
     if (state is OrderDetailError) {

@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/statu
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/shimmer_effect.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 售后审核列表页面
 class AfterSalesReviewPage extends StatefulWidget {
@@ -188,12 +189,12 @@ class _RefundCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.only(bottom: 16.0),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 头部信息

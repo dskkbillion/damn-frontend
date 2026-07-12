@@ -20,6 +20,8 @@ import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
 
 import 'package:dskk_flutter_refactor/features/home/domain/entities/seller_product.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/bloc/seller_profile_bloc.dart';
@@ -204,7 +206,7 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
           child: BlocBuilder<SellerProfileBloc, SellerProfileState>(
           builder: (context, state) {
             if (state is SellerProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
             } else if (state is SellerProfileError) {
               return Center(
                 child: Column(
@@ -526,19 +528,10 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
             // 使用标准Go Router导航
             context.push('/product/${product.id}');
           },
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.backgroundCard,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-              boxShadow: const [
-                BoxShadow(
-                  color: AppColors.borderSecondary,
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
+          child: GlassCard(
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+            tintOpacity: 0.62,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

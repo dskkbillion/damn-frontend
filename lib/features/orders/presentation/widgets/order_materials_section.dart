@@ -8,6 +8,7 @@ import '../../domain/entities/order_status.dart';
 import '../../domain/entities/order_delivery.dart';
 import '../bloc/order_detail_bloc.dart';
 import 'delivery_file_viewer.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 订单材料交付组件
 class OrderMaterialsSection extends StatelessWidget {
@@ -42,19 +43,11 @@ class OrderMaterialsSection extends StatelessWidget {
           deliveries = state.deliveries;
         }
 
-        return Container(
+        return GlassCard(
           margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingLg),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                blurRadius: 10,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
+          padding: EdgeInsets.zero,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          tintOpacity: 0.62,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

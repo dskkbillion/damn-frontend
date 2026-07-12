@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 订单价格详情组件
 class OrderPriceDetailsSection extends StatelessWidget {
@@ -14,19 +15,11 @@ class OrderPriceDetailsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

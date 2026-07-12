@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/seller_authentication_info.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
@@ -59,19 +60,10 @@ class AuthStatusPage extends StatelessWidget {
   
   /// 构建状态部分
   Widget _buildStatusSection(BuildContext context) {
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.overlay.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -188,19 +180,10 @@ class AuthStatusPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
+        GlassCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.overlay.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(12),
+          tintOpacity: 0.62,
           child: Column(
             children: fields.entries.map((entry) {
               return Padding(
@@ -248,19 +231,10 @@ class AuthStatusPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Container(
+        GlassCard(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.overlay.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(12),
+          tintOpacity: 0.62,
           child: history.isEmpty 
               ? Center(
                   child: Padding(
@@ -735,4 +709,4 @@ class AuthStatusPage extends StatelessWidget {
     return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} '
         '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
-} 
+}

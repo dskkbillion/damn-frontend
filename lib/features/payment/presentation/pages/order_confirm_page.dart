@@ -12,6 +12,7 @@ import '../../../../core/config/region_config.dart';
 import '../../../../core/utils/price_formatter.dart';
 import '../../../../core/payment/models/payment_models.dart' as payment_models;
 import '../../../../core/widgets/custom_loading_dialog.dart';
+import '../../../../core/widgets/glass_surface.dart';
 import '../bloc/payment_bloc.dart';
 import '../bloc/payment_event.dart';
 import '../bloc/payment_state.dart';
@@ -244,10 +245,10 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 商品信息卡片
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              GlassCard(
+                padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+                tintOpacity: 0.62,
                   child: Row(
                     children: [
                       // 商品图片
@@ -310,7 +311,6 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                     ],
                   ),
                 ),
-              ),
 
               const SizedBox(height: AppDimensions.spacingXxl),
 

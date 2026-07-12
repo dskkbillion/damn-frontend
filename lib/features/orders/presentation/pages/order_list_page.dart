@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 // Import the new AfterSalesDetailPage
 
 /// 订单列表页面
@@ -227,18 +228,11 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                      return Center(
                        child: Padding(
                          padding: const EdgeInsets.all(32.0),
-                         child: Card(
-                           elevation: 0,
-                           shape: RoundedRectangleBorder(
-                             borderRadius: BorderRadius.circular(12.0),
-                             side: BorderSide(
-                               color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                             ),
-                           ),
-                                                        child: Padding(
-                               padding: const EdgeInsets.all(48.0),
+                         child: GlassCard(
+                           padding: const EdgeInsets.all(48.0),
+                           borderRadius: BorderRadius.circular(12),
+                           tintOpacity: 0.62,
                               child: Text(AppLocalizations.of(context).order_list_empty, style: Theme.of(context).textTheme.bodyLarge),
-                             ),
                          ),
                        ),
                      );
@@ -307,16 +301,10 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                    return Center(
                      child: Padding(
                        padding: const EdgeInsets.all(32.0),
-                       child: Card(
-                         elevation: 0,
-                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(12.0),
-                           side: BorderSide(
-                             color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                           ),
-                         ),
-                         child: Padding(
-                           padding: const EdgeInsets.all(32.0),
+                       child: GlassCard(
+                         padding: const EdgeInsets.all(32.0),
+                         borderRadius: BorderRadius.circular(12),
+                         tintOpacity: 0.62,
                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -330,8 +318,7 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                                   child: Text(AppLocalizations.of(context).order_list_retry),
                                 )
                               ],
-                           ),
-                         ),
+                      ),
                        ),
                      ),
                    );
