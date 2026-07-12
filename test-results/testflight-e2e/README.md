@@ -43,3 +43,9 @@
 - [买家个人中心统一卡片](../e2e/buyer-profile-glass.png)
 - [卖家个人中心统一卡片](../e2e/seller-profile-glass.png)
 - [卖家中心 Shimmer 骨架屏](../e2e/seller-home-skeleton.png)
+
+## 全局卡片统一回归截图
+
+- [买家首页商品卡](../e2e/global-card-home-20260713.png)
+- [买家个人中心卡片](../e2e/global-card-profile-20260713.png)
+- [卖家中心统一卡片](../e2e/global-card-seller-20260713.png)
