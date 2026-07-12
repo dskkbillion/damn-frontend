@@ -328,9 +328,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> with SingleTicker
                 // 购买按钮
                 _buildBuyButton(product, translation),
                 
-                // 需要买家提供 - 使用productMaterials中ATTACHMENT和TEXT类型
-                _buildBuyerRequirementsSection(product),
-                
                 // 常见问题（折叠面板）- 使用productMaterials中PROBLEM类型
                 _buildFAQSection(product),
                 

@@ -816,7 +816,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
 
     emit(state.copyWithSubmitting());
     
-    // 转换qaList和buyerInfoItems为productMaterials
+    // 商品材料仅保留卖家维护的常见问题。买家信息采集已从商品配置中下线。
     final List<ProductMaterial> materials = [];
     
     // 转换qaList为PROBLEM类型的materials
@@ -828,25 +828,6 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
           question: qa['question'] ?? '',
           answer: qa['answer'] ?? '',
           type: 'PROBLEM',
-        ));
-      }
-    }
-    
-    // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
-    if (state.formData.buyerInfoItems.isNotEmpty) {
-      int materialId = 1000; // 从1000开始，避免与QA的ID冲突
-      for (final item in state.formData.buyerInfoItems) {
-        final type = item['type'] ?? 'text';
-        String materialType = 'TEXT';
-        if (type == 'file' || type == 'image') {
-          materialType = 'ATTACHMENT';
-        }
-        
-        materials.add(ProductMaterial(
-          id: materialId++,
-          question: item['label'] ?? '',
-          answer: item['description'],
-          type: materialType,
         ));
       }
     }
@@ -1009,7 +990,7 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
         AppLogger.d('警告：保存草稿时发现未上传的详情图片，数量：${state.selectedDetailImagePaths.length}');
       }
       
-      // 转换qaList和buyerInfoItems为productMaterials
+      // 商品材料仅保留卖家维护的常见问题。买家信息采集已从商品配置中下线。
       final List<ProductMaterial> materials = [];
       
       // 转换qaList为PROBLEM类型的materials
@@ -1021,25 +1002,6 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
             question: qa['question'] ?? '',
             answer: qa['answer'] ?? '',
             type: 'PROBLEM',
-          ));
-        }
-      }
-      
-      // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
-      if (state.formData.buyerInfoItems.isNotEmpty) {
-        int materialId = 1000; // 从1000开始，避免与QA的ID冲突
-        for (final item in state.formData.buyerInfoItems) {
-          final type = item['type'] ?? 'text';
-          String materialType = 'TEXT';
-          if (type == 'file' || type == 'image') {
-            materialType = 'ATTACHMENT';
-          }
-          
-          materials.add(ProductMaterial(
-            id: materialId++,
-            question: item['label'] ?? '',
-            answer: item['description'] ?? '',
-            type: materialType,
           ));
         }
       }
@@ -1398,4 +1360,4 @@ class ProductEditBloc extends Bloc<ProductEditEvent, ProductEditState> {
     _autoSaveTimer?.cancel();
     return super.close();
   }
-} 
+}

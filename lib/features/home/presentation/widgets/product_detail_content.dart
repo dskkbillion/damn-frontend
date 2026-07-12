@@ -103,9 +103,6 @@ class _ProductDetailContentState extends State<ProductDetailContent>
           // 自定义操作区域
           if (widget.customActions != null) widget.customActions!,
 
-          // 买家需要提供（折叠面板）
-          _buildBuyerRequirementsSection(),
-
           // 常见问题（折叠面板）
           _buildFAQSection(),
 

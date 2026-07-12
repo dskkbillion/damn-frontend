@@ -109,25 +109,6 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
     print('  - Variants count: ${formData.variants.length}');
     print('  - Images count: ${formData.images.length}');
     print('  - QA count: ${formData.qaList.length}');
-    print('  - Buyer info items count: ${formData.buyerInfoItems.length}');
-    
-    // 转换买家需求信息为材料信息（ATTACHMENT或TEXT类型）
-    final buyerMaterials = formData.buyerInfoItems.asMap().entries.map((entry) {
-      final item = entry.value;
-      final type = item['type'] ?? '';
-      // 根据类型映射到productMaterials的type
-      String materialType = 'TEXT'; // 默认为TEXT
-      if (type == 'file' || type == 'image') {
-        materialType = 'ATTACHMENT';
-      }
-      return ProductMaterial(
-        id: 1000 + entry.key, // 使用1000+索引作为ID，避免与QA冲突
-        question: item['label'] ?? '',
-        answer: item['description'] ?? '',
-        type: materialType,
-      );
-    }).toList();
-    
     // 转换服务档位为商品变体
     final variants = formData.variants.map((tier) {
       print('  - Converting tier: ${tier.name} - Price: ${tier.sellingPrice}');
@@ -157,8 +138,8 @@ class _ProductPreviewPageState extends State<ProductPreviewPage> {
       type: 'PROBLEM', // 常见问题使用PROBLEM类型
     )).toList();
     
-    // 合并所有材料信息
-    final materials = [...qaMaterials, ...buyerMaterials];
+    // 预览只展示卖家维护的常见问题；买家信息采集已从商品配置中下线。
+    final materials = qaMaterials;
     
     print('  - Converted materials count: ${materials.length}');
 

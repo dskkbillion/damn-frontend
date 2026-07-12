@@ -913,9 +913,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
             // 服务档位设置
             _buildServiceTiersSection(),
             
-            // 买家需要提供的信息
-            _buildBuyerInfoSection(state),
-            
             // 常见问题编辑
             _buildCommonQuestionsSection(state),
             
@@ -2813,7 +2810,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
       }
     }
     
-    // 转换qaList和buyerInfoItems为productMaterials
+    // 商品材料仅保留卖家维护的常见问题。买家信息采集已从商品配置中下线。
     final List<ProductMaterial> materials = [];
     
     // 转换qaList为PROBLEM类型的materials
@@ -2824,23 +2821,6 @@ class _ProductEditPageState extends State<ProductEditPage> {
         question: qa.question,
         answer: qa.answer,
         type: 'PROBLEM',
-      ));
-    }
-    
-    // 转换buyerInfoItems为ATTACHMENT或TEXT类型的materials
-    int buyerInfoMaterialId = 1000; // 从1000开始，避免与QA的ID冲突
-    for (final item in _buyerInfoItems) {
-      String materialType = 'TEXT';
-      // 根据类型判断是TEXT还是ATTACHMENT
-      if (item.type == BuyerInfoType.file || item.type == BuyerInfoType.image) {
-        materialType = 'ATTACHMENT';
-      }
-      
-      materials.add(ProductMaterial(
-        id: buyerInfoMaterialId++,
-        question: item.label,
-        answer: item.description,
-        type: materialType,
       ));
     }
     
@@ -2857,12 +2837,7 @@ class _ProductEditPageState extends State<ProductEditPage> {
         'question': qa.question,
         'answer': qa.answer,
       }).toList(),
-      buyerInfoItems: _buyerInfoItems.map((item) => {
-        'type': item.type.name,
-        'label': item.label,
-        'description': item.description,
-        'isRequired': item.isRequired,
-      }).toList(),
+      buyerInfoItems: const [],
       successCases: state.successCases.map((case_) => case_.toJson()).toList(),
       images: state.selectedImagePaths,
     );
