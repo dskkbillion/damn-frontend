@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 
 /// 用于在**卖家**订单列表中显示单个订单摘要信息的卡片 Widget。
@@ -45,16 +46,11 @@ class SellerOrderItemCard extends StatelessWidget {
       }
     }
 
-    return Card(
-      // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
+    return GlassCard(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 0, // 无阴影，更简洁
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        side: BorderSide(
-          color: colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      tintOpacity: 0.62,
       child: InkWell(
         onTap: onTap ?? navigateToDetail, // Default to navigate if onTap is null
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
@@ -233,4 +229,4 @@ class SellerOrderItemCard extends StatelessWidget {
         status == OrderStatus.afterSale ||
         status == OrderStatus.applyForRefuse;
   }
-} 
+}

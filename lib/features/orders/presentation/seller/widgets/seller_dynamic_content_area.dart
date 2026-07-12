@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order.dart';
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_status.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Displays dynamic content based on the order's status in the SellerOrderDetailPage.
 class SellerDynamicContentArea extends StatelessWidget {
@@ -63,16 +64,12 @@ class SellerDynamicContentArea extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     
-    return Card(
+    return GlassCard(
        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-       elevation: 0,
-       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-       ),
-       child: Padding(
-         padding: const EdgeInsets.all(16.0),
-         child: Column(
+       padding: const EdgeInsets.all(16.0),
+       borderRadius: BorderRadius.circular(12.0),
+       tintOpacity: 0.62,
+       child: Column(
            crossAxisAlignment: CrossAxisAlignment.start,
            children: [
               Row(
@@ -90,7 +87,6 @@ class SellerDynamicContentArea extends StatelessWidget {
               // TODO: 后续版本可以添加交付内容的详情显示
            ],
          ),
-       ),
     );
   }
 
@@ -98,19 +94,14 @@ class SellerDynamicContentArea extends StatelessWidget {
   Widget _buildOrderCompletedContent(BuildContext context) {
     print('[SellerDynamicContentArea] Executing _buildOrderCompletedContent.');
     final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
 
     // Display a simple confirmation card
-    return Card(
+    return GlassCard(
        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-       elevation: 0,
-       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-       ),
-       child: Padding(
-         padding: const EdgeInsets.all(16.0),
-         child: Row(
+       padding: const EdgeInsets.all(16.0),
+       borderRadius: BorderRadius.circular(12.0),
+       tintOpacity: 0.62,
+       child: Row(
             children: [
               Icon(Icons.verified_outlined, size: 20, color: Colors.green[700]), // Use a verified icon
               const SizedBox(width: 8),
@@ -124,7 +115,6 @@ class SellerDynamicContentArea extends StatelessWidget {
               // Example: Text(order.evaluationStatus ?? '尚未评价', style: textTheme.bodySmall)
             ],
          ),
-       ),
     );
   }
 
@@ -134,17 +124,13 @@ class SellerDynamicContentArea extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Display a simple cancellation card
-    return Card(
+    return GlassCard(
        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-       elevation: 0,
-       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-       ),
-       color: colorScheme.errorContainer.withOpacity(0.3), // Use error color hint
-       child: Padding(
-         padding: const EdgeInsets.all(16.0),
-         child: Row(
+       padding: const EdgeInsets.all(16.0),
+       borderRadius: BorderRadius.circular(12.0),
+       tintColor: colorScheme.errorContainer,
+       tintOpacity: 0.3,
+       child: Row(
             children: [
               Icon(Icons.cancel_outlined, size: 20, color: colorScheme.error),
               const SizedBox(width: 8),
@@ -158,7 +144,6 @@ class SellerDynamicContentArea extends StatelessWidget {
               // Example: Text(order.cancelReason ?? '', style: textTheme.bodySmall)
             ],
          ),
-       ),
     );
   }
 
@@ -168,17 +153,13 @@ class SellerDynamicContentArea extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Display a card indicating refusal request submitted
-    return Card(
+    return GlassCard(
        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-       elevation: 0,
-       shape: RoundedRectangleBorder(
-         borderRadius: BorderRadius.circular(12.0),
-         side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-       ),
-       color: colorScheme.surfaceContainerHighest.withOpacity(0.3), // Neutral background
-       child: Padding(
-         padding: const EdgeInsets.all(16.0),
-         child: Row(
+       padding: const EdgeInsets.all(16.0),
+       borderRadius: BorderRadius.circular(12.0),
+       tintColor: colorScheme.surfaceContainerHighest,
+       tintOpacity: 0.3,
+       child: Row(
             children: [
               Icon(Icons.info_outline_rounded, size: 20, color: colorScheme.secondary),
               const SizedBox(width: 8),
@@ -198,11 +179,9 @@ class SellerDynamicContentArea extends StatelessWidget {
               ),
             ],
          ),
-       ),
     );
   }
 
   // TODO: Implement builder methods for other states
   // Widget _buildAfterSaleContent(BuildContext context) { ... }
 }
-

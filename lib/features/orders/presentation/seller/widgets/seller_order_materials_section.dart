@@ -5,6 +5,7 @@ import '../../../domain/entities/order.dart';
 import '../../../domain/entities/order_status.dart';
 import '../../../domain/entities/order_materials.dart';
 import '../../../domain/entities/order_delivery.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 卖家订单材料交付组件
 class SellerOrderMaterialsSection extends StatelessWidget {
@@ -39,16 +40,12 @@ class SellerOrderMaterialsSection extends StatelessWidget {
       return const SizedBox.shrink();
     }
     
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline.withOpacity(0.3))
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12.0),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 标题
@@ -72,7 +69,6 @@ class SellerOrderMaterialsSection extends StatelessWidget {
             // 材料内容
             _buildBuyerMaterialsContent(context),
           ],
-        ),
       ),
     );
   }

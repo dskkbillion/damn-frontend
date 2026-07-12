@@ -4,6 +4,7 @@ import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 // Import OrderItem entity using the correct path
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -42,12 +43,12 @@ class SelectAfterSalesTypePage extends StatelessWidget {
 
   // Method now accepts OrderItem and uses its data
   Widget _buildOrderItemInfo(BuildContext context, OrderItem item) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+    return GlassCard(
+      padding: const EdgeInsets.all(16.0),
+      borderRadius: BorderRadius.circular(12.0),
+      tintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      tintOpacity: 0.3,
+      child: Row(
           children: [
             // Use item.imageUrl
             Container(
@@ -77,7 +78,6 @@ class SelectAfterSalesTypePage extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -127,8 +127,11 @@ class SelectAfterSalesTypePage extends StatelessWidget {
 
   // Helper to build individual type selection tiles
   Widget _buildTypeTile(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
-      return Card(
+      return GlassCard(
          margin: const EdgeInsets.only(bottom: 12.0),
+         padding: EdgeInsets.zero,
+         borderRadius: BorderRadius.circular(12.0),
+         tintOpacity: 0.62,
          child: ListTile(
            leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -139,4 +142,4 @@ class SelectAfterSalesTypePage extends StatelessWidget {
       );
   }
 
-} 
+}

@@ -6,6 +6,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/statu
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 商品卡片组件
 /// 
@@ -45,15 +46,11 @@ class ProductCard extends StatelessWidget {
     // 商品状态标签
     final statusTag = _buildStatusTag();
     
-    return Card(
+    return GlassCard(
       margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingLg),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
+      padding: const EdgeInsets.all(12.0),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 商品基本信息
@@ -124,7 +121,6 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
   
@@ -246,4 +242,4 @@ class ProductCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

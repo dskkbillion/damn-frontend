@@ -62,6 +62,8 @@ class GlassSurface extends StatelessWidget {
 /// 避免密集内容页面被大面积蓝色光效覆盖。
 class GlassCard extends StatelessWidget {
   final Widget child;
+  /// Optional width for cards used in grids; column cards still expand by default.
+  final double? width;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final BorderRadius borderRadius;
@@ -71,6 +73,7 @@ class GlassCard extends StatelessWidget {
 
   const GlassCard({
     required this.child,
+    this.width,
     this.padding = const EdgeInsets.all(AppDimensions.spacingXl),
     this.margin = EdgeInsets.zero,
     this.borderRadius = const BorderRadius.all(
@@ -99,7 +102,7 @@ class GlassCard extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Container(
-            width: double.infinity,
+            width: width ?? double.infinity,
             padding: padding,
             decoration: BoxDecoration(
               color: surface.withValues(alpha: opacity),

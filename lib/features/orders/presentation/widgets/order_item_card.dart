@@ -14,6 +14,7 @@ import 'package:dskk_flutter_refactor/features/orders/presentation/bloc/order_li
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 用于在订单列表中显示单个订单摘要信息的卡片 Widget。
 class OrderItemCard extends StatelessWidget {
@@ -270,16 +271,11 @@ class OrderItemCard extends StatelessWidget {
       }
     }
 
-    return Card(
-      // 使用 Card 来获得圆角、阴影和白色背景，符合原型风格
+    return GlassCard(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      elevation: 0, // 无阴影，更简洁
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
-        side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.3), // 淡边框
-        ),
-      ),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12.0),
+      tintOpacity: 0.62,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12.0),

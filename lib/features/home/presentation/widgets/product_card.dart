@@ -4,6 +4,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导�
 import 'package:dskk_flutter_refactor/core/currency/presentation/widgets/price_display_widget.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 import '../../domain/entities/home_feed_item.dart';
 
@@ -49,29 +50,19 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onCardClicked,
-      child: Container(
+      child: GlassCard(
         width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.backgroundCard,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.borderSecondary,
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        tintOpacity: 0.64,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 商品图片
             ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(AppDimensions.radiusSm),
-                topRight: Radius.circular(AppDimensions.radiusSm),
+                borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppDimensions.radiusMd),
+                topRight: Radius.circular(AppDimensions.radiusMd),
               ),
               child: AspectRatio(
                 aspectRatio: aspectRatio!,

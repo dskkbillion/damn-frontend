@@ -64,15 +64,16 @@ class AppTheme {
       labelSmall: AppTextStyles.labelSmall,
     ),
 
-    // 卡片主题 - 白卡浮于暖石灰底
+    // 卡片主题 - 与 GlassCard 共享圆角、边缘高光和轻阴影语义。
+    // 原生 Card 仍会保留 Material 行为，但不会再出现另一套圆角/边框。
     cardTheme: CardThemeData(
       elevation: 0,
       color: AppColors.backgroundCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        side: const BorderSide(
-          color: AppColors.borderPrimary,
-          width: AppDimensions.borderStandard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        side: BorderSide(
+          color: AppColors.onPrimary.withValues(alpha: 0.82),
+          width: 1.2,
         ),
       ),
       margin: EdgeInsets.zero,
@@ -303,10 +304,10 @@ class AppTheme {
       elevation: 0,
       color: AppColorsDark.backgroundCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        side: const BorderSide(
-          color: AppColorsDark.borderPrimary,
-          width: AppDimensions.borderStandard,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        side: BorderSide(
+          color: AppColorsDark.accentLight.withValues(alpha: 0.3),
+          width: 1.2,
         ),
       ),
       margin: EdgeInsets.zero,

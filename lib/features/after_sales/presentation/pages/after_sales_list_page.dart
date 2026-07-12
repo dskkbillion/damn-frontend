@@ -7,6 +7,7 @@ import '../../domain/entities/after_sales_application.dart'; // Import entity fo
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 const int _defaultListPageSize = 10; // Define page size constant here
 
@@ -82,16 +83,10 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
                 return Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),
-                    child: Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Padding(
+                    child: GlassCard(
                         padding: const EdgeInsets.all(40.0),
+                        borderRadius: BorderRadius.circular(12.0),
+                        tintOpacity: 0.62,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -107,7 +102,6 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
                             ),
                           ],
                         ),
-                      ),
                     ),
                   ),
                 );
@@ -133,15 +127,11 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
         itemCount: applications.length,
         itemBuilder: (context, index) {
            final application = applications[index];
-           return Card(
+           return GlassCard(
              margin: const EdgeInsets.symmetric(vertical: 8.0),
-             elevation: 0,
-             shape: RoundedRectangleBorder(
-               borderRadius: BorderRadius.circular(12.0),
-               side: BorderSide(
-                 color: colorScheme.outline.withOpacity(0.3),
-               ),
-             ),
+             padding: EdgeInsets.zero,
+             borderRadius: BorderRadius.circular(12.0),
+             tintOpacity: 0.62,
              child: InkWell(
                borderRadius: BorderRadius.circular(12.0),
                onTap: () {
@@ -209,4 +199,4 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
         },
     );
   }
-} 
+}

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Widget displaying information related to the after-sale process.
 class AfterSaleInfoArea extends StatelessWidget {
@@ -68,10 +69,10 @@ class AfterSaleInfoArea extends StatelessWidget {
         iconData = Icons.help_outline;
     }
 
-    return Card(
-      // 使用统一Card主题
-      child: Padding(
-        padding: const EdgeInsets.all(16.0), // 使用标准间距
+    return GlassCard(
+        padding: const EdgeInsets.all(16.0),
+        borderRadius: BorderRadius.circular(12),
+        tintOpacity: 0.62,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -105,7 +106,6 @@ class AfterSaleInfoArea extends StatelessWidget {
                  )
              ]
           ],
-        ),
       ),
     );
   }
@@ -152,4 +152,4 @@ class AfterSaleInfoArea extends StatelessWidget {
       ],
     );
  }
-} 
+}

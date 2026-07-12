@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_stat
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// Widget displaying information while waiting for seller action (accept or deliver).
 class WaitingActionArea extends StatelessWidget {
@@ -29,11 +30,11 @@ class WaitingActionArea extends StatelessWidget {
 
     final hasBuyerRemark = order.buyerRemark != null && order.buyerRemark!.isNotEmpty;
 
-    return Card(
-      // 使用统一的Card主题，移除自定义样式
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        child: Column(
+    return GlassCard(
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -64,8 +65,7 @@ class WaitingActionArea extends StatelessWidget {
               ),
             ],
           ],
-        ),
       ),
     );
   }
-} 
+}
