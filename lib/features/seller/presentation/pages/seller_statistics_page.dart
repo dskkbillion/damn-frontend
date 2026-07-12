@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,67 +24,151 @@ class SellerStatisticsPage extends ConsumerWidget {
     return BlocProvider(
       create: (context) => GetIt.I<SellerStatisticsBloc>()..add(const LoadSellerStatistics()),
       child: Scaffold(
-        body: BlocBuilder<SellerStatisticsBloc, SellerStatisticsState>(
-          builder: (context, state) {
-            if (state is SellerStatisticsLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is SellerStatisticsLoaded) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<SellerStatisticsBloc>().add(const RefreshSellerStatistics());
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context).seller_statistics_title,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+        backgroundColor: Colors.transparent,
+        body: _buildGlassBackdrop(
+          child: BlocBuilder<SellerStatisticsBloc, SellerStatisticsState>(
+            builder: (context, state) {
+              if (state is SellerStatisticsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is SellerStatisticsLoaded) {
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<SellerStatisticsBloc>().add(const RefreshSellerStatistics());
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context).seller_statistics_title,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          _buildPercentSection(context, state.percentStats),
-                          const SizedBox(height: 24),
-                          _buildUpgradeSection(context, state.upgradeStats),
-                          const SizedBox(height: 24),
-                          _buildIndicatorsSection(context, state.indexStats),
-                          const SizedBox(height: 24),
-                          _buildWeeklyIncomeSection(context, state.indexStats),
-                          const SizedBox(height: 24),
-                          _buildPendingSection(context, state.indexStats),
-                        ],
+                            const SizedBox(height: 24),
+                            _buildPercentSection(context, state.percentStats),
+                            const SizedBox(height: 24),
+                            _buildUpgradeSection(context, state.upgradeStats),
+                            const SizedBox(height: 24),
+                            _buildIndicatorsSection(context, state.indexStats),
+                            const SizedBox(height: 24),
+                            _buildWeeklyIncomeSection(context, state.indexStats),
+                            const SizedBox(height: 24),
+                            _buildPendingSection(context, state.indexStats),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                );
+              } else if (state is SellerStatisticsError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                      const SizedBox(height: AppDimensions.spacingLg),
+                      Text(AppLocalizations.of(context).seller_statistics_loading_failed(state.failure.message)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          context.read<SellerStatisticsBloc>().add(const LoadSellerStatistics());
+                        },
+                        child: Text(AppLocalizations.of(context).seller_statistics_retry),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassBackdrop({required Widget child}) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: AppColors.gradientAtmosphere),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            top: -90,
+            left: -70,
+            child: _buildAmbientOrb(
+              color: AppColors.primaryLight.withValues(alpha: 0.30),
+              size: 260,
+            ),
+          ),
+          Positioned(
+            top: 250,
+            right: -100,
+            child: _buildAmbientOrb(
+              color: AppColors.primary.withValues(alpha: 0.16),
+              size: 230,
+            ),
+          ),
+          Positioned(
+            bottom: 120,
+            left: 30,
+            child: _buildAmbientOrb(
+              color: AppColors.accentGlow.withValues(alpha: 0.18),
+              size: 180,
+            ),
+          ),
+          child,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAmbientOrb({required Color color, required double size}) {
+    return ImageFiltered(
+      imageFilter: ImageFilter.blur(sigmaX: 42, sigmaY: 42),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassCard({required Widget child, EdgeInsetsGeometry padding = const EdgeInsets.all(AppDimensions.spacingXl)}) {
+    return SizedBox(
+      width: double.infinity,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: AppColors.backgroundCard.withValues(alpha: 0.58),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              border: Border.all(
+                color: AppColors.onPrimary.withValues(alpha: 0.82),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
                 ),
-              );
-            } else if (state is SellerStatisticsError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    Text(AppLocalizations.of(context).seller_statistics_loading_failed(state.failure.message)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<SellerStatisticsBloc>().add(const LoadSellerStatistics());
-                      },
-                      child: Text(AppLocalizations.of(context).seller_statistics_retry),
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const SizedBox();
-          },
+              ],
+            ),
+            child: child,
+          ),
         ),
       ),
     );
@@ -101,14 +187,17 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_heat_value, stats.heatPercent, AppColors.sellerAccent),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_reply_rate, stats.recoverPercent, AppColors.sellerAccent),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_completion_rate, stats.completePercent, AppColors.sellerAccent),
-            _buildPercentCircle(AppLocalizations.of(context).seller_statistics_positive_rate, stats.goodPercent, AppColors.sellerAccent),
-          ],
+        _buildGlassCard(
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingSm),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildPercentCircle(AppLocalizations.of(context).seller_statistics_heat_value, stats.heatPercent, AppColors.sellerAccent),
+              _buildPercentCircle(AppLocalizations.of(context).seller_statistics_reply_rate, stats.recoverPercent, AppColors.sellerAccent),
+              _buildPercentCircle(AppLocalizations.of(context).seller_statistics_completion_rate, stats.completePercent, AppColors.sellerAccent),
+              _buildPercentCircle(AppLocalizations.of(context).seller_statistics_positive_rate, stats.goodPercent, AppColors.sellerAccent),
+            ],
+          ),
         ),
       ],
     );
@@ -172,39 +261,25 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                spreadRadius: 1,
-                blurRadius: 6,
-                offset: Offset(0, 2),
+        _buildGlassCard(
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingXl),
+          child: Column(
+            children: [
+              _buildUpgradeItem(
+                AppLocalizations.of(context).seller_statistics_become_level3_seller(stats.days.toString()),
+                '${stats.totalDays}/${stats.days}',
+              ),
+              const Divider(height: 24, thickness: 0.5),
+              _buildUpgradeItem(
+                AppLocalizations.of(context).seller_statistics_complete_orders(stats.orderNum.toString()),
+                '${stats.totalOrderNum}/${stats.orderNum}',
+              ),
+              const Divider(height: 24, thickness: 0.5),
+              _buildUpgradeItem(
+                AppLocalizations.of(context).seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
+                '${stats.totalOrderPrice.toStringAsFixed(2)}/${stats.orderPrice.toStringAsFixed(2)}',
               ),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingXl),
-            child: Column(
-              children: [
-                _buildUpgradeItem(
-                  AppLocalizations.of(context).seller_statistics_become_level3_seller(stats.days.toString()),
-                  '${stats.totalDays}/${stats.days}',
-                ),
-                const Divider(height: 24, thickness: 0.5),
-                _buildUpgradeItem(
-                  AppLocalizations.of(context).seller_statistics_complete_orders(stats.orderNum.toString()),
-                  '${stats.totalOrderNum}/${stats.orderNum}',
-                ),
-                const Divider(height: 24, thickness: 0.5),
-                _buildUpgradeItem(
-                  AppLocalizations.of(context).seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
-                  '${stats.totalOrderPrice.toStringAsFixed(2)}/${stats.orderPrice.toStringAsFixed(2)}',
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -247,46 +322,31 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                spreadRadius: 1,
-                blurRadius: 6,
-                offset: Offset(0, 2),
+        _buildGlassCard(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_earnings, stats.totalEarnings.toInt().toString()),
+                  ),
+                  Expanded(
+                    child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_monthly_earnings, stats.thisMonthTotalEarnings.toInt().toString()),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_orders, stats.totalOrderNum.toString()),
+                  ),
+                  Expanded(
+                    child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_active_orders, stats.activeOrderNum.toString()),
+                  ),
+                ],
               ),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingXl),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_earnings, stats.totalEarnings.toInt().toString()),
-                    ),
-                    Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_monthly_earnings, stats.thisMonthTotalEarnings.toInt().toString()),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_total_orders, stats.totalOrderNum.toString()),
-                    ),
-                    Expanded(
-                      child: _buildIndicatorItem(AppLocalizations.of(context).seller_statistics_active_orders, stats.activeOrderNum.toString()),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
         ),
       ],
@@ -333,21 +393,8 @@ class SellerStatisticsPage extends ConsumerWidget {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        Container(
-          width: double.infinity,
+        _buildGlassCard(
           padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                spreadRadius: 1,
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
           child: weeklyIncome.isEmpty
               ? SizedBox(
                   height: 120,
@@ -426,34 +473,19 @@ class SellerStatisticsPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: AppDimensions.spacingLg),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.backgroundCard,
-            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-            boxShadow: const [
-              BoxShadow(
-                color: AppColors.borderSecondary,
-                spreadRadius: 1,
-                blurRadius: 6,
-                offset: Offset(0, 2),
+        _buildGlassCard(
+          child: Column(
+            children: [
+              _buildPendingItem(
+                AppLocalizations.of(context).seller_statistics_incomplete_orders,
+                '${stats.pendingOrderNum} (${AppLocalizations.of(context).seller_statistics_pending_completion}) / ${stats.receiptOrderNum} (${AppLocalizations.of(context).seller_statistics_receipt})',
+              ),
+              const Divider(height: 30, thickness: 0.5),
+              _buildPendingItem(
+                AppLocalizations.of(context).seller_statistics_next_delivery_date,
+                '$earlyTimeText / $latenessTimeText',
               ),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingXl),
-            child: Column(
-              children: [
-                _buildPendingItem(
-                  AppLocalizations.of(context).seller_statistics_incomplete_orders,
-                  '${stats.pendingOrderNum} (${AppLocalizations.of(context).seller_statistics_pending_completion}) / ${stats.receiptOrderNum} (${AppLocalizations.of(context).seller_statistics_receipt})',
-                ),
-                const Divider(height: 30, thickness: 0.5),
-                _buildPendingItem(
-                  AppLocalizations.of(context).seller_statistics_next_delivery_date,
-                  '$earlyTimeText / $latenessTimeText',
-                ),
-              ],
-            ),
           ),
         ),
       ],
