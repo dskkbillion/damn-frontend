@@ -194,8 +194,8 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
       profile = state.profile;
     }
     return GlassCard(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.spacingXl),
       tintColor: Theme.of(context).colorScheme.primary,
       tintOpacity: 0.76,
       child: Column(
@@ -221,7 +221,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: const Border.fromBorderSide(
+                      BorderSide(color: AppColors.onPrimary, width: AppDimensions.borderThick),
+                    ),
                   ),
                   child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
                     ? AppNetworkImage(
@@ -229,7 +231,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
-                        borderRadius: BorderRadius.circular(40),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusCircle),
                       )
                     : Container(
                         decoration: const BoxDecoration(
@@ -239,7 +241,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         child: const Icon(
                           Icons.person,
                           size: 50,
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                         ),
                       ),
                 ),
@@ -255,7 +257,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -265,7 +267,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                          color: AppColors.onPrimary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                       ),
                       child: Row(
@@ -286,7 +288,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                                 : AppLocalizations.of(context).seller_profile_seller_mode_offline,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Colors.white,
+                              color: AppColors.onPrimary,
                             ),
                           ),
                         ],
@@ -413,7 +415,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                   child: Text(
                     count.toString(),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),

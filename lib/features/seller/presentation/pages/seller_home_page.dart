@@ -171,7 +171,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       return GlassCard(
         padding: EdgeInsets.zero,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Center(
             child: Text(AppLocalizations.of(context).seller_home_no_store_info),
           ),
@@ -197,7 +197,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                 ],
               ),
             ),
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(AppDimensions.spacingLg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -388,7 +388,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     return GlassCard(
       padding: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -441,7 +441,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     return GlassCard(
       padding: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -520,7 +520,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     return GlassCard(
       padding: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -594,7 +594,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
       return GlassCard(
         padding: EdgeInsets.zero,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(AppDimensions.spacingLg),
           child: Center(child: Text(AppLocalizations.of(context).seller_home_no_recent_income)), 
         ),
       );
@@ -609,7 +609,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     return GlassCard(
       padding: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(AppDimensions.spacingLg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
