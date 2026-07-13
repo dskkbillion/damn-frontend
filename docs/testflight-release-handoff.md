@@ -8,7 +8,7 @@
 - 版本：`1.0.0 (202607121)`
 - Release 环境：`.env.staging`
 - staging API：`https://dskk-api-staging.zeabur.app`
-- App Icon：使用 `assets/icons/nav/dskk_logo.svg` 白色矢量图，主题蓝背景，图形约为画布 80%
+- App Icon：使用 `assets/icons/nav/dskk_logo.svg` 生成白底冰蓝标记；图形视觉宽度约为画布 66%，避免主屏图标显得过满
 - 部署后 E2E 证据：`test-results/testflight-e2e/`
 
 ## 本机当前阻塞
