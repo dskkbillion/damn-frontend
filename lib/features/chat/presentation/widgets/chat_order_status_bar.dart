@@ -186,19 +186,9 @@ class _ChatOrderStatusBarState extends State<ChatOrderStatusBar> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return _buildShell(
-        context,
-        child: const SizedBox(
-          height: 24,
-          child: Center(
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        ),
-      );
+      // 订单状态在商品头部挂载后立即异步预取；请求期间不显示独立的
+      // 转圈子卡片，避免滚动时出现一次突兀的二级加载动画。
+      return const SizedBox.shrink();
     }
 
     if (_errorMessage != null) {
