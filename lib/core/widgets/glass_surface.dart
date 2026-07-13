@@ -240,8 +240,13 @@ class GlassCard extends StatelessWidget {
 /// 为玻璃卡片提供非常克制的主题氛围背景。
 class GlassBackdrop extends StatelessWidget {
   final Widget child;
+  final double atmosphereIntensity;
 
-  const GlassBackdrop({required this.child, super.key});
+  const GlassBackdrop({
+    required this.child,
+    this.atmosphereIntensity = 1,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -260,18 +265,27 @@ class GlassBackdrop extends StatelessWidget {
           Positioned(
             top: -140,
             left: -130,
-            child: _AmbientOrb(color: light.withValues(alpha: 0.18), size: 360),
+            child: _AmbientOrb(
+              color: light.withValues(alpha: 0.18 * atmosphereIntensity),
+              size: 360,
+            ),
           ),
           Positioned(
             top: 280,
             right: -150,
             child:
-                _AmbientOrb(color: primary.withValues(alpha: 0.10), size: 320),
+                _AmbientOrb(
+                  color: primary.withValues(alpha: 0.10 * atmosphereIntensity),
+                  size: 320,
+                ),
           ),
           Positioned(
             bottom: 100,
             left: -60,
-            child: _AmbientOrb(color: light.withValues(alpha: 0.08), size: 260),
+            child: _AmbientOrb(
+              color: light.withValues(alpha: 0.08 * atmosphereIntensity),
+              size: 260,
+            ),
           ),
           child,
         ],
