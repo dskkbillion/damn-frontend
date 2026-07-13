@@ -64,96 +64,77 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context); // 获取国际化资源
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.backgroundCard.withValues(alpha: 0.78),
-            AppColors.backgroundSecondary.withValues(alpha: 0.64),
-          ],
-        ),
-        border: Border(
-          right: BorderSide(color: Colors.white.withValues(alpha: 0.82)),
-        ),
-      ),
-      child: BlocBuilder<AiChatBloc, AiChatState>(
-        // Optional: buildWhen to only rebuild when conversation list related state changes
-        buildWhen: (previous, current) =>
-            previous.conversationsStatus != current.conversationsStatus ||
-            previous.conversations != current.conversations ||
-            previous.selectedConversationId != current.selectedConversationId ||
-            previous.isLoadingMoreConversations !=
-                current.isLoadingMoreConversations,
-        builder: (context, state) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 12, 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        appLocalizations.ai_docs_conversation_list,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                      ),
+    return BlocBuilder<AiChatBloc, AiChatState>(
+      // Optional: buildWhen to only rebuild when conversation list related state changes
+      buildWhen: (previous, current) =>
+          previous.conversationsStatus != current.conversationsStatus ||
+          previous.conversations != current.conversations ||
+          previous.selectedConversationId != current.selectedConversationId ||
+          previous.isLoadingMoreConversations !=
+              current.isLoadingMoreConversations,
+      builder: (context, state) {
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 18, 12, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      appLocalizations.ai_docs_conversation_list,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
-                    IconButton(
-                      tooltip:
-                          MaterialLocalizations.of(context).closeButtonTooltip,
-                      icon: const Icon(Icons.close_rounded),
-                      color: AppColors.textSecondary,
-                      onPressed: _closePanel,
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
-                child: SizedBox(
-                  height: 46,
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    icon: const Icon(Icons.add_rounded, size: 20),
-                    label: Text(appLocalizations.ai_docs_new_chat),
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          AppColors.primary.withValues(alpha: 0.92),
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed:
-                        state.conversationsStatus == ConversationsStatus.loading
-                            ? null
-                            : () {
-                                context
-                                    .read<AiChatBloc>()
-                                    .add(const CreateNewConversation());
-                                _closePanel();
-                              },
                   ),
+                  IconButton(
+                    tooltip:
+                        MaterialLocalizations.of(context).closeButtonTooltip,
+                    icon: const Icon(Icons.close_rounded),
+                    color: AppColors.textSecondary,
+                    onPressed: _closePanel,
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
+              child: SizedBox(
+                height: 46,
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.add_rounded, size: 20),
+                  label: Text(appLocalizations.ai_docs_new_chat),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.92),
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed:
+                      state.conversationsStatus == ConversationsStatus.loading
+                          ? null
+                          : () {
+                              context
+                                  .read<AiChatBloc>()
+                                  .add(const CreateNewConversation());
+                              _closePanel();
+                            },
                 ),
               ),
-              // --- Conversation List Area with Pull to Refresh ---
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: () async {
-                    context
-                        .read<AiChatBloc>()
-                        .add(const RefreshConversations());
-                    // 等待刷新完成
-                    await Future.delayed(const Duration(milliseconds: 500));
-                  },
-                  child: _buildConversationList(context, state),
-                ),
+            ),
+            // --- Conversation List Area with Pull to Refresh ---
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  context.read<AiChatBloc>().add(const RefreshConversations());
+                  // 等待刷新完成
+                  await Future.delayed(const Duration(milliseconds: 500));
+                },
+                child: _buildConversationList(context, state),
               ),
-            ],
-          );
-        },
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -24,7 +24,8 @@ import '../../domain/constants/participant_type.dart';
 
 final sl = GetIt.instance; // Get GetIt instance
 
-class ChatListPage extends ConsumerStatefulWidget { // 改为ConsumerStatefulWidget以支持Riverpod
+class ChatListPage extends ConsumerStatefulWidget {
+  // 改为ConsumerStatefulWidget以支持Riverpod
   const ChatListPage({super.key});
 
   @override
@@ -71,7 +72,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       print('[ChatListPage] Error saving mixed mode setting: $e');
     }
   }
-  
+
   // #335 添加获取referId的方法 — 加 5s timeout 防止 SecureStorage 偶发卡死导致整页白屏
   Future<int?> _getReferIdFromStorage() async {
     try {
@@ -82,7 +83,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
       if (referIdStr != null) {
         final referId = int.tryParse(referIdStr);
-        AppLogger.d('[ChatListPage] Retrieved refer_id from secure storage: $referId');
+        AppLogger.d(
+            '[ChatListPage] Retrieved refer_id from secure storage: $referId');
         return referId;
       } else {
         AppLogger.d('[ChatListPage] refer_id not found in secure storage');
@@ -90,10 +92,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       }
     } on TimeoutException catch (e) {
       // #335 关键修复:SecureStorage 偶发慢,5s 超时后允许 UI 显示重试按钮(原代码会永久卡在 ConnectionState.waiting)
-      AppLogger.e('[ChatListPage] SecureStorage read timeout (#335 — chat 偶发无法进入): $e');
+      AppLogger.e(
+          '[ChatListPage] SecureStorage read timeout (#335 — chat 偶发无法进入): $e');
       rethrow;
     } catch (e, stack) {
-      AppLogger.e('[ChatListPage] Error reading refer_id from secure storage: $e\n$stack');
+      AppLogger.e(
+          '[ChatListPage] Error reading refer_id from secure storage: $e\n$stack');
       return null;
     }
   }
@@ -105,8 +109,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     });
   }
 
-
-  
   void _openNotifications(BuildContext context) {
     final currentPath = GoRouterState.of(context).matchedLocation;
     final notificationPath = currentPath.startsWith('/seller')
@@ -119,10 +121,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     // 获取当前应用模式
     final currentAppMode = ref.watch(appModeProvider);
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -140,7 +142,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           TextButton.icon(
             icon: Icon(
               _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
-              color: _isMixedMode ? AppColors.textTertiary : Theme.of(context).primaryColor,
+              color: _isMixedMode
+                  ? AppColors.textTertiary
+                  : Theme.of(context).primaryColor,
               size: 20,
             ),
             label: Text(
@@ -150,7 +154,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                       ? s.chat_filter_buyer
                       : s.chat_filter_seller),
               style: TextStyle(
-                color: _isMixedMode ? AppColors.textTertiary : Theme.of(context).primaryColor,
+                color: _isMixedMode
+                    ? AppColors.textTertiary
+                    : Theme.of(context).primaryColor,
                 fontSize: 14,
               ),
             ),
@@ -162,12 +168,36 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    _isMixedMode
-                        ? s.chat_filter_mode_all
-                        : (currentAppMode == AppMode.buyer
-                            ? s.chat_filter_mode_buyer
-                            : s.chat_filter_mode_seller),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor:
+                      AppColors.backgroundCard.withValues(alpha: 0.92),
+                  elevation: 0,
+                  shape: const StadiumBorder(),
+                  content: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isMixedMode
+                            ? Icons.filter_alt_off_rounded
+                            : Icons.filter_alt_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _isMixedMode
+                              ? s.chat_filter_mode_all
+                              : (currentAppMode == AppMode.buyer
+                                  ? s.chat_filter_mode_buyer
+                                  : s.chat_filter_mode_seller),
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   duration: const Duration(seconds: 1),
                 ),
@@ -179,87 +209,99 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       // 使用FutureBuilder获取referId
       body: GlassBackdrop(
         child: FutureBuilder<int?>(
-        future: _referIdFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonCard());
-          }
+          future: _referIdFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return SkeletonPage(
+                  itemCount: 5, itemBuilder: (_, __) => const SkeletonCard());
+            }
 
-          // #335 SecureStorage 超时或异常 → 提供重试入口,不再卡死白屏
-          if (snapshot.hasError) {
-            AppLogger.e('[ChatListPage] Error getting referId: ${snapshot.error}');
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(s.chat_get_user_info_failed('${snapshot.error}')),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: _retryReferId,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('重试'),
-                  ),
-                ],
-              ),
-            );
-          }
-          
-          final referId = snapshot.data;
-          if (referId == null) {
-            return Center(child: Text(s.chat_user_refer_id_not_found));
-          }
-          
-          print('[ChatListPage] Using referId(commonUserId): $referId, appMode: $currentAppMode');
-          
-          return BlocListener<ChatListBloc, ChatListState>(
-            listener: (context, state) {
-              // 获取国际化资源
-              final s = AppLocalizations.of(context);
-              
-              if (state.navigateToChatId != null) {
-                final chatId = state.navigateToChatId!;
-                print('[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
-                context.push(_chatRoomPath(chatId)).then((result) {
-                   // Reset navigation trigger in Bloc state after navigation
-                   context.read<ChatListBloc>().add(ClearNavigationTrigger());
-                   // Remove the RefreshChatList since we now update unread count directly
-                   // if (result == true) {
-                   //   print('[ChatListPage] Refreshing list after viewing chat $chatId');
-                   //   context.read<ChatListBloc>().add(RefreshChatList()); 
-                   // }
-                });
-              }
+            // #335 SecureStorage 超时或异常 → 提供重试入口,不再卡死白屏
+            if (snapshot.hasError) {
+              AppLogger.e(
+                  '[ChatListPage] Error getting referId: ${snapshot.error}');
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(s.chat_get_user_info_failed('${snapshot.error}')),
+                    const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                      onPressed: _retryReferId,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('重试'),
+                    ),
+                  ],
+                ),
+              );
+            }
 
-            },
-            child: BlocBuilder<ChatListBloc, ChatListState>(
-              builder: (context, state) {
-                if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
-                  return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
-                } else if (state.status == ChatListStatus.failure) {
-                  return _buildSystemItemsOnly(
-                    context,
-                    s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message),
-                  );
-                } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
-                  // 根据混合模式决定是否筛选
-                  final filteredRooms = _isMixedMode
-                      ? _filterChatRoomsForMixedMode(state.chatRooms, referId)
-                      : _filterChatRoomsByAppMode(state.chatRooms, currentAppMode, referId);
-                  
-                  return _buildChatListView(context, filteredRooms, currentAppMode, referId);
-                } else {
-                  // 真正的加载状态
-                  return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
+            final referId = snapshot.data;
+            if (referId == null) {
+              return Center(child: Text(s.chat_user_refer_id_not_found));
+            }
+
+            print(
+                '[ChatListPage] Using referId(commonUserId): $referId, appMode: $currentAppMode');
+
+            return BlocListener<ChatListBloc, ChatListState>(
+              listener: (context, state) {
+                // 获取国际化资源
+                final s = AppLocalizations.of(context);
+
+                if (state.navigateToChatId != null) {
+                  final chatId = state.navigateToChatId!;
+                  print(
+                      '[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
+                  context.push(_chatRoomPath(chatId)).then((result) {
+                    // Reset navigation trigger in Bloc state after navigation
+                    context.read<ChatListBloc>().add(ClearNavigationTrigger());
+                    // Remove the RefreshChatList since we now update unread count directly
+                    // if (result == true) {
+                    //   print('[ChatListPage] Refreshing list after viewing chat $chatId');
+                    //   context.read<ChatListBloc>().add(RefreshChatList());
+                    // }
+                  });
                 }
               },
-            ),
-          );
-        },
+              child: BlocBuilder<ChatListBloc, ChatListState>(
+                builder: (context, state) {
+                  if (state.status == ChatListStatus.loading &&
+                      state.chatRooms.isEmpty) {
+                    return SkeletonPage(
+                        itemCount: 5,
+                        itemBuilder: (_, __) => const SkeletonChatItem());
+                  } else if (state.status == ChatListStatus.failure) {
+                    return _buildSystemItemsOnly(
+                      context,
+                      s.chat_error_loading(
+                          state.errorMessage ?? s.chat_unknown_message),
+                    );
+                  } else if (state.status == ChatListStatus.success ||
+                      state.chatRooms.isNotEmpty) {
+                    // 根据混合模式决定是否筛选
+                    final filteredRooms = _isMixedMode
+                        ? _filterChatRoomsForMixedMode(state.chatRooms, referId)
+                        : _filterChatRoomsByAppMode(
+                            state.chatRooms, currentAppMode, referId);
+
+                    return _buildChatListView(
+                        context, filteredRooms, currentAppMode, referId);
+                  } else {
+                    // 真正的加载状态
+                    return SkeletonPage(
+                        itemCount: 5,
+                        itemBuilder: (_, __) => const SkeletonChatItem());
+                  }
+                },
+              ),
+            );
+          },
         ),
       ),
     );
   }
-  
+
   // 根据当前路由前缀决定聊天室路径
   String _chatRoomPath(int chatId) {
     // 卖家模式下使用 /seller/chat/:chatId，买家模式下使用 /chat/:chatId
@@ -272,15 +314,18 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   void _navigateToChat(BuildContext context, ChatRoom chatRoom) {
     context.push(_chatRoomPath(chatRoom.id));
   }
-  
+
   // 混合模式筛选：显示所有当前用户参与的聊天，不区分身份
-  List<ChatRoom> _filterChatRoomsForMixedMode(List<ChatRoom> chatRooms, int referId) {
+  List<ChatRoom> _filterChatRoomsForMixedMode(
+      List<ChatRoom> chatRooms, int referId) {
     final filteredRooms = <ChatRoom>[];
 
     for (final room in chatRooms) {
       // 排除系统管理员聊天室
-      if ((room.participant1.type == ParticipantType.admin && room.participant1.referId == ChatConstants.adminReferId) ||
-          (room.participant2.type == ParticipantType.admin && room.participant2.referId == ChatConstants.adminReferId)) {
+      if ((room.participant1.type == ParticipantType.admin &&
+              room.participant1.referId == ChatConstants.adminReferId) ||
+          (room.participant2.type == ParticipantType.admin &&
+              room.participant2.referId == ChatConstants.adminReferId)) {
         continue;
       }
 
@@ -294,18 +339,22 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   }
 
   // 根据应用模式筛选聊天室：买家模式只显示用户作为买家的聊天，卖家模式只显示用户作为卖家的聊天
-  List<ChatRoom> _filterChatRoomsByAppMode(List<ChatRoom> chatRooms, AppMode appMode, int referId) {
+  List<ChatRoom> _filterChatRoomsByAppMode(
+      List<ChatRoom> chatRooms, AppMode appMode, int referId) {
     final filteredRooms = <ChatRoom>[];
 
     for (final room in chatRooms) {
       // 排除系统管理员聊天室
-      if ((room.participant1.type == ParticipantType.admin && room.participant1.referId == ChatConstants.adminReferId) ||
-          (room.participant2.type == ParticipantType.admin && room.participant2.referId == ChatConstants.adminReferId)) {
+      if ((room.participant1.type == ParticipantType.admin &&
+              room.participant1.referId == ChatConstants.adminReferId) ||
+          (room.participant2.type == ParticipantType.admin &&
+              room.participant2.referId == ChatConstants.adminReferId)) {
         continue;
       }
 
       // 先判断用户是否是这个聊天室的参与者
-      final isParticipant = room.participant1.id == referId || room.participant2.id == referId;
+      final isParticipant =
+          room.participant1.id == referId || room.participant2.id == referId;
       if (!isParticipant) continue;
 
       // 判断当前用户在这个聊天室中的角色
@@ -341,29 +390,30 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   }
 
   // 构建聊天列表视图
-  Widget _buildChatListView(BuildContext context, List<ChatRoom> filteredRooms, AppMode appMode, int currentUserId) {
+  Widget _buildChatListView(BuildContext context, List<ChatRoom> filteredRooms,
+      AppMode appMode, int currentUserId) {
     return RefreshIndicator(
       onRefresh: () async {
         print('[ChatListPage] Pull-to-refresh triggered');
         context.read<ChatListBloc>().add(RefreshChatList());
-        
+
         final completer = Completer();
         late StreamSubscription subscription;
-        
+
         subscription = context.read<ChatListBloc>().stream.listen((newState) {
           if (newState.status != ChatListStatus.loading) {
             completer.complete();
             subscription.cancel();
           }
         });
-        
+
         Future.delayed(const Duration(seconds: 5), () {
           if (!completer.isCompleted) {
             completer.complete();
             subscription.cancel();
           }
         });
-        
+
         return completer.future;
       },
       child: CustomScrollView(
@@ -374,7 +424,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: Text(AppLocalizations.of(context).chat_no_chat_records),
+                  child:
+                      Text(AppLocalizations.of(context).chat_no_chat_records),
                 ),
               ),
             )
@@ -405,11 +456,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final groupedChats = _groupChatsBySeller(chatRooms, currentUserId);
-          
+
           if (index >= groupedChats.length) return null;
-          
+
           final group = groupedChats[index];
-          
+
           return SellerGroupItem(
             group: group,
             currentUserId: currentUserId,
@@ -427,11 +478,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final groupedChats = _groupChatsByProduct(chatRooms, currentUserId);
-          
+
           if (index >= groupedChats.length) return null;
-          
+
           final group = groupedChats[index];
-          
+
           return ProductGroupItem(
             group: group,
             currentUserId: currentUserId,
@@ -444,26 +495,29 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   }
 
   // 提取分组逻辑到单独方法 - 买家模式使用
-  List<SellerChatGroup> _groupChatsBySeller(List<ChatRoom> chatRooms, int currentUserId) {
+  List<SellerChatGroup> _groupChatsBySeller(
+      List<ChatRoom> chatRooms, int currentUserId) {
     final Map<int, List<ChatRoom>> grouped = {};
-    
+
     for (final chatRoom in chatRooms) {
       // 在买家模式下，对方（participant2）应该是卖家
       // 因为在ChatRoomDto.toEntity中已经确保了participant1是当前用户，participant2是对方
       final seller = chatRoom.participant2;
       final sellerId = seller.referId ?? 0;
-      
+
       grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
-      print("[ChatListPage] Grouping chat room ${chatRoom.id} under seller: ${seller.nickName} (ID: $sellerId)");
+      print(
+          "[ChatListPage] Grouping chat room ${chatRoom.id} under seller: ${seller.nickName} (ID: $sellerId)");
     }
-    
+
     return grouped.entries.map((entry) {
       final sellerId = entry.key;
       final rooms = entry.value;
       final seller = rooms.first.participant2; // 卖家信息
-      
-      print("[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
-      
+
+      print(
+          "[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
+
       return SellerChatGroup(
         sellerId: sellerId,
         seller: seller,
@@ -473,24 +527,27 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
   }
 
   // 提取分组逻辑到单独方法 - 卖家模式使用，按商品分组
-  List<ProductChatGroup> _groupChatsByProduct(List<ChatRoom> chatRooms, int currentUserId) {
+  List<ProductChatGroup> _groupChatsByProduct(
+      List<ChatRoom> chatRooms, int currentUserId) {
     final Map<String, List<ChatRoom>> grouped = {};
-    
+
     for (final chatRoom in chatRooms) {
       // 使用商品ID作为分组键，如果没有商品ID则使用特殊键
       final productId = chatRoom.productId ?? 'no_product';
-      
+
       grouped.putIfAbsent(productId, () => []).add(chatRoom);
-      print("[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
+      print(
+          "[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
     }
-    
+
     return grouped.entries.map((entry) {
       final productId = entry.key;
       final rooms = entry.value;
       final firstRoom = rooms.first; // 从第一个房间获取商品信息
-      
-      print("[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
-      
+
+      print(
+          "[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
+
       return ProductChatGroup(
         productId: productId,
         productName: firstRoom.productName,

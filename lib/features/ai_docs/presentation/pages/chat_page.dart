@@ -94,11 +94,6 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    // 外层 Shell 已为悬浮导航预留了其本身的高度；内层页面只需避开
-    // Home Indicator 和胶囊上沿，避免输入舱被压住，也不留下大段空带。
-    final navigationClearance =
-        MediaQuery.paddingOf(context).bottom + AppDimensions.spacingLg;
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
@@ -189,10 +184,15 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.only(bottom: navigationClearance),
-        child: GlassBackdrop(
-          atmosphereIntensity: 0.4,
+      body: GlassBackdrop(
+        atmosphereIntensity: 0.4,
+        child: Padding(
+          // 内层 Scaffold 的可用高度已经扣除了部分导航区域；只补齐
+          // Home Indicator 与一档呼吸距离，避免输入舱和导航重叠。
+          padding: EdgeInsets.only(
+            bottom:
+                MediaQuery.paddingOf(context).bottom + AppDimensions.spacingLg,
+          ),
           child: Column(
             children: [
               // 🔥 频率限制警告横幅 - 修复关闭功能
@@ -265,15 +265,32 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-                  child: SafeArea(
-                    bottom: false,
-                    child: BlocProvider.value(
-                      value: aiChatBloc,
-                      child: ConversationSidebar(
-                        onClose: () => Navigator.of(
-                          dialogContext,
-                          rootNavigator: true,
-                        ).pop(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.backgroundCard.withValues(alpha: 0.78),
+                          AppColors.backgroundSecondary.withValues(alpha: 0.64),
+                        ],
+                      ),
+                      border: Border(
+                        right: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.82),
+                        ),
+                      ),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: BlocProvider.value(
+                        value: aiChatBloc,
+                        child: ConversationSidebar(
+                          onClose: () => Navigator.of(
+                            dialogContext,
+                            rootNavigator: true,
+                          ).pop(),
+                        ),
                       ),
                     ),
                   ),
