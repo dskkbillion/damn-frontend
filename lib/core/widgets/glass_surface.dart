@@ -23,7 +23,9 @@ class GlassNavigationMetrics {
   static double contentBottomInset(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     return navigationHeight(mediaQuery) +
-        mediaQuery.padding.bottom +
+        // SafeArea 会把后代的 padding.bottom 置零；内容滚动区仍须使用
+        // 原始系统安全区，才能完整让出悬浮导航下方的空间。
+        mediaQuery.viewPadding.bottom +
         bottomGap(mediaQuery);
   }
 }

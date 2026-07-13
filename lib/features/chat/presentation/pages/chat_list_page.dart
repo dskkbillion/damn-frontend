@@ -176,13 +176,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         automaticallyImplyLeading: false,
-        actions: [
-          _ChatHeaderIconButton(
-            icon: Icons.notifications_none_rounded,
-            tooltip: s.chat_notification_center,
-            onPressed: () => _openNotifications(context),
-          ),
-          _ChatHeaderIconButton(
+        leadingWidth: 76,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: _ChatHeaderIconButton(
             icon: _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
             tooltip: _isMixedMode
                 ? s.chat_filter_all
@@ -235,6 +232,13 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 ),
               );
             },
+          ),
+        ),
+        actions: [
+          _ChatHeaderIconButton(
+            icon: Icons.notifications_none_rounded,
+            tooltip: s.chat_notification_center,
+            onPressed: () => _openNotifications(context),
           ),
           const SizedBox(width: 16),
         ],
