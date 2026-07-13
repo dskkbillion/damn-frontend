@@ -18,7 +18,7 @@ class GlassNavigationMetrics {
       (mediaQuery.size.shortestSide * 0.17).clamp(56.0, 64.0).toDouble();
 
   static double bottomGap(MediaQueryData mediaQuery) =>
-      (mediaQuery.size.height * 0.006).clamp(4.0, 8.0).toDouble();
+      (mediaQuery.size.height * 0.004).clamp(2.0, 5.0).toDouble();
 
   static double contentBottomInset(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);

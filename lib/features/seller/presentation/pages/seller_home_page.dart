@@ -121,7 +121,12 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
               
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+                padding: EdgeInsets.only(
+                  left: AppDimensions.spacingLg,
+                  right: AppDimensions.spacingLg,
+                  bottom: GlassNavigationMetrics.contentBottomInset(context) +
+                      AppDimensions.spacingXl,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

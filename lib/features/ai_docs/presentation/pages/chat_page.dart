@@ -253,9 +253,21 @@ class _ChatPageState extends State<ChatPage> {
 
         return Material(
           color: Colors.transparent,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: SizedBox(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.of(
+                    dialogContext,
+                    rootNavigator: true,
+                  ).pop(),
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SizedBox(
               width: panelWidth,
               height: double.infinity,
               child: ClipRRect(
@@ -296,7 +308,9 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
               ),
-            ),
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -370,6 +384,8 @@ class _ChatPageState extends State<ChatPage> {
       context: pageContext,
       useRootNavigator: true,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       showDragHandle: false,
       builder: (BuildContext bottomSheetContext) {
@@ -396,6 +412,8 @@ class _ChatPageState extends State<ChatPage> {
     showModalBottomSheet(
       context: pageContext,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(pageContext).size.height * 0.6,
       ),

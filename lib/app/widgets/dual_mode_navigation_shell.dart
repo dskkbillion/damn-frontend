@@ -161,6 +161,8 @@ class _DualModeNavigationShellState
             backgroundColor: Colors.transparent,
             elevation: 0,
             iconSize: 24,
+            selectedFontSize: 0,
+            unselectedFontSize: 0,
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textTertiary,

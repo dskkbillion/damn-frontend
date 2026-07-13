@@ -143,6 +143,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                       _buildProfileHeader(state),
                       Expanded(
                         child: SingleChildScrollView(
+                          padding: EdgeInsets.only(
+                            bottom: GlassNavigationMetrics.contentBottomInset(context) +
+                                AppDimensions.spacingXl,
+                          ),
                           child: Column(
                             children: [
                             _buildOrderSection(),

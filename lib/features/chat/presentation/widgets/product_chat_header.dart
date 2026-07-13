@@ -32,7 +32,7 @@ class ProductChatHeader extends StatelessWidget {
       margin: const EdgeInsets.all(12.0),
       padding: EdgeInsets.zero,
       borderRadius: BorderRadius.circular(12),
-      tintOpacity: 0.62,
+      tintOpacity: 0.42,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

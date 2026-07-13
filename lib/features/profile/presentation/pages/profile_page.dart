@@ -177,7 +177,7 @@ class _ProfilePageState extends State<ProfilePage> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.only(
                 bottom: GlassNavigationMetrics.contentBottomInset(context) +
-                    AppDimensions.spacingSm,
+                    AppDimensions.spacingXl,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -401,13 +401,20 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           child: Column(
           children: [
             // Product header
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              height: _showProductHeader ? null : 0,
+            AnimatedSize(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
               child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
                 opacity: _showProductHeader ? 1.0 : 0.0,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  offset: _showProductHeader
+                      ? Offset.zero
+                      : const Offset(0, -0.08),
                 child: BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
                   builder: (context, state) {
                     return state.maybeWhen(
@@ -445,6 +452,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                       orElse: () => const SizedBox.shrink(),
                     );
                   },
+                ),
                 ),
               ),
             ),
@@ -593,7 +601,11 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                   orElse: () {},
                 );
               },
-              child: Column(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: GlassNavigationMetrics.contentBottomInset(context),
+                ),
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // 付费提示按钮 - 只在满足条件时显示
@@ -700,6 +712,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                     },
                   ),
                 ],
+                ),
               ),
             ),
           ],
