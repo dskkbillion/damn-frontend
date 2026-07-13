@@ -161,7 +161,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 获取国际化资源
     final s = AppLocalizations.of(context);
 
     // 获取当前应用模式
@@ -169,12 +168,14 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(s.chat_list_title),
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
+        forceMaterialTransparency: true,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        automaticallyImplyLeading: false,
         actions: [
           _ChatHeaderIconButton(
             icon: Icons.notifications_none_rounded,
@@ -239,7 +240,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       ),
       // 使用FutureBuilder获取referId
       body: GlassBackdrop(
-        child: FutureBuilder<int?>(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: MediaQuery.paddingOf(context).top + kToolbarHeight,
+          ),
+          child: FutureBuilder<int?>(
           future: _referIdFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -277,9 +282,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
             return BlocListener<ChatListBloc, ChatListState>(
               listener: (context, state) {
-                // 获取国际化资源
-                final s = AppLocalizations.of(context);
-
                 if (state.navigateToChatId != null) {
                   final chatId = state.navigateToChatId!;
                   print(
@@ -328,6 +330,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               ),
             );
           },
+          ),
         ),
       ),
     );
