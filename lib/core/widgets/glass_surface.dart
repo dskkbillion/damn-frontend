@@ -157,12 +157,13 @@ class GlassNavigationSurface extends StatelessWidget {
                   filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: surface.withValues(alpha: isDark ? 0.72 : 0.54),
+                      // 导航保留磨砂质感，但避免以近实色盖住页面卡片。
+                      color: surface.withValues(alpha: isDark ? 0.66 : 0.38),
                       borderRadius: BorderRadius.circular(navigationHeight / 2),
                       border: Border.all(
                         color: isDark
                             ? AppColorsDark.accentLight.withValues(alpha: 0.32)
-                            : AppColors.onPrimary.withValues(alpha: 0.88),
+                            : AppColors.onPrimary.withValues(alpha: 0.78),
                         width: 1.2,
                       ),
                       boxShadow: [
