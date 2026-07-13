@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 
 import '../bloc/ai_chat/ai_chat_bloc.dart';
@@ -152,12 +153,29 @@ class _ChatMessageListState extends State<ChatMessageList> {
                     state.status != AiChatStatus.streamingResponse &&
                     state.status != AiChatStatus.loadingHistory) {
                    return Center(
-                       child: Padding(
-                         padding: const EdgeInsets.all(AppDimensions.spacingLg),
+                       child: GlassCard(
+                         width: 320,
+                         padding: const EdgeInsets.symmetric(
+                           horizontal: AppDimensions.spacingXl,
+                           vertical: AppDimensions.spacingXxl,
+                         ),
+                         tintOpacity: 0.54,
                          child: Column(
                            mainAxisSize: MainAxisSize.min,
                            children: [
-                             const Icon(Icons.chat_bubble_outline, size: 64, color: AppColors.textTertiary),
+                             Container(
+                               width: 64,
+                               height: 64,
+                               decoration: BoxDecoration(
+                                 color: AppColors.primary.withValues(alpha: 0.10),
+                                 shape: BoxShape.circle,
+                               ),
+                               child: const Icon(
+                                 Icons.auto_awesome_rounded,
+                                 size: 30,
+                                 color: AppColors.primary,
+                               ),
+                             ),
                              const SizedBox(height: AppDimensions.spacingLg),
                              Text(
                                appLocalizations.ai_docs_welcome_title,

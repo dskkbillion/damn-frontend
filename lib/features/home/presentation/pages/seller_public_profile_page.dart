@@ -160,14 +160,20 @@ class _SellerPublicProfilePageState extends ConsumerState<SellerPublicProfilePag
       ));
     }
 
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: Theme.of(context).colorScheme.primary,
-      unselectedItemColor: AppColors.textTertiary,
-      showUnselectedLabels: true,
-      items: items,
-      currentIndex: 1, // 默认选中主页，因为卖家资料是从商品详情进入的
-      onTap: _onNavTap,
+    return GlassNavigationSurface(
+      child: BottomNavigationBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconSize: 24,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: AppColors.textTertiary,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: items,
+        currentIndex: 1, // 默认选中主页，因为卖家资料是从商品详情进入的
+        onTap: _onNavTap,
+      ),
     );
   }
 

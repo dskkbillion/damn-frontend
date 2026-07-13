@@ -7,6 +7,7 @@ import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../navigation/app_router_config.dart';
 import '../../core/config/theme/app_colors.dart';
+import '../../core/widgets/glass_surface.dart';
 
 /// 统一的 Shell 页面，支持买家和卖家模式切换而不重新加载页面
 class UnifiedShellPage extends ConsumerStatefulWidget {
@@ -90,9 +91,11 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     
     return Scaffold(
       body: widget.navigationShell,
-      bottomNavigationBar: mode == AppMode.buyer
-          ? _buildBuyerNavigationBar(context, appLocalizations)
-          : _buildSellerNavigationBar(appLocalizations),
+      bottomNavigationBar: GlassNavigationSurface(
+        child: mode == AppMode.buyer
+            ? _buildBuyerNavigationBar(context, appLocalizations)
+            : _buildSellerNavigationBar(appLocalizations),
+      ),
     );
   }
   
@@ -141,10 +144,14 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     }
     
     return BottomNavigationBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      iconSize: 24,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textTertiary,
-      showUnselectedLabels: true,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       items: items,
       currentIndex: _buyerIndex,
       onTap: _onTap,
@@ -155,6 +162,9 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     // 为卖家模式创建自定义的导航栏
     
     return BottomNavigationBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      iconSize: 24,
       type: BottomNavigationBarType.fixed, 
       items: [
         BottomNavigationBarItem(
@@ -182,7 +192,8 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
       onTap: _onTap,
       selectedItemColor: AppColors.primary,
       unselectedItemColor: AppColors.textTertiary,
-      showUnselectedLabels: true,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
     );
   }
 }

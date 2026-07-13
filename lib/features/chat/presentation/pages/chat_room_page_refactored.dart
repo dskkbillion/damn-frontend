@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/repositories/i_user_repository.dart';
@@ -318,10 +319,11 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          backgroundColor: AppColors.backgroundPrimary,
+          backgroundColor: Colors.transparent,
           // FAB will be added later when we have access to scroll controller
           appBar: AppBar(
-          backgroundColor: AppColors.backgroundPrimary,
+          backgroundColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           foregroundColor: AppColors.textPrimary,
           elevation: 0,
           centerTitle: true,
@@ -395,7 +397,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             },
           ),
         ),
-        body: Column(
+        body: GlassBackdrop(
+          child: Column(
           children: [
             // Product header
             AnimatedContainer(
@@ -700,6 +703,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
               ),
             ),
           ],
+          ),
         ),
       ),
       ),

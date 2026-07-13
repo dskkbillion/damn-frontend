@@ -145,6 +145,7 @@ class _DualModeNavigationShellState
     );
 
     return Scaffold(
+      extendBody: true,
       body: widget.navigationShell,
       bottomNavigationBar: _buildSellerBottomNavigationBar(wrapper),
     );
@@ -156,16 +157,16 @@ class _DualModeNavigationShellState
       builder: (context, ref, child) {
         final appLocalizations = AppLocalizations.of(context);
 
-        return GlassSurface(
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(16),
-          ),
+        return GlassNavigationSurface(
           child: BottomNavigationBar(
             backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconSize: 24,
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textTertiary,
-            showUnselectedLabels: true,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
             items: [
               BottomNavigationBarItem(
                 icon: const Icon(Icons.analytics_outlined),

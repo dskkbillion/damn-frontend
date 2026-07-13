@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/haptic_utils.dart'; // 导入震动工具类
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 // import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 不再需要 AppMode
 
 class SellerBottomNavigationBar extends ConsumerWidget {
@@ -17,8 +19,16 @@ class SellerBottomNavigationBar extends ConsumerWidget {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
     
-    return BottomNavigationBar(
+    return GlassNavigationSurface(
+      child: BottomNavigationBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      iconSize: 24,
       type: BottomNavigationBarType.fixed, 
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.textTertiary,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       items: [
         BottomNavigationBarItem(
           icon: const Icon(Icons.analytics_outlined), 
@@ -52,6 +62,7 @@ class SellerBottomNavigationBar extends ConsumerWidget {
           initialLocation: index == navigationShell.currentIndex,
         );
       },
+      ),
     );
   }
-} 
+}

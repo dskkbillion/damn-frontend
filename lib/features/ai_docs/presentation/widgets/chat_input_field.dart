@@ -90,20 +90,23 @@ class _ChatInputFieldState extends State<ChatInputField> {
              final bool baseCanSendMessage = !isBusy && !(_isRecording ?? false) && (hasText || hasImages);
 
              return Container(
+                margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.spacingSm,
                   vertical: AppDimensions.spacingSm,
                 ),
                 decoration: BoxDecoration(
-                 color: Theme.of(context).cardColor,
-                 boxShadow: const [
+                  color: AppColors.backgroundCard.withValues(alpha: 0.78),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
+                  boxShadow: [
                     BoxShadow(
-                      offset: Offset(0, -1),
-                      blurRadius: 4,
-                      color: AppColors.borderSecondary,
-                    )
-                 ]
-               ),
+                      color: AppColors.primary.withValues(alpha: 0.10),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
               child: Column( // Use Column to stack preview above input row
                 mainAxisSize: MainAxisSize.min, // Take minimum vertical space
                 children: [
@@ -152,7 +155,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                               borderSide: BorderSide.none,
                             ),
                             filled: true,
-                            fillColor: AppColors.backgroundSecondary,
+                            fillColor: AppColors.primary.withValues(alpha: 0.08),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: AppDimensions.spacingLg,
                               vertical: AppDimensions.spacingMd,

@@ -18,4 +18,4 @@ class SellerShellPage extends ConsumerWidget {
       ),
     );
   }
-} 
+}

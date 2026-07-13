@@ -9,6 +9,7 @@ import 'dart:async'; // 添加Completer和StreamSubscription导入
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/app/app_mode.dart'; // 导入应用模式
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
@@ -123,10 +124,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     final currentAppMode = ref.watch(appModeProvider);
     
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(s.chat_list_title),
-        backgroundColor: AppColors.backgroundPrimary,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
@@ -175,7 +177,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         ],
       ),
       // 使用FutureBuilder获取referId
-      body: FutureBuilder<int?>(
+      body: GlassBackdrop(
+        child: FutureBuilder<int?>(
         future: _referIdFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -252,6 +255,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             ),
           );
         },
+        ),
       ),
     );
   }

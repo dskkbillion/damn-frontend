@@ -124,17 +124,18 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
     }
 
     return Scaffold(
+      extendBody: true,
       body: widget.navigationShell,
-      bottomNavigationBar: GlassSurface(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(16),
-        ),
+      bottomNavigationBar: GlassNavigationSurface(
         child: BottomNavigationBar(
           backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconSize: 24,
           type: BottomNavigationBarType.fixed,
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textTertiary,
-          showUnselectedLabels: true,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
           items: items,
           currentIndex: widget.navigationShell.currentIndex,
           onTap: (index) => _onTap(context, index),

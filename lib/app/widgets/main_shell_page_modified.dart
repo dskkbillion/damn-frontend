@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dskk_flutter_refactor/app/navigation/app_router_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 
 /// 修改后的主壳页面，支持可配置的开发tab
 class MainShellPage extends ConsumerWidget {
@@ -59,14 +60,20 @@ class MainShellPage extends ConsumerWidget {
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textTertiary,
-        showUnselectedLabels: true,
-        items: items,
-        currentIndex: navigationShell.currentIndex,
-        onTap: (index) => _onTap(context, index),
+      bottomNavigationBar: GlassNavigationSurface(
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconSize: 24,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textTertiary,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: items,
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) => _onTap(context, index),
+        ),
       ),
     );
   }

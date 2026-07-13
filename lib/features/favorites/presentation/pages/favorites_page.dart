@@ -17,6 +17,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/widgets/skeleton/skeleton_page.dart';
 import '../../../../core/widgets/skeleton/skeleton_card.dart';
+import '../../../../core/widgets/glass_surface.dart';
 
 /// 收藏页面
 class FavoritesPage extends ConsumerStatefulWidget {
@@ -186,14 +187,20 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> with SingleTicker
       ));
     }
 
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textSecondary,
-      showUnselectedLabels: true,
-      items: items,
-      currentIndex: 3, // 设置为个人中心tab，因为收藏功能属于个人中心
-      onTap: _onBottomNavTap,
+    return GlassNavigationSurface(
+      child: BottomNavigationBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconSize: 24,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.primary,
+        unselectedItemColor: AppColors.textSecondary,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: items,
+        currentIndex: 3, // 设置为个人中心tab，因为收藏功能属于个人中心
+        onTap: _onBottomNavTap,
+      ),
     );
   }
 

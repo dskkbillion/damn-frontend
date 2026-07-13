@@ -90,8 +90,10 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
+    final navigationClearance = 64 + MediaQuery.paddingOf(context).bottom + 8;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       // Add a drawer for the conversation sidebar
       drawer: const Drawer(
          // Setting width might be necessary depending on content
@@ -99,6 +101,8 @@ class _ChatPageState extends State<ChatPage> {
          child: ConversationSidebar(),
       ),
       appBar: AppBar(
+         backgroundColor: Colors.transparent,
+         surfaceTintColor: Colors.transparent,
          // Add a leading button to open the drawer
          leading: Builder(
            builder: (context) => IconButton(
@@ -193,7 +197,10 @@ class _ChatPageState extends State<ChatPage> {
          ],
       ),
       // The body is now just the chat area (Column)
-      body: Column(
+      body: Padding(
+        padding: EdgeInsets.only(bottom: navigationClearance),
+        child: GlassBackdrop(
+          child: Column(
          children: [
            // 🔥 频率限制警告横幅 - 修复关闭功能
            BlocBuilder<AiChatBloc, AiChatState>(
@@ -229,7 +236,9 @@ class _ChatPageState extends State<ChatPage> {
              onSendMessage: _sendMessage,
            ),
          ],
-       ),
+          ),
+        ),
+      ),
     );
   }
 

@@ -7,6 +7,7 @@ import '../../generated/app_localizations.dart';
 import '../../core/utils/haptic_utils.dart';
 import '../navigation/app_router_config.dart';
 import '../../core/config/theme/app_colors.dart';
+import '../../core/widgets/glass_surface.dart';
 
 /// 自适应底部导航栏 Shell，根据当前模式显示不同的导航项
 /// 但保持同一个 navigationShell，避免页面重载
@@ -39,14 +40,20 @@ class AdaptiveBottomNavShell extends ConsumerWidget {
     
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textTertiary,
-        showUnselectedLabels: true,
-        items: items,
-        currentIndex: _getCurrentIndex(currentMode, navigationShell.currentIndex),
-        onTap: (index) => _handleTap(context, ref, currentMode, index),
+      bottomNavigationBar: GlassNavigationSurface(
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          iconSize: 24,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textTertiary,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          items: items,
+          currentIndex: _getCurrentIndex(currentMode, navigationShell.currentIndex),
+          onTap: (index) => _handleTap(context, ref, currentMode, index),
+        ),
       ),
     );
   }
