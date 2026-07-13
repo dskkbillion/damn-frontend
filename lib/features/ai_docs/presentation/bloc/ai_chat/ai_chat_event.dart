@@ -99,11 +99,12 @@ class FetchDispatchHistory extends AiChatEvent {}
 /// Event to load the list of conversations.
 class LoadConversations extends AiChatEvent {
   final int? page; // 可选的页码，如果不提供则使用第1页
+  final bool forceRefresh;
   
-  const LoadConversations({this.page});
+  const LoadConversations({this.page, this.forceRefresh = false});
   
   @override
-  List<Object?> get props => [page];
+  List<Object?> get props => [page, forceRefresh];
 }
 
 /// Event to select a conversation.
@@ -310,4 +311,4 @@ class ResetRateLimit extends AiChatEvent {
   
   @override
   List<Object?> get props => [userId, serviceType, ruleName];
-} 
+}

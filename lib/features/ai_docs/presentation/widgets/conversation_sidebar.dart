@@ -174,7 +174,9 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                   icon: const Icon(Icons.refresh),
                   label: Text(appLocalizations.ai_docs_retry), // 使用国际化文本
                   onPressed: () =>
-                      context.read<AiChatBloc>().add(const LoadConversations()),
+                      context.read<AiChatBloc>().add(
+                        const LoadConversations(forceRefresh: true),
+                      ),
                 )
               ],
             ),

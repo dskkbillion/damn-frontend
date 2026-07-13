@@ -55,6 +55,8 @@ part 'ai_chat_state.dart';
 @injectable
 class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
+  static const Duration _conversationReuseWindow = Duration(seconds: 30);
+
   // --- Use Cases Dependencies ---
   final GetConversationsUseCase _getConversations;
   final LoadHistoryUseCase _loadHistory;
@@ -83,6 +85,8 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
   // Internal state - Replace with state properties where possible
   // int? _currentConversationId; // REMOVE - Use state.selectedConversationId instead
   StreamSubscription<String>? _chatStreamSubscription;
+  DateTime? _lastConversationLoadAt;
+  bool _isLoadingConversations = false;
   
 
 
@@ -158,6 +162,25 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     Emitter<AiChatState> emit,
   ) async {
      AppLogger.d("[AiChatBloc] _onLoadConversations triggered.");
+
+     final page = event.page ?? 1;
+     final canReuse = page == 1 &&
+         !event.forceRefresh &&
+         !_isLoadingConversations &&
+         state.conversationsStatus == ConversationsStatus.loaded &&
+         state.conversations.isNotEmpty &&
+         _lastConversationLoadAt != null &&
+         DateTime.now().difference(_lastConversationLoadAt!) <
+             _conversationReuseWindow;
+     if (canReuse) {
+       AppLogger.d('[AiChatBloc] Reusing recently loaded conversations.');
+       return;
+     }
+     if (_isLoadingConversations) {
+       AppLogger.d('[AiChatBloc] Conversation load already in flight.');
+       return;
+     }
+     _isLoadingConversations = true;
      
      // 重置分页状态并设置加载状态
      emit(state.copyWith(
@@ -172,13 +195,13 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
 
      if (userId == null) {
        AppLogger.d("[AiChatBloc] _onLoadConversations: userId is null. Emitting error.");
+       _isLoadingConversations = false;
        emit(state.copyWith(conversationsStatus: ConversationsStatus.error, conversationListErrorMessage: "User not authenticated or invalid ID format"));
        return;
      }
 
      AppLogger.d("[AiChatBloc] _onLoadConversations: Calling _getConversations with userId: $userId");
      // 使用事件提供的页码或默认第1页
-     final page = event.page ?? 1;
      final result = await _getConversations(GetConversationsParams(userId: userId, page: page)); 
      AppLogger.d("[AiChatBloc] _onLoadConversations: _getConversations result: $result");
 
@@ -191,6 +214,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
           ));
        },
        (conversationsResult) {
+         _lastConversationLoadAt = DateTime.now();
          AppLogger.d("[AiChatBloc] _onLoadConversations: Success - Received ${conversationsResult.conversations.length} conversations. Emitting loaded state.");
          emit(state.copyWith(
              conversationsStatus: ConversationsStatus.loaded,
@@ -203,6 +227,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          ));
        },
      );
+     _isLoadingConversations = false;
      // Log the final emitted state for debugging
      AppLogger.d("[AiChatBloc] _onLoadConversations: Final emitted state status = ${state.conversationsStatus}, count = ${state.conversations.length}"); 
   }
@@ -276,7 +301,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
     AppLogger.d("[AiChatBloc] Refreshing conversations");
     
     // 刷新时重置到第一页
-    add(const LoadConversations(page: 1));
+    add(const LoadConversations(page: 1, forceRefresh: true));
   }
 
    Future<void> _onSelectConversation(
@@ -390,7 +415,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         ));
 
         // Reload the conversation list to show the new conversation
-        add(const LoadConversations()); 
+        add(const LoadConversations(forceRefresh: true));
       },
     );
   }
@@ -436,7 +461,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          ));
          
          // 重新加载对话列表
-         add(const LoadConversations());
+         add(const LoadConversations(forceRefresh: true));
          
          // 立即发送消息
          add(SendMessage(message: event.message));
@@ -485,7 +510,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          ));
          
          // 重新加载对话列表
-         add(const LoadConversations());
+         add(const LoadConversations(forceRefresh: true));
          
          // 立即发送语音消息
          add(SendVoiceMessage(audioFile: event.audioFile));
@@ -539,7 +564,7 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
         // 如果删除的不是当前选中的对话，保持当前状态不变
         
         // Refresh conversation list to remove the deleted one
-        add(const LoadConversations()); 
+        add(const LoadConversations(forceRefresh: true));
       },
     );
   }
