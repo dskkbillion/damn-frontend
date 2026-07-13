@@ -19,18 +19,20 @@ class MenuItem {
 class ProfileMenuSection extends StatelessWidget {
   final String title;
   final List<MenuItem> menuItems;
+  final double bottomPadding;
 
   const ProfileMenuSection({
     super.key,
     required this.title,
     required this.menuItems,
+    this.bottomPadding = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     return GlassCard(
       margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

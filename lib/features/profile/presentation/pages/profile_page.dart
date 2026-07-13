@@ -175,10 +175,6 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.only(
-                bottom: GlassNavigationMetrics.contentBottomInset(context) +
-                    AppDimensions.spacingXl,
-              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
@@ -261,6 +257,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     // 关于我们
                     ProfileMenuSection(
                       title: appLocalizations.profile_about_us,
+                      bottomPadding:
+                          GlassNavigationMetrics.contentBottomInset(context) +
+                              AppDimensions.spacingXl,
                       menuItems: [
                         MenuItem(
                           icon: Icons.smart_toy_outlined,
@@ -272,9 +271,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ],
                     ),
-
-                    // 底部空间
-                    const SizedBox(height: 30),
                   ],
                 ),
               ),

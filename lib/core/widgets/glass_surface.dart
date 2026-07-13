@@ -104,9 +104,8 @@ class GlassNavigationSurface extends StatelessWidget {
     final isExpanded = shortestSide >= 600;
     final navigationHeight =
         GlassNavigationMetrics.navigationHeight(mediaQuery);
-    // 比内容卡片多留一档水平空隙，避免胶囊两端压在卡片边缘上。
-    final horizontalMargin = (screenSize.width * 0.065)
-        .clamp(20.0, isExpanded ? 36.0 : 32.0)
+    final horizontalMargin = (screenSize.width * 0.04)
+        .clamp(12.0, isExpanded ? 32.0 : 24.0)
         .toDouble();
     final bottomGap = GlassNavigationMetrics.bottomGap(mediaQuery);
     DisplayFeature? verticalHinge;
