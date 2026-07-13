@@ -602,10 +602,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
                 );
               },
               child: Padding(
-                // 预留悬浮导航的高度，再回收一个小间距；输入框与导航
-                // 保持紧凑但不会落到胶囊层之下。
+                // 仅预留系统安全区与一小段呼吸距离，使输入框与 AI 页面
+                // 一样贴近悬浮导航，但仍停在导航上沿之上。
                 padding: EdgeInsets.only(
                   bottom: GlassNavigationMetrics.contentBottomInset(context) -
+                      GlassNavigationMetrics.navigationHeight(
+                        MediaQuery.of(context),
+                      ) +
                       AppDimensions.spacingSm,
                 ),
                 child: Column(
