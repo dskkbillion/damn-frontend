@@ -168,7 +168,6 @@ class AiChatBloc extends Bloc<AiChatEvent, AiChatState> {
          !event.forceRefresh &&
          !_isLoadingConversations &&
          state.conversationsStatus == ConversationsStatus.loaded &&
-         state.conversations.isNotEmpty &&
          _lastConversationLoadAt != null &&
          DateTime.now().difference(_lastConversationLoadAt!) <
              _conversationReuseWindow;

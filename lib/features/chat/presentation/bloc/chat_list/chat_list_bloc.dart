@@ -70,7 +70,6 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     }
     if (lastLoadedAt != null &&
         state.status == ChatListStatus.success &&
-        state.chatRooms.isNotEmpty &&
         DateTime.now().difference(lastLoadedAt) < _reuseWindow) {
       AppLogger.d('[ChatListBloc] Reuse recent chat list within $_reuseWindow.');
       return;
