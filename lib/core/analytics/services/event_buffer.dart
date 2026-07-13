@@ -17,6 +17,7 @@ class EventBuffer {
   static const int _maxBufferSize = 50; // 最大缓存事件数量
   static const Duration _uploadInterval = Duration(minutes: 5); // 定时上报间隔
   static const Duration _retryDelay = Duration(minutes: 1); // 重试延迟
+  static const Duration _pageViewDedupWindow = Duration(seconds: 10);
   
   final List<AnalyticsEvent> _buffer = [];
   Timer? _uploadTimer;
@@ -30,6 +31,13 @@ class EventBuffer {
 
   /// 添加事件到缓存
   void addEvent(AnalyticsEvent event) {
+    // 路由观察器可能在冷启动/重建导航树时重复触发同一个进入事件。
+    // 匿名 PV 不应因此并发写入多条相同记录，也不应给登录首屏制造无意义的超时。
+    if (_isDuplicatePageView(event)) {
+      AppLogger.d('[EventBuffer] 跳过重复页面浏览: ${event.path}');
+      return;
+    }
+
     AppLogger.d('[EventBuffer] 添加事件到缓冲区: ${event.businessType}, ID: ${event.businessId}, 路径: ${event.path}');
     _buffer.add(event);
     
@@ -42,6 +50,29 @@ class EventBuffer {
       AppLogger.d('[EventBuffer] 当前缓冲区事件数: ${_buffer.length}/$_maxBufferSize');
       _saveCachedEvents();
     }
+  }
+
+  bool _isDuplicatePageView(AnalyticsEvent event) {
+    if (event.businessType != 'pv' || event.path == null) {
+      return false;
+    }
+
+    // 仅去重没有 action 的页面进入事件，保留页面离开/停留时长事件。
+    if (event.feature?['action'] != null) {
+      return false;
+    }
+
+    return _buffer.any((cached) {
+      if (cached.businessType != 'pv' ||
+          cached.path != event.path ||
+          cached.businessId != event.businessId ||
+          cached.userSign != event.userSign ||
+          cached.feature?['action'] != null) {
+        return false;
+      }
+      return event.timestamp.difference(cached.timestamp).abs() <=
+          _pageViewDedupWindow;
+    });
   }
 
   /// 强制上报所有缓存的事件
@@ -226,4 +257,4 @@ class EventBuffer {
       _saveCachedEvents();
     }
   }
-} 
+}
