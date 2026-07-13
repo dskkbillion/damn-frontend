@@ -101,14 +101,17 @@ class _ChatPageState extends State<ChatPage> {
         surfaceTintColor: Colors.transparent,
         forceMaterialTransparency: true,
         elevation: 0,
-        leadingWidth: 64,
+        leadingWidth: 76,
         titleSpacing: 0,
         // Add a leading button to open the drawer
-        leading: Builder(
-          builder: (context) => _GlassHeaderIconButton(
-            icon: Icons.menu_rounded,
-            tooltip: appLocalizations.ai_docs_conversation_list,
-            onPressed: _openConversationPanel,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: AppDimensions.spacingMd),
+          child: Builder(
+            builder: (context) => _GlassHeaderIconButton(
+              icon: Icons.menu_rounded,
+              tooltip: appLocalizations.ai_docs_conversation_list,
+              onPressed: _openConversationPanel,
+            ),
           ),
         ),
         // Add the dispatch/recommendation button to actions
@@ -184,6 +187,7 @@ class _ChatPageState extends State<ChatPage> {
               );
             },
           ),
+          const SizedBox(width: AppDimensions.spacingMd),
         ],
       ),
       body: GlassBackdrop(

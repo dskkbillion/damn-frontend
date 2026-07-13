@@ -236,6 +236,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               );
             },
           ),
+          const SizedBox(width: 16),
         ],
       ),
       // 使用FutureBuilder获取referId
