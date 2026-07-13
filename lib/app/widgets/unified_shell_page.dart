@@ -90,6 +90,7 @@ class _UnifiedShellPageState extends ConsumerState<UnifiedShellPage>
     });
     
     return Scaffold(
+      extendBody: true,
       body: widget.navigationShell,
       bottomNavigationBar: GlassNavigationSurface(
         child: mode == AppMode.buyer
