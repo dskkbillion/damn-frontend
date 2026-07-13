@@ -412,7 +412,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
             : ListView.builder(
                 controller: scrollController,
                 physics: const AlwaysScrollableScrollPhysics(), // 确保列表始终可滚动
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
                 itemCount: products.length + 1,
                 itemBuilder: (context, index) {
                   if (index == products.length) {
@@ -466,7 +466,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
         // 审核中的商品不能进行状态操作，只显示状态标识
         actions.add(
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs + 2),
             decoration: BoxDecoration(
               color: AppColors.warning.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
@@ -581,9 +581,9 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     }
     
     return GlassCard(
-      margin: const EdgeInsets.only(bottom: 12.0),
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
       padding: EdgeInsets.zero,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       tintOpacity: 0.62,
       child: InkWell(
         onTap: () {
@@ -738,7 +738,7 @@ class _ProductManagementPageState extends State<ProductManagementPage>
     
     if (isLoading) {
       return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg),
         child: Center(
           child: SizedBox(
             width: 24,

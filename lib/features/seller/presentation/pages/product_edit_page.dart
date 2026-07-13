@@ -20,6 +20,7 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/features/seller/domain/entities/service_tier_models.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/widgets/seller_page_skeleton.dart';
@@ -137,18 +138,18 @@ class _ProductEditPageState extends State<ProductEditPage> {
   /// 统一的输入框边框样式
   InputDecoration get _lightBorderDecoration => InputDecoration(
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      borderSide: BorderSide(color: AppColors.borderInput, width: AppDimensions.borderStandard),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: AppColors.borderInput, width: 1),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      borderSide: BorderSide(color: AppColors.borderInput, width: AppDimensions.borderStandard),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppColors.sellerAccent, width: 1.5),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+      borderSide: const BorderSide(color: AppColors.sellerAccent, width: AppDimensions.borderThick),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    contentPadding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingMd),
     filled: true,
     fillColor: AppColors.backgroundCard,
   );
