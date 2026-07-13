@@ -124,7 +124,7 @@ class TimeManagementBody extends StatelessWidget {
   Widget _buildContent(BuildContext context, TimeSettings settings, bool isUpdating) {
     // Pass context down
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -146,8 +146,8 @@ class TimeManagementBody extends StatelessWidget {
     // No changes needed here, context.read will work correctly
     return GlassCard(
       margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16.0),
-      borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       tintOpacity: 0.62,
       child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,8 +197,8 @@ class TimeManagementBody extends StatelessWidget {
     // This widget needs context for localization
     return GlassCard(
       margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16.0),
-      borderRadius: BorderRadius.circular(12),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       tintOpacity: 0.62,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

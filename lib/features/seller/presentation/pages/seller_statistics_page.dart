@@ -39,7 +39,7 @@ class SellerStatisticsPage extends ConsumerWidget {
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: SafeArea(
                       child: Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(AppDimensions.spacingLg),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
