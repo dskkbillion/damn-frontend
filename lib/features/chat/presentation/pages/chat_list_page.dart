@@ -32,6 +32,48 @@ class ChatListPage extends ConsumerStatefulWidget {
   ConsumerState<ChatListPage> createState() => _ChatListPageState();
 }
 
+class _ChatHeaderIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final Color? color;
+
+  const _ChatHeaderIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.backgroundCard.withValues(alpha: 0.66),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: AppColors.onPrimary.withValues(alpha: 0.86),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: IconButton(
+          icon: Icon(icon, size: 21, color: color ?? AppColors.textSecondary),
+          tooltip: tooltip,
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}
+
 class _ChatListPageState extends ConsumerState<ChatListPage> {
   // 添加用户身份状态
   String? _currentUserType; // 'MEMBER' 或 'DOCTOR'
@@ -134,11 +176,66 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded),
+          _ChatHeaderIconButton(
+            icon: Icons.notifications_none_rounded,
             tooltip: s.chat_notification_center,
             onPressed: () => _openNotifications(context),
           ),
+          _ChatHeaderIconButton(
+            icon: _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
+            tooltip: _isMixedMode
+                ? s.chat_filter_all
+                : (currentAppMode == AppMode.buyer
+                    ? s.chat_filter_buyer
+                    : s.chat_filter_seller),
+            color: _isMixedMode
+                ? AppColors.textTertiary
+                : Theme.of(context).primaryColor,
+            onPressed: () {
+              setState(() {
+                _isMixedMode = !_isMixedMode;
+              });
+              _saveMixedModeSetting(_isMixedMode);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor:
+                      AppColors.backgroundCard.withValues(alpha: 0.92),
+                  elevation: 0,
+                  shape: const StadiumBorder(),
+                  content: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isMixedMode
+                            ? Icons.filter_alt_off_rounded
+                            : Icons.filter_alt_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _isMixedMode
+                              ? s.chat_filter_mode_all
+                              : (currentAppMode == AppMode.buyer
+                                  ? s.chat_filter_mode_buyer
+                                  : s.chat_filter_mode_seller),
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+          /*
           TextButton.icon(
             icon: Icon(
               _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
@@ -203,7 +300,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 ),
               );
             },
-          ),
+          ), */
         ],
       ),
       // 使用FutureBuilder获取referId

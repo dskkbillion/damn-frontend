@@ -233,7 +233,13 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                            padding: const EdgeInsets.all(48.0),
                            borderRadius: BorderRadius.circular(12),
                            tintOpacity: 0.62,
-                              child: Text(AppLocalizations.of(context).order_list_empty, style: Theme.of(context).textTheme.bodyLarge),
+                              child: Center(
+                                child: Text(
+                                  AppLocalizations.of(context).order_list_empty,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ),
                          ),
                        ),
                      );

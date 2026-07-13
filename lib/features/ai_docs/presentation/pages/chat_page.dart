@@ -96,9 +96,14 @@ class _ChatPageState extends State<ChatPage> {
     final appLocalizations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
+        forceMaterialTransparency: true,
+        elevation: 0,
+        leadingWidth: 64,
+        titleSpacing: 0,
         // Add a leading button to open the drawer
         leading: Builder(
           builder: (context) => _GlassHeaderIconButton(
@@ -190,6 +195,7 @@ class _ChatPageState extends State<ChatPage> {
           // 内层 Scaffold 的可用高度已经扣除了部分导航区域；只补齐
           // Home Indicator 与一档呼吸距离，避免输入舱和导航重叠。
           padding: EdgeInsets.only(
+            top: MediaQuery.paddingOf(context).top + kToolbarHeight,
             bottom:
                 MediaQuery.paddingOf(context).bottom + AppDimensions.spacingLg,
           ),
