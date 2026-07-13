@@ -140,7 +140,9 @@ class GlassNavigationSurface extends StatelessWidget {
             horizontalMargin,
             0,
             horizontalMargin,
-            mediaQuery.padding.bottom + bottomGap,
+            // 视觉上更贴近设备底部，同时仍保留足够的 Home Indicator
+            // 手势缓冲区。
+            mediaQuery.padding.bottom * 0.72 + bottomGap,
           ),
           child: Align(
             alignment: alignment,
