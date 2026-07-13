@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:audioplayers/audioplayers.dart'; // Import audioplayers
@@ -207,17 +209,19 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
   // --- Build method now uses widget.message ---
   @override
   Widget build(BuildContext context) {
-    bool isUser = widget.message.sender == MessageSender.user;
-
-    // 🎨 修改颜色方案 - AI消息使用固定的浅灰色
-    Color bubbleColor = isUser
-        ? Theme.of(context).colorScheme.primaryContainer
-        : AppColors.backgroundSecondary; // AI消息使用背景次色
-
-    // 流式输出时也使用相同的浅灰色，保持一致性
-    if (!isUser && widget.isStreaming && widget.message.messageType == MessageType.text) {
-       bubbleColor = AppColors.backgroundSecondary; // 与非流式状态保持一致
-    }
+    final isUser = widget.message.sender == MessageSender.user;
+    final bubbleColor = isUser
+        ? AppColors.primary.withValues(alpha: 0.16)
+        : AppColors.backgroundCard.withValues(alpha: 0.70);
+    final borderColor = isUser
+        ? AppColors.primary.withValues(alpha: 0.30)
+        : Colors.white.withValues(alpha: 0.88);
+    final radius = BorderRadius.only(
+      topLeft: const Radius.circular(AppDimensions.radiusLg),
+      topRight: const Radius.circular(AppDimensions.radiusLg),
+      bottomLeft: Radius.circular(isUser ? AppDimensions.radiusLg : 6),
+      bottomRight: Radius.circular(isUser ? 6 : AppDimensions.radiusLg),
+    );
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
@@ -225,12 +229,24 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
         crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           // 消息气泡
-          Container(
+          ClipRRect(
+            borderRadius: radius,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+              child: Container(
             margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs, horizontal: AppDimensions.spacingSm),
             padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 14.0),
             decoration: BoxDecoration(
               color: bubbleColor,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              borderRadius: radius,
+              border: Border.all(color: borderColor, width: 1.1),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: isUser ? 0.14 : 0.07),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             constraints: BoxConstraints(
                maxWidth: MediaQuery.of(context).size.width * 0.75
@@ -253,6 +269,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                   // 🕐 移除时间戳显示 - 现在使用时间分隔符来显示时间
                ],
             ),
+              ),
+            ),
           ),
         ],
       ),
@@ -261,10 +279,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   // --- Text content builder (uses widget.message and widget.isStreaming) ---
   Widget _buildTextContent(BuildContext context, bool isUser) {
-     // 🎨 修改文本颜色 - AI消息使用固定的深色文本，匹配固定的浅灰色背景
-     final textColor = isUser
-          ? Theme.of(context).colorScheme.onPrimaryContainer
-          : AppColors.textPrimary; // AI消息使用textPrimary，匹配浅灰色背景
+     final textColor = AppColors.textPrimary;
 
      // 处理流式响应或空消息的特殊情况
      if (widget.isStreaming && widget.message.content.isEmpty) {
@@ -334,7 +349,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
                  widget.message.content,
                  style: TextStyle(
                    fontSize: 15.0,
-                   color: Theme.of(context).colorScheme.onSecondaryContainer,
+                   color: AppColors.textPrimary,
                  ),
                ),
              ),
@@ -347,10 +362,7 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> { // State class
 
   // --- Audio player builder (uses state variables and widget.message) ---
   Widget _buildAudioContent(BuildContext context, bool isUser) {
-     // 🎨 修改音频播放器图标颜色 - AI消息使用固定的深色图标
-     final iconColor = isUser
-                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                      : AppColors.textPrimary; // AI消息使用textPrimary
+     final iconColor = AppColors.textPrimary;
 
      final url = _audioUrl;
      AppLogger.d('[AudioPlayer] Building audio content - URL: $url, Player: ${_audioPlayer != null}, Message Type: ${widget.message.messageType}');

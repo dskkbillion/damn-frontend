@@ -22,53 +22,56 @@ class RateLimitIndicator extends StatelessWidget {
         }
 
         final remaining = rateLimit.remaining;
+        final accent = _getIconColor(remaining);
 
         return Padding(
-          padding: const EdgeInsets.only(right: AppDimensions.spacingSm),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () => _showRateLimitDialog(context, state),
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusCircle),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: 6),
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _getGradientColors(remaining),
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                  color: AppColors.backgroundCard.withValues(alpha: 0.66),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.86)),
                   boxShadow: [
                     BoxShadow(
-                      color: _getShadowColor(remaining).withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      color: accent.withValues(alpha: 0.16),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Stack(
+                  alignment: Alignment.center,
+                  clipBehavior: Clip.none,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _getIcon(remaining),
-                        size: 14,
-                        color: _getIconColor(remaining),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$remaining',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Icon(_getIcon(remaining), size: 21, color: accent),
+                    Positioned(
+                      right: -3,
+                      top: -3,
+                      child: Container(
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: accent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        child: Text(
+                          '$remaining',
+                          style: const TextStyle(
+                            fontSize: 9,
+                            height: 1,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -79,22 +82,6 @@ class RateLimitIndicator extends StatelessWidget {
         );
       },
     );
-  }
-
-  List<Color> _getGradientColors(int remaining) {
-    if (remaining <= 2) {
-      return [Colors.amber.shade400, Colors.amber.shade600];
-    }
-    if (remaining <= 5) {
-      return [AppColors.info, AppColors.info];
-    }
-    return [AppColors.success, AppColors.success];
-  }
-
-  Color _getShadowColor(int remaining) {
-    if (remaining <= 2) return Colors.amber.shade700;
-    if (remaining <= 5) return AppColors.info;
-    return AppColors.success;
   }
 
   Color _getIconColor(int remaining) {
