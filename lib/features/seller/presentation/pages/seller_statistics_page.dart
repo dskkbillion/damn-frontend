@@ -43,14 +43,6 @@ class SellerStatisticsPage extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              AppLocalizations.of(context).seller_statistics_title,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
                             _buildPercentSection(context, state.percentStats),
                             const SizedBox(height: 24),
                             _buildIndicatorsSection(context, state.indexStats),
