@@ -29,6 +29,9 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
   final IChatLocalDataSource localDataSource;
   final EventBus _eventBus = EventBus();
   StreamSubscription<ChatListUpdateEvent>? _chatListUpdateSubscription;
+  static const Duration _reuseWindow = Duration(seconds: 30);
+  DateTime? _lastSuccessfulLoadAt;
+  bool _isLoadingChatRooms = false;
 
   ChatListBloc({
     required this.getChatRoomList,
@@ -59,6 +62,20 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
     Emitter<ChatListState> emit,
   ) async {
     AppLogger.d("[ChatListBloc] Handling LoadChatRoomList event...");
+
+    final lastLoadedAt = _lastSuccessfulLoadAt;
+    if (_isLoadingChatRooms) {
+      AppLogger.d('[ChatListBloc] Skip duplicate load while request is in flight.');
+      return;
+    }
+    if (lastLoadedAt != null &&
+        state.status == ChatListStatus.success &&
+        state.chatRooms.isNotEmpty &&
+        DateTime.now().difference(lastLoadedAt) < _reuseWindow) {
+      AppLogger.d('[ChatListBloc] Reuse recent chat list within $_reuseWindow.');
+      return;
+    }
+    _isLoadingChatRooms = true;
 
     // Step 1: Show cached data immediately if available (stale-while-revalidate)
     final cachedRooms = await localDataSource.getCachedChatRoomList();
@@ -93,12 +110,14 @@ class ChatListBloc extends Bloc<ChatListEvent, ChatListState> {
       final chatRooms = (failureOrChatRooms as Right).value as List<ChatRoom>;
       AppLogger.d('[ChatListBloc] Successfully loaded ${chatRooms.length} chat rooms.');
       await localDataSource.cacheChatRoomList(chatRooms);
+      _lastSuccessfulLoadAt = DateTime.now();
       emit(state.copyWith(
         status: ChatListStatus.success,
         chatRooms: chatRooms,
         isRefreshing: false,
       ));
     }
+    _isLoadingChatRooms = false;
   }
 
   // Handler for the RefreshChatList event
