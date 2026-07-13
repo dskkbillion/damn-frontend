@@ -104,8 +104,9 @@ class GlassNavigationSurface extends StatelessWidget {
     final isExpanded = shortestSide >= 600;
     final navigationHeight =
         GlassNavigationMetrics.navigationHeight(mediaQuery);
-    final horizontalMargin = (screenSize.width * 0.04)
-        .clamp(12.0, isExpanded ? 32.0 : 24.0)
+    // 比内容卡片多留一档水平空隙，避免胶囊两端压在卡片边缘上。
+    final horizontalMargin = (screenSize.width * 0.065)
+        .clamp(20.0, isExpanded ? 36.0 : 32.0)
         .toDouble();
     final bottomGap = GlassNavigationMetrics.bottomGap(mediaQuery);
     DisplayFeature? verticalHinge;
@@ -157,13 +158,12 @@ class GlassNavigationSurface extends StatelessWidget {
                   filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      // 导航保留磨砂质感，但避免以近实色盖住页面卡片。
-                      color: surface.withValues(alpha: isDark ? 0.66 : 0.38),
+                      color: surface.withValues(alpha: isDark ? 0.72 : 0.54),
                       borderRadius: BorderRadius.circular(navigationHeight / 2),
                       border: Border.all(
                         color: isDark
                             ? AppColorsDark.accentLight.withValues(alpha: 0.32)
-                            : AppColors.onPrimary.withValues(alpha: 0.78),
+                            : AppColors.onPrimary.withValues(alpha: 0.88),
                         width: 1.2,
                       ),
                       boxShadow: [
