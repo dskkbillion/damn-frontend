@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'app_dimensions.dart';
+import '../../animations/deepstream_fade_page_transitions_builder.dart';
 
 /// DeepStream 主题配置
 ///
@@ -37,11 +38,11 @@ class AppTheme {
     // 页面切换动画
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.iOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.macOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.windows: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.linux: DeepStreamFadePageTransitionsBuilder(),
       },
     ),
 
@@ -272,11 +273,11 @@ class AppTheme {
     // 页面切换动画
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-        TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+        TargetPlatform.android: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.iOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.macOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.windows: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.linux: DeepStreamFadePageTransitionsBuilder(),
       },
     ),
 

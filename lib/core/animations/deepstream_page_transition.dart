@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../config/theme/app_dimensions.dart';
 
 /// DeepStream 统一转场动画
-/// 横向滑入 300ms easeOutCubic（设计规范）
+/// 淡入并轻微缩放 300ms easeOutCubic。
 class DeepStreamPageTransition extends CustomTransitionPage<void> {
   DeepStreamPageTransition({
     required super.child,
@@ -12,17 +12,17 @@ class DeepStreamPageTransition extends CustomTransitionPage<void> {
           transitionDuration: AppDimensions.animationStandard,
           reverseTransitionDuration: AppDimensions.animationStandard,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            final offsetAnimation = Tween<Offset>(
-              begin: const Offset(1.0, 0.0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
+            final curvedAnimation = CurvedAnimation(
               parent: animation,
               curve: Curves.easeOutCubic,
-            ));
+              reverseCurve: Curves.easeInCubic,
+            );
+            final scaleAnimation = Tween<double>(begin: 0.985, end: 1)
+                .animate(curvedAnimation);
 
-            return SlideTransition(
-              position: offsetAnimation,
-              child: child,
+            return FadeTransition(
+              opacity: curvedAnimation,
+              child: ScaleTransition(scale: scaleAnimation, child: child),
             );
           },
         );
@@ -36,8 +36,8 @@ class DeepStreamNoTransitionPage extends NoTransitionPage<void> {
   });
 }
 
-/// Hero 专用转场动画（fade + 轻微右滑）
-/// 用于需要 Hero 共享元素动画的页面，fade 效果让 Hero 过渡更平滑
+/// Hero 专用转场动画（fade + 轻微缩放）。
+/// 用于需要 Hero 共享元素动画的页面，避免额外的横向运动干扰共享元素。
 class DeepStreamHeroPageTransition extends CustomTransitionPage<void> {
   DeepStreamHeroPageTransition({
     required super.child,
@@ -51,17 +51,12 @@ class DeepStreamHeroPageTransition extends CustomTransitionPage<void> {
               curve: Curves.easeOutCubic,
             );
 
-            final slideAnimation = Tween<Offset>(
-              begin: const Offset(0.1, 0.0),
-              end: Offset.zero,
-            ).animate(fadeAnimation);
+            final scaleAnimation = Tween<double>(begin: 0.99, end: 1)
+                .animate(fadeAnimation);
 
             return FadeTransition(
               opacity: fadeAnimation,
-              child: SlideTransition(
-                position: slideAnimation,
-                child: child,
-              ),
+              child: ScaleTransition(scale: scaleAnimation, child: child),
             );
           },
         );
