@@ -18,7 +18,7 @@ class AssistantMissionPage extends StatelessWidget {
         foregroundColor: AppColors.onPrimary,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

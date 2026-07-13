@@ -225,7 +225,8 @@ class _OrderListPageState extends State<OrderListPage> with SingleTickerProvider
                // Use the correct state names: OrderListLoaded, OrderListError, OrderListLoading, OrderListInitial
                if (state is OrderListLoaded) { // Correct success state name
                    if (state.orders.isEmpty) {
-                     return Center(
+                     return Align(
+                       alignment: const Alignment(0, -0.22),
                        child: Padding(
                          padding: const EdgeInsets.all(32.0),
                          child: GlassCard(

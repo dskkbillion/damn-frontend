@@ -320,12 +320,21 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
+      floatingActionButton: BlocBuilder<ProductManagementBloc, ProductManagementState>(
+        builder: (context, state) {
+          final status = _getStatusByTabIndex(_tabController.index);
+          final hasProducts = _getProductListByStatus(state, status)?.isNotEmpty ?? false;
+
+          if (!hasProducts) return const SizedBox.shrink();
+
+          return FloatingActionButton(
+            onPressed: () {
+              context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
+            },
+            tooltip: AppLocalizations.of(context).product_management_create_product,
+            child: const Icon(Icons.add),
+          );
         },
-        tooltip: AppLocalizations.of(context).product_management_create_product ?? 'Create Product',
-        child: const Icon(Icons.add),
       ),
     );
   }
