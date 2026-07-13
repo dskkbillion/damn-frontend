@@ -204,7 +204,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ai_docs_title_empty => '标题不能为空';
 
   @override
-  String get nav_ai_assistant => 'DeepStream';
+  String get nav_ai_assistant => '看看';
 
   @override
   String get nav_home => '逛逛';

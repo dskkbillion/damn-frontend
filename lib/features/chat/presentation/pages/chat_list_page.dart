@@ -15,15 +15,11 @@ import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_chat_item.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_card.dart';
 import '../bloc/chat_list/chat_list_bloc.dart';
-import '../widgets/chat_list_item.dart';
 import '../widgets/grouped_chat_list.dart'; // 导入分组组件
 // Import domain entities needed for fake ChatRoom
 import '../../domain/entities/chat_room.dart';
-import '../../domain/entities/participant.dart';
-import '../../domain/entities/chat_message.dart'; // 添加导入ChatMessage
 import '../../domain/constants/chat_constants.dart';
 import '../../domain/constants/participant_type.dart';
-import '../../domain/constants/message_type.dart';
 
 final sl = GetIt.instance; // Get GetIt instance
 
@@ -110,79 +106,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
 
 
   
-  // 添加通知中心条目构建方法
-  Widget _buildNotificationItem(BuildContext context, int currentUserId) {
-    // 获取国际化资源
-    final s = AppLocalizations.of(context);
-    
-    // 创建通知中心参与者
-    final notificationParticipant = Participant(
-      id: 2, // 使用不同于系统管理员的ID
-      referId: 2, // 使用不同于系统管理员的referId
-      nickName: s.chat_notification_center,
-      type: ParticipantType.notification,
-      avatar: null, // 可以添加特定图标
-    );
-    
-    // 创建当前用户参与者（与系统管理员中相同）
-    final currentUserParticipant = Participant(
-      id: -1,
-      referId: currentUserId,
-      nickName: 'Me',
-      type: ParticipantType.member,
-    );
-    
-    // 创建假的聊天室对象，与系统管理员类似
-    final fakeNotificationChatRoom = ChatRoom(
-      id: -2, // 使用不同于系统管理员的ID
-      participant1: currentUserParticipant,
-      participant2: notificationParticipant,
-      unreadCount: 0, // 可以从仓库获取未读数量
-      // 添加一条最后消息以显示更有吸引力
-      lastMessage: ChatMessage(
-        id: -1,
-        chatId: -2,
-        senderId: 2,
-        context: s.chat_notification_description,
-        type: ChatMessageType.text,
-        createTime: DateTime.now(),
-        withdrawFlag: false,
-      ),
-    );
-    
-    return Material(
-      color: AppColors.backgroundCard,
-      child: ChatListItem(
-        key: const ValueKey('notification_entry'),
-        chatRoom: fakeNotificationChatRoom,
-        currentUserId: currentUserId,
-        onTap: () {
-          // 检查当前应用模式
-          // 注：这里我们使用临时方法，理想情况下应该使用Provider或其他状态管理方式来获取当前模式
-          // 判断是否为卖家模式（简单示例）
-          bool isSellerMode = false;
-          
-          try {
-            // 尝试检查当前路由
-            final currentPath = GoRouterState.of(context).matchedLocation;
-            isSellerMode = currentPath.startsWith('/seller');
-          } catch (e) {
-            print('Error detecting current mode: $e');
-          }
-          
-          if (isSellerMode) {
-            // 卖家模式 - 导航到卖家通知页面
-            context.push('/seller/notifications');
-          } else {
-            // 买家模式 - 导航到买家通知页面
-            // 重要：必须使用 /notifications 而不是 /seller/notifications
-            // 否则会被路由器的模式检查重定向回买家主页
-            print('[ChatListPage] Navigating to buyer notifications: /notifications');
-            context.push('/notifications');
-          }
-        },
-      ),
-    );
+  void _openNotifications(BuildContext context) {
+    final currentPath = GoRouterState.of(context).matchedLocation;
+    final notificationPath = currentPath.startsWith('/seller')
+        ? '/seller/notifications'
+        : '/notifications';
+    context.push(notificationPath);
   }
 
   @override
@@ -201,6 +130,11 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded),
+            tooltip: s.chat_notification_center,
+            onPressed: () => _openNotifications(context),
+          ),
           TextButton.icon(
             icon: Icon(
               _isMixedMode ? Icons.filter_alt_off : Icons.filter_alt,
@@ -299,7 +233,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
                 if (state.status == ChatListStatus.loading && state.chatRooms.isEmpty) {
                   return SkeletonPage(itemCount: 5, itemBuilder: (_, __) => const SkeletonChatItem());
                 } else if (state.status == ChatListStatus.failure) {
-                  return _buildSystemItemsOnly(context, referId, s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message));
+                  return _buildSystemItemsOnly(
+                    context,
+                    s.chat_error_loading(state.errorMessage ?? s.chat_unknown_message),
+                  );
                 } else if (state.status == ChatListStatus.success || state.chatRooms.isNotEmpty) {
                   // 根据混合模式决定是否筛选
                   final filteredRooms = _isMixedMode
@@ -427,9 +364,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       },
       child: CustomScrollView(
         slivers: [
-          // 系统条目始终显示
-          _buildSystemItems(context, currentUserId),
-          
           // 根据模式显示不同的聊天列表
           if (filteredRooms.isEmpty)
             SliverToBoxAdapter(
@@ -451,32 +385,13 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
     );
   }
 
-  // 构建系统条目（始终显示）
-  Widget _buildSystemItems(BuildContext context, int currentUserId) {
-    return SliverToBoxAdapter(
-      child: Column(
-          children: [
-            _buildNotificationItem(context, currentUserId),
-            const SizedBox(height: 4),
-          ],
+  // 错误状态只展示提示；通知入口固定留在 AppBar，不伪装成聊天会话。
+  Widget _buildSystemItemsOnly(BuildContext context, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Text(message),
       ),
-    );
-  }
-
-  // 只显示系统条目（用于错误或空状态）
-  Widget _buildSystemItemsOnly(BuildContext context, int currentUserId, String message) {
-    return CustomScrollView(
-      slivers: [
-        _buildSystemItems(context, currentUserId),
-        SliverToBoxAdapter(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(message),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
