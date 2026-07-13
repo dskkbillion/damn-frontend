@@ -29,30 +29,34 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     // 使用BlocProvider.value来使用现有的单例BLoC实例
     final profileBloc = GetIt.instance<ProfileBloc>();
-    
+
     // 只有在BLoC状态为初始状态时才触发数据加载
     if (profileBloc.state is ProfileInitial) {
       profileBloc.add(CheckAuthStatusEvent());
     }
-    
+
     return BlocProvider.value(
       value: profileBloc,
       child: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state is ProfileAuthStatusLoaded && state.isAuthenticated) {
-            AppLogger.d('[ProfilePage] Auth confirmed, dispatching data load events.');
+            AppLogger.d(
+                '[ProfilePage] Auth confirmed, dispatching data load events.');
             context.read<ProfileBloc>().add(const GetUserProfileEvent());
             // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
-          } else if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
+          } else if (state is ProfileAuthStatusLoaded &&
+              !state.isAuthenticated) {
             // 可以在这里处理未认证的导航，如果需要的话
             // context.go('/login');
           } else if (state is ProfileLoggedOut) {
             // 处理登出后的逻辑，导航到登录页面
-            AppLogger.d('[ProfilePage] User logged out, redirecting to login page.');
+            AppLogger.d(
+                '[ProfilePage] User logged out, redirecting to login page.');
             context.go('/auth/login');
           } else if (state is ProfileUpdated) {
             // 用户信息更新成功，状态已包含最新数据
-            AppLogger.d('[ProfilePage] Profile updated successfully with latest data');
+            AppLogger.d(
+                '[ProfilePage] Profile updated successfully with latest data');
             // 不需要重新获取，ProfileUpdated 状态已经包含最新数据
           } else if (state is ProfileAvatarUploadError) {
             // 处理头像上传失败，显示友好的错误提示，便于调试
@@ -70,10 +74,12 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, state) {
             // 获取国际化资源
             final appLocalizations = AppLocalizations.of(context);
-            
-            AppLogger.d('[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
-            
-            if (state is ProfileInitial || (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
+
+            AppLogger.d(
+                '[ProfilePage] BlocBuilder received state: ${state.runtimeType}');
+
+            if (state is ProfileInitial ||
+                (state is ProfileAuthStatusLoaded && !state.isAuthenticated)) {
               if (state is ProfileAuthStatusLoaded && !state.isAuthenticated) {
                 return _buildLoginPrompt(context);
               }
@@ -83,16 +89,18 @@ class _ProfilePageState extends State<ProfilePage> {
             }
 
             if (state is ProfileLoading) {
-                // 可以根据需要显示更精细的加载状态，或者统一处理
-                // 这里暂时继续显示之前的UI，避免页面跳跃
-                // return const Center(child: CircularProgressIndicator());
+              // 可以根据需要显示更精细的加载状态，或者统一处理
+              // 这里暂时继续显示之前的UI，避免页面跳跃
+              // return const Center(child: CircularProgressIndicator());
             }
 
             if (state is ProfileError) {
-              return Center(child: Text(appLocalizations.profile_loading_error(state.message)));
+              return Center(
+                  child: Text(
+                      appLocalizations.profile_loading_error(state.message)));
             }
-            
-            return _buildMainContent(context, state); 
+
+            return _buildMainContent(context, state);
           },
         ),
       ),
@@ -102,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildLoginPrompt(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(appLocalizations.profile_personal_center),
@@ -134,129 +142,138 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildMainContent(BuildContext context, ProfileState state) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: GlassBackdrop(
           child: RefreshIndicator(
             onRefresh: () async {
-            // 下拉刷新时强制从服务器获取最新数据
-            AppLogger.d('[ProfilePage] User initiated refresh - fetching fresh data from server');
+              // 下拉刷新时强制从服务器获取最新数据
+              AppLogger.d(
+                  '[ProfilePage] User initiated refresh - fetching fresh data from server');
 
-            // 先清除缓存
-            try {
-              final preloaderService = GetIt.instance<ProfilePreloaderService>();
-              await preloaderService.clearCache(AppMode.buyer);
-              await preloaderService.clearCache(AppMode.seller);
-            } catch (e) {
-              AppLogger.d('[ProfilePage] Failed to clear cache on refresh: $e');
-            }
+              // 先清除缓存
+              try {
+                final preloaderService =
+                    GetIt.instance<ProfilePreloaderService>();
+                await preloaderService.clearCache(AppMode.buyer);
+                await preloaderService.clearCache(AppMode.seller);
+              } catch (e) {
+                AppLogger.d(
+                    '[ProfilePage] Failed to clear cache on refresh: $e');
+              }
 
-            // 重新加载数据，跳过缓存
-            context.read<ProfileBloc>().add(const GetUserProfileEvent(skipCache: true));
-            // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
+              // 重新加载数据，跳过缓存
+              context
+                  .read<ProfileBloc>()
+                  .add(const GetUserProfileEvent(skipCache: true));
+              // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
 
-            // 等待一下让状态更新
-            await Future.delayed(const Duration(milliseconds: 500));
-          },
+              // 等待一下让状态更新
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.only(
+                bottom: GlassNavigationMetrics.contentBottomInset(context) +
+                    AppDimensions.spacingSm,
+              ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                // 用户信息头部
-                const ProfileHeader(),
+                    // 用户信息头部
+                    const ProfileHeader(),
 
-                // 我的订单
-                const OrderStatusSection(),
+                    // 我的订单
+                    const OrderStatusSection(),
 
-                // 我的多看
-                ProfileMenuSection(
-                  title: appLocalizations.profile_my_dskk,
-                  menuItems: [
-                    MenuItem(
-                      icon: Icons.star_border,
-                      text: appLocalizations.profile_favorites,
-                      onTap: () {
-                        // 导航到收藏列表
-                        context.push('/favorites');
-                      },
+                    // 我的多看
+                    ProfileMenuSection(
+                      title: appLocalizations.profile_my_dskk,
+                      menuItems: [
+                        MenuItem(
+                          icon: Icons.star_border,
+                          text: appLocalizations.profile_favorites,
+                          onTap: () {
+                            // 导航到收藏列表
+                            context.push('/favorites');
+                          },
+                        ),
+                        // #399: 售后常驻入口 —— 买家退款后可主动回看售后详情
+                        MenuItem(
+                          icon: Icons.assignment_return_outlined,
+                          text: appLocalizations.profile_refund,
+                          onTap: () {
+                            context.push('/afterSales');
+                          },
+                        ),
+                      ],
                     ),
-                    // #399: 售后常驻入口 —— 买家退款后可主动回看售后详情
-                    MenuItem(
-                      icon: Icons.assignment_return_outlined,
-                      text: appLocalizations.profile_refund,
-                      onTap: () {
-                        context.push('/afterSales');
-                      },
-                    ),
-                  ],
-                ),
 
-                // 我的钱包
-                ProfileMenuSection(
-                  title: appLocalizations.profile_my_wallet,
-                  menuItems: [
-                    MenuItem(
-                      icon: Icons.account_balance_wallet,
-                      text: appLocalizations.profile_wallet,
-                      onTap: () {
-                        // 使用go_router导航到钱包页面
-                        context.push(ProfileRoutes.walletPath);
-                      },
+                    // 我的钱包
+                    ProfileMenuSection(
+                      title: appLocalizations.profile_my_wallet,
+                      menuItems: [
+                        MenuItem(
+                          icon: Icons.account_balance_wallet,
+                          text: appLocalizations.profile_wallet,
+                          onTap: () {
+                            // 使用go_router导航到钱包页面
+                            context.push(ProfileRoutes.walletPath);
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
 
-                // 设置
-                ProfileMenuSection(
-                  title: appLocalizations.profile_settings,
-                  menuItems: [
-                    MenuItem(
-                      icon: Icons.security,
-                      text: appLocalizations.profile_account_security,
-                      onTap: () {
-                        // 使用go_router导航到账号安全页面
-                        context.push(ProfileRoutes.accountSecurityPath);
-                      },
+                    // 设置
+                    ProfileMenuSection(
+                      title: appLocalizations.profile_settings,
+                      menuItems: [
+                        MenuItem(
+                          icon: Icons.security,
+                          text: appLocalizations.profile_account_security,
+                          onTap: () {
+                            // 使用go_router导航到账号安全页面
+                            context.push(ProfileRoutes.accountSecurityPath);
+                          },
+                        ),
+                        MenuItem(
+                          icon: Icons.notifications_none,
+                          text: appLocalizations.profile_message_notifications,
+                          onTap: () {
+                            context.push('/notifications');
+                          },
+                        ),
+                        // 添加语言设置选项
+                        MenuItem(
+                          icon: Icons.language,
+                          text: appLocalizations.language_settings,
+                          onTap: () {
+                            context.push(ProfileRoutes.languageSettingsPath);
+                          },
+                        ),
+                      ],
                     ),
-                    MenuItem(
-                      icon: Icons.notifications_none,
-                      text: appLocalizations.profile_message_notifications,
-                      onTap: () {
-                        context.push('/notifications');
-                      },
-                    ),
-                    // 添加语言设置选项
-                    MenuItem(
-                      icon: Icons.language,
-                      text: appLocalizations.language_settings,
-                      onTap: () {
-                        context.push(ProfileRoutes.languageSettingsPath);
-                      },
-                    ),
-                  ],
-                ),
 
-                // 关于我们
-                ProfileMenuSection(
-                  title: appLocalizations.profile_about_us,
-                  menuItems: [
-                    MenuItem(
-                      icon: Icons.smart_toy_outlined,
-                      text: appLocalizations.profile_assistant_mission,
-                      onTap: () {
-                        // 导航到小帮手的使命页面
-                        context.push(ProfileRoutes.assistantMissionPath);
-                      },
+                    // 关于我们
+                    ProfileMenuSection(
+                      title: appLocalizations.profile_about_us,
+                      menuItems: [
+                        MenuItem(
+                          icon: Icons.smart_toy_outlined,
+                          text: appLocalizations.profile_assistant_mission,
+                          onTap: () {
+                            // 导航到小帮手的使命页面
+                            context.push(ProfileRoutes.assistantMissionPath);
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
 
-                // 底部空间
+                    // 底部空间
                     const SizedBox(height: 30),
                   ],
                 ),

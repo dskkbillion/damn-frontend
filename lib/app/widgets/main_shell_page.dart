@@ -80,7 +80,6 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
   Widget build(BuildContext context) {
     final showDevTab = ref.watch(showDevTabProvider);
     final appLocalizations = AppLocalizations.of(context);
-
     final List<BottomNavigationBarItem> items = [
       BottomNavigationBarItem(
         icon: SvgPicture.asset(
@@ -125,6 +124,8 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
 
     return Scaffold(
       extendBody: true,
+      // 让页面背景和滚动内容延伸到悬浮导航下方；各页面只在其可滚动
+      // 内容末端预留安全距离，避免壳层裁出大块空白。
       body: widget.navigationShell,
       bottomNavigationBar: GlassNavigationSurface(
         child: BottomNavigationBar(

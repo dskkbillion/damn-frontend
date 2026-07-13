@@ -7,6 +7,27 @@ import '../config/theme/app_colors.dart';
 import '../config/theme/app_dimensions.dart';
 import '../config/theme/app_shadows.dart';
 
+/// 悬浮导航在内容布局中需要预留的空间。
+///
+/// 导航本身通过 [GlassNavigationSurface] 叠在页面底部；使用 `extendBody`
+/// 的壳页面应使用该度量，让最后一项内容停在胶囊上沿而非被盖住。
+class GlassNavigationMetrics {
+  const GlassNavigationMetrics._();
+
+  static double navigationHeight(MediaQueryData mediaQuery) =>
+      (mediaQuery.size.shortestSide * 0.17).clamp(56.0, 64.0).toDouble();
+
+  static double bottomGap(MediaQueryData mediaQuery) =>
+      (mediaQuery.size.height * 0.006).clamp(4.0, 8.0).toDouble();
+
+  static double contentBottomInset(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return navigationHeight(mediaQuery) +
+        mediaQuery.padding.bottom +
+        bottomGap(mediaQuery);
+  }
+}
+
 /// DeepStream 的轻量玻璃表面。
 ///
 /// 只用于导航栏、悬浮操作区和弹层等浮动层，不用于密集内容卡片。
@@ -79,11 +100,12 @@ class GlassNavigationSurface extends StatelessWidget {
     final primary = isDark ? AppColorsDark.accentPrimary : AppColors.primary;
     final shortestSide = screenSize.shortestSide;
     final isExpanded = shortestSide >= 600;
-    final navigationHeight = (shortestSide * 0.17).clamp(56.0, 64.0).toDouble();
+    final navigationHeight =
+        GlassNavigationMetrics.navigationHeight(mediaQuery);
     final horizontalMargin = (screenSize.width * 0.04)
         .clamp(12.0, isExpanded ? 32.0 : 24.0)
         .toDouble();
-    final bottomGap = (screenSize.height * 0.006).clamp(4.0, 8.0).toDouble();
+    final bottomGap = GlassNavigationMetrics.bottomGap(mediaQuery);
     DisplayFeature? verticalHinge;
 
     for (final feature in mediaQuery.displayFeatures) {
@@ -273,11 +295,10 @@ class GlassBackdrop extends StatelessWidget {
           Positioned(
             top: 280,
             right: -150,
-            child:
-                _AmbientOrb(
-                  color: primary.withValues(alpha: 0.10 * atmosphereIntensity),
-                  size: 320,
-                ),
+            child: _AmbientOrb(
+              color: primary.withValues(alpha: 0.10 * atmosphereIntensity),
+              size: 320,
+            ),
           ),
           Positioned(
             bottom: 100,

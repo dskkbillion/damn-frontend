@@ -143,7 +143,6 @@ class _DualModeNavigationShellState
       navigationShell: widget.navigationShell,
       buyerBranchCount: _buyerBranchCount,
     );
-
     return Scaffold(
       extendBody: true,
       body: widget.navigationShell,
