@@ -76,23 +76,14 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 12, 8),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      appLocalizations.ai_docs_conversation_list,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip:
-                        MaterialLocalizations.of(context).closeButtonTooltip,
-                    icon: const Icon(Icons.close_rounded),
-                    color: AppColors.textSecondary,
-                    onPressed: _closePanel,
+                  Text(
+                    appLocalizations.ai_docs_conversation_list,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
                 ],
               ),

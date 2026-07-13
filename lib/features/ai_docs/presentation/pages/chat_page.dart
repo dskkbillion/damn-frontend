@@ -25,7 +25,6 @@ import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/serv
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_input_field.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/chat_message_list.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/conversation_sidebar.dart';
-import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_indicator.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/rate_limit_warning.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/presentation/widgets/dispatch_history_bottom_sheet.dart';
 
@@ -114,8 +113,6 @@ class _ChatPageState extends State<ChatPage> {
         ),
         // Add the dispatch/recommendation button to actions
         actions: [
-          // 频率限制指示器
-          const RateLimitIndicator(),
           // 已分发服务追溯入口 (#347):点开看本会话历史分发记录
           BlocBuilder<AiChatBloc, AiChatState>(
             buildWhen: (previous, current) =>
@@ -736,9 +733,6 @@ class ServiceGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 获取国际化资源
-    final appLocalizations = AppLocalizations.of(context);
-
     // 使用BlocBuilder来监听状态变化，确保按钮状态能被正确更新
     return BlocBuilder<AiChatBloc, AiChatState>(
       buildWhen: (previous, current) =>
