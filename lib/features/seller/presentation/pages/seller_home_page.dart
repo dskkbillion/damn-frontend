@@ -187,23 +187,11 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     final profile = state.storeProfile!;
 
     return GlassCard(
-      padding: EdgeInsets.zero,
-      child: Stack(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.7),
-                  Theme.of(context).primaryColor.withOpacity(0.4),
-                ],
-              ),
-            ),
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
-            child: Column(
+      margin: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      tintColor: Theme.of(context).primaryColor,
+      tintOpacity: 0.76,
+      child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -218,7 +206,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                         context.push('/seller-profile/${profile.storeId}');
                       },
                       child: CircleAvatar(
-                        radius: 32,
+                        radius: 35,
                         backgroundColor: AppColors.backgroundCard,
                         backgroundImage: profile.logoUrl != null && profile.logoUrl!.isNotEmpty
                             ? NetworkImage(profile.logoUrl!)
@@ -226,7 +214,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                         child: profile.logoUrl == null || profile.logoUrl!.isEmpty
                             ? Icon(
                                 Icons.store_rounded,
-                                size: 36,
+                                size: 35,
                                 color: Theme.of(context).primaryColor,
                               )
                             : null,
@@ -239,52 +227,47 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  profile.storeName,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.onPrimary,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              // #266: 不再用 null 守卫遮盖徽章 —— null 默认按"离线"显示
-                              Builder(builder: (context) {
-                                final isOnline = profile.onlineFlag ?? false;
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm, vertical: 2.0),
-                                  decoration: BoxDecoration(
-                                    color: isOnline ? AppColors.success : AppColors.textTertiary,
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        isOnline ? Icons.circle : Icons.circle_outlined,
-                                        color: AppColors.onPrimary,
-                                        size: 12,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        isOnline ? AppLocalizations.of(context).seller_home_online : AppLocalizations.of(context).seller_home_offline,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.onPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ],
+                          Text(
+                            profile.storeName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.onPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          
+                          const SizedBox(height: 6),
+                          Builder(builder: (context) {
+                            final isOnline = profile.onlineFlag ?? false;
+                            return Row(
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: isOnline
+                                        ? AppColors.success
+                                        : AppColors.textTertiary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isOnline
+                                      ? AppLocalizations.of(context)
+                                          .seller_home_online
+                                      : AppLocalizations.of(context)
+                                          .seller_home_offline,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.onPrimary
+                                        .withValues(alpha: 0.9),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
                           const SizedBox(height: 8),
                           
                           // 评分和完成率
@@ -376,14 +359,11 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingMd),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
       ),
     );
   }

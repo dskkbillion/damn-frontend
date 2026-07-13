@@ -53,8 +53,6 @@ class SellerStatisticsPage extends ConsumerWidget {
                             const SizedBox(height: 24),
                             _buildPercentSection(context, state.percentStats),
                             const SizedBox(height: 24),
-                            _buildUpgradeSection(context, state.upgradeStats),
-                            const SizedBox(height: 24),
                             _buildIndicatorsSection(context, state.indexStats),
                             const SizedBox(height: 24),
                             _buildWeeklyIncomeSection(context, state.indexStats),
@@ -161,67 +159,6 @@ class SellerStatisticsPage extends ConsumerWidget {
           style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 13,
-          ),
-        ),
-      ],
-    );
-  }
-  
-  /// 构建升级指标部分（成为三级会员卖家、完成订单、盈利）
-  Widget _buildUpgradeSection(BuildContext context, SellerUpgradeStatistics stats) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          AppLocalizations.of(context).seller_statistics_upgrade_to_next_level,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GlassCard(
-          padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingLg, horizontal: AppDimensions.spacingXl),
-          child: Column(
-            children: [
-              _buildUpgradeItem(
-                AppLocalizations.of(context).seller_statistics_become_level3_seller(stats.days.toString()),
-                '${stats.totalDays}/${stats.days}',
-              ),
-              const Divider(height: 24, thickness: 0.5),
-              _buildUpgradeItem(
-                AppLocalizations.of(context).seller_statistics_complete_orders(stats.orderNum.toString()),
-                '${stats.totalOrderNum}/${stats.orderNum}',
-              ),
-              const Divider(height: 24, thickness: 0.5),
-              _buildUpgradeItem(
-                AppLocalizations.of(context).seller_statistics_profit_amount(stats.orderPrice.toStringAsFixed(2)),
-                '${stats.totalOrderPrice.toStringAsFixed(2)}/${stats.orderPrice.toStringAsFixed(2)}',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-  
-  /// 构建升级项目
-  Widget _buildUpgradeItem(String title, String progress) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          progress,
-          style: const TextStyle(
-            color: AppColors.sellerAccent,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
           ),
         ),
       ],

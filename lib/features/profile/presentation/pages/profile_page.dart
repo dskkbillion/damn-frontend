@@ -145,8 +145,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: GlassBackdrop(
+      body: GlassBackdrop(
+        child: SafeArea(
           child: RefreshIndicator(
             onRefresh: () async {
               // 下拉刷新时强制从服务器获取最新数据

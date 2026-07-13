@@ -153,7 +153,7 @@ class GlassNavigationSurface extends StatelessWidget {
                   filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: surface.withValues(alpha: isDark ? 0.78 : 0.68),
+                      color: surface.withValues(alpha: isDark ? 0.72 : 0.54),
                       borderRadius: BorderRadius.circular(navigationHeight / 2),
                       border: Border.all(
                         color: isDark
