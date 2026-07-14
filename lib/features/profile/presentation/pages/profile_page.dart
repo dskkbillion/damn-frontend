@@ -145,135 +145,139 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       body: GlassBackdrop(
-        child: SafeArea(
-          bottom: false,
-          child: RefreshIndicator(
-            onRefresh: () async {
-              // 下拉刷新时强制从服务器获取最新数据
-              AppLogger.d(
-                  '[ProfilePage] User initiated refresh - fetching fresh data from server');
+        child: RefreshIndicator(
+          onRefresh: () async {
+            // 下拉刷新时强制从服务器获取最新数据
+            AppLogger.d(
+                '[ProfilePage] User initiated refresh - fetching fresh data from server');
 
-              // 先清除缓存
-              try {
-                final preloaderService =
-                    GetIt.instance<ProfilePreloaderService>();
-                await preloaderService.clearCache(AppMode.buyer);
-                await preloaderService.clearCache(AppMode.seller);
-              } catch (e) {
-                AppLogger.d(
-                    '[ProfilePage] Failed to clear cache on refresh: $e');
-              }
+            // 先清除缓存
+            try {
+              final preloaderService =
+                  GetIt.instance<ProfilePreloaderService>();
+              await preloaderService.clearCache(AppMode.buyer);
+              await preloaderService.clearCache(AppMode.seller);
+            } catch (e) {
+              AppLogger.d('[ProfilePage] Failed to clear cache on refresh: $e');
+            }
 
-              // 重新加载数据，跳过缓存
-              context
-                  .read<ProfileBloc>()
-                  .add(const GetUserProfileEvent(skipCache: true));
-              // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
+            // 重新加载数据，跳过缓存
+            context
+                .read<ProfileBloc>()
+                .add(const GetUserProfileEvent(skipCache: true));
+            // context.read<ProfileBloc>().add(GetWalletSummaryEvent());
 
-              // 等待一下让状态更新
-              await Future.delayed(const Duration(milliseconds: 500));
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 用户信息头部
-                    const ProfileHeader(),
+            // 等待一下让状态更新
+            await Future.delayed(const Duration(milliseconds: 500));
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              // 顶部安全距离作为滚动内容的一部分，而非固定 SafeArea。
+              // 因此个人页首屏仍避开状态栏，滚动时卡片却能经过透明顶栏。
+              padding: EdgeInsets.fromLTRB(
+                16,
+                MediaQuery.paddingOf(context).top,
+                16,
+                0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 用户信息头部
+                  const ProfileHeader(),
 
-                    // 我的订单
-                    const OrderStatusSection(),
+                  // 我的订单
+                  const OrderStatusSection(),
 
-                    // 我的多看
-                    ProfileMenuSection(
-                      title: appLocalizations.profile_my_dskk,
-                      menuItems: [
-                        MenuItem(
-                          icon: Icons.star_border,
-                          text: appLocalizations.profile_favorites,
-                          onTap: () {
-                            // 导航到收藏列表
-                            context.push('/favorites');
-                          },
-                        ),
-                        // #399: 售后常驻入口 —— 买家退款后可主动回看售后详情
-                        MenuItem(
-                          icon: Icons.assignment_return_outlined,
-                          text: appLocalizations.profile_refund,
-                          onTap: () {
-                            context.push('/afterSales');
-                          },
-                        ),
-                      ],
-                    ),
+                  // 我的多看
+                  ProfileMenuSection(
+                    title: appLocalizations.profile_my_dskk,
+                    menuItems: [
+                      MenuItem(
+                        icon: Icons.star_border,
+                        text: appLocalizations.profile_favorites,
+                        onTap: () {
+                          // 导航到收藏列表
+                          context.push('/favorites');
+                        },
+                      ),
+                      // #399: 售后常驻入口 —— 买家退款后可主动回看售后详情
+                      MenuItem(
+                        icon: Icons.assignment_return_outlined,
+                        text: appLocalizations.profile_refund,
+                        onTap: () {
+                          context.push('/afterSales');
+                        },
+                      ),
+                    ],
+                  ),
 
-                    // 我的钱包
-                    ProfileMenuSection(
-                      title: appLocalizations.profile_my_wallet,
-                      menuItems: [
-                        MenuItem(
-                          icon: Icons.account_balance_wallet,
-                          text: appLocalizations.profile_wallet,
-                          onTap: () {
-                            // 使用go_router导航到钱包页面
-                            context.push(ProfileRoutes.walletPath);
-                          },
-                        ),
-                      ],
-                    ),
+                  // 我的钱包
+                  ProfileMenuSection(
+                    title: appLocalizations.profile_my_wallet,
+                    menuItems: [
+                      MenuItem(
+                        icon: Icons.account_balance_wallet,
+                        text: appLocalizations.profile_wallet,
+                        onTap: () {
+                          // 使用go_router导航到钱包页面
+                          context.push(ProfileRoutes.walletPath);
+                        },
+                      ),
+                    ],
+                  ),
 
-                    // 设置
-                    ProfileMenuSection(
-                      title: appLocalizations.profile_settings,
-                      menuItems: [
-                        MenuItem(
-                          icon: Icons.security,
-                          text: appLocalizations.profile_account_security,
-                          onTap: () {
-                            // 使用go_router导航到账号安全页面
-                            context.push(ProfileRoutes.accountSecurityPath);
-                          },
-                        ),
-                        MenuItem(
-                          icon: Icons.notifications_none,
-                          text: appLocalizations.profile_message_notifications,
-                          onTap: () {
-                            context.push('/notifications');
-                          },
-                        ),
-                        // 添加语言设置选项
-                        MenuItem(
-                          icon: Icons.language,
-                          text: appLocalizations.language_settings,
-                          onTap: () {
-                            context.push(ProfileRoutes.languageSettingsPath);
-                          },
-                        ),
-                      ],
-                    ),
+                  // 设置
+                  ProfileMenuSection(
+                    title: appLocalizations.profile_settings,
+                    menuItems: [
+                      MenuItem(
+                        icon: Icons.security,
+                        text: appLocalizations.profile_account_security,
+                        onTap: () {
+                          // 使用go_router导航到账号安全页面
+                          context.push(ProfileRoutes.accountSecurityPath);
+                        },
+                      ),
+                      MenuItem(
+                        icon: Icons.notifications_none,
+                        text: appLocalizations.profile_message_notifications,
+                        onTap: () {
+                          context.push('/notifications');
+                        },
+                      ),
+                      // 添加语言设置选项
+                      MenuItem(
+                        icon: Icons.language,
+                        text: appLocalizations.language_settings,
+                        onTap: () {
+                          context.push(ProfileRoutes.languageSettingsPath);
+                        },
+                      ),
+                    ],
+                  ),
 
-                    // 关于我们
-                    ProfileMenuSection(
-                      title: appLocalizations.profile_about_us,
-                      bottomPadding:
-                          GlassNavigationMetrics.contentBottomInset(context) +
-                              AppDimensions.spacingXl,
-                      menuItems: [
-                        MenuItem(
-                          icon: Icons.smart_toy_outlined,
-                          text: appLocalizations.profile_assistant_mission,
-                          onTap: () {
-                            // 导航到小帮手的使命页面
-                            context.push(ProfileRoutes.assistantMissionPath);
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  // 关于我们
+                  ProfileMenuSection(
+                    title: appLocalizations.profile_about_us,
+                    bottomPadding:
+                        GlassNavigationMetrics.contentBottomInset(context) +
+                            AppDimensions.spacingXl,
+                    menuItems: [
+                      MenuItem(
+                        icon: Icons.smart_toy_outlined,
+                        text: appLocalizations.profile_assistant_mission,
+                        onTap: () {
+                          // 导航到小帮手的使命页面
+                          context.push(ProfileRoutes.assistantMissionPath);
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
