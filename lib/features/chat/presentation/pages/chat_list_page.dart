@@ -245,11 +245,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       ),
       // 使用FutureBuilder获取referId
       body: GlassBackdrop(
-        child: Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.paddingOf(context).top + kToolbarHeight,
-          ),
-          child: FutureBuilder<int?>(
+        child: FutureBuilder<int?>(
           future: _referIdFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -335,7 +331,6 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               ),
             );
           },
-          ),
         ),
       ),
     );
@@ -457,6 +452,10 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       },
       child: CustomScrollView(
         slivers: [
+          // 仅避开顶部操作按钮；该空间属于滚动内容，列表上滑后可穿过顶栏。
+          SliverToBoxAdapter(
+            child: const SizedBox(height: 68),
+          ),
           // 根据模式显示不同的聊天列表
           if (filteredRooms.isEmpty)
             SliverToBoxAdapter(
@@ -474,6 +473,12 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
           else
             // 卖家模式：按商品分组显示
             _buildSellerChatList(filteredRooms, currentUserId),
+          // 保证最后一项可越过底部悬浮导航，同时列表背景连续延展。
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: GlassNavigationMetrics.contentBottomInset(context),
+            ),
+          ),
         ],
       ),
     );
