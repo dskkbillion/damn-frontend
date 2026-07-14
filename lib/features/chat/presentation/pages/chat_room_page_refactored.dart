@@ -11,7 +11,8 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/app/di/injection_container.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart';
 
-import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/chat/chat_cubit.dart' as chat_cubit;
+import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/chat/chat_cubit.dart'
+    as chat_cubit;
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_list/message_list_cubit.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/websocket/websocket_cubit.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/cubit/message_queue/message_queue_cubit.dart';
@@ -19,7 +20,8 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/custom_
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/custom_input_bar.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/product_chat_header.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/widgets/chat_order_status_bar.dart';
-import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart' as domain;
+import 'package:dskk_flutter_refactor/features/chat/domain/entities/chat_message.dart'
+    as domain;
 import 'package:dskk_flutter_refactor/features/chat/domain/entities/participant.dart';
 import 'package:dskk_flutter_refactor/features/chat/data/datasources/i_chat_web_socket_data_source.dart';
 import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/chat_list_bloc.dart';
@@ -27,7 +29,8 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/bloc/chat_list/
 class ChatRoomPageRefactored extends StatefulWidget {
   final int chatId;
   final VoidCallback? onMessagesLoaded;
-  final Function(int chatId, domain.ChatMessage? newLastMessage)? onMessageRevoked;
+  final Function(int chatId, domain.ChatMessage? newLastMessage)?
+      onMessageRevoked;
   final VoidCallback? onMessageSent;
 
   const ChatRoomPageRefactored({
@@ -47,7 +50,7 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   late final MessageListCubit _messageListCubit;
   late final WebSocketCubit _webSocketCubit;
   late final MessageQueueCubit _messageQueueCubit;
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _showProductHeader = true;
   bool _isLoadingMore = false;
@@ -57,24 +60,23 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
   double _lastScrollOffset = 0;
   int? _currentUserId; // 存储当前用户ID
   bool _isInitialLoad = true; // 标记是否是初次加载
-  
+
   @override
   void initState() {
     super.initState();
-    
     // Initialize cubits
     _chatCubit = getIt<chat_cubit.ChatCubit>();
     _messageListCubit = getIt<MessageListCubit>();
     _webSocketCubit = getIt<WebSocketCubit>();
     _messageQueueCubit = getIt<MessageQueueCubit>();
-    
+
     // Setup scroll listener
     _scrollController.addListener(_onScroll);
-    
+
     // Enter chat room
     _initializeChat();
   }
-  
+
   Future<void> _initializeChat() async {
     // 取当前 commonUserId 走 IUserRepository(与 ChatRoomDto.toEntity / sendMessage
     // 同一条链路),而不是直接读 secureStorage——切换账号后 secureStorage 的写入存在
@@ -82,16 +84,19 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
     try {
       final userResult = await getIt<IUserRepository>().getCurrentUser();
       userResult.fold(
-        (failure) => AppLogger.d('ERROR: Failed to get current user: ${failure.message}'),
+        (failure) => AppLogger.d(
+            'ERROR: Failed to get current user: ${failure.message}'),
         (user) {
           final commonUserId = int.tryParse(user.commonUserId);
           if (commonUserId != null) {
             setState(() {
               _currentUserId = commonUserId;
             });
-            AppLogger.d('DEBUG: Got current user ID from IUserRepository: $_currentUserId');
+            AppLogger.d(
+                'DEBUG: Got current user ID from IUserRepository: $_currentUserId');
           } else {
-            AppLogger.d('ERROR: User.commonUserId is not parseable: ${user.commonUserId}');
+            AppLogger.d(
+                'ERROR: User.commonUserId is not parseable: ${user.commonUserId}');
           }
         },
       );
@@ -122,9 +127,12 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
             (p) => p.id == _currentUserId,
             orElse: () {
               // 如果找不到，直接报错
-              AppLogger.d('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
-              AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
-              throw Exception('Current user is not a participant in this chat room');
+              AppLogger.d(
+                  'ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+              AppLogger.d(
+                  'ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+              throw Exception(
+                  'Current user is not a participant in this chat room');
             },
           );
 
@@ -133,9 +141,11 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           final opponentMatches = chatRoom.participants
               .where((p) => p.id != currentUserParticipant.id)
               .toList();
-          final opponent = opponentMatches.isNotEmpty ? opponentMatches.first : null;
+          final opponent =
+              opponentMatches.isNotEmpty ? opponentMatches.first : null;
           if (opponent == null) {
-            AppLogger.d('[ChatRoom] WARNING: 找不到对方参与者（疑似自聊天），room=${chatRoom.id}, '
+            AppLogger.d(
+                '[ChatRoom] WARNING: 找不到对方参与者（疑似自聊天），room=${chatRoom.id}, '
                 'participants=${chatRoom.participants.map((p) => 'id=${p.id}').join(',')}');
           }
 
@@ -146,7 +156,8 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           });
 
           // 同时设置到 MessageListCubit
-          _messageListCubit.setCurrentUserParticipantId(currentUserParticipant.id);
+          _messageListCubit
+              .setCurrentUserParticipantId(currentUserParticipant.id);
 
           // 设置轻咨询模式 - 默认全部启用轻咨询
           // 判断当前用户是否是卖家
@@ -167,34 +178,45 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
           // 直接使用 ChatRoom 实体的 doctorId 字段进行判断
           // 如果当前用户的 participant ID 等于 doctorId，则是卖家
-          if (chatRoom.doctorId != null && currentUserParticipant.id == chatRoom.doctorId) {
+          if (chatRoom.doctorId != null &&
+              currentUserParticipant.id == chatRoom.doctorId) {
             isSeller = true;
-            AppLogger.d('[ChatRoom] Current user is SELLER (doctor) - participantId: ${currentUserParticipant.id} matches doctorId: ${chatRoom.doctorId}');
-          } else if (chatRoom.memberId != null && currentUserParticipant.id == chatRoom.memberId) {
+            AppLogger.d(
+                '[ChatRoom] Current user is SELLER (doctor) - participantId: ${currentUserParticipant.id} matches doctorId: ${chatRoom.doctorId}');
+          } else if (chatRoom.memberId != null &&
+              currentUserParticipant.id == chatRoom.memberId) {
             isSeller = false;
-            AppLogger.d('[ChatRoom] Current user is BUYER (member) - participantId: ${currentUserParticipant.id} matches memberId: ${chatRoom.memberId}');
+            AppLogger.d(
+                '[ChatRoom] Current user is BUYER (member) - participantId: ${currentUserParticipant.id} matches memberId: ${chatRoom.memberId}');
           } else {
             // 如果无法确定，记录错误信息
             AppLogger.d('[ChatRoom] WARNING: Cannot determine user role');
-            AppLogger.d('[ChatRoom] currentUserParticipant.id: ${currentUserParticipant.id}');
+            AppLogger.d(
+                '[ChatRoom] currentUserParticipant.id: ${currentUserParticipant.id}');
             AppLogger.d('[ChatRoom] chatRoom.doctorId: ${chatRoom.doctorId}');
             AppLogger.d('[ChatRoom] chatRoom.memberId: ${chatRoom.memberId}');
             // 默认设为买家
             isSeller = false;
           }
 
-          AppLogger.d('[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
-          AppLogger.d('[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent?.nickName}');
+          AppLogger.d(
+              '[ChatRoom] Analyzing role - currentUserParticipantId: $_currentUserParticipantId');
+          AppLogger.d(
+              '[ChatRoom] Current user: ${currentUserParticipant.nickName}, opponent: ${opponent?.nickName}');
           AppLogger.d('[ChatRoom] Final determination - isSeller: $isSeller');
           _messageListCubit.setSellerAndConsultationMode(
             isSeller: isSeller,
             isLightConsultation: true, // 默认启用轻咨询模式
           );
 
-          AppLogger.d('DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
-          AppLogger.d('DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
-          AppLogger.d('DEBUG: Opponent participant: id=${opponent?.id}, type=${opponent?.type}');
-          AppLogger.d('DEBUG: Light consultation mode enabled, isSeller: $isSeller');
+          AppLogger.d(
+              'DEBUG: Set currentUserParticipantId to $_currentUserParticipantId at initialization');
+          AppLogger.d(
+              'DEBUG: Current user participant: id=${currentUserParticipant.id}, type=${currentUserParticipant.type}');
+          AppLogger.d(
+              'DEBUG: Opponent participant: id=${opponent?.id}, type=${opponent?.type}');
+          AppLogger.d(
+              'DEBUG: Light consultation mode enabled, isSeller: $isSeller');
         },
         orElse: () {},
       );
@@ -205,12 +227,13 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     // WebSocket 连接由全局管理器处理，无需在聊天室中手动连接
     // GlobalWebSocketManager 会在用户登录后自动连接
-    AppLogger.d('[ChatRoom] Using global WebSocket connection managed by GlobalWebSocketManager');
+    AppLogger.d(
+        '[ChatRoom] Using global WebSocket connection managed by GlobalWebSocketManager');
 
     // Notify that messages have been loaded
     widget.onMessagesLoaded?.call();
   }
-  
+
   @override
   void dispose() {
     // 退出聊天室时，清零未读数，并通知 WebSocket 层不再有活跃聊天室
@@ -233,24 +256,25 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
 
     super.dispose();
   }
-  
+
   void _onScroll() {
     if (_scrollController.hasClients &&
         _scrollController.position.hasContentDimensions) {
       final currentScroll = _scrollController.offset;
-      
+
       // In reversed list, scrolling up means offset is increasing
       // scrolling down means offset is decreasing (towards 0)
       final isScrollingUp = currentScroll > _lastScrollOffset;
       final scrollDelta = (currentScroll - _lastScrollOffset).abs();
-      
+
       // Update scroll to bottom button visibility
       setState(() {
         _showScrollToBottomButton = currentScroll > 300;
-        
+
         // Hide product header when scrolling up (viewing older messages)
         // Show product header when scrolling down (towards recent messages)
-        if (scrollDelta > 5) { // Add threshold to avoid flickering
+        if (scrollDelta > 5) {
+          // Add threshold to avoid flickering
           if (isScrollingUp && currentScroll > 100) {
             _showProductHeader = false;
           } else if (!isScrollingUp) {
@@ -258,11 +282,11 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
           }
         }
       });
-      
+
       _lastScrollOffset = currentScroll;
     }
   }
-  
+
   void _scrollToBottom() {
     if (_scrollController.hasClients &&
         _scrollController.position.hasContentDimensions) {
@@ -273,39 +297,38 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
       );
     }
   }
-  
-  
+
   void _handleSendPressed(String text) {
     // Use MessageListCubit's sendTextMessage which handles everything
     _messageListCubit.sendTextMessage(text);
-    
+
     // Notify message sent
     widget.onMessageSent?.call();
-    
+
     // Scroll to bottom after a short delay
     Future.delayed(const Duration(milliseconds: 100), () {
       _scrollToBottom();
     });
   }
-  
+
   Future<void> _handleEndReached() async {
     if (_isLoadingMore) return;
-    
+
     setState(() {
       _isLoadingMore = true;
     });
-    
+
     await _messageListCubit.loadMoreMessages();
-    
+
     setState(() {
       _isLoadingMore = false;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context);
-    
+
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _chatCubit),
@@ -320,411 +343,543 @@ class _ChatRoomPageRefactoredState extends State<ChatRoomPageRefactored> {
         },
         child: Scaffold(
           backgroundColor: Colors.transparent,
+          extendBodyBehindAppBar: true,
           // FAB will be added later when we have access to scroll controller
           appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: AppColors.textPrimary,
-          elevation: 0,
-          centerTitle: true,
-          leading: BackButton(
-            onPressed: () {
-              // Check if messages were loaded
-              bool chatWasViewed = _messageListCubit.state.maybeWhen(
-                loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
-                        substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) => true,
-                orElse: () => false,
-              );
-              Navigator.pop(context, chatWasViewed);
-            },
-          ),
-          title: BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
-            builder: (context, state) {
-              return state.when(
-                initial: () => Text(appLocalizations.chat_loading),
-                loading: () => Text(appLocalizations.chat_loading),
-                ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-                  // 如果_currentUserId还没加载完成，显示加载中
-                  if (_currentUserId == null) {
-                    AppLogger.d('DEBUG: _currentUserId is still loading when trying to display title');
-                    return Text(appLocalizations.chat_loading);
-                  }
+            backgroundColor: Colors.transparent,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            foregroundColor: AppColors.textPrimary,
+            elevation: 0,
+            centerTitle: true,
+            leadingWidth: 76,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+              child: GlassSurface(
+                borderRadius: const BorderRadius.all(Radius.circular(24)),
+                blur: 16,
+                child: IconButton(
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                  onPressed: () {
+                    // Check if messages were loaded
+                    bool chatWasViewed = _messageListCubit.state.maybeWhen(
+                      loaded: (messages,
+                              hasMore,
+                              isLoadingMore,
+                              loadMoreError,
+                              sendError,
+                              actionError,
+                              substantiveMessageCount,
+                              isPaid,
+                              hasShownPaymentDialog,
+                              userRole,
+                              productId) =>
+                          true,
+                      orElse: () => false,
+                    );
+                    Navigator.pop(context, chatWasViewed);
+                  },
+                ),
+              ),
+            ),
+            title: BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
+              builder: (context, state) {
+                return state.when(
+                  initial: () => Text(appLocalizations.chat_loading),
+                  loading: () => Text(appLocalizations.chat_loading),
+                  ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
+                    // 如果_currentUserId还没加载完成，显示加载中
+                    if (_currentUserId == null) {
+                      AppLogger.d(
+                          'DEBUG: _currentUserId is still loading when trying to display title');
+                      return Text(appLocalizations.chat_loading);
+                    }
 
-                  // 找到当前用户的参与者对象
-                  final currentUserParticipant = chatRoom.participants.firstWhere(
-                    (p) => p.id == _currentUserId,
-                    orElse: () {
-                      AppLogger.d('ERROR: Could not find current user participant with id=$_currentUserId');
-                      AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
-                      throw Exception('Current user is not in this chat room');
-                    },
-                  );
-
-                  // 找到对方参与者 - 使用不同的ID
-                  final opponent = chatRoom.participants.firstWhere(
-                    (p) => p.id != currentUserParticipant.id,
-                    orElse: () {
-                      AppLogger.d('ERROR: Could not find opponent, currentUserParticipantId=${currentUserParticipant.id}');
-                      AppLogger.d('ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
-                      throw Exception('Could not find opponent in chat room');
-                    },
-                  );
-
-                  AppLogger.d('DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
-
-                  // #336: title 加对方头像 + 名称(从匹配入口进来时之前只显示名称)
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppNetworkImage(
-                        imageUrl: opponent.avatar ?? '',
-                        width: 32,
-                        height: 32,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          opponent.nickName ?? appLocalizations.chat_unknown_user,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-                error: (message) => Text(appLocalizations.chat_unknown_user),
-              );
-            },
-          ),
-        ),
-        body: GlassBackdrop(
-          child: Column(
-          children: [
-            // Product header
-            AnimatedSize(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                opacity: _showProductHeader ? 1.0 : 0.0,
-                child: AnimatedSlide(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutCubic,
-                  offset: _showProductHeader
-                      ? Offset.zero
-                      : const Offset(0, -0.08),
-                child: BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
-                  builder: (context, state) {
-                    return state.maybeWhen(
-                      ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-                        if (chatRoom.hasProduct) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ProductChatHeader(
-                                chatRoom: chatRoom,
-                                actionText: chatRoom.hasAvailableProduct ? '查看详情' : null,
-                                onProductTap: chatRoom.hasAvailableProduct ? () {
-                                  if (chatRoom.productId != null) {
-                                    context.push(
-                                      '/product/${chatRoom.productId}',
-                                      extra: {'chatRoomId': chatRoom.id},
-                                    );
-                                  }
-                                } : null,
-                                onActionTap: chatRoom.hasAvailableProduct ? () {
-                                  if (chatRoom.productId != null) {
-                                    context.push(
-                                      '/product/${chatRoom.productId}',
-                                      extra: {'chatRoomId': chatRoom.id},
-                                    );
-                                  }
-                                } : null,
-                              ),
-                              ChatOrderStatusBar(chatRoom: chatRoom),
-                            ],
-                          );
-                        }
-                        return const SizedBox.shrink();
+                    // 找到当前用户的参与者对象
+                    final currentUserParticipant =
+                        chatRoom.participants.firstWhere(
+                      (p) => p.id == _currentUserId,
+                      orElse: () {
+                        AppLogger.d(
+                            'ERROR: Could not find current user participant with id=$_currentUserId');
+                        AppLogger.d(
+                            'ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                        throw Exception(
+                            'Current user is not in this chat room');
                       },
-                      orElse: () => const SizedBox.shrink(),
+                    );
+
+                    // 找到对方参与者 - 使用不同的ID
+                    final opponent = chatRoom.participants.firstWhere(
+                      (p) => p.id != currentUserParticipant.id,
+                      orElse: () {
+                        AppLogger.d(
+                            'ERROR: Could not find opponent, currentUserParticipantId=${currentUserParticipant.id}');
+                        AppLogger.d(
+                            'ERROR: Participants: ${chatRoom.participants.map((p) => 'id=${p.id}, name=${p.nickName}').join(', ')}');
+                        throw Exception('Could not find opponent in chat room');
+                      },
+                    );
+
+                    AppLogger.d(
+                        'DEBUG: Title display - currentUserId=$_currentUserId, currentParticipantId=${currentUserParticipant.id}, opponentId=${opponent.id}, opponentName=${opponent.nickName}');
+
+                    // #336: title 加对方头像 + 名称(从匹配入口进来时之前只显示名称)
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppNetworkImage(
+                          imageUrl: opponent.avatar ?? '',
+                          width: 32,
+                          height: 32,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            opponent.nickName ??
+                                appLocalizations.chat_unknown_user,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     );
                   },
-                ),
-                ),
-              ),
-            ),
-            
-            // Chat messages
-            Expanded(
-              child: Stack(
-                children: [
-                  // WebSocket message listener - listens for new messages from ChatCubit
-                  BlocListener<chat_cubit.ChatCubit, chat_cubit.ChatState>(
-                    listener: (context, state) {
-                      state.maybeWhen(
-                        ready: (chatRoom, lastReceivedMessage, hasNewMessage) {
-                          // When a new message is received via WebSocket
-                          if (hasNewMessage && lastReceivedMessage != null) {
-                            AppLogger.d('[ChatRoomPage] New message received via WebSocket: type=${lastReceivedMessage.type}, id=${lastReceivedMessage.id}');
-                            // Add the message to the message list
-                            _messageListCubit.addReceivedMessage(lastReceivedMessage);
-                            
-                            // Scroll to bottom for new messages
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (_scrollController.hasClients) {
-                                _scrollToBottom();
-                              }
-                            });
-                          }
-                        },
-                        orElse: () {},
-                      );
-                    },
-                    child: BlocConsumer<MessageListCubit, MessageListState>(
-                      listener: (context, state) {
-                      // Handle message events
-                      state.maybeWhen(
-                        loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
-                                substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) {
-                          // Scroll to bottom on message state changes
-                          if (messages.isNotEmpty) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              if (_scrollController.hasClients &&
-                                  _scrollController.position.hasContentDimensions) {
-                                // On initial load, always scroll to bottom to show latest message
-                                if (_isInitialLoad) {
-                                  _scrollToBottom();
-                                  _isInitialLoad = false;
-                                } else if (_scrollController.offset < 100) {
-                                  // After initial load, only auto-scroll if user is near bottom
-                                  _scrollToBottom();
-                                }
-                              }
-                            });
-                          }
-                        },
-                        orElse: () {},
-                      );
-                    },
-                    builder: (context, messageState) {
-                      return BlocBuilder<chat_cubit.ChatCubit, chat_cubit.ChatState>(
-                        builder: (context, chatState) {
-                          // Get current user and opponent from chat state
-                          final chatRoom = chatState.maybeWhen(
-                            ready: (room, lastReceivedMessage, hasNewMessage) => room,
-                            orElse: () => null,
-                          );
-                          
-                          if (chatRoom == null) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          
-                          // Find current user participant using the stored user ID
-                          if (_currentUserId == null) {
-                            AppLogger.d('ERROR: _currentUserId is null in build method');
-                            return const Center(child: Text('Error: User ID not loaded'));
-                          }
-                          
-                          final currentUserParticipant = chatRoom.participants.firstWhere(
-                            (p) => p.id == _currentUserId,
-                            orElse: () {
-                              AppLogger.d('ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
-                              AppLogger.d('ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
-                              throw Exception('Current user is not a participant in this chat room');
-                            },
-                          );
-                          
-                          // #378: 同初始化处，找不到对方时置 null 而非兜底到错误账户
-                          final opponentMatches = chatRoom.participants
-                              .where((p) => p.id != currentUserParticipant.id)
-                              .toList();
-                          final opponent = opponentMatches.isNotEmpty ? opponentMatches.first : null;
-
-                          // Update current user info
-                          // Use participant ID (not referId) for message comparison
-                          _currentUserParticipantId = currentUserParticipant.id;
-                          _opponent = opponent;
-                          
-                          return messageState.when(
-                            initial: () => const Center(child: CircularProgressIndicator()),
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            loaded: (messages, hasMore, isLoadingMore, loadMoreError, sendError, actionError,
-                                    substantiveMessageCount, isPaid, hasShownPaymentDialog, userRole, productId) {
-                              return CustomChatList(
-                                messages: messages,
-                                currentUserParticipantId: _currentUserParticipantId,
-                                opponent: _opponent,
-                                scrollController: _scrollController,
-                                onEndReached: _handleEndReached,
-                                isLoadingMore: _isLoadingMore,
-                              );
-                            },
-                            error: (message) => Center(
-                              child: Text(appLocalizations.chat_error_loading(message)),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  ),  // Close the BlocListener
-                  
-                  // Scroll to bottom FAB
-                  if (_showScrollToBottomButton)
-                    Positioned(
-                      right: 16.0,
-                      bottom: 16.0,
-                      child: FloatingActionButton(
-                        mini: true,
-                        backgroundColor: AppColors.backgroundCard,
-                        elevation: 4.0,
-                        onPressed: _scrollToBottom,
-                        child: const Icon(Icons.arrow_downward, color: AppColors.textTertiary),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            
-            // Message input bar - Use CustomInputBar from refactored implementation
-            BlocListener<MessageQueueCubit, MessageQueueState>(
-              listener: (context, state) {
-                // Listen for message sent events
-                state.maybeWhen(
-                  itemSent: (remainingItems) {
-                    widget.onMessageSent?.call();
-                    _scrollToBottom();
-                  },
-                  orElse: () {},
+                  error: (message) => Text(appLocalizations.chat_unknown_user),
                 );
               },
-              child: Padding(
-                // 仅预留系统安全区与一小段呼吸距离，使输入框与 AI 页面
-                // 一样贴近悬浮导航，但仍停在导航上沿之上。
-                padding: EdgeInsets.only(
-                  bottom: GlassNavigationMetrics.contentBottomInset(context) -
-                      GlassNavigationMetrics.navigationHeight(
-                        MediaQuery.of(context),
-                      ) +
-                      AppDimensions.spacingSm,
-                ),
-                child: Column(
-                mainAxisSize: MainAxisSize.min,
+            ),
+          ),
+          body: GlassBackdrop(
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.paddingOf(context).top + kToolbarHeight,
+              ),
+              child: Column(
                 children: [
-                  // 付费提示按钮 - 只在满足条件时显示
-                  BlocBuilder<MessageListCubit, MessageListState>(
-                    builder: (context, state) {
-                      if (_messageListCubit.shouldShowPaymentPromptButton) {
-                        return Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: AppColors.warning.withOpacity(0.05),
-                            border: const Border(
-                              top: BorderSide(color: AppColors.borderInput),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.info_outline,
-                                color: AppColors.warning,
-                                size: 20,
-                              ),
-                              const SizedBox(width: AppDimensions.spacingSm),
-                              const Expanded(
-                                child: Text(
-                                  '达到免费咨询轮次，可发送付费提示',
-                                  style: TextStyle(
-                                    color: AppColors.warning,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                              TextButton.icon(
-                                onPressed: () async {
-                                  try {
-                                    // 发送付费提示消息
-                                    await _messageListCubit.sendPaymentPromptMessage();
+                  // Product header
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                      opacity: _showProductHeader ? 1.0 : 0.0,
+                      child: AnimatedSlide(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        offset: _showProductHeader
+                            ? Offset.zero
+                            : const Offset(0, -0.08),
+                        child: BlocBuilder<chat_cubit.ChatCubit,
+                            chat_cubit.ChatState>(
+                          builder: (context, state) {
+                            return state.maybeWhen(
+                              ready: (chatRoom, lastReceivedMessage,
+                                  hasNewMessage) {
+                                if (chatRoom.hasProduct) {
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ProductChatHeader(
+                                        chatRoom: chatRoom,
+                                        actionText: chatRoom.hasAvailableProduct
+                                            ? '查看详情'
+                                            : null,
+                                        onProductTap: chatRoom
+                                                .hasAvailableProduct
+                                            ? () {
+                                                if (chatRoom.productId !=
+                                                    null) {
+                                                  context.push(
+                                                    '/product/${chatRoom.productId}',
+                                                    extra: {
+                                                      'chatRoomId': chatRoom.id
+                                                    },
+                                                  );
+                                                }
+                                              }
+                                            : null,
+                                        onActionTap: chatRoom
+                                                .hasAvailableProduct
+                                            ? () {
+                                                if (chatRoom.productId !=
+                                                    null) {
+                                                  context.push(
+                                                    '/product/${chatRoom.productId}',
+                                                    extra: {
+                                                      'chatRoomId': chatRoom.id
+                                                    },
+                                                  );
+                                                }
+                                              }
+                                            : null,
+                                      ),
+                                      ChatOrderStatusBar(chatRoom: chatRoom),
+                                    ],
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                              orElse: () => const SizedBox.shrink(),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
 
-                                    // 滚动到底部
-                                    Future.delayed(const Duration(milliseconds: 100), () {
+                  // Chat messages
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        // WebSocket message listener - listens for new messages from ChatCubit
+                        BlocListener<chat_cubit.ChatCubit,
+                            chat_cubit.ChatState>(
+                          listener: (context, state) {
+                            state.maybeWhen(
+                              ready: (chatRoom, lastReceivedMessage,
+                                  hasNewMessage) {
+                                // When a new message is received via WebSocket
+                                if (hasNewMessage &&
+                                    lastReceivedMessage != null) {
+                                  AppLogger.d(
+                                      '[ChatRoomPage] New message received via WebSocket: type=${lastReceivedMessage.type}, id=${lastReceivedMessage.id}');
+                                  // Add the message to the message list
+                                  _messageListCubit
+                                      .addReceivedMessage(lastReceivedMessage);
+
+                                  // Scroll to bottom for new messages
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (_scrollController.hasClients) {
                                       _scrollToBottom();
+                                    }
+                                  });
+                                }
+                              },
+                              orElse: () {},
+                            );
+                          },
+                          child:
+                              BlocConsumer<MessageListCubit, MessageListState>(
+                            listener: (context, state) {
+                              // Handle message events
+                              state.maybeWhen(
+                                loaded: (messages,
+                                    hasMore,
+                                    isLoadingMore,
+                                    loadMoreError,
+                                    sendError,
+                                    actionError,
+                                    substantiveMessageCount,
+                                    isPaid,
+                                    hasShownPaymentDialog,
+                                    userRole,
+                                    productId) {
+                                  // Scroll to bottom on message state changes
+                                  if (messages.isNotEmpty) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (_scrollController.hasClients &&
+                                          _scrollController
+                                              .position.hasContentDimensions) {
+                                        // On initial load, always scroll to bottom to show latest message
+                                        if (_isInitialLoad) {
+                                          _scrollToBottom();
+                                          _isInitialLoad = false;
+                                        } else if (_scrollController.offset <
+                                            100) {
+                                          // After initial load, only auto-scroll if user is near bottom
+                                          _scrollToBottom();
+                                        }
+                                      }
                                     });
-
-                                    // 刷新聊天列表
-                                    try {
-                                      final chatListBloc = getIt<ChatListBloc>();
-                                      chatListBloc.add(RefreshChatList());
-                                    } catch (e) {
-                                      AppLogger.d('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
-                                    }
-                                  } catch (e) {
-                                    // 显示错误提示
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(e.toString().replaceAll('Exception: ', '')),
-                                          backgroundColor: AppColors.error,
-                                          duration: const Duration(seconds: 3),
-                                        ),
-                                      );
-                                    }
                                   }
                                 },
-                                icon: const Icon(Icons.send, size: 18),
-                                label: const Text('发送提示'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: AppColors.onPrimary,
-                                  backgroundColor: AppColors.warning,
-                                  padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd, vertical: AppDimensions.spacingXs + 2),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-                                  ),
-                                ),
-                              ),
-                            ],
+                                orElse: () {},
+                              );
+                            },
+                            builder: (context, messageState) {
+                              return BlocBuilder<chat_cubit.ChatCubit,
+                                  chat_cubit.ChatState>(
+                                builder: (context, chatState) {
+                                  // Get current user and opponent from chat state
+                                  final chatRoom = chatState.maybeWhen(
+                                    ready: (room, lastReceivedMessage,
+                                            hasNewMessage) =>
+                                        room,
+                                    orElse: () => null,
+                                  );
+
+                                  if (chatRoom == null) {
+                                    return const Center(
+                                        child: CircularProgressIndicator());
+                                  }
+
+                                  // Find current user participant using the stored user ID
+                                  if (_currentUserId == null) {
+                                    AppLogger.d(
+                                        'ERROR: _currentUserId is null in build method');
+                                    return const Center(
+                                        child:
+                                            Text('Error: User ID not loaded'));
+                                  }
+
+                                  final currentUserParticipant =
+                                      chatRoom.participants.firstWhere(
+                                    (p) => p.id == _currentUserId,
+                                    orElse: () {
+                                      AppLogger.d(
+                                          'ERROR: Could not find participant with id=$_currentUserId in room ${chatRoom.id}');
+                                      AppLogger.d(
+                                          'ERROR: Available participants: ${chatRoom.participants.map((p) => 'id=${p.id}, type=${p.type}').join(', ')}');
+                                      throw Exception(
+                                          'Current user is not a participant in this chat room');
+                                    },
+                                  );
+
+                                  // #378: 同初始化处，找不到对方时置 null 而非兜底到错误账户
+                                  final opponentMatches = chatRoom.participants
+                                      .where((p) =>
+                                          p.id != currentUserParticipant.id)
+                                      .toList();
+                                  final opponent = opponentMatches.isNotEmpty
+                                      ? opponentMatches.first
+                                      : null;
+
+                                  // Update current user info
+                                  // Use participant ID (not referId) for message comparison
+                                  _currentUserParticipantId =
+                                      currentUserParticipant.id;
+                                  _opponent = opponent;
+
+                                  return messageState.when(
+                                    initial: () => const Center(
+                                        child: CircularProgressIndicator()),
+                                    loading: () => const Center(
+                                        child: CircularProgressIndicator()),
+                                    loaded: (messages,
+                                        hasMore,
+                                        isLoadingMore,
+                                        loadMoreError,
+                                        sendError,
+                                        actionError,
+                                        substantiveMessageCount,
+                                        isPaid,
+                                        hasShownPaymentDialog,
+                                        userRole,
+                                        productId) {
+                                      return CustomChatList(
+                                        messages: messages,
+                                        currentUserParticipantId:
+                                            _currentUserParticipantId,
+                                        opponent: _opponent,
+                                        scrollController: _scrollController,
+                                        onEndReached: _handleEndReached,
+                                        isLoadingMore: _isLoadingMore,
+                                      );
+                                    },
+                                    error: (message) => Center(
+                                      child: Text(appLocalizations
+                                          .chat_error_loading(message)),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
+                        ), // Close the BlocListener
+
+                        // Scroll to bottom FAB
+                        if (_showScrollToBottomButton)
+                          Positioned(
+                            right: 16.0,
+                            // 按钮停在输入框和持久导航之上，不能被底部胶囊
+                            // 吞掉。
+                            bottom: GlassNavigationMetrics.contentBottomInset(
+                                  context,
+                                ) +
+                                84,
+                            child: FloatingActionButton(
+                              mini: true,
+                              backgroundColor: AppColors.backgroundCard,
+                              elevation: 4.0,
+                              onPressed: _scrollToBottom,
+                              child: const Icon(Icons.arrow_downward,
+                                  color: AppColors.textTertiary),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                  CustomInputBar(
-                    chatId: widget.chatId,
-                    onSendPressed: (text) {
-                      // Directly call MessageListCubit instead of _handleSendPressed
-                      _messageListCubit.sendTextMessage(text);
-                      widget.onMessageSent?.call();
 
-                      // 同时刷新聊天列表
-                      try {
-                        final chatListBloc = getIt<ChatListBloc>();
-                        chatListBloc.add(RefreshChatList());
-                        AppLogger.d('[ChatRoomPageRefactored] Refreshing chat list after sending message');
-                      } catch (e) {
-                        AppLogger.d('[ChatRoomPageRefactored] Failed to refresh chat list: $e');
-                      }
+                  // Message input bar - Use CustomInputBar from refactored implementation
+                  BlocListener<MessageQueueCubit, MessageQueueState>(
+                    listener: (context, state) {
+                      // Listen for message sent events
+                      state.maybeWhen(
+                        itemSent: (remainingItems) {
+                          widget.onMessageSent?.call();
+                          _scrollToBottom();
+                        },
+                        orElse: () {},
+                      );
+                    },
+                    child: Padding(
+                      // 聊天室属于导航壳内的子路由。壳层用 extendBody 让
+                      // 导航悬浮于内容之上，所以此处必须完整让出导航高度，
+                      // 不能只让出 Home Indicator；否则输入框和最后一条消息
+                      // 会被底部胶囊遮住。
+                      padding: EdgeInsets.only(
+                        bottom:
+                            GlassNavigationMetrics.contentBottomInset(context) +
+                                // 输入框与导航胶囊之间固定保留 16dp 的视觉间距。
+                                // contentBottomInset 只保证不被导航吃掉，不保证
+                                // 两个浮动层的边缘不会相贴。
+                                AppDimensions.spacingXxl,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 付费提示按钮 - 只在满足条件时显示
+                          BlocBuilder<MessageListCubit, MessageListState>(
+                            builder: (context, state) {
+                              if (_messageListCubit
+                                  .shouldShowPaymentPromptButton) {
+                                return Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.warning.withOpacity(0.05),
+                                    border: const Border(
+                                      top: BorderSide(
+                                          color: AppColors.borderInput),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.info_outline,
+                                        color: AppColors.warning,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(
+                                          width: AppDimensions.spacingSm),
+                                      const Expanded(
+                                        child: Text(
+                                          '达到免费咨询轮次，可发送付费提示',
+                                          style: TextStyle(
+                                            color: AppColors.warning,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton.icon(
+                                        onPressed: () async {
+                                          try {
+                                            // 发送付费提示消息
+                                            await _messageListCubit
+                                                .sendPaymentPromptMessage();
 
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        _scrollToBottom();
-                      });
-                    },
-                    onAttachmentPressed: () {
-                      // Handle attachment - you can customize this
-                    },
+                                            // 滚动到底部
+                                            Future.delayed(
+                                                const Duration(
+                                                    milliseconds: 100), () {
+                                              _scrollToBottom();
+                                            });
+
+                                            // 刷新聊天列表
+                                            try {
+                                              final chatListBloc =
+                                                  getIt<ChatListBloc>();
+                                              chatListBloc
+                                                  .add(RefreshChatList());
+                                            } catch (e) {
+                                              AppLogger.d(
+                                                  '[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                                            }
+                                          } catch (e) {
+                                            // 显示错误提示
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e
+                                                      .toString()
+                                                      .replaceAll(
+                                                          'Exception: ', '')),
+                                                  backgroundColor:
+                                                      AppColors.error,
+                                                  duration: const Duration(
+                                                      seconds: 3),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                        icon: const Icon(Icons.send, size: 18),
+                                        label: const Text('发送提示'),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: AppColors.onPrimary,
+                                          backgroundColor: AppColors.warning,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal:
+                                                  AppDimensions.spacingMd,
+                                              vertical:
+                                                  AppDimensions.spacingXs + 2),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                AppDimensions.radiusLg),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          CustomInputBar(
+                            chatId: widget.chatId,
+                            onSendPressed: (text) {
+                              // Directly call MessageListCubit instead of _handleSendPressed
+                              _messageListCubit.sendTextMessage(text);
+                              widget.onMessageSent?.call();
+
+                              // 同时刷新聊天列表
+                              try {
+                                final chatListBloc = getIt<ChatListBloc>();
+                                chatListBloc.add(RefreshChatList());
+                                AppLogger.d(
+                                    '[ChatRoomPageRefactored] Refreshing chat list after sending message');
+                              } catch (e) {
+                                AppLogger.d(
+                                    '[ChatRoomPageRefactored] Failed to refresh chat list: $e');
+                              }
+
+                              Future.delayed(const Duration(milliseconds: 100),
+                                  () {
+                                _scrollToBottom();
+                              });
+                            },
+                            onAttachmentPressed: () {
+                              // Handle attachment - you can customize this
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
-                ),
               ),
             ),
-          ],
           ),
         ),
-      ),
       ),
     );
   }

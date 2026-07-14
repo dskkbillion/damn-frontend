@@ -457,7 +457,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
             // 以操作区下沿为基准保持 16dp 视觉间隔；扣除会话卡片自身
             // 的顶部留白，安全区高度仍随设备变化。
             child: SizedBox(
-              height: MediaQuery.paddingOf(context).top + kToolbarHeight - 28,
+              height: MediaQuery.paddingOf(context).top + kToolbarHeight - 40,
             ),
           ),
           // 根据模式显示不同的聊天列表
