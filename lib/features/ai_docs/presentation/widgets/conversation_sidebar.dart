@@ -164,8 +164,7 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                 ElevatedButton.icon(
                   icon: const Icon(Icons.refresh),
                   label: Text(appLocalizations.ai_docs_retry), // 使用国际化文本
-                  onPressed: () =>
-                      context.read<AiChatBloc>().add(
+                  onPressed: () => context.read<AiChatBloc>().add(
                         const LoadConversations(forceRefresh: true),
                       ),
                 )
@@ -313,6 +312,20 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                           color: AppColors.textTertiary,
                         ),
                         padding: EdgeInsets.zero,
+                        color: AppColors.backgroundCard.withValues(alpha: 0.98),
+                        surfaceTintColor: Colors.white,
+                        elevation: 8,
+                        shadowColor:
+                            AppColors.primaryDark.withValues(alpha: 0.22),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusMd,
+                          ),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.86),
+                          ),
+                        ),
+                        menuPadding: const EdgeInsets.all(6),
                         onSelected: (value) {
                           if (value == 'delete') {
                             _confirmDelete(context, conv.id);
@@ -321,7 +334,36 @@ class _ConversationSidebarState extends State<ConversationSidebar> {
                         itemBuilder: (context) => [
                           PopupMenuItem<String>(
                             value: 'delete',
-                            child: Text(appLocalizations.ai_docs_delete),
+                            height: 46,
+                            child: Container(
+                              width: double.infinity,
+                              alignment: Alignment.centerLeft,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusSm,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.delete_outline_rounded,
+                                    size: 18,
+                                    color: AppColors.error,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    appLocalizations.ai_docs_delete,
+                                    style: const TextStyle(
+                                      color: AppColors.error,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
