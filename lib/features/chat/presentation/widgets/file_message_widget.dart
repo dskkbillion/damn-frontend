@@ -23,43 +23,56 @@ class FileMessageWidget extends StatelessWidget {
   Map<String, dynamic> _parseFileInfo() {
     try {
       String contextStr = message.context.trim();
-      
-      
+
+      if (contextStr.startsWith("'") && contextStr.endsWith("'")) {
+        contextStr = contextStr.substring(1, contextStr.length - 1);
+      }
+
       // 如果是 URL 编码的内容，先解码
-      if (contextStr.contains('%7B') || contextStr.contains('%7b') || contextStr.contains('%22')) {
+      if (contextStr.contains('%7B') ||
+          contextStr.contains('%7b') ||
+          contextStr.contains('%22')) {
         contextStr = Uri.decodeFull(contextStr);
       }
-      
+
       // 处理可能的格式：{url: xxx, name: xxx, ...} （没有引号的格式）
       if (contextStr.startsWith('{') && !contextStr.contains('"url"')) {
-        
         // 使用更精确的正则表达式来处理键值对
         // 1. 给键加引号：url: -> "url":
         contextStr = contextStr.replaceAllMapped(
           RegExp(r'(\w+)\s*:'),
           (match) => '"${match.group(1)}":',
         );
-        
+
         // 2. 给非数字值加引号：: value -> : "value"
         // 但要避免已经有引号的值和数字值
         contextStr = contextStr.replaceAllMapped(
           RegExp(r':\s*([^",{}\d][^,}]*[^",}])'),
           (match) => ': "${match.group(1)}"',
         );
-        
+
         // 3. 处理纯数字值，确保它们不被加引号
         contextStr = contextStr.replaceAllMapped(
           RegExp(r':\s*(\d+)'),
           (match) => ': ${match.group(1)}',
         );
-        
       }
-      
+
       // 如果是标准 JSON 字符串，解析它
       if (contextStr.startsWith('{')) {
         return jsonDecode(contextStr) as Map<String, dynamic>;
       }
-      
+
+      // 服务端有时会将完整 JSON 再包成一个 JSON 字符串，例如
+      // "{\"url\":\"https://...\"}"。先解开外层，再按对象解析，
+      // 避免把整段 JSON 误传给文件预览页当作 URL。
+      if (contextStr.startsWith('"')) {
+        final decoded = jsonDecode(contextStr);
+        if (decoded is String && decoded.trim().startsWith('{')) {
+          return jsonDecode(decoded) as Map<String, dynamic>;
+        }
+      }
+
       // 否则假设它只是一个 URL
       return {
         'url': contextStr,
@@ -138,31 +151,36 @@ class FileMessageWidget extends StatelessWidget {
     final fileName = fileInfo['name'] ?? 'file';
     final fileSize = fileInfo['size'] ?? 0;
     final fileExtension = fileInfo['extension'] ?? '';
-    
+
     return GestureDetector(
-      onTap: onTap ?? () {
-        // 如果没有提供自定义的 onTap，则默认打开文件预览
-        final fileUrl = fileInfo['url'];
-        if (fileUrl != null && fileUrl.isNotEmpty) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => FilePreviewPage(
-                fileUrl: fileUrl,
-                fileName: fileName,
-                fileExtension: fileExtension,
-              ),
-            ),
-          );
-        }
-      },
+      onTap: onTap ??
+          () {
+            // 如果没有提供自定义的 onTap，则默认打开文件预览
+            final fileUrl = fileInfo['url'];
+            if (fileUrl != null && fileUrl.isNotEmpty) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => FilePreviewPage(
+                    fileUrl: fileUrl,
+                    fileName: fileName,
+                    fileExtension: fileExtension,
+                  ),
+                ),
+              );
+            }
+          },
       child: Container(
         constraints: const BoxConstraints(maxWidth: 250),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : AppColors.backgroundSecondary,
+          color: isMe
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+              : AppColors.backgroundSecondary,
           borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
           border: Border.all(
-            color: isMe ? Theme.of(context).primaryColor.withValues(alpha: 0.3) : AppColors.borderInput,
+            color: isMe
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
+                : AppColors.borderInput,
           ),
         ),
         child: Row(
@@ -194,7 +212,9 @@ class FileMessageWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: isMe ? Theme.of(context).primaryColor : AppColors.textPrimary,
+                      color: isMe
+                          ? Theme.of(context).primaryColor
+                          : AppColors.textPrimary,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -213,7 +233,9 @@ class FileMessageWidget extends StatelessWidget {
             // 下载图标
             Icon(
               Icons.download,
-              color: isMe ? Theme.of(context).primaryColor : AppColors.textSecondary,
+              color: isMe
+                  ? Theme.of(context).primaryColor
+                  : AppColors.textSecondary,
               size: 20,
             ),
           ],
@@ -242,25 +264,40 @@ class ImageMessageWidget extends StatelessWidget {
   Map<String, dynamic> _parseImageInfo() {
     try {
       String contextStr = message.context.trim();
-      
+
+      if (contextStr.startsWith("'") && contextStr.endsWith("'")) {
+        contextStr = contextStr.substring(1, contextStr.length - 1);
+      }
+
       // 如果是 URL 编码的内容，先解码
-      if (contextStr.contains('%7B') || contextStr.contains('%7b') || contextStr.contains('%22')) {
+      if (contextStr.contains('%7B') ||
+          contextStr.contains('%7b') ||
+          contextStr.contains('%22')) {
         contextStr = Uri.decodeFull(contextStr);
       }
-      
+
       // 处理可能的格式：{url: xxx, name: xxx, ...} （没有引号的格式）
       if (contextStr.startsWith('{') && !contextStr.contains('"url"')) {
         // 转换为标准 JSON 格式
         contextStr = contextStr
-            .replaceAll(RegExp(r'(\w+):'), '"\\1":')  // 给键加引号
-            .replaceAll(RegExp(r':\s*([^,}]+)'), ': "\\1"');  // 给值加引号
+            .replaceAll(RegExp(r'(\w+):'), '"\\1":') // 给键加引号
+            .replaceAll(RegExp(r':\s*([^,}]+)'), ': "\\1"'); // 给值加引号
       }
-      
+
       // 如果是标准 JSON 字符串，解析它
       if (contextStr.startsWith('{')) {
         return jsonDecode(contextStr) as Map<String, dynamic>;
       }
-      
+
+      // 服务端有时会将完整 JSON 再包成一个 JSON 字符串，例如
+      // "{\"url\":\"https://...\"}"。先解开外层，再按对象解析。
+      if (contextStr.startsWith('"')) {
+        final decoded = jsonDecode(contextStr);
+        if (decoded is String && decoded.trim().startsWith('{')) {
+          return jsonDecode(decoded) as Map<String, dynamic>;
+        }
+      }
+
       // 否则假设它只是一个 URL
       return {
         'url': contextStr,
@@ -278,7 +315,7 @@ class ImageMessageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageInfo = _parseImageInfo();
     final imageUrl = imageInfo['url'] ?? message.context;
-    
+
     return GestureDetector(
       onTap: onTap,
       onLongPressStart: onLongPressStart,
@@ -314,11 +351,13 @@ class ImageMessageWidget extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.broken_image, color: AppColors.textTertiary, size: 48),
+                      Icon(Icons.broken_image,
+                          color: AppColors.textTertiary, size: 48),
                       const SizedBox(height: 8),
                       Text(
                         '图片加载失败',
-                        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),
@@ -331,7 +370,8 @@ class ImageMessageWidget extends StatelessWidget {
                     color: AppColors.overlayLight,
                     child: const Center(
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
                       ),
                     ),
                   ),

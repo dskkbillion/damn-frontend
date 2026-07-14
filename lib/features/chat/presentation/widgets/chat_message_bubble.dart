@@ -1,6 +1,7 @@
-import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io'; // 添加这个import来支持File类型
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
@@ -558,7 +559,37 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
      }
   }
 
-  Widget _buildImageContent(BuildContext context, String imageUrl) {
+  String _resolveImageUrl(String rawContext) {
+    var context = rawContext.trim();
+    if (context.isEmpty) return '';
+
+    if (context.startsWith("'") && context.endsWith("'")) {
+      context = context.substring(1, context.length - 1);
+    }
+    if (context.contains('%7B') ||
+        context.contains('%7b') ||
+        context.contains('%22')) {
+      context = Uri.decodeFull(context);
+    }
+
+    try {
+      dynamic decoded = jsonDecode(context);
+      while (decoded is String && decoded.trim().startsWith('{')) {
+        decoded = jsonDecode(decoded);
+      }
+      if (decoded is Map && decoded['url'] is String) {
+        final url = (decoded['url'] as String).trim();
+        if (url.isNotEmpty) return url;
+      }
+    } on FormatException {
+      // 兼容旧消息：其 context 就是一个直接图片 URL。
+    }
+
+    return context;
+  }
+
+  Widget _buildImageContent(BuildContext context, String rawImageContext) {
+     final imageUrl = _resolveImageUrl(rawImageContext);
      // 如果消息正在发送，显示上传进度
      if (widget.message.status == MessageStatus.sending) {
        return Container(
