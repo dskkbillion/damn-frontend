@@ -29,9 +29,34 @@ class DualModeNavigationShell extends ConsumerStatefulWidget {
 }
 
 class _DualModeNavigationShellState
-    extends ConsumerState<DualModeNavigationShell> {
+    extends ConsumerState<DualModeNavigationShell>
+    with SingleTickerProviderStateMixin {
   final Map<int, DateTime> _lastSellerPrefetchTime = {};
   static const _prefetchDebounce = Duration(seconds: 30);
+  late final AnimationController _sellerPageTransitionController;
+  late final Animation<double> _sellerPageFadeAnimation;
+  late Animation<Offset> _sellerPageSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _sellerPageTransitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1,
+    );
+    _sellerPageFadeAnimation = CurvedAnimation(
+      parent: _sellerPageTransitionController,
+      curve: Curves.easeOutCubic,
+    );
+    _sellerPageSlideAnimation = const AlwaysStoppedAnimation(Offset.zero);
+  }
+
+  @override
+  void dispose() {
+    _sellerPageTransitionController.dispose();
+    super.dispose();
+  }
 
   Future<void> _prefetchAdjacentSellerTab(int currentTab) async {
     final int? targetTab;
@@ -108,6 +133,24 @@ class _DualModeNavigationShellState
     }
   }
 
+  void _playSellerPageTransition({
+    required bool isForward,
+    required bool disableAnimations,
+  }) {
+    if (disableAnimations) {
+      _sellerPageTransitionController.value = 1;
+      return;
+    }
+
+    _sellerPageSlideAnimation = Tween<Offset>(
+      begin: Offset(isForward ? 0.055 : -0.055, 0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(
+          _sellerPageTransitionController,
+        );
+    _sellerPageTransitionController.forward(from: 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentMode = ref.watch(appModeProvider);
@@ -134,18 +177,25 @@ class _DualModeNavigationShellState
     if (currentMode == AppMode.buyer) {
       return MainShellPage(navigationShell: widget.navigationShell);
     } else {
-      return _buildSellerShell();
+      return _buildSellerShell(context);
     }
   }
 
-  Widget _buildSellerShell() {
+  Widget _buildSellerShell(BuildContext context) {
     final wrapper = _SellerNavigationShellWrapper(
       navigationShell: widget.navigationShell,
       buyerBranchCount: _buyerBranchCount,
     );
     return Scaffold(
       extendBody: true,
-      body: widget.navigationShell,
+      body: FadeTransition(
+        opacity: Tween<double>(begin: 0.25, end: 1)
+            .animate(_sellerPageFadeAnimation),
+        child: SlideTransition(
+          position: _sellerPageSlideAnimation,
+          child: widget.navigationShell,
+        ),
+      ),
       bottomNavigationBar: _buildSellerBottomNavigationBar(wrapper),
     );
   }
@@ -158,46 +208,53 @@ class _DualModeNavigationShellState
 
         return GlassNavigationSurface(
           child: BottomNavigationBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            iconSize: 24,
-            selectedFontSize: 0,
-            unselectedFontSize: 0,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.textTertiary,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.analytics_outlined),
-                activeIcon: const Icon(Icons.analytics),
-                label: appLocalizations.nav_seller_analytics,
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory_2_outlined),
-                activeIcon: const Icon(Icons.inventory_2),
-                label: appLocalizations.nav_seller_products,
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.chat_bubble_outline),
-                activeIcon: const Icon(Icons.chat_bubble),
-                label: appLocalizations.nav_seller_messages,
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.account_circle_outlined),
-                activeIcon: const Icon(Icons.account_circle),
-                label: appLocalizations.nav_seller_profile,
-              ),
-            ],
-            currentIndex: wrapper.currentIndex,
-            onTap: (index) {
-              // 添加轻微震动反馈
-              HapticUtils.lightTabFeedback();
-              _prefetchAdjacentSellerTab(index);
-              wrapper.goBranch(index,
-                  initialLocation: index == wrapper.currentIndex);
-            },
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              iconSize: 24,
+              selectedFontSize: 0,
+              unselectedFontSize: 0,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: AppColors.textTertiary,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.analytics_outlined),
+                  activeIcon: const Icon(Icons.analytics),
+                  label: appLocalizations.nav_seller_analytics,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  activeIcon: const Icon(Icons.inventory_2),
+                  label: appLocalizations.nav_seller_products,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.chat_bubble_outline),
+                  activeIcon: const Icon(Icons.chat_bubble),
+                  label: appLocalizations.nav_seller_messages,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.account_circle_outlined),
+                  activeIcon: const Icon(Icons.account_circle),
+                  label: appLocalizations.nav_seller_profile,
+                ),
+              ],
+              currentIndex: wrapper.currentIndex,
+              onTap: (index) {
+                // 当前卖家页不重复播放转场，也不重置既有页面状态。
+                if (index == wrapper.currentIndex) return;
+
+                // 添加轻微震动反馈
+                HapticUtils.lightTabFeedback();
+                _prefetchAdjacentSellerTab(index);
+                _playSellerPageTransition(
+                  isForward: index >= wrapper.currentIndex,
+                  disableAnimations: MediaQuery.disableAnimationsOf(context),
+                );
+                wrapper.goBranch(index,
+                    initialLocation: index == wrapper.currentIndex);
+              },
           ),
         );
       },

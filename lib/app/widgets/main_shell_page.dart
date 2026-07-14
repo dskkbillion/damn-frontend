@@ -21,19 +21,69 @@ class MainShellPage extends ConsumerStatefulWidget {
   ConsumerState<MainShellPage> createState() => _MainShellPageState();
 }
 
-class _MainShellPageState extends ConsumerState<MainShellPage> {
+class _MainShellPageState extends ConsumerState<MainShellPage>
+    with SingleTickerProviderStateMixin {
   final Map<int, DateTime> _lastPrefetchTime = {};
   static const _prefetchDebounce = Duration(seconds: 30);
+  late final AnimationController _pageTransitionController;
+  late final Animation<double> _pageFadeAnimation;
+  late Animation<Offset> _pageSlideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageTransitionController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1,
+    );
+    _pageFadeAnimation = CurvedAnimation(
+      parent: _pageTransitionController,
+      curve: Curves.easeOutCubic,
+    );
+    _pageSlideAnimation = const AlwaysStoppedAnimation(Offset.zero);
+  }
+
+  @override
+  void dispose() {
+    _pageTransitionController.dispose();
+    super.dispose();
+  }
 
   void _onTap(BuildContext context, int index) {
+    // 当前页面不做任何导航或动画，避免重复点按时产生无意义的闪动。
+    if (index == widget.navigationShell.currentIndex) return;
+
     HapticUtils.lightTabFeedback();
 
     _prefetchAdjacentTab(index);
+    _playPageTransition(
+      isForward: index >= widget.navigationShell.currentIndex,
+      disableAnimations: MediaQuery.disableAnimationsOf(context),
+    );
 
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
     );
+  }
+
+  void _playPageTransition({
+    required bool isForward,
+    required bool disableAnimations,
+  }) {
+    if (disableAnimations) {
+      _pageTransitionController.value = 1;
+      return;
+    }
+
+    _pageSlideAnimation = Tween<Offset>(
+      begin: Offset(isForward ? 0.055 : -0.055, 0),
+      end: Offset.zero,
+    ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(
+          _pageTransitionController,
+        );
+    _pageTransitionController.forward(from: 0);
   }
 
   Future<void> _prefetchAdjacentTab(int currentTab) async {
@@ -126,22 +176,28 @@ class _MainShellPageState extends ConsumerState<MainShellPage> {
       extendBody: true,
       // 让页面背景和滚动内容延伸到悬浮导航下方；各页面只在其可滚动
       // 内容末端预留安全距离，避免壳层裁出大块空白。
-      body: widget.navigationShell,
+      body: FadeTransition(
+        opacity: Tween<double>(begin: 0.25, end: 1).animate(_pageFadeAnimation),
+        child: SlideTransition(
+          position: _pageSlideAnimation,
+          child: widget.navigationShell,
+        ),
+      ),
       bottomNavigationBar: GlassNavigationSurface(
         child: BottomNavigationBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          iconSize: 24,
-          selectedFontSize: 0,
-          unselectedFontSize: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textTertiary,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: items,
-          currentIndex: widget.navigationShell.currentIndex,
-          onTap: (index) => _onTap(context, index),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            iconSize: 24,
+            selectedFontSize: 0,
+            unselectedFontSize: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: AppColors.primary,
+            unselectedItemColor: AppColors.textTertiary,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            items: items,
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (index) => _onTap(context, index),
         ),
       ),
     );
