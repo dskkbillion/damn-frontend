@@ -147,6 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       body: GlassBackdrop(
         child: SafeArea(
+          bottom: false,
           child: RefreshIndicator(
             onRefresh: () async {
               // 下拉刷新时强制从服务器获取最新数据
