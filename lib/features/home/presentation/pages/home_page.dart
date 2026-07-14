@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +25,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    
+
     // 注意：在预览应用中，HomeBloc 已经在上层通过 BlocProvider 提供
     return HomeView(title: appLocalizations.home_title);
   }
@@ -33,7 +34,7 @@ class HomePage extends StatelessWidget {
 /// 首页视图
 class HomeView extends StatefulWidget {
   final String title;
-  
+
   const HomeView({super.key, required this.title});
 
   @override
@@ -86,12 +87,18 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    
+    final topContentInset = MediaQuery.paddingOf(context).top + 64 + 16;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: _buildSearchBar(context),
         centerTitle: true,
+        toolbarHeight: 64,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
       ),
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
@@ -106,13 +113,15 @@ class _HomeViewState extends State<HomeView> {
             return RefreshIndicator(
               onRefresh: () {
                 final completer = Completer<void>();
-                final subscription = context.read<HomeBloc>().stream.listen((state) {
+                final subscription =
+                    context.read<HomeBloc>().stream.listen((state) {
                   if (state is! HomeRefreshing && !completer.isCompleted) {
                     completer.complete();
                   }
                 });
                 context.read<HomeBloc>().add(const RefreshHomeData());
-                return completer.future.whenComplete(() => subscription.cancel());
+                return completer.future
+                    .whenComplete(() => subscription.cancel());
               },
               child: CustomScrollView(
                 key: const PageStorageKey<String>('buyer_home_scroll'),
@@ -154,16 +163,22 @@ class _HomeViewState extends State<HomeView> {
                               const SizedBox(height: 16),
                               Text(
                                 appLocalizations.home_no_content,
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 appLocalizations.home_pull_to_refresh,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: AppColors.textTertiary,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: AppColors.textTertiary,
+                                    ),
                               ),
                             ],
                           ),
@@ -172,7 +187,12 @@ class _HomeViewState extends State<HomeView> {
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        topContentInset,
+                        16,
+                        16,
+                      ),
                       sliver: SliverMasonryGrid.count(
                         crossAxisCount: 2,
                         mainAxisSpacing: 16.0,
@@ -182,7 +202,7 @@ class _HomeViewState extends State<HomeView> {
                           final item = feedItems[index];
                           // 根据索引生成不同的宽高比，使瀑布流更自然
                           final aspectRatio = 0.8 + (index % 3) * 0.2;
-                          
+
                           return ProductCard(
                             item: item,
                             aspectRatio: aspectRatio,
@@ -199,7 +219,9 @@ class _HomeViewState extends State<HomeView> {
                               // );
                             },
                             onRecommendClicked: () {
-                              context.read<HomeBloc>().add(RecommendButtonClicked(
+                              context
+                                  .read<HomeBloc>()
+                                  .add(RecommendButtonClicked(
                                     productId: item.id,
                                     productName: item.name,
                                   ));
@@ -223,22 +245,28 @@ class _HomeViewState extends State<HomeView> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 24.0),
                         child: Center(
-                          child: (state is HomeRefreshing || (state is HomeLoaded && state.isRefreshing))
+                          child: (state is HomeRefreshing ||
+                                  (state is HomeLoaded && state.isRefreshing))
                               ? Column(
                                   children: [
                                     const CircularProgressIndicator(),
                                     const SizedBox(height: 12),
                                     Text(
-                                      appLocalizations.home_refreshing_recommendations,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
+                                      appLocalizations
+                                          .home_refreshing_recommendations,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: AppColors.textSecondary,
+                                          ),
                                     ),
                                   ],
                                 )
                               : Column(
                                   children: [
-                                    if (state is HomeLoaded && state.isLoadingMore) ...[
+                                    if (state is HomeLoaded &&
+                                        state.isLoadingMore) ...[
                                       const CircularProgressIndicator(),
                                       const SizedBox(height: 12),
                                       Text(
@@ -253,19 +281,26 @@ class _HomeViewState extends State<HomeView> {
                                     Container(
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withValues(alpha: 0.1),
                                       ),
                                       child: IconButton(
                                         onPressed: () {
                                           // 先滚动到顶部
-                                          _scrollController.animateTo(
+                                          _scrollController
+                                              .animateTo(
                                             0,
-                                            duration: const Duration(milliseconds: 500),
+                                            duration: const Duration(
+                                                milliseconds: 500),
                                             curve: Curves.easeInOut,
-                                          ).then((_) {
+                                          )
+                                              .then((_) {
                                             // 滚动完成后触发刷新
                                             if (mounted) {
-                                              context.read<HomeBloc>().add(const RefreshHomeData());
+                                              context
+                                                  .read<HomeBloc>()
+                                                  .add(const RefreshHomeData());
                                             }
                                           });
                                         },
@@ -274,7 +309,8 @@ class _HomeViewState extends State<HomeView> {
                                           color: Theme.of(context).primaryColor,
                                           size: 28,
                                         ),
-                                        tooltip: appLocalizations.home_back_to_top_refresh,
+                                        tooltip: appLocalizations
+                                            .home_back_to_top_refresh,
                                         padding: const EdgeInsets.all(12),
                                       ),
                                     ),
@@ -326,32 +362,60 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildSearchBar(BuildContext context) {
     // 获取国际化资源
     final appLocalizations = AppLocalizations.of(context);
-    
+
     return GestureDetector(
       onTap: () {
         // 跳转到搜索页面
         context.push('/home/search');
       },
-      child: Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: AppColors.borderPrimary,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      ),
-      child: Row(
-          children: [
-            const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Icon(Icons.search, color: AppColors.textTertiary),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
-          Expanded(
-              child: Text(
-                appLocalizations.home_search_hint,
-                style: const TextStyle(color: AppColors.textTertiary),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundCard.withValues(alpha: 0.54),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                  border: Border.all(
+                    color: AppColors.onPrimary.withValues(alpha: 0.88),
+                    width: 1.2,
+                  ),
+                ),
+                child: SizedBox(
+                  height: 48,
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
+                        child:
+                            Icon(Icons.search, color: AppColors.textTertiary),
+                      ),
+                      Expanded(
+                        child: Text(
+                          appLocalizations.home_search_hint,
+                          style: const TextStyle(color: AppColors.textTertiary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ],
           ),
+        ),
       ),
     );
   }
