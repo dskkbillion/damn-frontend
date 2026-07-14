@@ -454,7 +454,9 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         slivers: [
           // 仅避开顶部操作按钮；该空间属于滚动内容，列表上滑后可穿过顶栏。
           SliverToBoxAdapter(
-            child: const SizedBox(height: 68),
+            child: SizedBox(
+              height: MediaQuery.paddingOf(context).top + kToolbarHeight,
+            ),
           ),
           // 根据模式显示不同的聊天列表
           if (filteredRooms.isEmpty)
