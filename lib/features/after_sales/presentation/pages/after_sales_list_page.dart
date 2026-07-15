@@ -23,12 +23,18 @@ class _AfterSalesListPageState extends State<AfterSalesListPage> {
 
   String _localizeRefundState(BuildContext context, String state) {
     final s = AppLocalizations.of(context);
-    switch (state) {
-      case 'wait_audit': return s.after_sales_status_wait_audit;
-      case 'audit_pass': return s.after_sales_status_audit_pass;
-      case 'audit_refused': return s.after_sales_status_refused;
-      case 'cancel': return s.after_sales_status_canceled;
-      default: return s.after_sales_status_unknown;
+    switch (state.trim().toUpperCase()) {
+      case 'WAIT_AUDIT':
+        return s.after_sales_status_wait_audit;
+      case 'AUDIT_PASS':
+        return s.after_sales_status_audit_pass;
+      case 'AUDIT_REFUSED':
+        return s.after_sales_status_refused;
+      case 'CANCEL':
+      case 'CANCELED':
+        return s.after_sales_status_canceled;
+      default:
+        return s.after_sales_status_unknown;
     }
   }
 

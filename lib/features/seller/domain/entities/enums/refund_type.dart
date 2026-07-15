@@ -9,6 +9,12 @@ enum RefundType {
   /// 退货退款
   moneyAndProduct('MONEY_AND_PRODUCT', '退货退款'),
 
+  /// 重新制作
+  remake('REMAKE', '重新制作'),
+
+  /// 补充内容
+  supplement('SUPPLEMENT', '补充'),
+
   /// 未知类型
   unknown('UNKNOWN', '未知类型');
 

@@ -16,25 +16,14 @@ class AfterSalesReviewInitial extends AfterSalesReviewState {}
 class AfterSalesReviewLoading extends AfterSalesReviewState {}
 
 /// 加载更多状态
-class AfterSalesReviewLoadingMore extends AfterSalesReviewState {
+class AfterSalesReviewLoadingMore extends AfterSalesReviewLoaded {
   /// 当前售后列表
-  final List<OrderRefund> refunds;
-  
-  /// 是否有更多数据
-  final bool hasMore;
-  
-  /// 当前页码
-  final int currentPage;
-  
   /// 构造函数
   const AfterSalesReviewLoadingMore({
-    required this.refunds,
-    required this.hasMore,
-    required this.currentPage,
+    required super.refunds,
+    required super.hasMore,
+    required super.currentPage,
   });
-  
-  @override
-  List<Object?> get props => [refunds, hasMore, currentPage];
 }
 
 /// 加载成功状态
@@ -76,6 +65,36 @@ class AfterSalesReviewAuditing extends AfterSalesReviewLoaded {
   List<Object?> get props => [...super.props, auditingId];
 }
 
+/// 审核成功后短暂保留列表，用于向用户确认结果，再刷新远端数据。
+class AfterSalesReviewAuditSuccess extends AfterSalesReviewLoaded {
+  final String message;
+
+  const AfterSalesReviewAuditSuccess({
+    required super.refunds,
+    required super.hasMore,
+    required super.currentPage,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, message];
+}
+
+/// 审核失败后保留原列表，避免用户需要重新进入页面才能重试。
+class AfterSalesReviewAuditFailure extends AfterSalesReviewLoaded {
+  final String message;
+
+  const AfterSalesReviewAuditFailure({
+    required super.refunds,
+    required super.hasMore,
+    required super.currentPage,
+    required this.message,
+  });
+
+  @override
+  List<Object?> get props => [...super.props, message];
+}
+
 /// 空数据状态
 class AfterSalesReviewEmpty extends AfterSalesReviewState {}
 
@@ -103,4 +122,4 @@ class AfterSalesReviewError extends AfterSalesReviewState {
   
   @override
   List<Object?> get props => [message, refunds, hasMore, currentPage];
-} 
+}

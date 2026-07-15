@@ -9,6 +9,9 @@ class OrderRefundDto {
   /// 退款ID
   final int? id;
 
+  /// 订单ID
+  final int? orderId;
+
   /// 申请人ID
   final int? creatorId;
 
@@ -24,6 +27,8 @@ class OrderRefundDto {
   final String? refundExplain;
 
   final String? refundSn;
+
+  final String? orderSn;
 
   /// 退款备注
   final String? refundRemarks;
@@ -57,12 +62,14 @@ class OrderRefundDto {
   /// 构造函数
   OrderRefundDto({
     this.id,
+    this.orderId,
     this.creatorId,
     this.refundState,
     this.refundType,
     this.refundReason,
     this.refundExplain,
     this.refundSn,
+    this.orderSn,
     this.refundRemarks,
     this.refundAmount,
     this.refundPrice,
@@ -80,12 +87,14 @@ class OrderRefundDto {
   factory OrderRefundDto.fromJson(Map<String, dynamic> json) {
     return OrderRefundDto(
       id: json['id'] as int?,
+      orderId: json['orderId'] as int?,
       creatorId: json['creatorId'] as int?,
       refundState: json['refundState'] as String?,
       refundType: json['refundType'] as String?,
       refundReason: json['refundReason'] as String?,
       refundExplain: json['refundExplain'] as String?,
       refundSn: json['refundSn'] as String?,
+      orderSn: json['orderSn'] as String?,
       refundRemarks: json['refundRemarks'] as String?,
       refundAmount: (json['refundAmount'] as num?)?.toDouble(),
       refundPrice: (json['refundPrice'] as num?)?.toDouble(),
@@ -93,9 +102,8 @@ class OrderRefundDto {
       createTime: json['createTime'] as String?,
       auditTime: json['auditTime'] as String?,
       finishTime: json['finishTime'] as String?,
-      images: ((json['images'] ?? json['credentials']) as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+      images: _parseImages(
+          json['refundImage'] ?? json['images'] ?? json['credentials']),
       order: json['order'] as Map<String, dynamic>?,
       orderVo: json['orderVo'] as Map<String, dynamic>?,
       orderProductItem: json['orderProductItem'] as Map<String, dynamic>?,
@@ -112,8 +120,9 @@ class OrderRefundDto {
 
     return OrderRefund(
       id: id ?? 0,
-      orderId: (orderData?['id'] as int?) ?? 0,
-      orderSn: (jsonString(orderData?['orderSn']) ??
+      orderId: orderId ?? (orderData?['id'] as int?) ?? 0,
+      orderSn: (orderSn ??
+          jsonString(orderData?['orderSn']) ??
           jsonString(orderData?['orderNo']) ??
           jsonString(orderData?['sn']) ??
           ''),
@@ -146,16 +155,28 @@ class OrderRefundDto {
     return value.toString();
   }
 
+  static List<String>? _parseImages(dynamic value) {
+    if (value is List) {
+      return value.map((item) => item.toString()).toList();
+    }
+    if (value is String && value.isNotEmpty) {
+      return value.split(',').where((url) => url.isNotEmpty).toList();
+    }
+    return null;
+  }
+
   /// 转换为JSON
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
+      if (orderId != null) 'orderId': orderId,
       if (creatorId != null) 'creatorId': creatorId,
       if (refundState != null) 'refundState': refundState,
       if (refundType != null) 'refundType': refundType,
       if (refundReason != null) 'refundReason': refundReason,
       if (refundExplain != null) 'refundExplain': refundExplain,
       if (refundSn != null) 'refundSn': refundSn,
+      if (orderSn != null) 'orderSn': orderSn,
       if (refundRemarks != null) 'refundRemarks': refundRemarks,
       if (refundAmount != null) 'refundAmount': refundAmount,
       if (refundPrice != null) 'refundPrice': refundPrice,

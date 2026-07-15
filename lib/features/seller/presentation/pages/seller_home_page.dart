@@ -559,16 +559,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   context,
                   icon: Icons.assignment_return_outlined,
                   label: '售后审核',
-                  onTap: () {
-                    ScaffoldMessenger.of(context)
-                      ..hideCurrentSnackBar()
-                      ..showSnackBar(
-                        const SnackBar(
-                          content: Text('售后审核功能开发中，敬请期待'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                  },
+                  onTap: () => context.push(SellerRoutes.afterSalesReview),
                 ),
               ],
             ),

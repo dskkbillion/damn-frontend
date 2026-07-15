@@ -66,13 +66,21 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
       ));
       
       result.fold(
-        (failure) => emit(AfterSalesReviewError(
+        (failure) => emit(AfterSalesReviewAuditFailure(
           message: failure.message,
           refunds: currentState.refunds,
           hasMore: currentState.hasMore,
           currentPage: currentState.currentPage,
         )),
-        (_) => add(ReloadAfterSalesList()),
+        (_) {
+          emit(AfterSalesReviewAuditSuccess(
+            message: event.approved ? '售后申请已同意' : '售后申请已拒绝',
+            refunds: currentState.refunds,
+            hasMore: currentState.hasMore,
+            currentPage: currentState.currentPage,
+          ));
+          add(ReloadAfterSalesList());
+        },
       );
     }
   }
@@ -131,8 +139,8 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
         currentPage: currentPage,
       )),
       (paginatedList) {
-        final refunds = paginatedList.items ?? [];
-        final hasMore = (paginatedList.items.length ?? 0) >= 10;
+        final refunds = paginatedList.items;
+        final hasMore = paginatedList.items.length >= 10;
         final newList = isFirstPage ? refunds : [...currentRefunds, ...refunds];
         
         if (newList.isEmpty) {
@@ -147,4 +155,4 @@ class AfterSalesReviewBloc extends Bloc<AfterSalesReviewEvent, AfterSalesReviewS
       },
     );
   }
-} 
+}

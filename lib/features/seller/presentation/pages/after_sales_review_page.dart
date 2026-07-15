@@ -108,9 +108,17 @@ class _AfterSalesReviewBodyState extends State<_AfterSalesReviewBody> {
   Widget build(BuildContext context) {
     return BlocConsumer<AfterSalesReviewBloc, AfterSalesReviewState>(
       listener: (context, state) {
-        if (state is AfterSalesReviewError) {
+        if (state is AfterSalesReviewAuditSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+          );
+        } else if (state is AfterSalesReviewAuditFailure ||
+            state is AfterSalesReviewError) {
+          final message = state is AfterSalesReviewAuditFailure
+              ? state.message
+              : (state as AfterSalesReviewError).message;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: Colors.red),
           );
         }
       },
@@ -331,6 +339,10 @@ class _RefundCard extends StatelessWidget {
         return l10n.after_sales_type_refund_only ?? 'Refund Only';
       case RefundType.moneyAndProduct:
         return l10n.after_sales_type_refund_return ?? 'Return & Refund';
+      case RefundType.remake:
+        return '重新制作';
+      case RefundType.supplement:
+        return '补充内容';
       case RefundType.unknown:
       default:
         return l10n.after_sales_type_unknown ?? 'Unknown Type';

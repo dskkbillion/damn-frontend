@@ -219,16 +219,17 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
 
   String _getStatusTitle(String status) {
     final s = AppLocalizations.of(context);
-    switch (status) {
-      case 'wait_audit':
+    switch (status.trim().toUpperCase()) {
+      case 'WAIT_AUDIT':
         return s.after_sales_status_wait_audit;
-      case 'audit_pass':
+      case 'AUDIT_PASS':
         return s.after_sales_status_audit_pass;
-      case 'audit_reject':
+      case 'AUDIT_REFUSED':
         return s.after_sales_status_audit_reject;
-      case 'refund_success':
+      case 'REFUND_SUCCESS':
         return s.after_sales_status_refund_success;
-      case 'canceled':
+      case 'CANCEL':
+      case 'CANCELED':
         return s.after_sales_status_canceled;
       default:
         return s.after_sales_status_processing;
@@ -237,16 +238,17 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
 
   String? _getStatusSubtitle(String status) {
     final s = AppLocalizations.of(context);
-    switch (status) {
-      case 'wait_audit':
+    switch (status.trim().toUpperCase()) {
+      case 'WAIT_AUDIT':
         return s.after_sales_subtitle_wait_audit;
-      case 'audit_pass':
+      case 'AUDIT_PASS':
         return s.after_sales_subtitle_audit_pass;
-      case 'audit_reject':
+      case 'AUDIT_REFUSED':
         return s.after_sales_subtitle_audit_reject;
-      case 'refund_success':
+      case 'REFUND_SUCCESS':
         return s.after_sales_subtitle_refund_success;
-      case 'canceled':
+      case 'CANCEL':
+      case 'CANCELED':
         return s.after_sales_subtitle_canceled;
       default:
         return s.after_sales_subtitle_default;
@@ -408,14 +410,14 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'wait_audit':
+    switch (status.trim().toUpperCase()) {
+      case 'WAIT_AUDIT':
         return Icons.pending_outlined;
-      case 'audit_pass':
+      case 'AUDIT_PASS':
         return Icons.check_circle_outline;
-      case 'audit_reject':
+      case 'AUDIT_REFUSED':
         return Icons.cancel_outlined;
-      case 'refund_success':
+      case 'REFUND_SUCCESS':
         return Icons.done_all;
       default:
         return Icons.info_outline;
@@ -423,14 +425,14 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   Color _getStatusColor(String status, ColorScheme colorScheme) {
-    switch (status) {
-      case 'wait_audit':
+    switch (status.trim().toUpperCase()) {
+      case 'WAIT_AUDIT':
         return colorScheme.primary;
-      case 'audit_pass':
+      case 'AUDIT_PASS':
         return colorScheme.tertiary;
-      case 'audit_reject':
+      case 'AUDIT_REFUSED':
         return colorScheme.error;
-      case 'refund_success':
+      case 'REFUND_SUCCESS':
         return colorScheme.tertiary;
       default:
         return colorScheme.onSurfaceVariant;
@@ -555,4 +557,4 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     );
   }
 
-} 
+}
