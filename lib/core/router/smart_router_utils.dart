@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 /// 智能路由工具类 - 基础稳定版本
-/// 
+///
 /// 提供统一的路由管理功能，包括：
 /// - 基础稳定的Key生成策略，避免Navigator重复Key错误
 /// - 防止快速重复点击
@@ -40,12 +42,13 @@ class SmartRouterUtils {
 
   /// 将 Map 按 key 排序后序列化为 "k1=v1&k2=v2" 字符串
   static String _sortedMapStringStatic(Map<String, String> map) {
-    final entries = map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final entries = map.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     return entries.map((e) => '${e.key}=${e.value}').join('&');
   }
 
   /// 智能导航 - 简化版本，只防止真正的重复
-  /// 
+  ///
   /// [context] BuildContext
   /// [routePath] 目标路由路径
   /// [params] 路由参数
@@ -64,22 +67,24 @@ class SmartRouterUtils {
     }
 
     String fullPath = _buildFullPath(routePath, params);
-    
+
     // 只防止真正的快速重复点击（200ms内）
     final cooldownKey = '${fullPath}_${source ?? 'unknown'}';
     final now = DateTime.now();
     final lastNavigation = _navigationCooldown[cooldownKey];
-    
-    if (lastNavigation != null && 
-        now.difference(lastNavigation).inMilliseconds < 200) { // 只防止200ms内的重复
+
+    if (lastNavigation != null &&
+        now.difference(lastNavigation).inMilliseconds < 200) {
+      // 只防止200ms内的重复
       debugPrint('SmartRouter: 防止快速重复点击 $fullPath');
       return;
     }
-    
+
     _navigationCooldown[cooldownKey] = now;
-    
+
     // 检查当前位置
-    final currentRoute = GoRouter.of(context).routerDelegate.currentConfiguration;
+    final currentRoute =
+        GoRouter.of(context).routerDelegate.currentConfiguration;
     if (currentRoute.matches.isNotEmpty) {
       final currentPath = currentRoute.matches.last.matchedLocation;
       if (currentPath == fullPath) {
@@ -87,9 +92,9 @@ class SmartRouterUtils {
         return;
       }
     }
-    
+
     debugPrint('SmartRouter: 导航到 $fullPath (来源: $source)');
-    
+
     try {
       if (extra != null) {
         GoRouter.of(context).push(fullPath, extra: extra);
@@ -107,7 +112,7 @@ class SmartRouterUtils {
     if (params == null || params.isEmpty) {
       return routePath;
     }
-    
+
     String result = routePath;
     for (final entry in params.entries) {
       result = result.replaceAll(':${entry.key}', entry.value);
@@ -122,7 +127,7 @@ class SmartRouterUtils {
         .where((entry) => now.difference(entry.value).inMinutes > 5)
         .map((entry) => entry.key)
         .toList();
-        
+
     for (final key in expiredKeys) {
       _navigationCooldown.remove(key);
     }
@@ -133,11 +138,12 @@ class SmartRouterUtils {
     return {
       'navigation_cooldowns': _navigationCooldown.length,
       'active_cooldowns': _navigationCooldown.entries
-          .where((entry) => DateTime.now().difference(entry.value).inSeconds < 60)
+          .where(
+              (entry) => DateTime.now().difference(entry.value).inSeconds < 60)
           .map((entry) => {
-            'path': entry.key,
-            'time': entry.value.toIso8601String(),
-          })
+                'path': entry.key,
+                'time': entry.value.toIso8601String(),
+              })
           .toList(),
     };
   }
@@ -153,7 +159,8 @@ class SmartRouterUtils {
 extension SmartPageBuilder on GoRouterState {
   /// 将 Map 按 key 排序后序列化为 "k1=v1&k2=v2" 字符串，确保同内容不同顺序产生相同结果
   String _sortedMapString(Map<String, String> map) {
-    final entries = map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+    final entries = map.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     return entries.map((e) => '${e.key}=${e.value}').join('&');
   }
 
@@ -161,7 +168,7 @@ extension SmartPageBuilder on GoRouterState {
   ///
   /// 使用路由路径 + 排序后的路径参数 + 排序后的查询参数作为 key，
   /// 确保同一路由同一参数始终产生相同 key，避免状态丢失。
-  MaterialPage<T> buildSmartPage<T extends Object?>(
+  Page<T> buildSmartPage<T extends Object?>(
     Widget child, {
     String? name,
     String? source,
@@ -176,6 +183,17 @@ extension SmartPageBuilder on GoRouterState {
 
     debugPrint('SmartPage: 创建页面 $matchedLocation (key: ${pageKey.value})');
 
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return CupertinoPage<T>(
+        key: pageKey,
+        child: child,
+        name: name,
+        arguments: arguments,
+        maintainState: maintainState,
+        fullscreenDialog: fullscreenDialog,
+      );
+    }
+
     return MaterialPage<T>(
       key: pageKey,
       child: child,
@@ -185,4 +203,4 @@ extension SmartPageBuilder on GoRouterState {
       fullscreenDialog: fullscreenDialog,
     );
   }
-} 
+}
