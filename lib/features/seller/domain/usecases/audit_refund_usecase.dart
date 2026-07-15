@@ -8,10 +8,10 @@ import 'package:injectable/injectable.dart';
 /// 售后审核状态
 enum RefundAuditState {
   /// 审核通过
-  pass('AUDIT_PASS', '通过'),
+  pass('audit_pass', '通过'),
   
   /// 审核拒绝
-  reject('AUDIT_REFUSED', '拒绝');
+  reject('audit_refused', '拒绝');
 
   /// API值
   final String value;
