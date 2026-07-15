@@ -9,7 +9,7 @@ enum OrderRefundState {
   waitAudit('WAIT_AUDIT'),
 
   /// 已拒绝
-  refused('REFUSED'),
+  refused('AUDIT_REFUSED'),
 
   /// 审核通过
   auditPass('AUDIT_PASS'),
