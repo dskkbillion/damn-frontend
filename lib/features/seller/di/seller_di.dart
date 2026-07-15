@@ -62,6 +62,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_man
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/auth_application/auth_application_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/time_management/time_management_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/auto_reply/auto_reply_bloc.dart';
+import 'package:dskk_flutter_refactor/features/seller/presentation/blocs/after_sales_review/after_sales_review_bloc.dart';
 
 // 统计模块依赖注入
 import 'package:dskk_flutter_refactor/features/seller/di/seller_statistics_di.dart';
@@ -410,5 +411,18 @@ class SellerDI {
     } else {
       AppLogger.d('[SellerDI] AutoReplyBloc 已存在，跳过注册');
     }
+
+    // BLoC - 售后审核
+    if (!sl.isRegistered<AfterSalesReviewBloc>()) {
+      sl.registerFactory<AfterSalesReviewBloc>(
+        () => AfterSalesReviewBloc(
+          sl<GetTenantAuditListUseCase>(),
+          sl<AuditRefundUseCase>(),
+        ),
+      );
+      AppLogger.d('[SellerDI] 已注册 AfterSalesReviewBloc');
+    } else {
+      AppLogger.d('[SellerDI] AfterSalesReviewBloc 已存在，跳过注册');
+    }
   }
-} 
+}
