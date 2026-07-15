@@ -704,14 +704,15 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       if (data != null && data['items'] is List) {
         return (data['items'] as List).map<RelatedServiceModel>((serviceJson) {
-           AppLogger.d('[DataSource] Item JSON: ${jsonEncode(serviceJson)}');
+           final service = Map<String, dynamic>.from(serviceJson as Map);
+           AppLogger.d('[DataSource] Item JSON: ${jsonEncode(service)}');
            try {
              return RelatedServiceModel(
-               id: serviceJson['id'] as int? ?? 0,
-               title: serviceJson['name'] as String? ?? 'Unknown service',
-               imageUrl: serviceJson['mainImage'] as String? ?? '',
-               price: (serviceJson['price'] as num?)?.toDouble() ?? 0.0,
-               tenantId: serviceJson['tenantId'] as int? ?? 0,
+               id: service['id'] as int? ?? 0,
+               title: _getDisplayServiceName(service),
+               imageUrl: service['mainImage'] as String? ?? '',
+               price: (service['price'] as num?)?.toDouble() ?? 0.0,
+               tenantId: service['tenantId'] as int? ?? 0,
              );
            } catch (e, stacktrace) {
               AppLogger.d('[DataSource] Error parsing item JSON: $e');
@@ -721,9 +722,13 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
          }).toList();
       } else if (data != null && data['services'] is List) {
         return (data['services'] as List).map((serviceJson) {
-           AppLogger.d('[DataSource] Service JSON: ${jsonEncode(serviceJson)}');
+           final service = Map<String, dynamic>.from(serviceJson as Map);
+           AppLogger.d('[DataSource] Service JSON: ${jsonEncode(service)}');
            try {
-             return RelatedServiceModel.fromJson(serviceJson);
+             return RelatedServiceModel.fromJson({
+               ...service,
+               'name': _getDisplayServiceName(service),
+             });
            } catch (e, stacktrace) {
               AppLogger.d('[DataSource] Error parsing service JSON: $e');
               AppLogger.d(stacktrace); 
@@ -744,6 +749,14 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       AppLogger.d('Unexpected error in getRelatedServices at $path: $e');
       throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
     }
+  }
+
+  String _getDisplayServiceName(Map<String, dynamic> service) {
+    final translatedName = service['translatedName'];
+    if (translatedName is String && translatedName.trim().isNotEmpty) {
+      return translatedName;
+    }
+    return service['name'] as String? ?? 'Unknown service';
   }
 
   @override
@@ -1143,4 +1156,4 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     // _sseClient?.close();
     AppLogger.d("AiChatRemoteDataSource disposed.");
   }
-} 
+}
