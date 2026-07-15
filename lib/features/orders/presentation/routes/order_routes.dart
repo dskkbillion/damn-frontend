@@ -44,17 +44,20 @@ class OrderRoutes {
       },
     ),
     GoRoute(
-      path: '/evaluation/:itemId',
+      path: '/evaluation/:orderId',
       name: 'evaluation',
       pageBuilder: (BuildContext context, GoRouterState state) {
-        final String itemIdStr = state.pathParameters['itemId'] ?? 'invalid';
-        final int? itemId = int.tryParse(itemIdStr);
-        if (itemId == null) {
-          print('Error: Invalid itemId parameter in route: $itemIdStr');
+        final String orderIdStr = state.pathParameters['orderId'] ?? 'invalid';
+        final int? orderId = int.tryParse(orderIdStr);
+        if (orderId == null) {
+          print('Error: Invalid orderId parameter in route: $orderIdStr');
           return state.buildSmartPage(
             Scaffold(
-              appBar: AppBar(title: Text(AppLocalizations.of(context).order_route_error)),
-              body: Center(child: Text(AppLocalizations.of(context).order_route_invalid_item_id(itemIdStr))),
+              appBar: AppBar(
+                  title: Text(AppLocalizations.of(context).order_route_error)),
+              body: Center(
+                  child: Text(AppLocalizations.of(context)
+                      .order_route_invalid_item_id(orderIdStr))),
             ),
             name: 'evaluationError',
           );
@@ -63,7 +66,7 @@ class OrderRoutes {
         final orderItem = state.extra as OrderItem?;
         return state.buildSmartPage(
           OrderEvaluationPage(
-            itemId: itemId,
+            orderId: orderId,
             orderItem: orderItem,
           ),
           name: 'evaluation',
@@ -105,9 +108,8 @@ extension OrderStatusExtension on OrderStatus {
     if (statusString == null) return null;
     try {
       // Find the enum value matching the string representation
-      return OrderStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == statusString
-      );
+      return OrderStatus.values
+          .firstWhere((e) => e.toString().split('.').last == statusString);
     } catch (e) {
       print('Error parsing OrderStatus from string: $statusString - $e');
       // Decide error handling: return null, a default, or throw
@@ -115,4 +117,3 @@ extension OrderStatusExtension on OrderStatus {
     }
   }
 }
-

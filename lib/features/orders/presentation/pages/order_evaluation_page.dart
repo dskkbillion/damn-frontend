@@ -19,12 +19,13 @@ import '../../domain/entities/address.dart';
 
 /// 订单评价页面
 class OrderEvaluationPage extends StatefulWidget {
-  final int itemId;
+  /// The backend evaluates an order, not an individual order item.
+  final int orderId;
   final OrderItem? orderItem;
 
   const OrderEvaluationPage({
     super.key,
-    required this.itemId,
+    required this.orderId,
     this.orderItem,
   });
 
@@ -77,7 +78,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 // 商品信息卡片
                 if (widget.orderItem != null) _buildOrderItemCard(),
                 const SizedBox(height: 16),
-                
+
                 // 评价表单
                 _buildEvaluationForm(),
                 const SizedBox(height: 32), // 底部留白
@@ -92,7 +93,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   /// 构建订单商品信息卡片
   Widget _buildOrderItemCard() {
     final item = widget.orderItem!;
-    
+
     return GlassCard(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: EdgeInsets.zero,
@@ -121,8 +122,8 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                 Text(
                   AppLocalizations.of(context).order_evaluation_product_info,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -146,10 +147,11 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                           fit: BoxFit.cover,
                           borderRadius: BorderRadius.circular(8),
                         )
-                      : Icon(Icons.image, color: AppColors.textTertiary, size: 40),
+                      : Icon(Icons.image,
+                          color: AppColors.textTertiary, size: 40),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // 商品信息
                 Expanded(
                   child: Column(
@@ -196,10 +198,10 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
   /// 构建评价表单
   Widget _buildEvaluationForm() {
     final itemPrice = widget.orderItem?.price ?? 0.0;
-    
+
     // 创建一个模拟的Order对象，只包含当前商品项
     final mockOrder = Order(
-      id: widget.itemId,
+      id: widget.orderId,
       orderSn: '',
       state: OrderStatus.awaitingEvaluation,
       items: widget.orderItem != null ? [widget.orderItem!] : [],

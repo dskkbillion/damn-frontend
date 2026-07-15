@@ -289,6 +289,8 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
       // Success
     } on DioException catch (e) {
       throw ServerFailure(message: e.response?.data?['msg'] ?? e.message ?? 'Network error adding evaluation');
+    } on ServerFailure {
+      rethrow;
     } catch (e) {
       throw ServerFailure(message: 'An unexpected error occurred adding evaluation: ${e.toString()}');
     }

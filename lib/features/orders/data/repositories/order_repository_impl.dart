@@ -278,17 +278,32 @@ class OrderRepositoryImpl implements IOrderRepository {
     required bool isAnonymous,
     required List<String> pictures,
   }) async {
-    // TODO: Add network check if required
     try {
+      var uploadedPictureUrls = pictures;
+      if (pictures.isNotEmpty) {
+        final uploadResult = await fileUploadService.uploadFiles(pictures);
+        final uploadFailure = uploadResult.fold<Failure?>(
+          (failure) => failure,
+          (_) => null,
+        );
+        if (uploadFailure != null) {
+          return Left(uploadFailure);
+        }
+        uploadedPictureUrls = uploadResult
+            .getOrElse(() => const [])
+            .map((result) => result.url)
+            .toList();
+      }
+
       await remoteDataSource.addEvaluation(
           orderId: orderId,
           score: score,
           content: content,
           isAnonymous: isAnonymous,
-          pictures: pictures);
+          pictures: uploadedPictureUrls);
       return const Right(null);
-    } on Exception catch (e) { // Catch generic Exception
-      return Left(ServerFailure(message: '评价失败: ${e.toString()}')); // Use ServerFailure
+    } on Exception catch (e) {
+      return Left(ServerFailure(message: '评价失败: ${e.toString()}'));
     }
   }
 
