@@ -612,9 +612,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     final l10n = AppLocalizations.of(context);
     final List<Widget> actionButtons = [];
 
-    // 撤销申请：待审核或审核通过时可撤销
-    if (application.refundState == 'wait_audit' ||
-        application.refundState == 'audit_pass') {
+    // 撤销申请仅限平台/卖家尚未审核的待审核阶段。
+    if (application.refundState == 'wait_audit') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
