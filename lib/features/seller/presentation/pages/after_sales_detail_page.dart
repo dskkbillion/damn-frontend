@@ -563,6 +563,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         return '仅退款';
       case RefundType.moneyAndProduct:
         return '退货退款';
+      case RefundType.remake:
+        return '重新制作';
+      case RefundType.supplement:
+        return '补充内容';
       case RefundType.unknown:
         return '未知类型';
     }
