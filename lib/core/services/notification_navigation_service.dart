@@ -120,9 +120,9 @@ class NotificationNavigationService {
   }
 
   /// 跳转到评价页面
-  static void _navigateToEvaluation(BuildContext context, String itemId) {
+  static void _navigateToEvaluation(BuildContext context, String orderId) {
     try {
-      context.push('/evaluation/$itemId');
+      context.push('/evaluation/$orderId');
     } catch (e) {
       debugPrint('Failed to navigate to evaluation: $e');
       _showNavigationError(context, '无法打开评价页面');
