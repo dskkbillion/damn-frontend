@@ -13,9 +13,9 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/features/orders/presentation/widgets/order_action_button_builder.dart';
 
-
 /// 售后详情页面
-class AfterSalesDetailPage extends StatefulWidget { // Changed to StatefulWidget
+class AfterSalesDetailPage extends StatefulWidget {
+  // Changed to StatefulWidget
   /// 预期接收售后申请 ID 或订单 ID
   final String id;
 
@@ -29,7 +29,6 @@ class AfterSalesDetailPage extends StatefulWidget { // Changed to StatefulWidget
 }
 
 class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
-
   @override
   void initState() {
     super.initState();
@@ -43,22 +42,21 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
 
     // We need to ensure the Bloc is actually available. For now, let's assume it is.
     // Let's use context.read for now, assuming a BlocProvider exists above.
-     // IMPORTANT: This requires a BlocProvider<AfterSalesBloc> wrapping the route
-     //            or this widget itself.
-     // We will need to adjust the navigation in OrderListPage to include this.
+    // IMPORTANT: This requires a BlocProvider<AfterSalesBloc> wrapping the route
+    //            or this widget itself.
+    // We will need to adjust the navigation in OrderListPage to include this.
     // BlocProvider.of<AfterSalesBloc>(context, listen: false).add(LoadAfterSalesDetail(id: widget.id));
-     print('[AfterSalesDetailPage] initState: Triggering LoadAfterSalesDetail for id: ${widget.id}');
-     // Deferring the add event slightly to ensure context is fully available might be safer in some cases
-     // WidgetsBinding.instance.addPostFrameCallback((_) {
-     //   if (mounted) {
-          // context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
-     //   }
-     // });
-      // Let's try adding it directly for now. If issues arise, reconsider.
-      // We still need to PROVIDE the Bloc instance first.
-
+    print(
+        '[AfterSalesDetailPage] initState: Triggering LoadAfterSalesDetail for id: ${widget.id}');
+    // Deferring the add event slightly to ensure context is fully available might be safer in some cases
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) {
+    // context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
+    //   }
+    // });
+    // Let's try adding it directly for now. If issues arise, reconsider.
+    // We still need to PROVIDE the Bloc instance first.
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -81,87 +79,155 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
         }
         return bloc;
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context).after_sales_detail_title),
-        ),
-        body: BlocBuilder<AfterSalesBloc, AfterSalesState>(
-          builder: (context, state) {
-            print('[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
+      child: BlocListener<AfterSalesBloc, AfterSalesState>(
+        listener: (context, state) {
+          if (state is AfterSalesActionSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.actionSuccessMessage ?? '操作成功')),
+            );
+            _reloadDetail(context);
+          } else if (state is AfterSalesActionError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.errorMessage ?? '操作失败')),
+            );
+            _reloadDetail(context);
+          }
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context).after_sales_detail_title),
+          ),
+          body: BlocBuilder<AfterSalesBloc, AfterSalesState>(
+            builder: (context, state) {
+              print(
+                  '[AfterSalesDetailPage] BlocBuilder received state: ${state.runtimeType}');
 
-            // Show loading indicator only if loading this specific ID
-            if (state is AfterSalesDetailLoading && state.loadingId == widget.id) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            // Show error specific to this ID if loading failed
-            if (state is AfterSalesDetailError && state.id == widget.id) {
+              // Show loading indicator only if loading this specific ID
+              if (state is AfterSalesDetailLoading &&
+                  state.loadingId == widget.id) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              // Show error specific to this ID if loading failed
+              if (state is AfterSalesDetailError && state.id == widget.id) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(AppLocalizations.of(context)
+                          .after_sales_detail_load_failed(
+                              state.errorMessage ?? '')), // Use errorMessage
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          final orderId = int.tryParse(widget.id);
+                          if (orderId != null) {
+                            context.read<AfterSalesBloc>().add(
+                                LoadAfterSalesDetailByOrderId(
+                                    orderId: orderId));
+                          } else {
+                            context
+                                .read<AfterSalesBloc>()
+                                .add(LoadAfterSalesDetail(id: widget.id));
+                          }
+                        },
+                        child: Text(AppLocalizations.of(context).retry),
+                      )
+                    ],
+                  ),
+                );
+              }
+
+              // Handle Loaded state
+              if (state is AfterSalesDetailLoaded) {
+                final application = state.application;
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildStatusHeader(context, application),
+                      const SizedBox(height: 8),
+                      _buildRefundInfoCard(
+                          context, colorScheme, textTheme, application),
+                      const SizedBox(height: 8),
+                      _buildRefundDetailsCard(context, application),
+                      const SizedBox(height: 100), // 为底部按钮留出空间
+                    ],
+                  ),
+                );
+              }
+
+              // Default/Initial state or unexpected state
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(AppLocalizations.of(context).after_sales_detail_load_failed(state.errorMessage ?? '')), // Use errorMessage
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        final orderId = int.tryParse(widget.id);
-                        if (orderId != null) {
-                          context.read<AfterSalesBloc>().add(LoadAfterSalesDetailByOrderId(orderId: orderId));
-                        } else {
-                          context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
-                        }
-                      },
-                      child: Text(AppLocalizations.of(context).retry),
-                    )
-                  ],
-                ),
-              );
-            }
-
-            // Handle Loaded state
-            if (state is AfterSalesDetailLoaded) {
-              final application = state.application;
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildStatusHeader(context, application),
-                    const SizedBox(height: 8),
-                    _buildRefundInfoCard(context, colorScheme, textTheme, application),
-                    const SizedBox(height: 8),
-                    _buildRefundDetailsCard(context, application),
-                    const SizedBox(height: 100), // 为底部按钮留出空间
-                  ],
-                ),
-              );
-            }
-
-            // Default/Initial state or unexpected state
-            return Center(child: Text(AppLocalizations.of(context).after_sales_detail_initializing));
-          },
-        ),
-        bottomNavigationBar: BlocBuilder<AfterSalesBloc, AfterSalesState>(
-          builder: (context, state) {
-            if (state is AfterSalesDetailLoaded) {
-              return _buildBottomActionBar(context, colorScheme, state.application);
-            }
-            return const SizedBox.shrink();
-          },
+                  child: Text(AppLocalizations.of(context)
+                      .after_sales_detail_initializing));
+            },
+          ),
+          bottomNavigationBar: BlocBuilder<AfterSalesBloc, AfterSalesState>(
+            builder: (context, state) {
+              if (state is AfterSalesDetailLoaded) {
+                return _buildBottomActionBar(
+                    context, colorScheme, state.application);
+              }
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
   }
 
+  void _reloadDetail(BuildContext context) {
+    final orderId = int.tryParse(widget.id);
+    if (orderId != null) {
+      context
+          .read<AfterSalesBloc>()
+          .add(LoadAfterSalesDetailByOrderId(orderId: orderId));
+    } else {
+      context.read<AfterSalesBloc>().add(LoadAfterSalesDetail(id: widget.id));
+    }
+  }
+
+  Future<void> _confirmMediation(
+    BuildContext context,
+    AfterSalesApplication application,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('申请平台介入'),
+        content: const Text('提交后将由平台审核处理该售后申请，是否继续？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('提交申请'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      context
+          .read<AfterSalesBloc>()
+          .add(ApplyMediationRequested(application.id));
+    }
+  }
+
   // Status Header - matching order detail page style
-  Widget _buildStatusHeader(BuildContext context, AfterSalesApplication application) {
+  Widget _buildStatusHeader(
+      BuildContext context, AfterSalesApplication application) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    
+
     String statusTitle = _getStatusTitle(application.refundState);
     String? statusSubtitle = _getStatusSubtitle(application.refundState);
     IconData statusIcon = _getStatusIcon(application.refundState);
     Color statusColor = _getStatusColor(application.refundState, colorScheme);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0).copyWith(top: 16),
       padding: const EdgeInsets.all(16.0),
@@ -256,11 +322,12 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   // 退款详情卡片
-  Widget _buildRefundDetailsCard(BuildContext context, AfterSalesApplication application) {
+  Widget _buildRefundDetailsCard(
+      BuildContext context, AfterSalesApplication application) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -280,40 +347,64 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
             style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
-          _buildDetailRow(AppLocalizations.of(context).after_sales_info_order_number, application.refundSn ?? '-', textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context).after_sales_info_apply_time, _formatDateTime(application.createTime), textTheme, colorScheme),
+          _buildDetailRow(
+              AppLocalizations.of(context).after_sales_info_order_number,
+              application.refundSn ?? '-',
+              textTheme,
+              colorScheme),
+          _buildDetailRow(
+              AppLocalizations.of(context).after_sales_info_apply_time,
+              _formatDateTime(application.createTime),
+              textTheme,
+              colorScheme),
           // #217 AS-08 + #356: 币种符号走 RegionConfig,不再写死 ¥
-          _buildDetailRow(AppLocalizations.of(context).after_sales_info_refund_amount, RegionConfig.formatPrice(application.refundPrice ?? 0), textTheme, colorScheme),
-          _buildDetailRow(AppLocalizations.of(context).after_sales_info_reason, application.refundReason ?? '-', textTheme, colorScheme),
+          _buildDetailRow(
+              AppLocalizations.of(context).after_sales_info_refund_amount,
+              RegionConfig.formatPrice(application.refundPrice ?? 0),
+              textTheme,
+              colorScheme),
+          _buildDetailRow(AppLocalizations.of(context).after_sales_info_reason,
+              application.refundReason ?? '-', textTheme, colorScheme),
           if (application.refundExplain?.isNotEmpty == true)
-            _buildDetailRow(AppLocalizations.of(context).after_sales_info_description, application.refundExplain!, textTheme, colorScheme),
+            _buildDetailRow(
+                AppLocalizations.of(context).after_sales_info_description,
+                application.refundExplain!,
+                textTheme,
+                colorScheme),
           if (application.refundImage?.isNotEmpty == true) ...[
             const Divider(height: 24),
             Text(
               AppLocalizations.of(context).after_sales_info_evidence,
-              style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              style:
+                  textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: application.refundImage!.map((url) =>
-                GestureDetector(
-                  onTap: () => _showFullImage(context, url),
-                  child: AppNetworkImage(
-                    imageUrl: url,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ).toList(),
+              children: application.refundImage!
+                  .map(
+                    (url) => GestureDetector(
+                      onTap: () => _showFullImage(context, url),
+                      child: AppNetworkImage(
+                        imageUrl: url,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
           if (application.auditRemark?.isNotEmpty == true) ...[
             const Divider(height: 24),
-            _buildDetailRow(AppLocalizations.of(context).after_sales_info_audit_remark, application.auditRemark!, textTheme, colorScheme),
+            _buildDetailRow(
+                AppLocalizations.of(context).after_sales_info_audit_remark,
+                application.auditRemark!,
+                textTheme,
+                colorScheme),
           ],
         ],
       ),
@@ -349,7 +440,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, TextTheme textTheme, ColorScheme colorScheme) {
+  Widget _buildDetailRow(String label, String value, TextTheme textTheme,
+      ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -393,8 +485,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
             ),
           ),
           const SizedBox(width: 8),
@@ -440,7 +532,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   // Product Information Card - matching order detail page style
-  Widget _buildRefundInfoCard(BuildContext context, ColorScheme colorScheme, TextTheme textTheme, AfterSalesApplication application) {
+  Widget _buildRefundInfoCard(BuildContext context, ColorScheme colorScheme,
+      TextTheme textTheme, AfterSalesApplication application) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       padding: const EdgeInsets.all(16.0),
@@ -478,22 +571,30 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      application.productName ?? AppLocalizations.of(context).after_sales_product_unknown,
-                      style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                      application.productName ??
+                          AppLocalizations.of(context)
+                              .after_sales_product_unknown,
+                      style: textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6.0),
-                    if (application.variantName != null && application.variantName!.isNotEmpty) ...[
+                    if (application.variantName != null &&
+                        application.variantName!.isNotEmpty) ...[
                       Text(
-                        AppLocalizations.of(context).after_sales_spec(application.variantName!),
-                        style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                        AppLocalizations.of(context)
+                            .after_sales_spec(application.variantName!),
+                        style: textTheme.bodySmall
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4.0),
                     ],
                     Text(
-                      AppLocalizations.of(context).after_sales_quantity(application.refundNumber ?? 1),
-                      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                      AppLocalizations.of(context)
+                          .after_sales_quantity(application.refundNumber ?? 1),
+                      style: textTheme.bodySmall
+                          ?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -506,40 +607,45 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   }
 
   // Bottom Action Bar - uses OrderActionButtonBuilder for consistent styling across the app
-  Widget _buildBottomActionBar(BuildContext context, ColorScheme colorScheme, AfterSalesApplication application) {
+  Widget _buildBottomActionBar(BuildContext context, ColorScheme colorScheme,
+      AfterSalesApplication application) {
     final l10n = AppLocalizations.of(context);
     final List<Widget> actionButtons = [];
 
     // 撤销申请：待审核或审核通过时可撤销
-    if (application.refundState == 'wait_audit' || application.refundState == 'audit_pass') {
+    if (application.refundState == 'wait_audit' ||
+        application.refundState == 'audit_pass') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
           l10n.after_sales_revoke,
-          () { /* TODO: Implement cancel */ print('Cancel clicked'); },
+          () {
+            /* TODO: Implement cancel */ print('Cancel clicked');
+          },
           isPrimary: false,
         ),
       );
     }
 
-    // 主操作按钮：待审核时可修改（主要按钮），非终态的其他状态显示平台介入（次要按钮）
-    // 终态（audit_pass / audit_refused / cancel）不显示任何操作按钮
-    const terminalStates = {'audit_pass', 'audit_refused', 'cancel'};
+    // 主操作按钮：待审核时可修改。平台介入仅在卖家拒绝且后端标记可介入时展示；
+    // 不能把任意非终态售后都直接升级为平台仲裁。
     if (application.refundState == 'wait_audit') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
           l10n.after_sales_modify,
-          () { /* TODO: Implement modify */ print('Modify clicked'); },
+          () {
+            /* TODO: Implement modify */ print('Modify clicked');
+          },
           isPrimary: true,
         ),
       );
-    } else if (!terminalStates.contains(application.refundState)) {
+    } else if (_canApplyMediation(application)) {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
           l10n.after_sales_platform_intervention,
-          () { /* TODO: Implement platform intervention */ print('Platform clicked'); },
+          () => _confirmMediation(context, application),
           isPrimary: false,
         ),
       );
@@ -551,10 +657,23 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        border: const Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)),
+        border: const Border(
+            top: BorderSide(color: AppColors.borderPrimary, width: 0.5)),
       ),
-      child: OrderActionButtonBuilder.buildResponsiveButtonLayout(actionButtons),
+      child:
+          OrderActionButtonBuilder.buildResponsiveButtonLayout(actionButtons),
     );
   }
 
+  bool _canApplyMediation(AfterSalesApplication application) {
+    if (application.orderState == 'applyingForMediation') {
+      return false;
+    }
+    if (application.mediationEligible == true) {
+      return true;
+    }
+
+    return application.auditType?.toLowerCase() == 'seller' &&
+        application.refundState.toLowerCase() == 'audit_refused';
+  }
 }
