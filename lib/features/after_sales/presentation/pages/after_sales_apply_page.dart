@@ -230,7 +230,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                   content: Text('售后申请已提交'), backgroundColor: Colors.green),
             );
             Future.delayed(const Duration(milliseconds: 800), () {
-              if (mounted) context.go('/afterSales');
+              // 保留当前页面栈，iOS 才能通过边缘左滑回到上一级。
+              // go 会重置栈，使无 AppBar 返回按钮的售后列表成为不可退出页面。
+              if (mounted) context.pushReplacement('/afterSales');
             });
           } else if (state is AfterSalesActionError) {
             ScaffoldMessenger.of(context).showSnackBar(
