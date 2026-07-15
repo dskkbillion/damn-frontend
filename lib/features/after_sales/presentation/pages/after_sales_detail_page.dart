@@ -150,6 +150,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
                           context, colorScheme, textTheme, application),
                       const SizedBox(height: 8),
                       _buildRefundDetailsCard(context, application),
+                      if (application.timeline?.isNotEmpty == true) ...[
+                        const SizedBox(height: 8),
+                        _buildProgressCard(context, application.timeline!),
+                      ],
                       const SizedBox(height: 100), // 为底部按钮留出空间
                     ],
                   ),
@@ -288,6 +292,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     switch (status.trim().toUpperCase()) {
       case 'WAIT_AUDIT':
         return s.after_sales_status_wait_audit;
+      case 'PLATFORM_ACCEPTED':
+        return '平台已受理';
+      case 'PLATFORM_INVESTIGATING':
+        return '平台调查中';
       case 'AUDIT_PASS':
         return s.after_sales_status_audit_pass;
       case 'AUDIT_REFUSED':
@@ -307,6 +315,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     switch (status.trim().toUpperCase()) {
       case 'WAIT_AUDIT':
         return s.after_sales_subtitle_wait_audit;
+      case 'PLATFORM_ACCEPTED':
+        return '平台已受理您的介入申请，正在安排处理。';
+      case 'PLATFORM_INVESTIGATING':
+        return '平台正在核实订单与沟通记录，请耐心等待裁决结果。';
       case 'AUDIT_PASS':
         return s.after_sales_subtitle_audit_pass;
       case 'AUDIT_REFUSED':
@@ -411,6 +423,68 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     );
   }
 
+  Widget _buildProgressCard(
+    BuildContext context,
+    List<AfterSalesTimelineItem> timeline,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('处理进度',
+              style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 14),
+          ...timeline.asMap().entries.map((entry) {
+            final item = entry.value;
+            final isLast = entry.key == timeline.length - 1;
+            final content = item.reason?.trim().isNotEmpty == true
+                ? '${item.remark ?? '平台处理'}：${item.reason}'
+                : (item.remark ?? '平台处理中');
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(children: [
+                  Icon(Icons.circle, size: 10, color: colorScheme.primary),
+                  if (!isLast)
+                    Container(width: 1, height: 38, color: colorScheme.outlineVariant),
+                ]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: isLast ? 0 : 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(content, style: textTheme.bodyMedium),
+                        if (item.createTime != null) ...[
+                          const SizedBox(height: 3),
+                          Text(_formatDateTime(item.createTime),
+                              style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   void _showFullImage(BuildContext context, String imageUrl) {
     showDialog(
       context: context,
@@ -505,6 +579,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
     switch (status.trim().toUpperCase()) {
       case 'WAIT_AUDIT':
         return Icons.pending_outlined;
+      case 'PLATFORM_ACCEPTED':
+        return Icons.assignment_turned_in_outlined;
+      case 'PLATFORM_INVESTIGATING':
+        return Icons.manage_search_outlined;
       case 'AUDIT_PASS':
         return Icons.check_circle_outline;
       case 'AUDIT_REFUSED':
@@ -519,6 +597,10 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
   Color _getStatusColor(String status, ColorScheme colorScheme) {
     switch (status.trim().toUpperCase()) {
       case 'WAIT_AUDIT':
+        return colorScheme.primary;
+      case 'PLATFORM_ACCEPTED':
+        return colorScheme.tertiary;
+      case 'PLATFORM_INVESTIGATING':
         return colorScheme.primary;
       case 'AUDIT_PASS':
         return colorScheme.tertiary;
@@ -628,7 +710,8 @@ class _AfterSalesDetailPageState extends State<AfterSalesDetailPage> {
 
     // 主操作按钮：待审核时可修改。平台介入仅在卖家拒绝且后端标记可介入时展示；
     // 不能把任意非终态售后都直接升级为平台仲裁。
-    if (application.refundState == 'wait_audit') {
+    if (application.refundState == 'wait_audit' &&
+        application.auditType?.toLowerCase() != 'platform') {
       actionButtons.add(
         OrderActionButtonBuilder.buildButton(
           context,
