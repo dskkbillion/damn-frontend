@@ -102,18 +102,18 @@ class OrderModel {
     }
 
     DateTime? parseOptionalDateTime(String? dateString) {
-       if (dateString == null) return null;
+      if (dateString == null) return null;
       // Handle potential integer timestamps from API (milliseconds since epoch)
       if (int.tryParse(dateString) != null) {
-          try {
-              return DateTime.fromMillisecondsSinceEpoch(int.parse(dateString));
-          } catch (_) {
-               // Fall through to try parsing as string
-          }
+        try {
+          return DateTime.fromMillisecondsSinceEpoch(int.parse(dateString));
+        } catch (_) {
+          // Fall through to try parsing as string
+        }
       }
       // Try parsing as ISO string
       try {
-          return DateTime.tryParse(dateString);
+        return DateTime.tryParse(dateString);
       } catch (_) {
         return null;
       }
@@ -122,14 +122,14 @@ class OrderModel {
     // Parse address object
     AddressModel? parsedAddress;
     if (json['address'] != null && json['address'] is Map<String, dynamic>) {
-       try {
-         parsedAddress = AddressModel.fromJson(json['address']);
-       } catch (e) {
-         AppLogger.d('Error parsing address: $e'); // Log error if parsing fails
-         parsedAddress = null;
-       }
+      try {
+        parsedAddress = AddressModel.fromJson(json['address']);
+      } catch (e) {
+        AppLogger.d('Error parsing address: $e'); // Log error if parsing fails
+        parsedAddress = null;
+      }
     }
-    
+
     // Parse buyer and tenant
     MemberModel? parsedBuyer;
     if (json['buyer'] != null && json['buyer'] is Map<String, dynamic>) {
@@ -139,7 +139,7 @@ class OrderModel {
         AppLogger.d('Error parsing buyer: $e');
       }
     }
-    
+
     MemberModel? parsedTenant;
     if (json['tenant'] != null && json['tenant'] is Map<String, dynamic>) {
       try {
@@ -150,7 +150,8 @@ class OrderModel {
     }
 
     OrderEvaluationDetailModel? parsedEvaluateDetail;
-    if (json['evaluateDetail'] != null && json['evaluateDetail'] is Map<String, dynamic>) {
+    if (json['evaluateDetail'] != null &&
+        json['evaluateDetail'] is Map<String, dynamic>) {
       parsedEvaluateDetail = OrderEvaluationDetailModel.fromJson(
         json['evaluateDetail'] as Map<String, dynamic>,
       );
@@ -168,12 +169,14 @@ class OrderModel {
       deliveryPrice: (json['deliveryPrice'] as num?)?.toDouble(),
       payPrice: (json['payPrice'] as num?)?.toDouble(),
       // Removed payStatus
-      payTime: parseOptionalDateTime(json['payTime']?.toString()), // Ensure input is String?
+      payTime: parseOptionalDateTime(
+          json['payTime']?.toString()), // Ensure input is String?
       payChannelCode: json['payChannelCode'] as String?,
       logisticsId: json['logisticsId'] as int?,
       logisticsNo: json['logisticsNo'] as String?,
       deliveryTime: parseOptionalDateTime(json['deliveryTime']?.toString()),
-      createTime: parseOptionalDateTime(json['createTime']?.toString()), // Use 'createTime' key
+      createTime: parseOptionalDateTime(
+          json['createTime']?.toString()), // Use 'createTime' key
       completeTime: parseOptionalDateTime(json['completeTime']?.toString()),
       cancelTime: parseOptionalDateTime(json['cancelTime']?.toString()),
       buyerRemark: json['buyerRemark'] as String?,
@@ -181,9 +184,12 @@ class OrderModel {
       buyer: parsedBuyer,
       tenant: parsedTenant,
       autoCancelTime: parseOptionalDateTime(json['autoCancelTime']?.toString()),
-      autoMaterialTime: parseOptionalDateTime(json['autoMaterialTime']?.toString()),
-      autoOrderReceivinTime: parseOptionalDateTime(json['autoOrderReceivinTime']?.toString()),
-      deliveryTimestamp: parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
+      autoMaterialTime:
+          parseOptionalDateTime(json['autoMaterialTime']?.toString()),
+      autoOrderReceivinTime:
+          parseOptionalDateTime(json['autoOrderReceivinTime']?.toString()),
+      deliveryTimestamp:
+          parseOptionalDateTime(json['deliveryTimestamp']?.toString()),
       evaluate: json['evaluate'] as bool?,
       evaluateDetail: parsedEvaluateDetail,
       refundId: json['refundId'] as int?,
@@ -196,7 +202,9 @@ class OrderModel {
   /// Converts this Data Transfer Object to a Domain [Order] entity.
   Order toEntity() {
     // Build Address from AddressModel or provide default
-    final domainAddress = address?.toEntity() ?? const Address(recipientName: '', phone: '', areaId: '', detailAddress: '');
+    final domainAddress = address?.toEntity() ??
+        const Address(
+            recipientName: '', phone: '', areaId: '', detailAddress: '');
 
     final priceSummary = OrderPriceSummary(
       totalPrice: totalPrice ?? 0.0,
@@ -218,10 +226,19 @@ class OrderModel {
       deliveryTime: deliveryTime,
     );
 
+    // Some legacy orders are persisted as `orderCompleted` before the
+    // evaluation flag is set.  They are still actionable for the buyer and
+    // must appear in the pending-evaluation flow until an evaluation exists.
+    final parsedState = OrderStatus.fromString(state);
+    final displayState =
+        parsedState == OrderStatus.orderCompleted && evaluate != true
+            ? OrderStatus.awaitingEvaluation
+            : parsedState;
+
     return Order(
       id: id,
       orderSn: orderSn, // Now directly maps model.orderSn to entity.orderSn
-      state: OrderStatus.fromString(state),
+      state: displayState,
       orderType: orderType,
       items: items.map((itemModel) => itemModel.toEntity()).toList(),
       shippingAddress: domainAddress, // Use converted or default address
@@ -249,4 +266,4 @@ class OrderModel {
   }
 
   // OrderModel 不需要继承 Equatable，因为它主要用于数据传输和转换
-} 
+}

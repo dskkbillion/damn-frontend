@@ -106,9 +106,18 @@ class OrderRemoteDataSourceImpl implements IOrderRemoteDataSource {
             final List<dynamic>? orderListJson = dataMap['rows'] as List<dynamic>?; // Access rows from the ensured map
 
             if (orderListJson != null) {
-              return orderListJson
+              final orders = orderListJson
                   .map((json) => OrderModel.fromJson(json as Map<String, dynamic>))
                   .toList();
+              if (status == OrderStatus.awaitingEvaluation) {
+                // The API accepts both the canonical awaitingEvaluation state
+                // and legacy orderCompleted rows that are still unevaluated.
+                // Keep only actionable rows in this tab.
+                return orders
+                    .where((order) => order.evaluate != true)
+                    .toList();
+              }
+              return orders;
             } else {
               // Use double quotes for the outer string to allow inner single quotes
               AppLogger.d("[OrderRemoteDataSource] Successfully decoded/obtained Map, but 'rows' field is null or not a list. Returning empty list."); 

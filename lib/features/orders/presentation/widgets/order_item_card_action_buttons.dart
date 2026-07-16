@@ -42,42 +42,81 @@ class OrderItemCardActionButtons extends StatelessWidget {
         final isTimedOut = order.autoCancelTime != null &&
             order.autoCancelTime!.isBefore(DateTime.now());
         if (!isTimedOut) {
-          if (onCancel != null) buttons.add(_buildButton(context, l10n.order_action_cancel, onCancel!));
-          if (onPay != null) buttons.add(_buildButton(context, l10n.order_action_go_pay, onPay!, isPrimary: true));
+          if (onCancel != null)
+            buttons.add(
+                _buildButton(context, l10n.order_action_cancel, onCancel!));
+          if (onPay != null)
+            buttons.add(_buildButton(context, l10n.order_action_go_pay, onPay!,
+                isPrimary: true));
         }
         break;
       case OrderStatus.awaitingDelivery:
       case OrderStatus.awaitingSubmission:
       case OrderStatus.buyAwaitingSubmission:
       case OrderStatus.awaitingStart:
-        if (onRemindDelivery != null) buttons.add(_buildButton(context, l10n.order_action_remind_delivery, onRemindDelivery!));
-        if (onCancel != null) buttons.add(_buildButton(context, l10n.order_action_cancel, onCancel!));
+        if (onRemindDelivery != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_remind_delivery, onRemindDelivery!));
+        if (onCancel != null)
+          buttons
+              .add(_buildButton(context, l10n.order_action_cancel, onCancel!));
         break;
       case OrderStatus.awaitingConfirmation:
-        if (onViewLogistics != null) buttons.add(_buildButton(context, l10n.order_action_view_logistics, onViewLogistics!));
-        if (onApplyAfterSale != null) buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
-        if (onConfirmReceipt != null) buttons.add(_buildButton(context, l10n.order_action_confirm_receipt, onConfirmReceipt!, isPrimary: true));
+        if (onViewLogistics != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_view_logistics, onViewLogistics!));
+        if (onApplyAfterSale != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
+        if (onConfirmReceipt != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_confirm_receipt, onConfirmReceipt!,
+              isPrimary: true));
         break;
       case OrderStatus.awaitingEvaluation:
-        if (onViewLogistics != null) buttons.add(_buildButton(context, l10n.order_action_view_logistics, onViewLogistics!));
-        if (onApplyAfterSale != null) buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
-        if (onEvaluate != null) buttons.add(_buildButton(context, l10n.order_action_go_evaluate, onEvaluate!, isPrimary: true));
+        if (onViewLogistics != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_view_logistics, onViewLogistics!));
+        if (onApplyAfterSale != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
+        if (onEvaluate != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_go_evaluate, onEvaluate!,
+              isPrimary: true));
         break;
       case OrderStatus.orderCompleted:
-        if (onApplyAfterSale != null) buttons.add(_buildButton(context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
-        if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
-        if (onDelete != null) buttons.add(_buildButton(context, l10n.order_action_delete_order, onDelete!));
+        if (onApplyAfterSale != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_apply_after_sale, onApplyAfterSale!));
+        if (order.evaluate != true && onEvaluate != null) {
+          buttons.add(_buildButton(
+              context, l10n.order_action_go_evaluate, onEvaluate!,
+              isPrimary: true));
+        }
+        if (onViewDetails != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_view_details, onViewDetails!));
+        if (onDelete != null)
+          buttons.add(
+              _buildButton(context, l10n.order_action_delete_order, onDelete!));
         break;
       case OrderStatus.canceled:
       case OrderStatus.afterSale:
       case OrderStatus.AfterSaleRejection:
       case OrderStatus.applyingForMediation:
-        if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
-        if (onDelete != null) buttons.add(_buildButton(context, l10n.order_action_delete_order, onDelete!));
+        if (onViewDetails != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_view_details, onViewDetails!));
+        if (onDelete != null)
+          buttons.add(
+              _buildButton(context, l10n.order_action_delete_order, onDelete!));
         break;
       default:
         // For unknown or states with no specific actions on list card, maybe show details button
-         if (onViewDetails != null) buttons.add(_buildButton(context, l10n.order_action_view_details, onViewDetails!));
+        if (onViewDetails != null)
+          buttons.add(_buildButton(
+              context, l10n.order_action_view_details, onViewDetails!));
         break;
     }
 
@@ -95,26 +134,28 @@ class OrderItemCardActionButtons extends StatelessWidget {
   }
 
   // Reuse the same button building logic (or extract to a shared utility)
-  Widget _buildButton(BuildContext context, String text, VoidCallback onPressed, {bool isPrimary = false}) {
+  Widget _buildButton(BuildContext context, String text, VoidCallback onPressed,
+      {bool isPrimary = false}) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     const buttonPadding = EdgeInsets.symmetric(horizontal: 16, vertical: 10);
     final buttonTextStyle = textTheme.bodyMedium;
-    final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
+    final buttonShape =
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(8));
     const buttonMinSize = Size(0, 36);
 
     return isPrimary
         ? ElevatedButton(
             onPressed: onPressed,
             style: ElevatedButton.styleFrom(
-               backgroundColor: colorScheme.primary,
-               foregroundColor: colorScheme.onPrimary,
-               padding: buttonPadding,
-               textStyle: buttonTextStyle,
-               shape: buttonShape,
-               minimumSize: buttonMinSize,
-               elevation: 2,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+              padding: buttonPadding,
+              textStyle: buttonTextStyle,
+              shape: buttonShape,
+              minimumSize: buttonMinSize,
+              elevation: 2,
             ),
             child: Text(text),
           )
@@ -131,4 +172,4 @@ class OrderItemCardActionButtons extends StatelessWidget {
             child: Text(text),
           );
   }
-} 
+}

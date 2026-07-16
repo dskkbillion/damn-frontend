@@ -168,6 +168,11 @@ class OrderDetailActionButtons extends StatelessWidget {
         break;
 
       case OrderStatus.orderCompleted: // 已完成
+        if (order.evaluate != true) {
+          primaryButton = _buildButton(context, l10n.order_action_go_evaluate,
+              () => _navigateToEvaluation(context),
+              isPrimary: true);
+        }
         buttons.add(_buildButton(context, l10n.order_action_apply_rework, () {
           dialogs.showOrderDemandDialog(context, 'reform');
         }));
