@@ -509,12 +509,27 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(context).seller_home_functions,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).seller_home_functions,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => context.push(SellerRoutes.afterSalesReview),
+                  icon: const Icon(Icons.assignment_return_outlined, size: 18),
+                  label: const Text('售后审核'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(0, 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             GridView.count(
@@ -554,12 +569,6 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   icon: Icons.reply_all,
                   label: AppLocalizations.of(context).seller_home_auto_reply,
                   onTap: () => context.push(SellerRoutes.autoReply),
-                ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.assignment_return_outlined,
-                  label: '售后审核',
-                  onTap: () => context.push(SellerRoutes.afterSalesReview),
                 ),
               ],
             ),
