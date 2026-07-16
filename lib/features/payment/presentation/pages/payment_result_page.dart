@@ -29,6 +29,7 @@ class PaymentResultPage extends StatefulWidget {
 
 class _PaymentResultPageState extends State<PaymentResultPage> {
   late PaymentResultStatus _status;
+  String? _failureMessage;
   Timer? _pollTimer;
   int _pollAttempt = 0;
   static const int _maxPolls = 6;
@@ -87,8 +88,13 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
           (failure) => AppLogger.d('[PaymentResult] poll #$_pollAttempt failed: $failure'),
           (order) {
             AppLogger.d('[PaymentResult] poll #$_pollAttempt state=${order.state}');
-            if (order.state != OrderStatus.awaitingPayment &&
-                order.state != OrderStatus.canceled) {
+            if (order.state == OrderStatus.canceled) {
+              timer.cancel();
+              setState(() {
+                _status = PaymentResultStatus.failure;
+                _failureMessage = '订单已超时关闭，支付结果未能入账，请联系客服核实。';
+              });
+            } else if (order.state != OrderStatus.awaitingPayment) {
               timer.cancel();
               setState(() {
                 _status = PaymentResultStatus.success;
@@ -170,7 +176,7 @@ class _PaymentResultPageState extends State<PaymentResultPage> {
       case PaymentResultStatus.pending:
         return '正在向后端确认订单状态(第 $_pollAttempt/$_maxPolls 次),稍后将自动跳转';
       case PaymentResultStatus.failure:
-        return widget.errorMessage ?? '支付过程中出现错误';
+        return _failureMessage ?? widget.errorMessage ?? '支付过程中出现错误';
     }
   }
 

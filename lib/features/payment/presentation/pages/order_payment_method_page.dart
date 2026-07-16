@@ -455,7 +455,9 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
         };
 
         if (result != null && result['result'] == PaymentWebViewResult.success) {
-          params['success'] = 'true';
+          // Stripe 的 success_url 只说明结账页已回跳；订单状态仍需以后端
+          // webhook 的落库结果为准，避免超时关闭的订单被错误展示为“支付成功”。
+          params['success'] = 'pending';
         } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
           params['success'] = 'false';
           params['errorMessage'] = '用户取消支付';

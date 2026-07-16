@@ -96,19 +96,30 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       );
     }
 
+    final navigator = Navigator.of(context);
+    final canGoBack = navigator.canPop();
+
     return PopScope(
-      canPop: false,
+      // 允许有路由栈时的 iOS 边缘返回手势；根路由没有上级时仍由下面的
+      // 回调和明确的返回按钮兜底到订单列表。
+      canPop: canGoBack,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        
-        if (context.canPop()) {
-          context.pop();
-        } else {
-          context.go('/profile/orders');
-        }
+        context.go('/profile/orders');
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            tooltip: '返回订单列表',
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (canGoBack) {
+                context.pop();
+              } else {
+                context.go('/profile/orders');
+              }
+            },
+          ),
           title: BlocBuilder<OrderDetailBloc, OrderDetailState>(
             builder: (context, state) {
               return Text(AppLocalizations.of(context).order_detail_title);
