@@ -28,7 +28,8 @@ abstract class HomeRemoteDataSource {
   ///
   /// 返回 [List<HomeFeedItemModel>] 包含分页的信息流数据
   /// 抛出 [ServerException] 表示服务器错误
-  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit, {int? seed});
+  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit,
+      {int? seed, String? feedId});
 
   /// 获取商品详情
   ///
@@ -37,27 +38,17 @@ abstract class HomeRemoteDataSource {
   /// 返回 [ProductDetailModel] 包含商品详细信息
   /// 抛出 [ServerException] 表示服务器错误
   Future<ProductDetailModel> getProductDetail(String productId);
-  
+
   /// 搜索产品
-  /// 
+  ///
   /// [keyword] 搜索关键词
   /// [page] 页码，从1开始
   /// [pageSize] 每页数量
-  /// 
+  ///
   /// 返回 [List<HomeFeedItemModel>] 包含搜索结果
   /// 抛出 [ServerException] 表示搜索失败
-  Future<List<HomeFeedItemModel>> searchProducts(
-    String keyword, 
-    {int page = 1, int pageSize = 20}
-  );
-  
-  /// 从推荐系统获取推荐产品
-  /// 
-  /// [limit] 请求的数量
-  /// 
-  /// 返回 [List<HomeFeedItemModel>] 包含推荐产品
-  /// 抛出 [ServerException] 表示获取推荐失败
-  Future<List<HomeFeedItemModel>> getRecommendedProducts(int limit);
+  Future<List<HomeFeedItemModel>> searchProducts(String keyword,
+      {int page = 1, int pageSize = 20});
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
@@ -83,7 +74,8 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     // http 包不走全局 Dio 拦截器链，必须手动设置 Accept-Language
     final prefs = await SharedPreferences.getInstance();
     final appLanguage = prefs.getString('app_language');
-    final language = appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
+    final language =
+        appLanguage ?? PlatformDispatcher.instance.locale.languageCode;
     return {
       'Content-Type': 'application/json',
       'Authorization': token,
@@ -99,24 +91,37 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     // 获取轮播图数据
     final bannerResponse = await _getBanners();
 
-    // 首页首屏和后续分页统一走同一套商品列表接口，避免出现“加载更多重复”的体感。
-    var productsResponse = await getHomeFeed(1, 10, seed: seed);
-
-    // 商品列表为空时，再退回到推荐接口，保留新用户兜底体验。
-    if (productsResponse.isEmpty) {
-      productsResponse = await _getRecommendProducts();
+    List<HomeFeedItemModel> productsResponse;
+    String? feedId;
+    try {
+      // 首页必须让模型端同时决定首屏与后续分页；不能首屏个性化、
+      // 第二页又混进普通随机列表。
+      final homeFeed = await _getHomeRecommendation(page: 1, limit: 10);
+      productsResponse = homeFeed.items;
+      feedId = homeFeed.feedId;
+    } catch (error) {
+      // 模型服务不可用时保留原商品列表作为可见的降级路径。
+      AppLogger.d('首页画像推荐不可用，降级到商品列表: $error');
+      productsResponse = await getHomeFeed(1, 10, seed: seed);
     }
-    
+
     // 构建 HomePageDataModel
     return HomePageDataModel(
       banners: bannerResponse,
       categories: const [], // 目前 API 中没有分类数据，使用空列表
       feedItems: productsResponse,
+      feedId: feedId,
     );
   }
 
   @override
-  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit, {int? seed}) async {
+  Future<List<HomeFeedItemModel>> getHomeFeed(int page, int limit,
+      {int? seed, String? feedId}) async {
+    if (feedId != null && feedId.isNotEmpty) {
+      return (await _getHomeRecommendation(
+              page: page, limit: limit, feedId: feedId))
+          .items;
+    }
     final url = Uri.parse('$baseUrl/api/shop/product/list');
 
     try {
@@ -160,16 +165,67 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     }
   }
 
+  Future<_HomeRecommendationPage> _getHomeRecommendation({
+    required int page,
+    required int limit,
+    String? feedId,
+  }) async {
+    final userId = int.tryParse(await getUserId());
+    if (userId == null || userId <= 0) {
+      throw ServerException(message: '未登录，无法构建首页兴趣画像');
+    }
+    final url = Uri.parse('$modelBaseUrl/recsys/home/feed');
+    final response = await client
+        .post(
+          url,
+          headers: await _getHeaders(),
+          body: json.encode({
+            'user_id': userId,
+            'page': page,
+            'limit': limit,
+            if (feedId != null) 'feed_id': feedId,
+          }),
+        )
+        .timeout(
+          const Duration(seconds: 8),
+          onTimeout: () => throw ServerException(message: '首页推荐系统请求超时'),
+        );
+    final body = utf8.decode(response.bodyBytes);
+    final jsonData = json.decode(body);
+    final data = jsonData is Map<String, dynamic> ? jsonData['data'] : null;
+    if (response.statusCode != 200 ||
+        jsonData['code'] != 200 ||
+        data is! Map<String, dynamic>) {
+      final message = jsonData is Map<String, dynamic>
+          ? (jsonData['msg'] ?? '首页推荐服务不可用').toString()
+          : '首页推荐服务不可用';
+      throw ServerException(message: message);
+    }
+    final rawItems = data['items'];
+    if (rawItems is! List || data['feed_id'] is! String) {
+      throw ServerException(message: '首页推荐响应格式错误');
+    }
+    AppLogger.d(
+        '首页画像推荐: strategy=${data['strategy']}, page=$page, feedId=${data['feed_id']}');
+    return _HomeRecommendationPage(
+      feedId: data['feed_id'] as String,
+      hasMore: data['has_more'] == true,
+      items: rawItems
+          .whereType<Map<String, dynamic>>()
+          .map(HomeFeedItemModel.fromJson)
+          .toList(),
+    );
+  }
 
   @override
   Future<ProductDetailModel> getProductDetail(String productId) async {
     final url = Uri.parse('$baseUrl/api/shop/product/get?id=$productId');
-    
+
     try {
       final headers = await _getHeaders();
       AppLogger.d('商品详情API请求URL: $url');
       AppLogger.d('商品详情API请求头: $headers');
-      
+
       final response = await client.get(
         url,
         headers: headers,
@@ -231,19 +287,16 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   /// 获取轮播图数据
   Future<List<BannerModel>> _getBanners() async {
     final url = Uri.parse('$baseUrl/api/content/banner/list');
-    
+
     try {
       final headers = await _getHeaders();
       AppLogger.d('Banner API请求URL: $url');
       AppLogger.d('Banner API请求头: $headers');
-      
+
       final response = await client.post(
         url,
         headers: headers,
-        body: json.encode({
-          "pageSize": 10,
-          "pageNum": 1
-        }),
+        body: json.encode({"pageSize": 10, "pageNum": 1}),
       );
 
       AppLogger.d('Banner API响应状态码: ${response.statusCode}');
@@ -256,14 +309,14 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         if (jsonData['code'] == 200) {
           final List<dynamic> bannersList = jsonData['rows'] ?? [];
           AppLogger.d('Banner列表: $bannersList');
-          
-          final banners = bannersList
-              .map((item) => BannerModel.fromJson(item))
-              .toList();
-          
+
+          final banners =
+              bannersList.map((item) => BannerModel.fromJson(item)).toList();
+
           AppLogger.d('解析后的Banner列表: $banners');
-          AppLogger.d('Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
-          
+          AppLogger.d(
+              'Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
+
           return banners;
         } else {
           AppLogger.d('Banner API返回信息: ${jsonData['msg']}');
@@ -279,100 +332,24 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     }
   }
 
-  /// 获取推荐商品列表
-  Future<List<HomeFeedItemModel>> _getRecommendProducts() async {
-    return getRecommendedProducts(10);  // 获取第一页，10条数据
-  }
-  
-  /// 从推荐系统获取推荐产品
   @override
-  Future<List<HomeFeedItemModel>> getRecommendedProducts(int limit) async {
-    try {
-      // 修复Issue #172: 传递userId(member.id)而不是commonUserId
-      // 因为Product.tenant_id对应的是Member.id
-      final userId = await getUserId();
-      final url = Uri.parse('$modelBaseUrl/recsys/conversation/recommend');
-
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': await getToken(),
-      };
-
-      final body = json.encode({
-        'user_id': int.tryParse(userId) ?? 1,
-        'limit': limit,
-      });
-
-      AppLogger.d('推荐系统API请求URL: $url');
-      AppLogger.d('推荐系统API请求体: $body');
-
-      // 添加超时设置，防止长时间等待
-      final response = await client.post(
-        url,
-        headers: headers,
-        body: body,
-      ).timeout(
-        const Duration(seconds: 8),
-        onTimeout: () {
-          throw ServerException(message: '推荐系统请求超时');
-        },
-      );
-
-      AppLogger.d('推荐系统API响应状态码: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        // 确保使用UTF-8解码
-        final responseBody = utf8.decode(response.bodyBytes);
-        final jsonData = json.decode(responseBody);
-        AppLogger.d('推荐系统API响应内容: $jsonData');
-
-        if (jsonData['code'] == 200 && jsonData['data'] != null && jsonData['data']['items'] != null) {
-          final items = jsonData['data']['items'] as List<dynamic>;
-
-          // 如果推荐系统返回空数组，返回空列表而不是抛出异常
-          if (items.isEmpty) {
-            AppLogger.d('推荐系统返回空数据，这是新用户的正常情况');
-            return [];
-          }
-
-          return items.map((item) => HomeFeedItemModel.fromJson(item)).toList();
-        } else {
-          AppLogger.d('推荐系统返回异常: ${jsonData['message']}');
-          // 返回空列表而不是抛出异常，让用户看到空状态而不是错误
-          return [];
-        }
-      } else {
-        AppLogger.d('推荐系统API响应错误: ${response.statusCode}');
-        // 返回空列表，不抛出异常
-        return [];
-      }
-    } catch (e) {
-      AppLogger.d('获取推荐产品出错: $e');
-      // 出错时返回空列表，让用户可以手动刷新
-      return [];
-    }
-  }
-
-  @override
-  Future<List<HomeFeedItemModel>> searchProducts(
-    String keyword, 
-    {int page = 1, int pageSize = 20}
-  ) async {
+  Future<List<HomeFeedItemModel>> searchProducts(String keyword,
+      {int page = 1, int pageSize = 20}) async {
     final url = Uri.parse('$baseUrl/api/shop/product/list');
-    
+
     try {
       final headers = await _getHeaders();
       AppLogger.d('搜索API请求URL: $url');
-      
+
       final body = json.encode({
         'keyword': keyword,
         'statusAudit': 'SUCCESS',
         'pageNum': page,
         'pageSize': pageSize,
       });
-      
+
       AppLogger.d('搜索API请求体: $body');
-      
+
       final response = await client.post(
         url,
         headers: headers,
@@ -389,15 +366,15 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         if (jsonData['code'] == 200 && jsonData['rows'] != null) {
           final List<dynamic> productsList = jsonData['rows'] ?? [];
           AppLogger.d('搜索结果列表: $productsList');
-          
+
           final List<HomeFeedItemModel> products = [];
-          
+
           for (var item in productsList) {
             // 处理图片URL - 尤其是JSON字符串格式的图片
             List<String> processImages(dynamic images) {
               List<String> result = [];
               if (images == null) return result;
-              
+
               if (images is List) {
                 for (var img in images) {
                   if (img is String) {
@@ -421,7 +398,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
               }
               return result;
             }
-            
+
             final String id = (item['id'] ?? 0).toString();
             final String name = item['name'] ?? '';
             final String description = item['description'] ?? '';
@@ -431,7 +408,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
                 : (item['sellingPrice'] ?? 0.0);
             final String? score = item['score'];
             final int evaluateNum = item['evaluateNum'] ?? 0;
-            
+
             products.add(HomeFeedItemModel(
               id: id,
               type: 'product', // 默认类型为产品
@@ -445,7 +422,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
               translationSourceLang: item['translationSourceLang'] as String?,
             ));
           }
-          
+
           return products;
         } else {
           throw ServerException(message: jsonData['msg'] ?? 'Unknown error');
@@ -461,4 +438,16 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       throw ServerException(message: e.toString());
     }
   }
+}
+
+class _HomeRecommendationPage {
+  final String feedId;
+  final bool hasMore;
+  final List<HomeFeedItemModel> items;
+
+  const _HomeRecommendationPage({
+    required this.feedId,
+    required this.hasMore,
+    required this.items,
+  });
 }

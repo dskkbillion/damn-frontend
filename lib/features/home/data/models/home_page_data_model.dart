@@ -10,10 +10,12 @@ class HomePageDataModel extends HomePageData {
     required List<BannerModel> banners,
     required List<HomeCategoryModel> categories,
     required List<HomeFeedItemModel> feedItems,
+    String? feedId,
   }) : super(
           banners: banners,
           categories: categories,
           feedItems: feedItems,
+          feedId: feedId,
         );
 
   /// 从 JSON 创建 HomePageDataModel 实例
@@ -71,6 +73,7 @@ class HomePageDataModel extends HomePageData {
       banners: bannersList,
       categories: categoriesList,
       feedItems: feedItemsList,
+      feedId: json['feedId'] as String?,
     );
   }
 
@@ -80,6 +83,7 @@ class HomePageDataModel extends HomePageData {
       'banners': (banners as List<BannerModel>).map((e) => e.toJson()).toList(),
       'categories': (categories as List<HomeCategoryModel>).map((e) => e.toJson()).toList(),
       'feedItems': (feedItems as List<HomeFeedItemModel>).map((e) => e.toJson()).toList(),
+      'feedId': feedId,
     };
   }
 
@@ -88,11 +92,13 @@ class HomePageDataModel extends HomePageData {
     List<BannerModel>? banners,
     List<HomeCategoryModel>? categories,
     List<HomeFeedItemModel>? feedItems,
+    String? feedId,
   }) {
     return HomePageDataModel(
       banners: banners ?? (this.banners as List<BannerModel>),
       categories: categories ?? (this.categories as List<HomeCategoryModel>),
       feedItems: feedItems ?? (this.feedItems as List<HomeFeedItemModel>),
+      feedId: feedId ?? this.feedId,
     );
   }
 }

@@ -65,6 +65,9 @@ class HomeLoaded extends HomeState {
   /// #384 当前随机排序种子，loadMore 复用此 seed 保持分页稳定
   final int? seed;
 
+  /// 首页模型端生成的候选集标识，保证瀑布流后续分页不混入旧列表。
+  final String? feedId;
+
   const HomeLoaded({
     required this.banners,
     required this.categories,
@@ -73,10 +76,11 @@ class HomeLoaded extends HomeState {
     this.isLoadingMore = false,
     this.isRefreshing = false,
     this.seed,
+    this.feedId,
   });
 
   @override
-  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore, isRefreshing, seed ?? -1];
+  List<Object> get props => [banners, categories, feedItems, hasReachedMax, isLoadingMore, isRefreshing, seed ?? -1, feedId ?? ''];
 
   /// 创建一个新的 HomeLoaded 实例，并替换指定的属性
   HomeLoaded copyWith({
@@ -87,6 +91,7 @@ class HomeLoaded extends HomeState {
     bool? isLoadingMore,
     bool? isRefreshing,
     int? seed,
+    String? feedId,
   }) {
     return HomeLoaded(
       banners: banners ?? this.banners,
@@ -96,6 +101,7 @@ class HomeLoaded extends HomeState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       isRefreshing: isRefreshing ?? this.isRefreshing,
       seed: seed ?? this.seed,
+      feedId: feedId ?? this.feedId,
     );
   }
 }

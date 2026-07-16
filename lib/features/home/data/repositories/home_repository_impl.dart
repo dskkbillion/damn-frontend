@@ -50,6 +50,7 @@ class HomeRepositoryImpl implements IHomeRepository {
             translatedDescription: item.translatedDescription,
             translationSourceLang: item.translationSourceLang,
           )).toList(),
+          feedId: remoteData.feedId,
         );
         return Right(homePageData);
       } on ServerException catch (e) {
@@ -77,6 +78,7 @@ class HomeRepositoryImpl implements IHomeRepository {
             translatedDescription: item.translatedDescription,
             translationSourceLang: item.translationSourceLang,
           )).toList(),
+          feedId: localData.feedId,
         );
         return Right(homePageData);
       } on CacheException {
@@ -86,10 +88,10 @@ class HomeRepositoryImpl implements IHomeRepository {
   }
 
   @override
-  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit, {int? seed}) async {
+  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit, {int? seed, String? feedId}) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteData = await remoteDataSource.getHomeFeed(page, limit, seed: seed);
+        final remoteData = await remoteDataSource.getHomeFeed(page, limit, seed: seed, feedId: feedId);
         // 转换为领域实体
         final feedItems = remoteData.map((item) => HomeFeedItem(
           id: item.id.toString(),
@@ -106,6 +108,9 @@ class HomeRepositoryImpl implements IHomeRepository {
         return Left(ServerFailure(message: e.message ?? "服务器错误"));
       }
     } else {
+      if (feedId != null) {
+        return const Left(NetworkFailure(message: '网络连接失败，无法继续首页推荐'));
+      }
       try {
         final localData = await localDataSource.getLastHomeFeed(page);
         // 转换为领域实体

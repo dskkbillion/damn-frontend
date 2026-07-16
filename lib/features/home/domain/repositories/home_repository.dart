@@ -23,7 +23,7 @@ abstract class IHomeRepository {
   ///
   /// 返回 [List<HomeFeedItem>] 包含分页的信息流数据
   /// 或者返回 [Failure] 表示获取数据失败
-  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit, {int? seed});
+  Future<Either<Failure, List<HomeFeedItem>>> getHomeFeed(int page, int limit, {int? seed, String? feedId});
 
   /// 获取商品详情，返回 (ProductDetail, ProductTranslation?) 记录
   Future<Either<Failure, (ProductDetail, ProductTranslation?)>> getProductDetail(String productId);

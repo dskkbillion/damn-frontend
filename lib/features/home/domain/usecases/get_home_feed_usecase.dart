@@ -20,7 +20,7 @@ class GetHomeFeedUseCase implements UseCase<List<HomeFeedItem>, HomeFeedParams> 
   /// 或者返回 [Failure] 表示获取数据失败
   @override
   Future<Either<Failure, List<HomeFeedItem>>> call(HomeFeedParams params) async {
-    return await repository.getHomeFeed(params.page, params.limit, seed: params.seed);
+    return await repository.getHomeFeed(params.page, params.limit, seed: params.seed, feedId: params.feedId);
   }
 }
 
@@ -35,24 +35,30 @@ class HomeFeedParams extends Equatable {
   /// #384 随机排序种子（loadMore 复用首屏 seed 保持分页稳定）
   final int? seed;
 
+  /// 模型端首页推荐会话，存在时优先于旧的随机 seed 分页。
+  final String? feedId;
+
   const HomeFeedParams({
     required this.page,
     required this.limit,
     this.seed,
+    this.feedId,
   });
 
   HomeFeedParams copyWith({
     int? page,
     int? limit,
     int? seed,
+    String? feedId,
   }) {
     return HomeFeedParams(
       page: page ?? this.page,
       limit: limit ?? this.limit,
       seed: seed ?? this.seed,
+      feedId: feedId ?? this.feedId,
     );
   }
 
   @override
-  List<Object?> get props => [page, limit, seed];
+  List<Object?> get props => [page, limit, seed, feedId];
 }

@@ -15,10 +15,14 @@ class HomePageData extends Equatable {
   /// 首屏信息流数据
   final List<HomeFeedItem> feedItems;
 
+  /// 模型端生成的稳定瀑布流会话；为空时使用旧商品列表的 seed 分页降级。
+  final String? feedId;
+
   const HomePageData({
     required this.banners,
     required this.categories,
     required this.feedItems,
+    this.feedId,
   });
 
   /// 创建一个空的 HomePageData 对象，用于测试
@@ -31,5 +35,5 @@ class HomePageData extends Equatable {
   }
 
   @override
-  List<Object?> get props => [banners, categories, feedItems];
+  List<Object?> get props => [banners, categories, feedItems, feedId];
 }

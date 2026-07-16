@@ -115,6 +115,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           hasReachedMax: homePageData.feedItems.length < defaultLimit,
           isRefreshing: false,
           seed: seed,
+          feedId: homePageData.feedId,
         ));
       },
     );
@@ -149,6 +150,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             feedItems: homePageData.feedItems,
             hasReachedMax: homePageData.feedItems.length < defaultLimit,
             seed: seed,
+            feedId: homePageData.feedId,
           ));
         },
       );
@@ -172,7 +174,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final nextPage = _currentPage + 1;
     // #384 loadMore 复用首屏/刷新时的 seed，保证同一次浏览会话内分页顺序稳定（不重复/漏项）
     final result = await getHomeFeed(
-      HomeFeedParams(page: nextPage, limit: defaultLimit, seed: currentState.seed),
+      HomeFeedParams(
+        page: nextPage,
+        limit: defaultLimit,
+        seed: currentState.seed,
+        feedId: currentState.feedId,
+      ),
     );
 
     result.fold(
