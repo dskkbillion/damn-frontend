@@ -54,12 +54,7 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
                   backgroundColor: Colors.green,
                 ),
               );
-              // 延迟返回，让用户看到成功消息
-              Future.delayed(const Duration(seconds: 1), () {
-                if (mounted && context.canPop()) {
-                  context.pop(true); // 返回true表示评价成功，需要刷新
-                }
-              });
+              _showEvaluationSuccessActions();
             } else if (state is OrderDetailActionFailure) {
               // 评价提交失败
               ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +83,39 @@ class _OrderEvaluationPageState extends State<OrderEvaluationPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _showEvaluationSuccessActions() async {
+    final productId = widget.orderItem?.productId;
+    final viewReviews = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('评价已提交'),
+        content: const Text('评价已发布。您可以前往商品评价页确认展示结果。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('返回订单'),
+          ),
+          if (productId != null && productId > 0)
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('查看商品评价'),
+            ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+    if (viewReviews == true && productId != null && productId > 0) {
+      // Keep the order/evaluation route beneath the product review
+      // page. Using go() replaces the whole stack, leaving the
+      // product page's back button with nowhere to return to.
+      context.push('/product/$productId/reviews');
+    } else if (context.canPop()) {
+      context.pop(true);
+    }
   }
 
   /// 构建订单商品信息卡片
