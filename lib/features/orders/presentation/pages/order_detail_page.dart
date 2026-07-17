@@ -39,7 +39,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final currentState = context.read<OrderDetailBloc>().state;
         if (currentState is OrderDetailInitial) {
-          context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+          context
+              .read<OrderDetailBloc>()
+              .add(LoadOrderDetail(orderId: _orderIdInt!));
         }
       });
     } else {
@@ -47,7 +49,8 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).order_detail_invalid_id),
+              content:
+                  Text(AppLocalizations.of(context).order_detail_invalid_id),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -62,7 +65,6 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
     super.dispose();
   }
 
-
   /// 从各种状态中提取订单数据
   Order? _extractOrder(OrderDetailState state) {
     Order? normalize(Order? order) {
@@ -72,16 +74,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     if (state is OrderDetailLoaded) {
       return normalize(state.order);
-    } else if (state is OrderDetailActionLoading && state.previousState != null) {
+    } else if (state is OrderDetailActionLoading &&
+        state.previousState != null) {
       return normalize(state.previousState!.order);
-    } else if (state is OrderDetailActionSuccess && state.updatedState != null) {
+    } else if (state is OrderDetailActionSuccess &&
+        state.updatedState != null) {
       return normalize(state.updatedState!.order);
-    } else if (state is OrderDetailActionFailure && state.previousState != null) {
+    } else if (state is OrderDetailActionFailure &&
+        state.previousState != null) {
       return normalize(state.previousState!.order);
     } else if (state is OrderDetailNavigateToPaymentSelection) {
       // #324 之前漏掉这个分支会让页面闪显"订单不可用"
       return normalize(state.order);
-    } else if (state is OrderDetailPaymentLoading && state.previousState != null) {
+    } else if (state is OrderDetailPaymentLoading &&
+        state.previousState != null) {
       return normalize(state.previousState!.order);
     }
     return null;
@@ -91,8 +97,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
   Widget build(BuildContext context) {
     if (_orderIdInt == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context).order_detail_error)),
-        body: Center(child: Text(AppLocalizations.of(context).order_detail_invalid_id)),
+        appBar: AppBar(
+            title: Text(AppLocalizations.of(context).order_detail_error)),
+        body: Center(
+            child: Text(AppLocalizations.of(context).order_detail_invalid_id)),
       );
     }
 
@@ -149,8 +157,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-      
-      if (state.actionType == OrderAction.cancel || state.actionType == OrderAction.delete) {
+
+      if (state.actionType == OrderAction.cancel ||
+          state.actionType == OrderAction.delete) {
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (mounted) {
             if (context.canPop()) {
@@ -161,7 +170,9 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
           }
         });
       } else {
-        context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+        context
+            .read<OrderDetailBloc>()
+            .add(LoadOrderDetail(orderId: _orderIdInt!));
       }
     } else if (state is OrderDetailActionFailure) {
       ScaffoldMessenger.of(context)
@@ -177,14 +188,16 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       // #324 之前 bloc emit 这个 state 后 UI 没人监听导航,导致"订单不可用"
       // 用同一个 bloc 实例 push 到支付方式选择页
       final bloc = context.read<OrderDetailBloc>();
-      Navigator.of(context).push(
+      Navigator.of(context)
+          .push(
         MaterialPageRoute(
           builder: (_) => BlocProvider.value(
             value: bloc,
             child: OrderPaymentMethodPage(order: state.order),
           ),
         ),
-      ).then((_) {
+      )
+          .then((_) {
         // #373 支付流程返回后（无论成功/取消/失败）重新拉取订单状态，
         // 避免详情页停留在旧的 awaitingPayment（后端已流转到 awaitingConfirmation），
         // 否则用户被迫再次付款（资损）。LoadOrderDetail 幂等，多拉一次无害。
@@ -206,11 +219,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(AppLocalizations.of(context).order_detail_load_failed(state.message)),
+            Text(AppLocalizations.of(context)
+                .order_detail_load_failed(state.message)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<OrderDetailBloc>().add(LoadOrderDetail(orderId: _orderIdInt!));
+                context
+                    .read<OrderDetailBloc>()
+                    .add(LoadOrderDetail(orderId: _orderIdInt!));
               },
               child: Text(AppLocalizations.of(context).order_detail_reload),
             ),
@@ -221,13 +237,14 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
 
     final extractedOrder = _extractOrder(state);
     if (extractedOrder == null) {
-      return Center(child: Text(AppLocalizations.of(context).order_detail_unavailable));
+      return Center(
+          child: Text(AppLocalizations.of(context).order_detail_unavailable));
     }
 
     return Stack(
       children: [
         _buildOrderDetailContent(context, extractedOrder),
-        
+
         // 底部按钮固定在屏幕底部
         Positioned(
           left: 0,
@@ -238,18 +255,20 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               final buttonOrder = _extractOrder(buttonState);
               if (buttonOrder != null) {
                 // Don't show footer buttons for completed or canceled orders
-                if (buttonOrder.state == OrderStatus.orderCompleted || 
+                if (buttonOrder.state == OrderStatus.orderCompleted ||
                     buttonOrder.state == OrderStatus.canceled) {
                   return const SizedBox.shrink();
                 }
-                
+
                 return Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+                        Theme.of(context)
+                            .scaffoldBackgroundColor
+                            .withOpacity(0.95),
                         Theme.of(context).scaffoldBackgroundColor,
                       ],
                     ),
@@ -261,7 +280,10 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.shadow.withOpacity(0.08),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .shadow
+                            .withOpacity(0.08),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -277,7 +299,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
             },
           ),
         ),
-        
+
         // Loading overlay for action processing
         if (state is OrderDetailActionLoading)
           Container(
@@ -296,42 +318,47 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
       children: [
         // 时间轴头部
         OrderStatusTimelineHeader(order: order),
-        
+
         // 可滚动内容区域
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 16),
-                
+
                 // 支付状态警告
                 OrderPaymentStatusWarning(order: order),
-                
+
                 // 商品信息
                 OrderItemsSection(order: order),
                 const SizedBox(height: 16),
-                
+
                 // 订单信息
                 OrderInfoSection(order: order),
                 const SizedBox(height: 16),
-                
+
                 // 材料信息
                 OrderMaterialsSection(order: order),
                 const SizedBox(height: 16),
-                
+
                 // 价格详情
                 OrderPriceDetailsSection(order: order),
-                const SizedBox(height: 100), // 为底部按钮留出空间
+                // 非完成订单的操作栏固定在页面底部，滚动内容须避让；已完成/已取消
+                // 的操作则放入滚动内容中，不能与“卖家交付内容”重叠。
+                SizedBox(
+                    height: order.state == OrderStatus.orderCompleted ||
+                            order.state == OrderStatus.canceled
+                        ? 16
+                        : 100),
+                if (order.state == OrderStatus.orderCompleted ||
+                    order.state == OrderStatus.canceled)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                    child: OrderDetailActionButtons(order: order),
+                  ),
               ],
             ),
           ),
-        ),
-        
-        // 底部操作按钮
-        BlocBuilder<OrderDetailBloc, OrderDetailState>(
-          builder: (context, buttonState) {
-            return OrderDetailActionButtons(order: order);
-          },
         ),
       ],
     );
