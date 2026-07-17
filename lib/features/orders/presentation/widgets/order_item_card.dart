@@ -161,6 +161,87 @@ class OrderItemCard extends StatelessWidget {
     );
   }
 
+  Future<void> _showConfirmReceiptDialog(
+      BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.order_confirm_receipt_title),
+        content: Text(l10n.order_confirm_receipt_content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.order_dialog_cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              _performConfirmReceipt(context, order);
+            },
+            child: Text(l10n.order_dialog_confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 列表卡片此前只打印日志，导致“确认收货”看似可点却没有任何业务动作。
+  /// 复用订单详情 BLoC 的真实接口链路，成功后仅刷新当前筛选页。
+  Future<void> _performConfirmReceipt(BuildContext context, Order order) async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final detailBloc = getIt<OrderDetailBloc>();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${l10n.order_action_confirm_receipt}中…')),
+      );
+
+      late StreamSubscription subscription;
+      var detailLoaded = false;
+      subscription = detailBloc.stream.listen((state) {
+        if (state is OrderDetailLoaded && !detailLoaded) {
+          detailLoaded = true;
+          detailBloc.add(OrderActionRequested(
+            action: OrderAction.confirmReceipt,
+            orderId: order.id.toString(),
+          ));
+        } else if (state is OrderDetailActionSuccess) {
+          subscription.cancel();
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(content: Text('确认收货成功')));
+          if (context.mounted) {
+            final listBloc = context.read<OrderListBloc>();
+            listBloc.add(LoadOrders(
+              status: listBloc.currentStatus,
+              forceRefresh: true,
+            ));
+          }
+        } else if (state is OrderDetailActionFailure ||
+            state is OrderDetailError) {
+          subscription.cancel();
+          final message = state is OrderDetailActionFailure
+              ? state.message
+              : (state as OrderDetailError).message;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+              content: Text('确认收货失败：$message'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ));
+        }
+      });
+      detailBloc.add(LoadOrderDetail(orderId: order.id));
+    } catch (error) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text('确认收货失败：$error'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ));
+    }
+  }
+
   /// 执行删除订单操作
   Future<void> _performDeleteOrder(BuildContext context, Order order) async {
     final l10n = AppLocalizations.of(context);
@@ -492,16 +573,20 @@ class OrderItemCard extends StatelessWidget {
                           extra: order.items.first);
                     }
                   },
-                  onApplyAfterSale: navigateToDetail,
+                  onApplyAfterSale: () {
+                    if (order.items.isNotEmpty) {
+                      context.push(
+                          '/selectAfterSalesType/${order.items.first.id}',
+                          extra: order.items.first);
+                    }
+                  },
                   onViewDetails: navigateToDetail,
                   // Actions that modify state (might interact with OrderListBloc later)
                   onCancel: () {
                     _showCancelConfirmationDialog(context, order);
                   },
-                  onConfirmReceipt: () {
-                    // TODO: Connect to OrderListBloc if needed
-                    print('[OrderItemCard] Confirm receipt: ${order.id}');
-                  },
+                  onConfirmReceipt: () =>
+                      _showConfirmReceiptDialog(context, order),
                   onRemindDelivery: () {
                     // Show a snackbar directly
                     ScaffoldMessenger.of(context).showSnackBar(
