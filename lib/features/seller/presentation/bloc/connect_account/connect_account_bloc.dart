@@ -5,7 +5,8 @@ import '../../../data/datasources/stripe_connect_remote_data_source.dart';
 import 'connect_account_event.dart';
 import 'connect_account_state.dart';
 
-class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> {
+class ConnectAccountBloc
+    extends Bloc<ConnectAccountEvent, ConnectAccountState> {
   final IStripeConnectRemoteDataSource _dataSource;
 
   ConnectAccountBloc({required IStripeConnectRemoteDataSource dataSource})
@@ -24,7 +25,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
   ) async {
     emit(ConnectAccountLoading());
     try {
-      final status = await _dataSource.getAccountStatus();
+      // 初次打开也主动从 Stripe 拉取，避免只显示本地“已绑定”而漏掉待补资料项。
+      final status = await _dataSource.getAccountStatus(refresh: true);
       _emitStateFromStatus(status, emit);
     } catch (e) {
       AppLogger.d('[ConnectAccountBloc] 查询账户状态失败: $e');
@@ -97,7 +99,8 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
     }
   }
 
-  void _emitStateFromStatus(ConnectAccountStatus status, Emitter<ConnectAccountState> emit) {
+  void _emitStateFromStatus(
+      ConnectAccountStatus status, Emitter<ConnectAccountState> emit) {
     switch (status.status) {
       case ConnectStatus.notCreated:
         emit(ConnectAccountUnlinked());
@@ -105,10 +108,10 @@ class ConnectAccountBloc extends Bloc<ConnectAccountEvent, ConnectAccountState> 
         // 跳转式 Onboarding（嵌入式在 WKWebView 中兼容性不足，暂用跳转式）
         add(FetchOnboardingLink());
       case ConnectStatus.pendingVerification:
+      case ConnectStatus.needsInformation:
+      case ConnectStatus.restricted:
         emit(ConnectAccountPendingVerification(accountStatus: status));
       case ConnectStatus.active:
-        emit(ConnectAccountActive(accountStatus: status));
-      case ConnectStatus.restricted:
         emit(ConnectAccountActive(accountStatus: status));
     }
   }

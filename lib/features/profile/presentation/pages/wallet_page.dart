@@ -39,14 +39,14 @@ class _WalletPageState extends State<WalletPage> {
   String _transactionType = 'all';
   DateTime? _startDate;
   DateTime? _endDate;
-  // #385 绑定成功后显示 KYC 提醒 banner，直到用户关闭
-  bool _showKycBanner = false;
+  ConnectAccountStatus? _connectStatus;
 
   @override
   void initState() {
     super.initState();
     // 加载钱包摘要信息
     context.read<WalletBloc>().add(const FetchWalletSummary());
+    _refreshConnectStatus();
     // 监听滚动事件，实现无限滚动加载
     _scrollController.addListener(_onScroll);
   }
@@ -58,9 +58,12 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final state = context.read<WalletBloc>().state;
-      if (state is WalletLoaded && !state.isNoMoreData && state.loadMoreError == null) {
+      if (state is WalletLoaded &&
+          !state.isNoMoreData &&
+          state.loadMoreError == null) {
         context.read<WalletBloc>().add(LoadMoreWalletTransactions(
               transactionType: _transactionType,
               startDate: _startDate?.toString().split(' ')[0],
@@ -85,6 +88,24 @@ class _WalletPageState extends State<WalletPage> {
           startDate: _startDate?.toString().split(' ')[0],
           endDate: _endDate?.toString().split(' ')[0],
         ));
+  }
+
+  Future<void> _refreshConnectStatus() async {
+    try {
+      final dataSource =
+          StripeConnectRemoteDataSourceImpl(sl<CoreDioClient>().dio);
+      final status = await dataSource.getAccountStatus(refresh: true);
+      if (mounted) setState(() => _connectStatus = status);
+    } catch (_) {
+      // 钱包余额不应因 Stripe 临时查询失败而不可用；进入收款账户页仍可手动刷新。
+    }
+  }
+
+  bool get _needsConnectAttention {
+    final status = _connectStatus;
+    return status != null &&
+        status.status != ConnectStatus.notCreated &&
+        status.status != ConnectStatus.active;
   }
 
   // 选择日期范围
@@ -147,6 +168,7 @@ class _WalletPageState extends State<WalletPage> {
             onPressed: () {
               context.read<WalletBloc>().add(const RefreshWalletSummary());
               _loadTransactions();
+              _refreshConnectStatus();
             },
           ),
         ],
@@ -158,7 +180,9 @@ class _WalletPageState extends State<WalletPage> {
             _loadTransactions();
           } else if (state is WalletError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_error(state.message))),
+              SnackBar(
+                  content: Text(AppLocalizations.of(context)
+                      .profile_wallet_error(state.message))),
             );
           } else if (state is WithdrawalSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -184,19 +208,24 @@ class _WalletPageState extends State<WalletPage> {
         },
         builder: (context, state) {
           if (state is WalletInitial || state is WalletLoading) {
-            return SkeletonPage(itemCount: 3, itemBuilder: (_, __) => const SkeletonCard());
+            return SkeletonPage(
+                itemCount: 3, itemBuilder: (_, __) => const SkeletonCard());
           } else if (state is WalletError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppLocalizations.of(context).profile_wallet_occurred_error(state.message)),
+                  Text(AppLocalizations.of(context)
+                      .profile_wallet_occurred_error(state.message)),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<WalletBloc>().add(const FetchWalletSummary());
+                      context
+                          .read<WalletBloc>()
+                          .add(const FetchWalletSummary());
                     },
-                    child: Text(AppLocalizations.of(context).profile_wallet_retry),
+                    child:
+                        Text(AppLocalizations.of(context).profile_wallet_retry),
                   ),
                 ],
               ),
@@ -233,7 +262,7 @@ class _WalletPageState extends State<WalletPage> {
           return Column(
             children: [
               // #385 KYC 未完成提醒 banner
-              if (_showKycBanner) _buildKycBanner(),
+              if (_needsConnectAttention) _buildKycBanner(),
               // 钱包摘要信息
               if (walletSummary != null) _buildWalletSummary(walletSummary),
 
@@ -247,9 +276,18 @@ class _WalletPageState extends State<WalletPage> {
                         isExpanded: true,
                         value: _transactionType,
                         items: [
-                          DropdownMenuItem(value: 'all', child: Text(AppLocalizations.of(context).profile_wallet_filter_all)),
-                          DropdownMenuItem(value: 'income', child: Text(AppLocalizations.of(context).profile_wallet_filter_income)),
-                          DropdownMenuItem(value: 'outcome', child: Text(AppLocalizations.of(context).profile_wallet_filter_expense)),
+                          DropdownMenuItem(
+                              value: 'all',
+                              child: Text(AppLocalizations.of(context)
+                                  .profile_wallet_filter_all)),
+                          DropdownMenuItem(
+                              value: 'income',
+                              child: Text(AppLocalizations.of(context)
+                                  .profile_wallet_filter_income)),
+                          DropdownMenuItem(
+                              value: 'outcome',
+                              child: Text(AppLocalizations.of(context)
+                                  .profile_wallet_filter_expense)),
                         ],
                         onChanged: (value) {
                           if (value != null && value != _transactionType) {
@@ -265,7 +303,9 @@ class _WalletPageState extends State<WalletPage> {
                       icon: const Icon(Icons.date_range),
                       onPressed: _selectDateRange,
                     ),
-                    if (_startDate != null || _endDate != null || _transactionType != 'all')
+                    if (_startDate != null ||
+                        _endDate != null ||
+                        _transactionType != 'all')
                       IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: _clearFilters,
@@ -290,18 +330,29 @@ class _WalletPageState extends State<WalletPage> {
                     ? Center(
                         child: SingleChildScrollView(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.receipt_long, size: 48, color: AppColors.textTertiary),
+                                const Icon(Icons.receipt_long,
+                                    size: 48, color: AppColors.textTertiary),
                                 const SizedBox(height: 16),
-                                Text(AppLocalizations.of(context).profile_wallet_no_transactions, style: const TextStyle(color: AppColors.textTertiary)),
-                                if (loadMoreError != null) const SizedBox(height: 8),
+                                Text(
+                                    AppLocalizations.of(context)
+                                        .profile_wallet_no_transactions,
+                                    style: const TextStyle(
+                                        color: AppColors.textTertiary)),
+                                if (loadMoreError != null)
+                                  const SizedBox(height: 8),
                                 if (loadMoreError != null)
                                   Text(
-                                    AppLocalizations.of(context).profile_wallet_load_failed(loadMoreError),
-                                    style: const TextStyle(color: AppColors.textTertiary, fontSize: 12),
+                                    AppLocalizations.of(context)
+                                        .profile_wallet_load_failed(
+                                            loadMoreError),
+                                    style: const TextStyle(
+                                        color: AppColors.textTertiary,
+                                        fontSize: 12),
                                     textAlign: TextAlign.center,
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
@@ -310,7 +361,8 @@ class _WalletPageState extends State<WalletPage> {
                                 if (loadMoreError != null)
                                   ElevatedButton(
                                     onPressed: _loadTransactions,
-                                    child: Text(AppLocalizations.of(context).profile_wallet_retry),
+                                    child: Text(AppLocalizations.of(context)
+                                        .profile_wallet_retry),
                                   ),
                                 const SizedBox(height: 8),
                               ],
@@ -320,31 +372,44 @@ class _WalletPageState extends State<WalletPage> {
                       )
                     : ListView.builder(
                         controller: _scrollController,
-                        itemCount: transactions.length + (isLoadingMore ? 1 : 0) + (loadMoreError != null ? 1 : 0),
+                        itemCount: transactions.length +
+                            (isLoadingMore ? 1 : 0) +
+                            (loadMoreError != null ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index < transactions.length) {
                             return _buildTransactionItem(transactions[index]);
                           } else if (isLoadingMore) {
                             return const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(child: LoadingIndicator(size: 24.0)),
+                              child:
+                                  Center(child: LoadingIndicator(size: 24.0)),
                             );
                           } else if (loadMoreError != null) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16.0),
                               child: Center(
                                 child: Column(
                                   children: [
-                                    Text(AppLocalizations.of(context).profile_wallet_load_more_failed(loadMoreError)),
+                                    Text(AppLocalizations.of(context)
+                                        .profile_wallet_load_more_failed(
+                                            loadMoreError)),
                                     TextButton(
                                       onPressed: () {
-                                        context.read<WalletBloc>().add(LoadMoreWalletTransactions(
+                                        context
+                                            .read<WalletBloc>()
+                                            .add(LoadMoreWalletTransactions(
                                               transactionType: _transactionType,
-                                              startDate: _startDate?.toString().split(' ')[0],
-                                              endDate: _endDate?.toString().split(' ')[0],
+                                              startDate: _startDate
+                                                  ?.toString()
+                                                  .split(' ')[0],
+                                              endDate: _endDate
+                                                  ?.toString()
+                                                  .split(' ')[0],
                                             ));
                                       },
-                                      child: Text(AppLocalizations.of(context).profile_wallet_retry),
+                                      child: Text(AppLocalizations.of(context)
+                                          .profile_wallet_retry),
                                     ),
                                   ],
                                 ),
@@ -381,19 +446,24 @@ class _WalletPageState extends State<WalletPage> {
     );
     if (!mounted) return;
     if (result == true) {
-      setState(() => _showKycBanner = true);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('账户已绑定，请在 3 天内完成身份验证以确保提现到账'),
-          duration: Duration(seconds: 4),
-        ),
-      );
+      await _refreshConnectStatus();
+      if (!mounted) return;
       context.read<WalletBloc>().add(const RefreshWalletSummary());
+      // 快速绑定只创建账户；必须紧接着打开 Stripe Onboarding，不能让用户卡在“已绑定”。
+      context.push('/seller/connect-account');
     }
   }
 
   // #385 KYC 未完成提醒 banner（pendingVerification 状态时显示）
   Widget _buildKycBanner() {
+    final status = _connectStatus;
+    final needsInformation = status?.status == ConnectStatus.needsInformation ||
+        status?.status == ConnectStatus.restricted;
+    final detail = status == null
+        ? '请刷新收款账户状态'
+        : needsInformation
+            ? 'Stripe 需要补充认证资料后才能开通提现'
+            : '资料已提交，Stripe 正在审核，暂不可提现';
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -404,17 +474,17 @@ class _WalletPageState extends State<WalletPage> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, size: 18, color: AppColors.warning),
+          const Icon(Icons.warning_amber_rounded,
+              size: 18, color: AppColors.warning),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
-              '请尽快完成身份验证，以确保提现资金正常到账',
+              detail,
               style: TextStyle(fontSize: 12, height: 1.4),
             ),
           ),
           TextButton(
             onPressed: () {
-              setState(() => _showKycBanner = false);
               context.push('/seller/connect-account');
             },
             style: TextButton.styleFrom(
@@ -422,13 +492,8 @@ class _WalletPageState extends State<WalletPage> {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: const Text('去完成', style: TextStyle(fontSize: 12)),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 16),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: () => setState(() => _showKycBanner = false),
+            child: Text(needsInformation ? '继续验证' : '查看状态',
+                style: const TextStyle(fontSize: 12)),
           ),
         ],
       ),
@@ -443,75 +508,87 @@ class _WalletPageState extends State<WalletPage> {
       borderRadius: BorderRadius.circular(12),
       tintOpacity: 0.62,
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context).profile_wallet_account_balance,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '${RegionConfig.currencySymbol}${summary.balance.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.success,
-                  ),
-                ),
-              ],
-            ),
-            const Divider(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(AppLocalizations.of(context).profile_wallet_pending_amount),
-                Text('${RegionConfig.currencySymbol}${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(AppLocalizations.of(context).profile_wallet_total_income),
-                Text('${RegionConfig.currencySymbol}${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const SizedBox(height: 16),
-            // #385 未绑定：点击提现直接弹 QuickConnectSheet，绑定后立即可提现
-            if (!summary.bound) ...[
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _showQuickConnectSheet(),
-                  icon: const Icon(Icons.link),
-                  label: const Text('绑定收款账户'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context).profile_wallet_account_balance,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ] else
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: summary.balance > 0 ? () {
-                    _showWithdrawDialog(summary.balance);
-                  } : null,
-                  icon: const Icon(Icons.account_balance),
-                  label: Text(AppLocalizations.of(context).profile_wallet_withdraw),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+              Text(
+                '${RegionConfig.currencySymbol}${summary.balance.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.success,
                 ),
               ),
-          ],
-        ),
+            ],
+          ),
+          const Divider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(AppLocalizations.of(context).profile_wallet_pending_amount),
+              Text(
+                  '${RegionConfig.currencySymbol}${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(AppLocalizations.of(context).profile_wallet_total_income),
+              Text(
+                  '${RegionConfig.currencySymbol}${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const SizedBox(height: 16),
+          // 未绑定时创建 Stripe Connect 账户；账户未激活时明确引导继续验证。
+          if (!summary.bound) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _showQuickConnectSheet(),
+                icon: const Icon(Icons.link),
+                label: const Text('绑定收款账户'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ] else
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: summary.balance > 0
+                    ? () {
+                        if (_connectStatus != null &&
+                            !_connectStatus!.payoutsEnabled) {
+                          context.push('/seller/connect-account');
+                          return;
+                        }
+                        _showWithdrawDialog(summary.balance);
+                      }
+                    : null,
+                icon: const Icon(Icons.account_balance),
+                label: Text(
+                    _connectStatus != null && !_connectStatus!.payoutsEnabled
+                        ? '继续验证后提现'
+                        : AppLocalizations.of(context).profile_wallet_withdraw),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -551,7 +628,9 @@ class _WalletPageState extends State<WalletPage> {
       tintOpacity: 0.62,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isIncome ? AppColors.success.withValues(alpha: 0.1) : AppColors.error.withValues(alpha: 0.1),
+          backgroundColor: isIncome
+              ? AppColors.success.withValues(alpha: 0.1)
+              : AppColors.error.withValues(alpha: 0.1),
           child: Icon(
             isIncome ? Icons.arrow_downward : Icons.arrow_upward,
             color: amountColor,
@@ -624,22 +703,43 @@ class _WalletPageState extends State<WalletPage> {
             children: [
               Center(
                 child: Text(
-                  AppLocalizations.of(context).profile_wallet_transaction_details,
+                  AppLocalizations.of(context)
+                      .profile_wallet_transaction_details,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
               const Divider(),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_id, transaction.id),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_type, transaction.type == 'income' ? AppLocalizations.of(context).profile_wallet_transaction_type_income : AppLocalizations.of(context).profile_wallet_transaction_type_expense),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_amount, '${RegionConfig.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}'),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_description, transaction.description),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_date, _dateFormat.format(transaction.date)),
-              _buildDetailRow(AppLocalizations.of(context).profile_wallet_transaction_status, _getStatusText(transaction.status)),
+              _buildDetailRow(
+                  AppLocalizations.of(context).profile_wallet_transaction_id,
+                  transaction.id),
+              _buildDetailRow(
+                  AppLocalizations.of(context).profile_wallet_transaction_type,
+                  transaction.type == 'income'
+                      ? AppLocalizations.of(context)
+                          .profile_wallet_transaction_type_income
+                      : AppLocalizations.of(context)
+                          .profile_wallet_transaction_type_expense),
+              _buildDetailRow(
+                  AppLocalizations.of(context)
+                      .profile_wallet_transaction_amount,
+                  '${RegionConfig.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}'),
+              _buildDetailRow(
+                  AppLocalizations.of(context)
+                      .profile_wallet_transaction_description,
+                  transaction.description),
+              _buildDetailRow(
+                  AppLocalizations.of(context).profile_wallet_transaction_date,
+                  _dateFormat.format(transaction.date)),
+              _buildDetailRow(
+                  AppLocalizations.of(context)
+                      .profile_wallet_transaction_status,
+                  _getStatusText(transaction.status)),
               const SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(AppLocalizations.of(context).profile_wallet_close),
+                  child:
+                      Text(AppLocalizations.of(context).profile_wallet_close),
                 ),
               ),
             ],
@@ -692,17 +792,22 @@ class _WalletPageState extends State<WalletPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context).profile_wallet_available_balance(RegionConfig.currencySymbol, availableBalance.toStringAsFixed(2))),
+            Text(AppLocalizations.of(context).profile_wallet_available_balance(
+                RegionConfig.currencySymbol,
+                availableBalance.toStringAsFixed(2))),
             const SizedBox(height: 16),
             TextField(
               controller: amountController,
               decoration: InputDecoration(
-                labelText: AppLocalizations.of(context).profile_wallet_withdraw_amount,
-                hintText: AppLocalizations.of(context).profile_wallet_withdraw_hint,
+                labelText:
+                    AppLocalizations.of(context).profile_wallet_withdraw_amount,
+                hintText:
+                    AppLocalizations.of(context).profile_wallet_withdraw_hint,
                 border: const OutlineInputBorder(),
                 prefixText: '${RegionConfig.currencySymbol} ',
               ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: 12),
             Text(
@@ -724,13 +829,17 @@ class _WalletPageState extends State<WalletPage> {
               final amount = double.tryParse(amountController.text);
               if (amount == null || amount <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_invalid_amount)),
+                  SnackBar(
+                      content: Text(AppLocalizations.of(context)
+                          .profile_wallet_invalid_amount)),
                 );
                 return;
               }
               if (amount > availableBalance) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context).profile_wallet_exceed_balance)),
+                  SnackBar(
+                      content: Text(AppLocalizations.of(context)
+                          .profile_wallet_exceed_balance)),
                 );
                 return;
               }
@@ -742,11 +851,11 @@ class _WalletPageState extends State<WalletPage> {
                 idempotencyToken: idempotencyToken,
               ));
             },
-            child: Text(AppLocalizations.of(context).profile_wallet_confirm_withdraw),
+            child: Text(
+                AppLocalizations.of(context).profile_wallet_confirm_withdraw),
           ),
         ],
       ),
     );
   }
-
 }

@@ -10,6 +10,7 @@ import '../bloc/connect_account/connect_account_event.dart';
 import '../bloc/connect_account/connect_account_state.dart';
 import 'stripe_connect_webview_page.dart';
 import 'stripe_connect_embedded_page.dart';
+import '../../data/datasources/stripe_connect_remote_data_source.dart';
 
 /// 卖家收款账户绑定页面
 class ConnectAccountPage extends StatefulWidget {
@@ -48,7 +49,8 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
         },
         builder: (context, state) {
           if (state is ConnectAccountLoading) {
-            return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
+            return const SellerPageSkeleton(
+                variant: SellerSkeletonVariant.detail);
           }
           if (state is ConnectAccountActive) {
             return _buildActiveState(context, state);
@@ -132,7 +134,24 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
   }
 
   /// 审核中状态
-  Widget _buildPendingState(BuildContext context, ConnectAccountPendingVerification state) {
+  Widget _buildPendingState(
+      BuildContext context, ConnectAccountPendingVerification state) {
+    final status = state.accountStatus;
+    final needsInformation = status.status == ConnectStatus.needsInformation;
+    final restricted = status.status == ConnectStatus.restricted;
+    final missingItems = [...status.pastDue, ...status.currentlyDue];
+    final title = restricted
+        ? '收款账户需要处理'
+        : needsInformation
+            ? '请补充认证资料'
+            : '资料审核中';
+    final description = restricted
+        ? (status.disabledReason?.isNotEmpty == true
+            ? 'Stripe 暂时限制了此账户：${_formatRequirement(status.disabledReason!)}。请继续认证后重试。'
+            : 'Stripe 暂时限制了此账户，请继续认证并补充所需资料。')
+        : needsInformation
+            ? 'Stripe 还需要以下资料后才能开通提现：${missingItems.map(_formatRequirement).join('、')}。'
+            : '资料已提交，Stripe 正在审核。审核期间可以继续使用卖家功能，但暂不可提现。';
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingXl),
       child: Column(
@@ -152,8 +171,8 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            '银行账号已绑定',
+          Text(
+            title,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -161,8 +180,8 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            '银行账号已绑定成功。首次提现时需完成身份验证，通常只需几分钟。',
+          Text(
+            description,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -170,10 +189,24 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
+          if (needsInformation || restricted)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  context.read<ConnectAccountBloc>().add(FetchOnboardingLink());
+                },
+                icon: const Icon(Icons.verified_user_outlined),
+                label: const Text('继续验证'),
+              ),
+            ),
+          if (needsInformation || restricted) const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () {
-              context.read<ConnectAccountBloc>().add(RefreshConnectAccountStatus());
+              context
+                  .read<ConnectAccountBloc>()
+                  .add(RefreshConnectAccountStatus());
             },
             icon: const Icon(Icons.refresh),
             label: const Text('刷新状态'),
@@ -181,6 +214,22 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
         ],
       ),
     );
+  }
+
+  String _formatRequirement(String requirement) {
+    const labels = {
+      'individual.verification.document': '身份证明文件',
+      'individual.verification.additional_document': '补充身份证明',
+      'individual.address.line1': '居住地址',
+      'individual.address.city': '所在城市',
+      'individual.dob.day': '出生日期',
+      'individual.phone': '手机号码',
+      'external_account': '收款银行账户',
+      'business_profile.url': '业务网站或服务页面',
+      'tos_acceptance.date': '服务条款确认',
+      'requirements.past_due': '认证资料',
+    };
+    return labels[requirement] ?? requirement.replaceAll('_', ' ');
   }
 
   /// 已激活状态
@@ -274,12 +323,15 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             Text(
               state.message,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15, color: AppColors.textSecondary),
+              style:
+                  const TextStyle(fontSize: 15, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                context.read<ConnectAccountBloc>().add(CheckConnectAccountStatus());
+                context
+                    .read<ConnectAccountBloc>()
+                    .add(CheckConnectAccountStatus());
               },
               child: const Text('重试'),
             ),
@@ -290,7 +342,8 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
   }
 
   /// 打开嵌入式 Onboarding WebView
-  Future<void> _openEmbeddedOnboarding(BuildContext context, String clientSecret) async {
+  Future<void> _openEmbeddedOnboarding(
+      BuildContext context, String clientSecret) async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => StripeConnectEmbeddedPage(clientSecret: clientSecret),

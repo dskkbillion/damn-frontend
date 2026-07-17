@@ -8,7 +8,7 @@ import '../bloc/connect_account/connect_account_state.dart';
 
 /// 快速绑定收款账户 bottom sheet（#385）
 /// 1~2步完成绑定，利用 Stripe deferred onboarding 延迟 KYC。
-/// 绑定成功后立即允许提现，KYC 可在 3 天内补全。
+/// 创建收款账户后，必须完成 Stripe 托管的身份验证并通过审核才能提现。
 class QuickConnectSheet extends StatefulWidget {
   const QuickConnectSheet({super.key});
 
@@ -68,7 +68,7 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
             ),
             const SizedBox(height: 8),
             const Text(
-              '绑定后即可提现。首次提现需在 3 天内完成身份验证以确保资金正常到账。',
+              '绑定后将进入 Stripe 身份验证。资料审核通过后即可提现。',
               style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
             ),
             const SizedBox(height: 24),

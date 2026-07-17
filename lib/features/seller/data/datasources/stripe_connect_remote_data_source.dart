@@ -6,12 +6,19 @@ import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 enum ConnectStatus {
   /// 未创建账户
   notCreated,
+
   /// 已创建但未完成 onboarding
   pendingOnboarding,
+
   /// onboarding 完成，等待 Stripe 审核
   pendingVerification,
+
+  /// Stripe 明确要求补充资料，用户可重新进入认证页面处理
+  needsInformation,
+
   /// 审核通过，可收款+可提款
   active,
+
   /// 受限制（部分功能不可用）
   restricted,
 }
@@ -24,6 +31,10 @@ class ConnectAccountStatus {
   final bool detailsSubmitted;
   final String? accountId;
   final String? errorMessage;
+  final List<String> currentlyDue;
+  final List<String> pastDue;
+  final List<String> pendingVerification;
+  final String? disabledReason;
 
   const ConnectAccountStatus({
     required this.status,
@@ -32,6 +43,10 @@ class ConnectAccountStatus {
     this.detailsSubmitted = false,
     this.accountId,
     this.errorMessage,
+    this.currentlyDue = const [],
+    this.pastDue = const [],
+    this.pendingVerification = const [],
+    this.disabledReason,
   });
 
   factory ConnectAccountStatus.fromJson(Map<String, dynamic> json) {
@@ -39,8 +54,24 @@ class ConnectAccountStatus {
     final payoutsEnabled = json['payoutsEnabled'] == true;
     final detailsSubmitted = json['detailsSubmitted'] == true;
 
+    final requirements = json['requirements'] is Map
+        ? Map<String, dynamic>.from(json['requirements'] as Map)
+        : const <String, dynamic>{};
+    final currentlyDue = _readStringList(requirements['currentlyDue']);
+    final pastDue = _readStringList(requirements['pastDue']);
+    final pendingVerification =
+        _readStringList(requirements['pendingVerification']);
+    final disabledReason = requirements['disabledReason']?.toString();
+    final statusValue = json['status']?.toString();
+
     ConnectStatus status;
-    if (chargesEnabled && payoutsEnabled) {
+    if (statusValue == 'restricted' || (disabledReason?.isNotEmpty ?? false)) {
+      status = ConnectStatus.restricted;
+    } else if (statusValue == 'needs_information' ||
+        currentlyDue.isNotEmpty ||
+        pastDue.isNotEmpty) {
+      status = ConnectStatus.needsInformation;
+    } else if (chargesEnabled && payoutsEnabled) {
       status = ConnectStatus.active;
     } else if (detailsSubmitted) {
       status = ConnectStatus.pendingVerification;
@@ -56,7 +87,16 @@ class ConnectAccountStatus {
       payoutsEnabled: payoutsEnabled,
       detailsSubmitted: detailsSubmitted,
       accountId: json['accountId']?.toString(),
+      currentlyDue: currentlyDue,
+      pastDue: pastDue,
+      pendingVerification: pendingVerification,
+      disabledReason: disabledReason,
     );
+  }
+
+  static List<String> _readStringList(dynamic value) {
+    if (value is! List) return const [];
+    return value.map((item) => item.toString()).toList(growable: false);
   }
 
   factory ConnectAccountStatus.notCreated() {
@@ -80,7 +120,8 @@ abstract class IStripeConnectRemoteDataSource {
 }
 
 /// Stripe Connect 远程数据源实现
-class StripeConnectRemoteDataSourceImpl implements IStripeConnectRemoteDataSource {
+class StripeConnectRemoteDataSourceImpl
+    implements IStripeConnectRemoteDataSource {
   final Dio _dio;
 
   StripeConnectRemoteDataSourceImpl(this._dio);
