@@ -46,6 +46,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
 
   Future<void> _submitApplication() async {
     if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先选择售后原因并补全必填信息')),
+      );
       return;
     }
 
@@ -67,7 +70,8 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
       String? uploadError;
       uploadResult.fold(
         (failure) => uploadError = failure.message,
-        (results) => uploadedImageUrls = results.map((result) => result.url).toList(),
+        (results) =>
+            uploadedImageUrls = results.map((result) => result.url).toList(),
       );
 
       setState(() {
@@ -89,6 +93,9 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
         ? double.tryParse(_amountController.text)
         : null;
 
+    // 售后提交此前在表单校验未通过时只有字段红字，用户很容易误认为按钮无响应。
+    // 统一收起键盘并交由 Bloc 发出明确的 loading / success / error 状态。
+    FocusScope.of(context).unfocus();
     context.read<AfterSalesBloc>().add(
           ApplyForAfterSalesSubmitted(
             orderItemId: widget.orderItemId,
@@ -348,19 +355,21 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
 
                 const SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: state is AfterSalesActionLoading || _isUploadingEvidence
-                      ? null
-                      : _submitApplication,
-                  child: state is AfterSalesActionLoading || _isUploadingEvidence
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(s.after_sales_submit),
+                  onPressed:
+                      state is AfterSalesActionLoading || _isUploadingEvidence
+                          ? null
+                          : _submitApplication,
+                  child:
+                      state is AfterSalesActionLoading || _isUploadingEvidence
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(s.after_sales_submit),
                 )
               ],
             ),
