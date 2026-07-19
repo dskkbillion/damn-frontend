@@ -1,127 +1,73 @@
-# damn-frontend
+# DeepStream (DSKK)
 
-DSKK 客户端 Flutter 工程。
+**An AI-powered community where your unfinished AI conversations find the people who can actually help.**
 
-## 先看这里
+Built from zero by two young founders — full-time, self-funded, 2.5 years and counting.
 
-如果你是第一次接手这个仓库，优先关注两件事：
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-lightgrey)]()
 
-1. 先按下面的“本地联调”章节把项目跑起来
-2. 再按“分支流转”章节参与 `dev / test / main` 协作
+## 🎬 Meet the team & the product
 
-## 本地联调
+- **Founder intro (60s):** [Watch on Google Drive](https://drive.google.com/file/d/1Y96Uv4UVBe_TFc2uoEU1tSi-ri3Pv4II/view)
+- **Product demo:** [Watch on Google Drive](https://drive.google.com/file/d/1Kmcg-FxzSuB2hdeC-7TkMJY2qXriI3vA/view)
 
-### 前置依赖
+## What is DeepStream?
 
-- Flutter SDK
-- Xcode 和 iOS 模拟器
-- `tmux`
+Everyone now carries high-density, deeply contextual conversations inside ChatGPT and Claude — but that context is trapped in a silo. When you finally need a *human* who has solved your exact problem, you have to throw all that context away and start over with a vague forum post.
 
-### 脚本速查
+DeepStream fixes the last mile:
 
-```bash
-./scripts/run-ios-unified-local.sh
-./scripts/tail-ios-unified-local.sh
-./scripts/stop-ios-unified-local.sh
+- **Semantic drift bottles** — your unresolved question (with its context) becomes an "intent capsule" that is vector-matched to people who can actually answer it, instead of being broadcast into a feed.
+- **Micro-consulting, not gig work** — solving one concrete problem earns a small tip ("coffee money"), powered by Stripe.
+- **Agent-native by design** — capsules are built to plug into the MCP ecosystem, so your AI assistant can carry your intent into the network for you.
+
+## The story
+
+We are two founders who left big-tech jobs (ByteDance, Tencent) to chase one belief: the next social entry point is not a stronger agent — it's the room *between* agents, where two AIs shake hands on behalf of their humans. No office politics, no shortcuts, just a small team shipping every week from Shenzhen, and our first users in Vietnam.
+
+## Tech stack
+
+| Layer | Tech |
+|---|---|
+| Client (this repo) | Flutter / Dart, unified entrypoint for iOS & Android |
+| Matching | Vector search (Milvus) + CLIP multimodal embeddings |
+| Payments | Stripe (deferred payout — no card needed until $10 earned) |
+| QA | Custom DSL-driven E2E automation + LLM auto-review workflow |
+
+## Repository structure
+
+```
+lib/
+├── features/        # auth, chat, home, orders, payment, seller, profile, ...
+├── main_unified.dart  # single unified entrypoint
+scripts/             # one-command local run / log / stop scripts
+docs/                # developer docs
 ```
 
-### 配置文件
+## Quick start (development)
 
-先准备本地联调环境文件：
+Prerequisites: Flutter SDK, Xcode + iOS Simulator, `tmux`.
 
 ```bash
 cp .env.local-debug.example .env.local-debug
-```
-
-说明：
-
-- 模板文件：`.env.local-debug.example`
-- 本地实际文件：`.env.local-debug`
-
-### 日志路径
-
-- 当前日志：`.logs/flutter-ios-unified.latest.log`
-- 上一轮日志：`.logs/flutter-ios-unified.previous.log`
-
-### 安装依赖
-
-```bash
 flutter pub get
+./scripts/run-ios-unified-local.sh   # run
+./scripts/tail-ios-unified-local.sh  # tail logs
+./scripts/stop-ios-unified-local.sh  # stop
 ```
 
-### 启动
+Full development guide (branching model, log paths, script overrides): [docs/DEVELOPMENT.zh-CN.md](docs/DEVELOPMENT.zh-CN.md) *(Chinese)*.
 
-```bash
-./scripts/run-ios-unified-local.sh
-```
+## Status & roadmap
 
-### 查看日志
+- ✅ iOS client with chat, payments (Stripe), orders, seller flows
+- ✅ DSL-based full-regression E2E test harness
+- ✅ First user cohort in Vietnam
+- 🔜 Open-source MCP plugin so any Claude/ChatGPT user can join the network
+- 🔜 Expansion to Thailand & Japan
 
-```bash
-./scripts/tail-ios-unified-local.sh
-```
+## License
 
-### 停止
-
-```bash
-./scripts/stop-ios-unified-local.sh
-```
-
-## 脚本和日志
-
-`./scripts/run-ios-unified-local.sh` 默认会：
-
-- 执行 `flutter run --machine`
-- 使用入口 `lib/main_unified.dart`
-- 使用环境文件 `.env.local-debug`
-- 通过 `tmux` 托管进程
-- 将日志写入 `.logs/flutter-ios-unified.latest.log`
-
-常用覆盖方式：
-
-```bash
-DEVICE_ID=<模拟器ID> ./scripts/run-ios-unified-local.sh
-ENTRYPOINT=lib/main_unified.dart ./scripts/run-ios-unified-local.sh
-ENV_FILE=.env.local-debug ./scripts/run-ios-unified-local.sh
-```
-
-日志文件：
-
-- 当前日志：`.logs/flutter-ios-unified.latest.log`
-- 上一轮日志：`.logs/flutter-ios-unified.previous.log`
-
-跨端排查顺序：
-
-1. 先看前端日志
-2. 再看后端日志
-3. 再看模型端日志
-4. 最后再看代码
-
-## 分支流转
-
-本仓库固定维护三条分支：
-
-- `dev`：开发和联调
-- `test`：测试复测
-- `main`：稳定验收
-
-协作规则：
-
-- 开发只推进 `dev`
-- 测试同事只基于 `test` 复测
-- 正式验收只认 `main`
-- 每次切分支、合并、复测前先执行 `git fetch origin`
-- 每轮复测都要记录 `test` 对应的 commit
-
-标准流程：
-
-1. 开发在 `dev`
-2. `dev -> test`
-3. 测试同事复测 `test`
-4. 通过后 `test -> main`
-
-## 补充说明
-
-- 统一入口固定为 `lib/main_unified.dart`
-- 不要为了本地调试随意新增临时入口文件
-- 不要直接拿 `dev` 给测试同事验证
+Source-available for reading and reference. All rights reserved by the DeepStream team; a formal open-source license for the upcoming MCP plugin will be announced in its own repository.
