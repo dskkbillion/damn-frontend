@@ -384,16 +384,6 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
           ),
           Divider(height: 1, color: AppColors.backgroundSecondary),
           _buildMenuItem(
-            AppLocalizations.of(context).agentConnectedAgents,
-            onTap: () => context.push('/profile/connected-agents'),
-          ),
-          Divider(height: 1, color: AppColors.backgroundSecondary),
-          _buildMenuItem(
-            AppLocalizations.of(context).agentRequestDrafts,
-            onTap: () => context.push('/profile/agent-requests'),
-          ),
-          Divider(height: 1, color: AppColors.backgroundSecondary),
-          _buildMenuItem(
             AppLocalizations.of(context).profile_account_deletion,
             onTap: () => _showFeatureNotImplemented(
                 AppLocalizations.of(context).profile_account_deletion),

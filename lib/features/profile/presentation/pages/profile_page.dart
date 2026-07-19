@@ -243,6 +243,20 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                       MenuItem(
+                        icon: Icons.devices_other_outlined,
+                        text: appLocalizations.agentConnectedAgents,
+                        onTap: () {
+                          context.push(ProfileRoutes.connectedAgentsPath);
+                        },
+                      ),
+                      MenuItem(
+                        icon: Icons.assignment_outlined,
+                        text: appLocalizations.agentRequestDrafts,
+                        onTap: () {
+                          context.push(ProfileRoutes.agentRequestsPath);
+                        },
+                      ),
+                      MenuItem(
                         icon: Icons.notifications_none,
                         text: appLocalizations.profile_message_notifications,
                         onTap: () {
