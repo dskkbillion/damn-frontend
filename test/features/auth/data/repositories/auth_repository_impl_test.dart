@@ -160,8 +160,8 @@ void main() {
           // act
           final result = await repository.loginWithVerificationCode(tCredentials);
           // assert
-          // It returns Left, but the user state in memory might be updated.
           expect(result, const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.')));
+          expect(repository.getLoggedInUserSync(), const Right(null));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verify(mockUserInfoRepository.fetchUserInfo(tToken));
           verify(mockSecureStorage.saveInt('user_id', tUserId));

@@ -43,6 +43,7 @@ import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller
 // Import Payment routes
 import 'package:dskk_flutter_refactor/features/payment/presentation/routes/payment_routes.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/agent_routes.dart';
+import 'package:dskk_flutter_refactor/features/agent/presentation/agent_login_return.dart';
 
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
@@ -610,7 +611,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/ai_chat', // AI 助手为默认首页
-    debugLogDiagnostics: true,
+    // Route URIs can contain short-lived Agent codes. GoRouter diagnostics
+    // print the full URI, so keep them disabled in every build flavor.
+    debugLogDiagnostics: false,
     refreshListenable: GoRouterRefreshStream(authRepository.authStatus),
     observers: [
       RouterAnalyticsObserver(), // Add analytics observer
@@ -911,13 +914,26 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       if (loginStatus is Unauthenticated && !isLoggingIn) {
         print('Redirect: Not logged in -> ${AuthRoutes.loginPath}');
+        if (AgentLoginReturn.captureMatchedRoute(
+          matchedLocation: state.matchedLocation,
+          sourceUri: state.uri,
+        )) {
+          // Keep Agent codes out of the login URL, analytics, and route logs.
+          return '${AuthRoutes.loginPath}?intent=agent';
+        }
         final from = Uri.encodeComponent(state.uri.toString());
         return '${AuthRoutes.loginPath}?from=$from';
       }
       if (loginStatus is Authenticated && isLoggingIn) {
+        if (state.uri.queryParameters['intent'] == 'agent' &&
+            AgentLoginReturn.hasPending()) {
+          // SmsLoginSuccess is the single owner that consumes this state. This
+          // avoids racing the auth stream before credential persistence returns.
+          return null;
+        }
         final from = state.uri.queryParameters['from'];
         if (from != null && from.startsWith('/') && !from.startsWith('//')) {
-          print('Redirect: Logged in -> returning to $from');
+          print('Redirect: Logged in -> returning to previous app route');
           return from;
         }
         print(

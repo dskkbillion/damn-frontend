@@ -9,8 +9,11 @@ import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/phone_i
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_input_field.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/verification_code_button.dart';
 import 'package:dskk_flutter_refactor/features/auth/presentation/widgets/login_particle_backdrop.dart';
+import 'package:dskk_flutter_refactor/features/agent/presentation/agent_login_return.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/country_code.dart';
 import 'package:dskk_flutter_refactor/core/utils/phone_validator.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 enum LoginMode { phone, email }
 
@@ -31,6 +34,13 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
   // #276: 记录上次成功发送验证码的 mode，用于让倒计时只对该 mode 生效
   // 切到另一个 mode 时 lastSentCodeMode != _loginMode，按钮回到 idle 状态
   LoginMode? _lastSentCodeMode;
+  late bool _ownsAgentReturn;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsAgentReturn = AgentLoginReturn.hasPending();
+  }
 
   @override
   void didChangeDependencies() {
@@ -42,6 +52,7 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
 
   @override
   void dispose() {
+    if (_ownsAgentReturn) AgentLoginReturn.clear();
     _phoneController.dispose();
     _emailController.dispose();
     _codeController.dispose();
@@ -118,6 +129,12 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('登录成功!')),
                   );
+                  final agentDestination =
+                      _ownsAgentReturn ? AgentLoginReturn.consume() : null;
+                  _ownsAgentReturn = false;
+                  if (agentDestination != null) {
+                    context.go(agentDestination);
+                  }
                 }
               },
               builder: (context, state) {
@@ -165,6 +182,51 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                             ),
                           ),
                           const SizedBox(height: 40),
+
+                          if (_ownsAgentReturn) ...[
+                            Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.smart_toy_outlined),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            AppLocalizations.of(context)
+                                                .agentConnectTitle,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(AppLocalizations.of(context)
+                                        .agentConnectDescription),
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton(
+                                        onPressed: () {
+                                          AgentLoginReturn.clear();
+                                          setState(
+                                              () => _ownsAgentReturn = false);
+                                          context.go('/login');
+                                        },
+                                        child: Text(AppLocalizations.of(context)
+                                            .profile_cancel),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
 
                           // 登录模式切换按钮
                           Container(

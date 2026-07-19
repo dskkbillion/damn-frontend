@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
 import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/device_authorization_page.dart';
@@ -69,6 +71,39 @@ void main() {
     expect(find.text('Enter the 8-character user code'), findsOneWidget);
     expect(repository.inspectCalls, 0);
   });
+
+  testWidgets('binds approval to the latest inspected code', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(800, 1000));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _OutOfOrderAgentRepository();
+
+    await tester.pumpWidget(_app(DeviceAuthorizationPage(
+      repository: repository,
+      initialCode: 'AAAA-AAAA',
+    )));
+    await tester.pump();
+
+    await tester.pumpWidget(_app(DeviceAuthorizationPage(
+      repository: repository,
+      initialCode: 'BBBB-BBBB',
+    )));
+    await tester.pump();
+
+    repository.complete('BBBB-BBBB', clientName: 'Client B');
+    await tester.pump();
+    repository.complete('AAAA-AAAA', clientName: 'Client A');
+    await tester.pump();
+
+    expect(find.text('Client B'), findsOneWidget);
+    expect(find.text('Client A'), findsNothing);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -400));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Allow connection'));
+    await tester.pumpAndSettle();
+
+    expect(repository.approvedCode, 'BBBB-BBBB');
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -135,4 +170,27 @@ class _FakeAgentRepository implements AgentRepository {
   Future<int> revokeAllSessions() => throw UnimplementedError();
   @override
   Future<void> revokeSession(int id) => throw UnimplementedError();
+}
+
+class _OutOfOrderAgentRepository extends _FakeAgentRepository {
+  final Map<String, Completer<AgentAuthorization>> _pending = {};
+
+  @override
+  Future<AgentAuthorization> inspectAuthorization(String userCode) {
+    inspectCalls++;
+    return (_pending[userCode] = Completer<AgentAuthorization>()).future;
+  }
+
+  void complete(String userCode, {required String clientName}) {
+    _pending[userCode]!.complete(AgentAuthorization(
+      clientName: clientName,
+      clientType: 'CLI',
+      deviceName: 'Test Mac',
+      platform: 'macOS',
+      cliVersion: '0.1.0',
+      requestedScopes: const {'services:read'},
+      status: 'PENDING',
+      expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+    ));
+  }
 }

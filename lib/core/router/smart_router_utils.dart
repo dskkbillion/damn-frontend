@@ -177,11 +177,16 @@ extension SmartPageBuilder on GoRouterState {
     bool fullscreenDialog = false,
     bool forceNewInstance = false, // 保留参数以兼容现有代码，但不再影响key生成
   }) {
+    final safeQueryParameters = matchedLocation == '/agent/connect'
+        ? <String, String>{
+            if (uri.queryParameters.containsKey('code')) 'code': '[redacted]',
+          }
+        : uri.queryParameters;
     final pageKey = ValueKey(
-      '$matchedLocation:${_sortedMapString(pathParameters)}:${_sortedMapString(uri.queryParameters)}',
+      '$matchedLocation:${_sortedMapString(pathParameters)}:${_sortedMapString(safeQueryParameters)}',
     );
 
-    debugPrint('SmartPage: 创建页面 $matchedLocation (key: ${pageKey.value})');
+    debugPrint('SmartPage: 创建页面 $matchedLocation');
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPage<T>(

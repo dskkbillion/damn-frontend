@@ -177,9 +177,12 @@ class AuthRepositoryImpl implements IAuthRepository {
               return Right(authenticatedUser);
             } on CacheException catch (e) {
               AppLogger.d('Failed to save credentials after login: ${e.message}');
-              // 即使存储失败，也更新内存状态，但返回错误
-              _currentUser = authenticatedUser;
-              _statusController.add(Authenticated(authenticatedUser));
+              // Never publish an authenticated state unless credentials were
+              // persisted successfully. Otherwise router refresh can navigate
+              // while the login UI reports failure.
+              _currentUser = null;
+              await _clearLocalAuthData();
+              _statusController.add(const Unauthenticated());
               return const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.'));
             }
           },

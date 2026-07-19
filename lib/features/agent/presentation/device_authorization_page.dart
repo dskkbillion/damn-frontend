@@ -23,6 +23,8 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
   late final TextEditingController _code;
   AgentAuthorization? _authorization;
   Set<String> _selectedScopes = {};
+  String? _authorizationCode;
+  int _requestGeneration = 0;
   bool _loading = false;
   String? _error;
   String? _terminalMessage;
@@ -33,7 +35,31 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
     _code = TextEditingController(
         text: normalizeAgentCode(widget.initialCode ?? ''));
     if (_code.text.replaceAll('-', '').length == 8) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _inspect());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _inspect();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant DeviceAuthorizationPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final previousCode = normalizeAgentCode(oldWidget.initialCode ?? '');
+    final nextCode = normalizeAgentCode(widget.initialCode ?? '');
+    if (previousCode == nextCode) return;
+
+    _requestGeneration++;
+    _code.text = nextCode;
+    _authorization = null;
+    _authorizationCode = null;
+    _selectedScopes = {};
+    _loading = false;
+    _error = null;
+    _terminalMessage = null;
+    if (nextCode.replaceAll('-', '').length == 8) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _inspect();
+      });
     }
   }
 
@@ -49,18 +75,27 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
       setState(() => _error = AppLocalizations.of(context).agentInvalidCode);
       return;
     }
+    final generation = ++_requestGeneration;
     setState(() {
       _loading = true;
       _error = null;
       _terminalMessage = null;
+      _authorization = null;
+      _authorizationCode = null;
+      _selectedScopes = {};
     });
     try {
       final authorization =
           await widget.repository.inspectAuthorization(normalized);
-      if (!mounted) return;
+      if (!mounted ||
+          generation != _requestGeneration ||
+          normalized != normalizeAgentCode(_code.text)) {
+        return;
+      }
       if (authorization.status != 'PENDING') {
         setState(() {
           _authorization = null;
+          _authorizationCode = null;
           _terminalMessage =
               agentAuthorizationStatusMessage(context, authorization.status);
         });
@@ -68,16 +103,23 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
       }
       setState(() {
         _authorization = authorization;
+        _authorizationCode = normalized;
         _selectedScopes = {...authorization.requestedScopes};
       });
     } catch (error) {
-      if (mounted) setState(() => _error = agentErrorMessage(context, error));
+      if (mounted && generation == _requestGeneration) {
+        setState(() => _error = agentErrorMessage(context, error));
+      }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && generation == _requestGeneration) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   Future<void> _approve() async {
+    final authorizationCode = _authorizationCode;
+    if (_authorization == null || authorizationCode == null) return;
     if (_selectedScopes.isEmpty) {
       setState(
           () => _error = AppLocalizations.of(context).agentChoosePermission);
@@ -85,35 +127,47 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
     }
     await _operate(
         () => widget.repository.approveAuthorization(
-            normalizeAgentCode(_code.text), _selectedScopes),
+            authorizationCode, {..._selectedScopes}),
+        authorizationCode,
         AppLocalizations.of(context).agentAuthorizationApproved);
   }
 
   Future<void> _deny() async {
+    final authorizationCode = _authorizationCode;
+    if (_authorization == null || authorizationCode == null) return;
     await _operate(
-        () =>
-            widget.repository.denyAuthorization(normalizeAgentCode(_code.text)),
+        () => widget.repository.denyAuthorization(authorizationCode),
+        authorizationCode,
         AppLocalizations.of(context).agentAuthorizationDenied);
   }
 
   Future<void> _operate(
-      Future<void> Function() operation, String message) async {
+      Future<void> Function() operation, String authorizationCode,
+      String message) async {
+    final generation = _requestGeneration;
     setState(() {
       _loading = true;
       _error = null;
     });
     try {
       await operation();
-      if (mounted) {
+      if (mounted &&
+          generation == _requestGeneration &&
+          authorizationCode == normalizeAgentCode(_code.text)) {
         setState(() {
           _terminalMessage = message;
           _authorization = null;
+          _authorizationCode = null;
         });
       }
     } catch (error) {
-      if (mounted) setState(() => _error = agentErrorMessage(context, error));
+      if (mounted && generation == _requestGeneration) {
+        setState(() => _error = agentErrorMessage(context, error));
+      }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && generation == _requestGeneration) {
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -133,6 +187,7 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
             const SizedBox(height: 24),
             TextField(
               controller: _code,
+              readOnly: _loading,
               textCapitalization: TextCapitalization.characters,
               maxLength: 9,
               decoration: InputDecoration(
@@ -147,6 +202,17 @@ class _DeviceAuthorizationPageState extends State<DeviceAuthorizationPage> {
                       text: normalized,
                       selection:
                           TextSelection.collapsed(offset: normalized.length));
+                }
+                if (_authorizationCode != normalized) {
+                  setState(() {
+                    _requestGeneration++;
+                    _authorization = null;
+                    _authorizationCode = null;
+                    _selectedScopes = {};
+                    _loading = false;
+                    _error = null;
+                    _terminalMessage = null;
+                  });
                 }
               },
             ),
