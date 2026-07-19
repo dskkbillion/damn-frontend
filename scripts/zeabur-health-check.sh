@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # #359 Zeabur staging 服务健康检查脚本
 #
-# 用法: ./scripts/zeabur-health-check.sh [TOKEN]
-#   - 若不传 TOKEN, 仅检查服务部署状态(不做 curl 探测)
-#   - 若传 TOKEN, 同时跑 4 个 curl 探测验证后端功能
+# 用法: ./scripts/zeabur-health-check.sh
+#   - 默认检查 Zeabur 当前服务状态和官方 gateway 健康状态
+#   - 设置 DSKK_MEMBER_TOKEN 后，同时跑鉴权 API 探测
 #
 # 部署在 Zeabur 腾讯云新加坡, 项目 deepstream-staging。
 # 输出格式化 ✅/❌ 每服务一行 + 末尾汇总。
@@ -11,19 +11,34 @@
 
 set -uo pipefail
 
+for required_command in zeabur jq curl; do
+  if ! command -v "$required_command" >/dev/null 2>&1; then
+    echo "缺少必要命令: $required_command" >&2
+    exit 2
+  fi
+done
+
 # --- Service IDs ---
 DSKK_BACKEND_ID="69ef07eb6d2b0f8eeeda3709"
 DSKK_MODEL_ID="69ef07f8e66a6b143b48a6ab"
+DSKK_GATEWAY_ID="6a5c99bd2280c02cc1b654ad"
+DSKK_ENVIRONMENT_ID="69eef4f41e7c7466bb9d0cbf"
 MYSQL_ID="69ef07d0e66a6b143b48a68b"
 REDIS_ID="69ef07dce66a6b143b48a69a"
 MILVUS_ID="69eef525e66a6b143b489df2"
 MINIO_ID="69eef525e66a6b143b489df1"
 ETCD_ID="69eef525e66a6b143b489dfd"
 
-BACKEND_URL="https://dskk-api-staging.zeabur.app"
+BACKEND_URL="https://deep-stream.ai/prod-api"
+GATEWAY_URL="https://deep-stream.ai"
 MODEL_URL="https://dskk-model-staging.zeabur.app"
 
-TOKEN="${1:-}"
+if [[ $# -ne 0 ]]; then
+  echo "拒绝从命令行参数读取 Token；请改用 DSKK_MEMBER_TOKEN 环境变量。" >&2
+  exit 2
+fi
+
+TOKEN="${DSKK_MEMBER_TOKEN:-}"
 
 # --- 颜色 ---
 RED=$'\e[31m'
@@ -36,29 +51,37 @@ RESET=$'\e[0m'
 PASS=0
 FAIL=0
 
-check_deploy() {
+check_service() {
   local name="$1"
   local sid="$2"
-  # 取最近 10 次部署中**第一个 RUNNING** 的(zeabur 把失败的 retry 部署也排前面, 但实际服务跑的是上次 RUNNING)
-  # 没有 RUNNING 才报当前最新状态
-  local all_status
-  all_status=$(npx -y zeabur@latest deployment list --service-id "$sid" -i=false 2>&1 \
-    | grep -oE "(BUILDING|RUNNING|FAILED|CRASHED|REMOVED)")
-  local has_running=$(echo "$all_status" | grep -c "RUNNING" || echo 0)
-  local newest=$(echo "$all_status" | head -1)
+  local status
+  status=$(zeabur service get --id "$sid" --env-id "$DSKK_ENVIRONMENT_ID" \
+    --json -i=false 2>/dev/null | jq -r '.Status // empty')
 
-  if [[ "$has_running" -gt 0 ]]; then
-    if [[ "$newest" == "RUNNING" ]]; then
-      echo "${GREEN}✅${RESET} ${name} (${sid:0:12}...) → RUNNING (newest)"
-    else
-      echo "${YELLOW}⚠️${RESET}  ${name} (${sid:0:12}...) → ${newest}, but service running on previous deploy"
-    fi
+  if [[ "$status" == "RUNNING" ]]; then
+    echo "${GREEN}✅${RESET} ${name} (${sid:0:12}...) → RUNNING"
     PASS=$((PASS+1))
-  elif [[ -z "$newest" ]]; then
-    echo "${YELLOW}⚠️${RESET}  ${name} (${sid:0:12}...) → 无活跃部署"
+  elif [[ -z "$status" ]]; then
+    echo "${RED}❌${RESET} ${name} (${sid:0:12}...) → 无法读取当前服务状态"
     FAIL=$((FAIL+1))
   else
-    echo "${RED}❌${RESET} ${name} (${sid:0:12}...) → ${newest} (no RUNNING in history)"
+    echo "${RED}❌${RESET} ${name} (${sid:0:12}...) → ${status}"
+    FAIL=$((FAIL+1))
+  fi
+}
+
+public_check() {
+  local name="$1"
+  local url="$2"
+  local expected="$3"
+  local code
+  code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 15 "$url" \
+    2>/dev/null || echo "000")
+  if [[ "$code" =~ $expected ]]; then
+    echo "${GREEN}✅${RESET} ${name} HTTP ${code} (期望 ${expected})"
+    PASS=$((PASS+1))
+  else
+    echo "${RED}❌${RESET} ${name} HTTP ${code} (期望 ${expected})"
     FAIL=$((FAIL+1))
   fi
 }
@@ -121,11 +144,10 @@ asr_sunset_check() {
 
 echo "${CYAN}=== Zeabur Staging Health Check $(date +%H:%M:%S) ===${RESET}"
 echo ""
-echo "${CYAN}1. 应用服务部署状态 (zeabur cli)${RESET}"
-# Note: 只查 Docker 应用服务的 deployment, prebuilt marketplace 服务(mysql/redis/milvus/...)
-# 没有 deployment 概念, 通过应用服务的成功调用间接验证(见步骤 2 curl 探测)
-check_deploy "dskk-backend     " "$DSKK_BACKEND_ID"
-check_deploy "dskk-model-cols  " "$DSKK_MODEL_ID"
+echo "${CYAN}1. 应用服务当前状态 (zeabur cli)${RESET}"
+check_service "deepstream-gateway" "$DSKK_GATEWAY_ID"
+check_service "dskk-backend     " "$DSKK_BACKEND_ID"
+check_service "dskk-model-cols  " "$DSKK_MODEL_ID"
 echo ""
 
 echo "${CYAN}1.5 基础设施服务 (prebuilt — 间接验证)${RESET}"
@@ -134,8 +156,13 @@ echo "  通过 dskk-model-cols 的 milvus 查询验证(见步骤 2)"
 echo "  minio/etcd 通过 milvus 依赖关系间接验证"
 echo ""
 
+echo "${CYAN}2. 官方入口健康探测${RESET}"
+public_check "GET  /healthz               " "$GATEWAY_URL/healthz" "200"
+public_check "GET  /prod-api/healthz      " "$BACKEND_URL/healthz" "200"
+echo ""
+
 if [[ -n "$TOKEN" ]]; then
-  echo "${CYAN}2. API 功能探测 (curl + token)${RESET}"
+  echo "${CYAN}3. API 功能探测 (curl + DSKK_MEMBER_TOKEN)${RESET}"
   curl_check "GET  /api/member/info       " "$BACKEND_URL/api/member/info" "200"
   curl_check "GET  /api/project/details   " "$BACKEND_URL/api/project/details?memberId=10318" "200"
   curl_check "POST /model/chat/list       " "$MODEL_URL/model/chat/list" "200|405"  # POST endpoint, GET 通常 405
@@ -146,7 +173,7 @@ if [[ -n "$TOKEN" ]]; then
   echo ""
 else
   echo "${YELLOW}⚠️${RESET}  未传 TOKEN, 跳过 API 探测和 ASR sunset 检查"
-  echo "用法: ./scripts/zeabur-health-check.sh <MEMBER_TOKEN>"
+  echo "用法: DSKK_MEMBER_TOKEN='<短期测试令牌>' ./scripts/zeabur-health-check.sh"
   echo ""
 fi
 

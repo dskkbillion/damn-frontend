@@ -7,7 +7,7 @@
 - Team ID：`WXR72K6438`
 - 版本：`1.0.0 (202607121)`
 - Release 环境：`.env.staging`
-- staging API：`https://dskk-api-staging.zeabur.app`
+- staging API：`https://deep-stream.ai/prod-api`
 - App Icon：使用 `assets/icons/nav/dskk_logo.svg` 生成白底冰蓝标记；图形视觉宽度约为画布 66%，避免主屏图标显得过满
 - 部署后 E2E 证据：`test-results/testflight-e2e/`
 
