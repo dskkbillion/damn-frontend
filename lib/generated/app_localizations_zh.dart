@@ -5083,4 +5083,278 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get after_sales_info_evidence => '申请凭证';
+
+  @override
+  String get agentScopeServicesRead => '搜索和查看服务';
+
+  @override
+  String get agentScopeRequestsRead => '查看我的需求及状态';
+
+  @override
+  String get agentScopeRequestsCreate => '创建待 App 审核的需求草稿';
+
+  @override
+  String get agentStatusActive => '已连接';
+
+  @override
+  String get agentStatusRevoked => '已撤销';
+
+  @override
+  String get agentStatusExpired => '已过期';
+
+  @override
+  String get agentStatusAwaitingReview => '等待 App 审核';
+
+  @override
+  String get agentStatusApproved => '已批准';
+
+  @override
+  String get agentStatusAbandoned => '已放弃';
+
+  @override
+  String get agentConnectTitle => '连接 Agent';
+
+  @override
+  String get agentConnectDescription =>
+      '确认正在连接的设备和权限。只有你在此允许后，CLI 才能访问 DeepStream。';
+
+  @override
+  String get agentInvalidCode => '请输入 8 位用户码';
+
+  @override
+  String get agentUserCode => '用户码';
+
+  @override
+  String get agentCheckRequest => '查看连接申请';
+
+  @override
+  String get agentChoosePermission => '请至少保留一项权限；若不信任该设备，请拒绝连接。';
+
+  @override
+  String get agentAuthorizationApproved => '已允许连接，可以返回 CLI。';
+
+  @override
+  String get agentAuthorizationDenied => '已拒绝本次连接。';
+
+  @override
+  String get agentUnknownPlatform => '未知设备';
+
+  @override
+  String get agentRequestedPermissions => '申请的权限';
+
+  @override
+  String get agentNeverIncludes => '不包含：密码、验证码、付款、钱包、自动下单和无关本地文件。';
+
+  @override
+  String get agentDeny => '拒绝';
+
+  @override
+  String get agentAllow => '允许接入';
+
+  @override
+  String get agentConnectedAgents => '已连接的 Agent';
+
+  @override
+  String get agentRevokeAll => '全部撤销';
+
+  @override
+  String get agentRevokeAllConfirmation =>
+      '所有 Agent 将立即退出，需要重新授权才能使用。历史需求、聊天和订单不会删除。';
+
+  @override
+  String get agentRevoke => '撤销';
+
+  @override
+  String get agentNoConnectedAgents => '暂无已连接的 Agent';
+
+  @override
+  String get agentNoConnectedAgentsHint => '在电脑上运行 ds auth login，即可发起安全连接。';
+
+  @override
+  String get agentRetry => '重试';
+
+  @override
+  String get agentNoPaymentNotice => 'Agent 不能付款、操作钱包或自动下单。需求草稿仍需你在 App 中审核。';
+
+  @override
+  String agentLastUsed(String time) {
+    return '最后使用：$time';
+  }
+
+  @override
+  String get agentDetails => 'Agent 详情';
+
+  @override
+  String get agentSessionId => 'Session 标识';
+
+  @override
+  String get agentStatus => '状态';
+
+  @override
+  String get agentConnectedAt => '接入时间';
+
+  @override
+  String get agentLastUsedLabel => '最后使用';
+
+  @override
+  String get agentPermissions => '权限';
+
+  @override
+  String get agentAtLeastOnePermission => '至少保留一项权限；如需全部移除，请撤销此 Agent。';
+
+  @override
+  String get agentSavePermissions => '保存权限';
+
+  @override
+  String get agentCannotAddPermissions => '这里只能移除已有权限。增加权限需要重新授权。';
+
+  @override
+  String get agentRecentSecurityEvents => '最近安全操作';
+
+  @override
+  String get agentRevokeAgent => '撤销此 Agent';
+
+  @override
+  String get agentRevokeConfirmation =>
+      '该设备将立即退出 DeepStream，但不会删除历史记录。重新使用需要再次授权。';
+
+  @override
+  String get agentRequestDrafts => 'Agent 需求草稿';
+
+  @override
+  String get agentNoRequestDrafts => '暂无 Agent 创建的需求草稿';
+
+  @override
+  String get agentReviewRequest => '审核需求草稿';
+
+  @override
+  String get agentRequestBrief => '需求说明';
+
+  @override
+  String get agentServiceId => '服务 ID';
+
+  @override
+  String get agentCreatedAt => '创建时间';
+
+  @override
+  String get agentReviewSafetyNotice =>
+      '批准只表示你确认这份需求内容，不会付款或自动生成订单。后续价格与交易仍需单独确认。';
+
+  @override
+  String get agentApproveRequest => '批准需求';
+
+  @override
+  String get agentAbandonRequest => '放弃草稿';
+
+  @override
+  String get agentApproveRequestConfirmation => '确认需求内容无误并批准？本操作不会付款。';
+
+  @override
+  String get agentAbandonRequestConfirmation => '确认放弃这份需求草稿？';
+
+  @override
+  String get agentApprove => '批准';
+
+  @override
+  String get agentAbandon => '放弃';
+
+  @override
+  String get agentManageConnectedAgents => '管理已连接的 Agent';
+
+  @override
+  String get agentErrorInvalidCode => '连接码无效，请检查后重试。';
+
+  @override
+  String get agentErrorExpired => '连接申请已过期，请回到 CLI 重新发起登录。';
+
+  @override
+  String get agentErrorAlreadyUsed => '连接申请已使用或已取消。';
+
+  @override
+  String get agentErrorDenied => '连接申请已被拒绝。';
+
+  @override
+  String get agentErrorRateLimited => '尝试次数过多，请稍后再试。';
+
+  @override
+  String get agentErrorNotFound => '这条 Agent 记录已不存在。';
+
+  @override
+  String get agentErrorGeneric => '暂时无法完成 Agent 操作，请检查网络后重试。';
+
+  @override
+  String get agentAuthorizationAlreadyApproved => '该连接已批准，请返回 CLI。';
+
+  @override
+  String get agentAuthorizationAlreadyDenied => '该连接已被拒绝。';
+
+  @override
+  String get agentAuthorizationAlreadyUsed => '该连接码已使用。';
+
+  @override
+  String get agentAuthorizationUnavailable => '该连接申请已不可用。';
+
+  @override
+  String get agentAuditConnected => 'Agent 已连接';
+
+  @override
+  String get agentAuditRefreshed => '会话已刷新';
+
+  @override
+  String get agentAuditReplayBlocked => '已拦截可疑令牌重用';
+
+  @override
+  String get agentAuditPermissionsReduced => '权限已收窄';
+
+  @override
+  String get agentAuditRevoked => 'Agent 已撤销';
+
+  @override
+  String get agentAuditSecurityEvent => '安全事件';
+
+  @override
+  String get agentAuditSuccess => '成功';
+
+  @override
+  String get agentAuditRecorded => '已记录';
+
+  @override
+  String get agentClientType => '客户端类型';
+
+  @override
+  String get agentClientId => '客户端标识';
+
+  @override
+  String get agentAccessExpiresAt => '访问权限到期';
+
+  @override
+  String get agentAuthorizationExpiresAt => '授权到期';
+
+  @override
+  String get agentAuthorizationRequestExpiresAt => '连接申请到期';
+
+  @override
+  String get agentClientMetadataNotice =>
+      '以上客户端、设备、系统和版本信息由连接程序自行声明。请核对设备，并仅从 DeepStream 官方域名安装 CLI。';
+
+  @override
+  String get agentAuditAuthorizationRequested => '已发起连接申请';
+
+  @override
+  String get agentAuditAuthorizationApproved => '已批准连接';
+
+  @override
+  String get agentAuditAuthorizationDenied => '已拒绝连接';
+
+  @override
+  String get agentAuditAllRevoked => '已撤销全部 Agent';
+
+  @override
+  String get agentAuditRequestCreated => '已创建需求草稿';
+
+  @override
+  String get agentAuditRequestApproved => '已批准需求草稿';
+
+  @override
+  String get agentAuditRequestAbandoned => '已放弃需求草稿';
 }

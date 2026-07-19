@@ -16,7 +16,8 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart'; // 引入GetIt
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 引入安全存储
 import '../../../../core/network/network_info.dart'; // 引入网络信息服务
-import '../../../../core/network/mock_network_info.dart' as mock_network; // 引入模拟网络信息服务并添加前缀
+import '../../../../core/network/mock_network_info.dart'
+    as mock_network; // 引入模拟网络信息服务并添加前缀
 import '../pages/language_settings_page.dart'; // 引入语言设置页面
 import '../pages/assistant_mission_page.dart'; // 引入小帮手的使命页面
 import '../pages/change_contact_page.dart'; // 引入换绑页面
@@ -29,6 +30,9 @@ import '../../../orders/presentation/pages/order_list_page.dart';
 import '../../../orders/presentation/bloc/order_list_bloc.dart';
 import '../../../orders/domain/entities/order_status.dart';
 import '../../../../core/services/image_compress_service.dart'; // 引入图片压缩服务
+import '../../../agent/data/agent_repository.dart';
+import '../../../agent/presentation/connected_agents_page.dart';
+import '../../../agent/presentation/agent_requests_page.dart';
 
 class ProfileRoutes {
   ProfileRoutes._(); // 私有构造函数，防止实例化
@@ -41,10 +45,13 @@ class ProfileRoutes {
   static const String accountSecurityPath = '/profile/account-security';
   static const String walletPath = '/profile/wallet';
   static const String languageSettingsPath = '/profile/language-settings';
-  static const String assistantMissionPath = '/profile/assistant-mission'; // 添加小帮手的使命路径常量
+  static const String assistantMissionPath =
+      '/profile/assistant-mission'; // 添加小帮手的使命路径常量
   static const String ordersPath = '/profile/orders'; // 添加订单路径常量
   static const String changeContactPath = '/profile/change-contact'; // 换绑路径
   static const String unbindContactPath = '/profile/unbind-contact'; // 解绑路径
+  static const String connectedAgentsPath = '/profile/connected-agents';
+  static const String agentRequestsPath = '/profile/agent-requests';
 
   // 模块内部路由定义
   static final List<RouteBase> _routes = [
@@ -104,7 +111,8 @@ class ProfileRoutes {
 
               // 创建用例
               final getWalletSummary = GetWalletSummary(walletRepository);
-              final getWalletTransactions = GetWalletTransactions(walletRepository);
+              final getWalletTransactions =
+                  GetWalletTransactions(walletRepository);
 
               // 创建BLoC
               final walletBloc = WalletBloc(
@@ -113,7 +121,8 @@ class ProfileRoutes {
                 walletRepository: walletRepository,
               );
 
-              AppLogger.d('Successfully created WalletBloc with app dependencies');
+              AppLogger.d(
+                  'Successfully created WalletBloc with app dependencies');
 
               // 返回带BlocProvider的WalletPage
               return state.buildSmartPage(
@@ -125,7 +134,8 @@ class ProfileRoutes {
               );
             } catch (e) {
               // 如果从GetIt获取依赖失败，打印错误并返回一个简单的错误提示页面
-              AppLogger.d('Error creating WalletBloc with app dependencies: $e');
+              AppLogger.d(
+                  'Error creating WalletBloc with app dependencies: $e');
               return state.buildSmartPage(
                 Scaffold(
                   appBar: AppBar(title: const Text('钱包')),
@@ -135,7 +145,9 @@ class ProfileRoutes {
                       children: [
                         const Text('初始化钱包页面失败'),
                         const SizedBox(height: 16),
-                        Text('错误: $e', style: const TextStyle(fontSize: 12, color: AppColors.error)),
+                        Text('错误: $e',
+                            style: const TextStyle(
+                                fontSize: 12, color: AppColors.error)),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => Navigator.pop(context),
@@ -168,6 +180,26 @@ class ProfileRoutes {
             name: 'assistantMission',
           ),
         ),
+        GoRoute(
+          path: 'connected-agents',
+          name: 'connectedAgents',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            ConnectedAgentsPage(
+              repository: DioAgentRepository(GetIt.instance<Dio>()),
+            ),
+            name: 'connectedAgents',
+          ),
+        ),
+        GoRoute(
+          path: 'agent-requests',
+          name: 'agentRequests',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            AgentRequestsPage(
+              repository: DioAgentRepository(GetIt.instance<Dio>()),
+            ),
+            name: 'agentRequests',
+          ),
+        ),
         // 添加订单页面路由
         GoRoute(
           path: 'orders',
@@ -175,7 +207,8 @@ class ProfileRoutes {
           pageBuilder: (context, state) {
             // 提取status查询参数
             final statusString = state.uri.queryParameters['status'];
-            AppLogger.d('[ProfileRoutes] Orders route - status param: $statusString');
+            AppLogger.d(
+                '[ProfileRoutes] Orders route - status param: $statusString');
 
             // 解析status
             OrderStatus? parsedStatus;
@@ -185,7 +218,8 @@ class ProfileRoutes {
                   (e) => e.toString().split('.').last == statusString,
                 );
               } catch (e) {
-                AppLogger.d('[ProfileRoutes] Failed to parse status: $statusString');
+                AppLogger.d(
+                    '[ProfileRoutes] Failed to parse status: $statusString');
               }
             }
 
@@ -207,7 +241,8 @@ class ProfileRoutes {
       name: 'changeContact',
       pageBuilder: (context, state) {
         final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
-        final currentContact = state.uri.queryParameters['currentContact'] ?? '';
+        final currentContact =
+            state.uri.queryParameters['currentContact'] ?? '';
         return state.buildSmartPage(
           ChangeContactPage(
             contactType: contactType,
@@ -223,7 +258,8 @@ class ProfileRoutes {
       name: 'unbindContact',
       pageBuilder: (context, state) {
         final contactType = state.uri.queryParameters['contactType'] ?? 'phone';
-        final currentContact = state.uri.queryParameters['currentContact'] ?? '';
+        final currentContact =
+            state.uri.queryParameters['currentContact'] ?? '';
         return state.buildSmartPage(
           UnbindContactPage(
             contactType: contactType,
@@ -240,4 +276,4 @@ class ProfileRoutes {
     // ),
     // ... 其他 profile 模块路由 ...
   ];
-} 
+}

@@ -15,7 +15,7 @@ class DevMenuPage extends StatefulWidget {
 
 class _DevMenuPageState extends State<DevMenuPage> {
   String? _userId;
-  String? _token;
+  bool _hasToken = false;
   bool _isLoading = true;
 
   @override
@@ -28,12 +28,15 @@ class _DevMenuPageState extends State<DevMenuPage> {
     try {
       final storage = getIt<FlutterSecureStorage>();
       _userId = await storage.read(key: 'user_id');
-      _token = await storage.read(key: 'user_token');
+      final authToken = await storage.read(key: 'auth_token');
+      final legacyToken = await storage.read(key: 'user_token');
+      _hasToken = (authToken?.isNotEmpty ?? false) ||
+          (legacyToken?.isNotEmpty ?? false);
     } catch (e) {
       print('[DevMenuPage] Error reading credentials: $e');
       // Handle error, maybe set default values or show error message
       _userId = 'Error loading ID';
-      _token = 'Error loading token';
+      _hasToken = false;
     }
     if (mounted) {
       setState(() {
@@ -112,7 +115,7 @@ class _DevMenuPageState extends State<DevMenuPage> {
             const SizedBox(height: 4),
             Text('User ID: ${_userId ?? "Not found"}'),
             const SizedBox(height: 4),
-            Text('Token: ${_token ?? "Not found"}', maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text('Token: ${_hasToken ? "[REDACTED]" : "Not found"}'),
             const SizedBox(height: 8),
             Text(l10n.app_dev_temp_injection, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
           ],
@@ -149,4 +152,4 @@ class _DevMenuPageState extends State<DevMenuPage> {
       ),
     );
   }
-} 
+}

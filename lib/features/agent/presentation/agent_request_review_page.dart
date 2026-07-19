@@ -1,0 +1,145 @@
+import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import '../data/agent_repository.dart';
+import '../domain/agent_models.dart';
+import 'agent_ui_helpers.dart';
+
+class AgentRequestReviewPage extends StatefulWidget {
+  final AgentRepository repository;
+  final int requestId;
+  const AgentRequestReviewPage(
+      {super.key, required this.repository, required this.requestId});
+  @override
+  State<AgentRequestReviewPage> createState() => _AgentRequestReviewPageState();
+}
+
+class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
+  AgentRequestDraft? _request;
+  String? _error;
+  bool _busy = false;
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final request = await widget.repository.getRequest(widget.requestId);
+      if (mounted) setState(() => _request = request);
+    } catch (error) {
+      if (mounted) setState(() => _error = agentErrorMessage(context, error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _review(bool approve) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: Text(approve
+                  ? l10n.agentApproveRequest
+                  : l10n.agentAbandonRequest),
+              content: Text(approve
+                  ? l10n.agentApproveRequestConfirmation
+                  : l10n.agentAbandonRequestConfirmation),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(l10n.profile_cancel)),
+                FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child:
+                        Text(approve ? l10n.agentApprove : l10n.agentAbandon)),
+              ],
+            ));
+    if (confirmed != true) return;
+    setState(() => _busy = true);
+    try {
+      final request = approve
+          ? await widget.repository.approveRequest(widget.requestId)
+          : await widget.repository.abandonRequest(widget.requestId);
+      if (mounted) setState(() => _request = request);
+    } catch (error) {
+      if (mounted) setState(() => _error = agentErrorMessage(context, error));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final request = _request;
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.agentReviewRequest)),
+      body: _busy && request == null
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null && request == null
+              ? Center(child: Text(_error!))
+              : request == null
+                  ? const SizedBox.shrink()
+                  : ListView(padding: const EdgeInsets.all(20), children: [
+                      Card(
+                          child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(request.title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall),
+                                  const SizedBox(height: 8),
+                                  Chip(
+                                      label: Text(agentStatusLabel(
+                                          context, request.status))),
+                                  const SizedBox(height: 16),
+                                  Text(l10n.agentRequestBrief,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium),
+                                  const SizedBox(height: 6),
+                                  Text(request.brief),
+                                  if (request.serviceId != null) ...[
+                                    const SizedBox(height: 14),
+                                    Text(
+                                        '${l10n.agentServiceId}: ${request.serviceId}'),
+                                  ],
+                                  const SizedBox(height: 14),
+                                  Text(
+                                      '${l10n.agentCreatedAt}: ${agentDate(request.createdAt)}'),
+                                ],
+                              ))),
+                      const SizedBox(height: 12),
+                      Card(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(l10n.agentReviewSafetyNotice))),
+                      if (_error != null)
+                        Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Text(_error!,
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.error))),
+                      if (request.status == 'AWAITING_APP_REVIEW') ...[
+                        const SizedBox(height: 24),
+                        FilledButton(
+                            onPressed: _busy ? null : () => _review(true),
+                            child: Text(l10n.agentApproveRequest)),
+                        TextButton(
+                            onPressed: _busy ? null : () => _review(false),
+                            child: Text(l10n.agentAbandonRequest)),
+                      ],
+                    ]),
+    );
+  }
+}

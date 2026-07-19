@@ -173,7 +173,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
-              AppLogger.d('Login successful. UserID: ${userInfo.id}, Token: ${authenticatedUserModel.token}');
+              AppLogger.d('Login successful. UserID: ${userInfo.id}; token omitted from logs.');
               return Right(authenticatedUser);
             } on CacheException catch (e) {
               AppLogger.d('Failed to save credentials after login: ${e.message}');

@@ -5144,4 +5144,287 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get after_sales_info_evidence => '증거 자료';
+
+  @override
+  String get agentScopeServicesRead => 'Search and view services';
+
+  @override
+  String get agentScopeRequestsRead => 'View my requests and status';
+
+  @override
+  String get agentScopeRequestsCreate => 'Create App-reviewed request drafts';
+
+  @override
+  String get agentStatusActive => 'Connected';
+
+  @override
+  String get agentStatusRevoked => 'Revoked';
+
+  @override
+  String get agentStatusExpired => 'Expired';
+
+  @override
+  String get agentStatusAwaitingReview => 'Awaiting App review';
+
+  @override
+  String get agentStatusApproved => 'Approved';
+
+  @override
+  String get agentStatusAbandoned => 'Abandoned';
+
+  @override
+  String get agentConnectTitle => 'Connect Agent';
+
+  @override
+  String get agentConnectDescription =>
+      'Confirm the device and permissions. The CLI can access DeepStream only after you allow it here.';
+
+  @override
+  String get agentInvalidCode => 'Enter the 8-character user code';
+
+  @override
+  String get agentUserCode => 'User code';
+
+  @override
+  String get agentCheckRequest => 'Check connection request';
+
+  @override
+  String get agentChoosePermission =>
+      'Keep at least one permission, or deny an untrusted device.';
+
+  @override
+  String get agentAuthorizationApproved =>
+      'Connection allowed. You can return to the CLI.';
+
+  @override
+  String get agentAuthorizationDenied => 'Connection denied.';
+
+  @override
+  String get agentUnknownPlatform => 'Unknown device';
+
+  @override
+  String get agentRequestedPermissions => 'Requested permissions';
+
+  @override
+  String get agentNeverIncludes =>
+      'Never includes passwords, verification codes, payment, wallet, automatic orders, or unrelated local files.';
+
+  @override
+  String get agentDeny => 'Deny';
+
+  @override
+  String get agentAllow => 'Allow connection';
+
+  @override
+  String get agentConnectedAgents => 'Connected Agents';
+
+  @override
+  String get agentRevokeAll => 'Revoke all';
+
+  @override
+  String get agentRevokeAllConfirmation =>
+      'All Agents will be signed out immediately and must be authorized again. History will not be deleted.';
+
+  @override
+  String get agentRevoke => 'Revoke';
+
+  @override
+  String get agentNoConnectedAgents => 'No connected Agents';
+
+  @override
+  String get agentNoConnectedAgentsHint =>
+      'Run ds auth login on your computer to start a secure connection.';
+
+  @override
+  String get agentRetry => 'Retry';
+
+  @override
+  String get agentNoPaymentNotice =>
+      'Agents cannot pay, use your wallet, or place orders automatically. Request drafts still require App review.';
+
+  @override
+  String agentLastUsed(String time) {
+    return 'Last used: $time';
+  }
+
+  @override
+  String get agentDetails => 'Agent details';
+
+  @override
+  String get agentSessionId => 'Session identifier';
+
+  @override
+  String get agentStatus => 'Status';
+
+  @override
+  String get agentConnectedAt => 'Connected at';
+
+  @override
+  String get agentLastUsedLabel => 'Last used';
+
+  @override
+  String get agentPermissions => 'Permissions';
+
+  @override
+  String get agentAtLeastOnePermission =>
+      'Keep at least one permission, or revoke this Agent.';
+
+  @override
+  String get agentSavePermissions => 'Save permissions';
+
+  @override
+  String get agentCannotAddPermissions =>
+      'You can only remove permissions here. Adding permissions requires authorization again.';
+
+  @override
+  String get agentRecentSecurityEvents => 'Recent security events';
+
+  @override
+  String get agentRevokeAgent => 'Revoke this Agent';
+
+  @override
+  String get agentRevokeConfirmation =>
+      'This device will be signed out immediately. History remains, and reconnecting requires authorization.';
+
+  @override
+  String get agentRequestDrafts => 'Agent request drafts';
+
+  @override
+  String get agentNoRequestDrafts => 'No Agent-created request drafts';
+
+  @override
+  String get agentReviewRequest => 'Review request draft';
+
+  @override
+  String get agentRequestBrief => 'Request brief';
+
+  @override
+  String get agentServiceId => 'Service ID';
+
+  @override
+  String get agentCreatedAt => 'Created at';
+
+  @override
+  String get agentReviewSafetyNotice =>
+      'Approval confirms the request content only. It does not pay or create an order automatically.';
+
+  @override
+  String get agentApproveRequest => 'Approve request';
+
+  @override
+  String get agentAbandonRequest => 'Abandon draft';
+
+  @override
+  String get agentApproveRequestConfirmation =>
+      'Approve this request content? This action will not make a payment.';
+
+  @override
+  String get agentAbandonRequestConfirmation => 'Abandon this request draft?';
+
+  @override
+  String get agentApprove => 'Approve';
+
+  @override
+  String get agentAbandon => '폐기';
+
+  @override
+  String get agentManageConnectedAgents => '연결된 Agent 관리';
+
+  @override
+  String get agentErrorInvalidCode => '연결 코드가 올바르지 않습니다.';
+
+  @override
+  String get agentErrorExpired => '연결 요청이 만료되었습니다. CLI에서 다시 로그인하세요.';
+
+  @override
+  String get agentErrorAlreadyUsed => '이 연결 요청은 이미 사용되었거나 취소되었습니다.';
+
+  @override
+  String get agentErrorDenied => '이 연결 요청은 거부되었습니다.';
+
+  @override
+  String get agentErrorRateLimited => '시도 횟수가 너무 많습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String get agentErrorNotFound => '이 Agent 기록은 더 이상 존재하지 않습니다.';
+
+  @override
+  String get agentErrorGeneric => 'Agent 작업을 완료할 수 없습니다. 연결을 확인하고 다시 시도하세요.';
+
+  @override
+  String get agentAuthorizationAlreadyApproved =>
+      '이 연결은 이미 승인되었습니다. CLI로 돌아가세요.';
+
+  @override
+  String get agentAuthorizationAlreadyDenied => '이 연결은 이미 거부되었습니다.';
+
+  @override
+  String get agentAuthorizationAlreadyUsed => '이 연결 코드는 이미 사용되었습니다.';
+
+  @override
+  String get agentAuthorizationUnavailable => '이 연결 요청은 더 이상 사용할 수 없습니다.';
+
+  @override
+  String get agentAuditConnected => 'Agent 연결됨';
+
+  @override
+  String get agentAuditRefreshed => '세션 갱신됨';
+
+  @override
+  String get agentAuditReplayBlocked => '의심스러운 토큰 재사용 차단됨';
+
+  @override
+  String get agentAuditPermissionsReduced => '권한 축소됨';
+
+  @override
+  String get agentAuditRevoked => 'Agent 취소됨';
+
+  @override
+  String get agentAuditSecurityEvent => '보안 이벤트';
+
+  @override
+  String get agentAuditSuccess => '성공';
+
+  @override
+  String get agentAuditRecorded => '기록됨';
+
+  @override
+  String get agentClientType => '클라이언트 유형';
+
+  @override
+  String get agentClientId => '클라이언트 식별자';
+
+  @override
+  String get agentAccessExpiresAt => '접근 만료';
+
+  @override
+  String get agentAuthorizationExpiresAt => '권한 부여 만료';
+
+  @override
+  String get agentAuthorizationRequestExpiresAt => '연결 요청 만료';
+
+  @override
+  String get agentClientMetadataNotice =>
+      '위 클라이언트, 기기, 시스템 및 버전 정보는 연결 프로그램이 직접 선언한 것입니다. 기기를 확인하고 DeepStream 공식 도메인에서만 CLI를 설치하세요.';
+
+  @override
+  String get agentAuditAuthorizationRequested => '연결 요청됨';
+
+  @override
+  String get agentAuditAuthorizationApproved => '연결 승인됨';
+
+  @override
+  String get agentAuditAuthorizationDenied => '연결 거부됨';
+
+  @override
+  String get agentAuditAllRevoked => '모든 Agent 취소됨';
+
+  @override
+  String get agentAuditRequestCreated => '요청 초안 생성됨';
+
+  @override
+  String get agentAuditRequestApproved => '요청 초안 승인됨';
+
+  @override
+  String get agentAuditRequestAbandoned => '요청 초안 폐기됨';
 }

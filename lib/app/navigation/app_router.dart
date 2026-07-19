@@ -42,6 +42,7 @@ import 'package:dskk_flutter_refactor/features/chat/presentation/routes/chat_rou
 import 'package:dskk_flutter_refactor/features/seller/presentation/routes/seller_routes.dart';
 // Import Payment routes
 import 'package:dskk_flutter_refactor/features/payment/presentation/routes/payment_routes.dart';
+import 'package:dskk_flutter_refactor/features/agent/presentation/agent_routes.dart';
 
 // Import AppMode
 import 'package:dskk_flutter_refactor/app/app_mode.dart';
@@ -724,6 +725,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ...FavoritesRoutes.routes,
       ...sellerNonShellRoutes,
       ...PaymentRoutes.routes, // 添加支付模块路由
+      ...AgentRoutes.routes,
 
       // Platform Intervention Route
       GoRoute(
@@ -909,15 +911,27 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       if (loginStatus is Unauthenticated && !isLoggingIn) {
         print('Redirect: Not logged in -> ${AuthRoutes.loginPath}');
-        return AuthRoutes.loginPath;
+        final from = Uri.encodeComponent(state.uri.toString());
+        return '${AuthRoutes.loginPath}?from=$from';
       }
       if (loginStatus is Authenticated && isLoggingIn) {
+        final from = state.uri.queryParameters['from'];
+        if (from != null && from.startsWith('/') && !from.startsWith('//')) {
+          print('Redirect: Logged in -> returning to $from');
+          return from;
+        }
         print(
             'Redirect: Logged in but on login page -> ${HomeRoutes.homePath}');
         return HomeRoutes.homePath;
       }
 
       final location = state.matchedLocation;
+      // Account security and Agent sessions belong to the signed-in account,
+      // not to the buyer/seller operating mode. Keep these pages reachable
+      // while the user is in seller mode as well.
+      final isAccountLevelLocation =
+          location == ProfileRoutes.accountSecurityPath ||
+              location == ProfileRoutes.connectedAgentsPath;
       final List<String> buyerPaths = [
         HomeRoutes.homePath,
         '/ai_chat',
@@ -945,7 +959,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // 特殊情况：卖家主页路径（公共路径，不应受模式限制）
       const String sellerPublicProfilePathPrefix = '/seller-profile/'; // 更新路径前缀
 
-      bool isBuyerShellLocation = buyerPaths.any((p) => location.startsWith(p));
+      bool isBuyerShellLocation =
+          buyerPaths.any((p) => location.startsWith(p)) &&
+              !isAccountLevelLocation;
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
       // 允许 buyer 模式访问收款账户绑定页面（提现时需要）
       bool isSellerShellLocation =

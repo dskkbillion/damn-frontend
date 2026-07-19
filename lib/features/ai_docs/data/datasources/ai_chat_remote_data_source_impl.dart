@@ -74,7 +74,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token - 添加手动获取token的代码
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 获取对话列表，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取对话列表，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -175,7 +175,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 加载历史记录，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 加载历史记录，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -293,7 +293,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 创建会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 创建会话，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -345,7 +345,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 删除会话，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 删除会话，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -438,7 +438,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = storage.read(key: 'auth_token').then((token) {
-        AppLogger.d("[AiDocs] 流式聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+        AppLogger.d("[AiDocs] 流式聊天，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
         
         // 创建完整的URL
         final String baseUrl = _getModelBaseUrl();
@@ -668,7 +668,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 获取相关服务，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取相关服务，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -769,7 +769,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 获取频率限制状态，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取频率限制状态，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       final options = Options(
         headers: {
@@ -819,7 +819,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 重置频率限制，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 重置频率限制，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       final options = Options(
         headers: {
@@ -858,7 +858,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     try {
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 获取频率限制配置，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 获取频率限制配置，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       final options = Options(
         headers: {
@@ -908,7 +908,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 分发资源，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 分发资源，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头和更长超时设置的请求选项
       final options = Options(
@@ -1000,7 +1000,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 取消聊天，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 取消聊天，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -1059,7 +1059,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 更新标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 更新标题，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(
@@ -1113,7 +1113,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
-      AppLogger.d("[AiDocs] 生成标题，token: ${token != null ? '${token.substring(0, 15)}...' : 'null'}");
+      AppLogger.d("[AiDocs] 生成标题，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
       // 创建包含认证头的选项
       final options = Options(

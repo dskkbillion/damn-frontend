@@ -9415,6 +9415,540 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'申请凭证'**
   String get after_sales_info_evidence;
+
+  /// No description provided for @agentScopeServicesRead.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索和查看服务'**
+  String get agentScopeServicesRead;
+
+  /// No description provided for @agentScopeRequestsRead.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看我的需求及状态'**
+  String get agentScopeRequestsRead;
+
+  /// No description provided for @agentScopeRequestsCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建待 App 审核的需求草稿'**
+  String get agentScopeRequestsCreate;
+
+  /// No description provided for @agentStatusActive.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接'**
+  String get agentStatusActive;
+
+  /// No description provided for @agentStatusRevoked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已撤销'**
+  String get agentStatusRevoked;
+
+  /// No description provided for @agentStatusExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'已过期'**
+  String get agentStatusExpired;
+
+  /// No description provided for @agentStatusAwaitingReview.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待 App 审核'**
+  String get agentStatusAwaitingReview;
+
+  /// No description provided for @agentStatusApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已批准'**
+  String get agentStatusApproved;
+
+  /// No description provided for @agentStatusAbandoned.
+  ///
+  /// In zh, this message translates to:
+  /// **'已放弃'**
+  String get agentStatusAbandoned;
+
+  /// No description provided for @agentConnectTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接 Agent'**
+  String get agentConnectTitle;
+
+  /// No description provided for @agentConnectDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认正在连接的设备和权限。只有你在此允许后，CLI 才能访问 DeepStream。'**
+  String get agentConnectDescription;
+
+  /// No description provided for @agentInvalidCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入 8 位用户码'**
+  String get agentInvalidCode;
+
+  /// No description provided for @agentUserCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'用户码'**
+  String get agentUserCode;
+
+  /// No description provided for @agentCheckRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看连接申请'**
+  String get agentCheckRequest;
+
+  /// No description provided for @agentChoosePermission.
+  ///
+  /// In zh, this message translates to:
+  /// **'请至少保留一项权限；若不信任该设备，请拒绝连接。'**
+  String get agentChoosePermission;
+
+  /// No description provided for @agentAuthorizationApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已允许连接，可以返回 CLI。'**
+  String get agentAuthorizationApproved;
+
+  /// No description provided for @agentAuthorizationDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拒绝本次连接。'**
+  String get agentAuthorizationDenied;
+
+  /// No description provided for @agentUnknownPlatform.
+  ///
+  /// In zh, this message translates to:
+  /// **'未知设备'**
+  String get agentUnknownPlatform;
+
+  /// No description provided for @agentRequestedPermissions.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请的权限'**
+  String get agentRequestedPermissions;
+
+  /// No description provided for @agentNeverIncludes.
+  ///
+  /// In zh, this message translates to:
+  /// **'不包含：密码、验证码、付款、钱包、自动下单和无关本地文件。'**
+  String get agentNeverIncludes;
+
+  /// No description provided for @agentDeny.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get agentDeny;
+
+  /// No description provided for @agentAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许接入'**
+  String get agentAllow;
+
+  /// No description provided for @agentConnectedAgents.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接的 Agent'**
+  String get agentConnectedAgents;
+
+  /// No description provided for @agentRevokeAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部撤销'**
+  String get agentRevokeAll;
+
+  /// No description provided for @agentRevokeAllConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'所有 Agent 将立即退出，需要重新授权才能使用。历史需求、聊天和订单不会删除。'**
+  String get agentRevokeAllConfirmation;
+
+  /// No description provided for @agentRevoke.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get agentRevoke;
+
+  /// No description provided for @agentNoConnectedAgents.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无已连接的 Agent'**
+  String get agentNoConnectedAgents;
+
+  /// No description provided for @agentNoConnectedAgentsHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'在电脑上运行 ds auth login，即可发起安全连接。'**
+  String get agentNoConnectedAgentsHint;
+
+  /// No description provided for @agentRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'重试'**
+  String get agentRetry;
+
+  /// No description provided for @agentNoPaymentNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 不能付款、操作钱包或自动下单。需求草稿仍需你在 App 中审核。'**
+  String get agentNoPaymentNotice;
+
+  /// No description provided for @agentLastUsed.
+  ///
+  /// In zh, this message translates to:
+  /// **'最后使用：{time}'**
+  String agentLastUsed(String time);
+
+  /// No description provided for @agentDetails.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 详情'**
+  String get agentDetails;
+
+  /// No description provided for @agentSessionId.
+  ///
+  /// In zh, this message translates to:
+  /// **'Session 标识'**
+  String get agentSessionId;
+
+  /// No description provided for @agentStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'状态'**
+  String get agentStatus;
+
+  /// No description provided for @agentConnectedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'接入时间'**
+  String get agentConnectedAt;
+
+  /// No description provided for @agentLastUsedLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'最后使用'**
+  String get agentLastUsedLabel;
+
+  /// No description provided for @agentPermissions.
+  ///
+  /// In zh, this message translates to:
+  /// **'权限'**
+  String get agentPermissions;
+
+  /// No description provided for @agentAtLeastOnePermission.
+  ///
+  /// In zh, this message translates to:
+  /// **'至少保留一项权限；如需全部移除，请撤销此 Agent。'**
+  String get agentAtLeastOnePermission;
+
+  /// No description provided for @agentSavePermissions.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存权限'**
+  String get agentSavePermissions;
+
+  /// No description provided for @agentCannotAddPermissions.
+  ///
+  /// In zh, this message translates to:
+  /// **'这里只能移除已有权限。增加权限需要重新授权。'**
+  String get agentCannotAddPermissions;
+
+  /// No description provided for @agentRecentSecurityEvents.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近安全操作'**
+  String get agentRecentSecurityEvents;
+
+  /// No description provided for @agentRevokeAgent.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销此 Agent'**
+  String get agentRevokeAgent;
+
+  /// No description provided for @agentRevokeConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'该设备将立即退出 DeepStream，但不会删除历史记录。重新使用需要再次授权。'**
+  String get agentRevokeConfirmation;
+
+  /// No description provided for @agentRequestDrafts.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 需求草稿'**
+  String get agentRequestDrafts;
+
+  /// No description provided for @agentNoRequestDrafts.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无 Agent 创建的需求草稿'**
+  String get agentNoRequestDrafts;
+
+  /// No description provided for @agentReviewRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'审核需求草稿'**
+  String get agentReviewRequest;
+
+  /// No description provided for @agentRequestBrief.
+  ///
+  /// In zh, this message translates to:
+  /// **'需求说明'**
+  String get agentRequestBrief;
+
+  /// No description provided for @agentServiceId.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务 ID'**
+  String get agentServiceId;
+
+  /// No description provided for @agentCreatedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建时间'**
+  String get agentCreatedAt;
+
+  /// No description provided for @agentReviewSafetyNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'批准只表示你确认这份需求内容，不会付款或自动生成订单。后续价格与交易仍需单独确认。'**
+  String get agentReviewSafetyNotice;
+
+  /// No description provided for @agentApproveRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'批准需求'**
+  String get agentApproveRequest;
+
+  /// No description provided for @agentAbandonRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'放弃草稿'**
+  String get agentAbandonRequest;
+
+  /// No description provided for @agentApproveRequestConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认需求内容无误并批准？本操作不会付款。'**
+  String get agentApproveRequestConfirmation;
+
+  /// No description provided for @agentAbandonRequestConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认放弃这份需求草稿？'**
+  String get agentAbandonRequestConfirmation;
+
+  /// No description provided for @agentApprove.
+  ///
+  /// In zh, this message translates to:
+  /// **'批准'**
+  String get agentApprove;
+
+  /// No description provided for @agentAbandon.
+  ///
+  /// In zh, this message translates to:
+  /// **'放弃'**
+  String get agentAbandon;
+
+  /// No description provided for @agentManageConnectedAgents.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理已连接的 Agent'**
+  String get agentManageConnectedAgents;
+
+  /// No description provided for @agentErrorInvalidCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接码无效，请检查后重试。'**
+  String get agentErrorInvalidCode;
+
+  /// No description provided for @agentErrorExpired.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接申请已过期，请回到 CLI 重新发起登录。'**
+  String get agentErrorExpired;
+
+  /// No description provided for @agentErrorAlreadyUsed.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接申请已使用或已取消。'**
+  String get agentErrorAlreadyUsed;
+
+  /// No description provided for @agentErrorDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接申请已被拒绝。'**
+  String get agentErrorDenied;
+
+  /// No description provided for @agentErrorRateLimited.
+  ///
+  /// In zh, this message translates to:
+  /// **'尝试次数过多，请稍后再试。'**
+  String get agentErrorRateLimited;
+
+  /// No description provided for @agentErrorNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'这条 Agent 记录已不存在。'**
+  String get agentErrorNotFound;
+
+  /// No description provided for @agentErrorGeneric.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法完成 Agent 操作，请检查网络后重试。'**
+  String get agentErrorGeneric;
+
+  /// No description provided for @agentAuthorizationAlreadyApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'该连接已批准，请返回 CLI。'**
+  String get agentAuthorizationAlreadyApproved;
+
+  /// No description provided for @agentAuthorizationAlreadyDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'该连接已被拒绝。'**
+  String get agentAuthorizationAlreadyDenied;
+
+  /// No description provided for @agentAuthorizationAlreadyUsed.
+  ///
+  /// In zh, this message translates to:
+  /// **'该连接码已使用。'**
+  String get agentAuthorizationAlreadyUsed;
+
+  /// No description provided for @agentAuthorizationUnavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'该连接申请已不可用。'**
+  String get agentAuthorizationUnavailable;
+
+  /// No description provided for @agentAuditConnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 已连接'**
+  String get agentAuditConnected;
+
+  /// No description provided for @agentAuditRefreshed.
+  ///
+  /// In zh, this message translates to:
+  /// **'会话已刷新'**
+  String get agentAuditRefreshed;
+
+  /// No description provided for @agentAuditReplayBlocked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拦截可疑令牌重用'**
+  String get agentAuditReplayBlocked;
+
+  /// No description provided for @agentAuditPermissionsReduced.
+  ///
+  /// In zh, this message translates to:
+  /// **'权限已收窄'**
+  String get agentAuditPermissionsReduced;
+
+  /// No description provided for @agentAuditRevoked.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 已撤销'**
+  String get agentAuditRevoked;
+
+  /// No description provided for @agentAuditSecurityEvent.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全事件'**
+  String get agentAuditSecurityEvent;
+
+  /// No description provided for @agentAuditSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'成功'**
+  String get agentAuditSuccess;
+
+  /// No description provided for @agentAuditRecorded.
+  ///
+  /// In zh, this message translates to:
+  /// **'已记录'**
+  String get agentAuditRecorded;
+
+  /// No description provided for @agentClientType.
+  ///
+  /// In zh, this message translates to:
+  /// **'客户端类型'**
+  String get agentClientType;
+
+  /// No description provided for @agentClientId.
+  ///
+  /// In zh, this message translates to:
+  /// **'客户端标识'**
+  String get agentClientId;
+
+  /// No description provided for @agentAccessExpiresAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'访问权限到期'**
+  String get agentAccessExpiresAt;
+
+  /// No description provided for @agentAuthorizationExpiresAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'授权到期'**
+  String get agentAuthorizationExpiresAt;
+
+  /// No description provided for @agentAuthorizationRequestExpiresAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接申请到期'**
+  String get agentAuthorizationRequestExpiresAt;
+
+  /// No description provided for @agentClientMetadataNotice.
+  ///
+  /// In zh, this message translates to:
+  /// **'以上客户端、设备、系统和版本信息由连接程序自行声明。请核对设备，并仅从 DeepStream 官方域名安装 CLI。'**
+  String get agentClientMetadataNotice;
+
+  /// No description provided for @agentAuditAuthorizationRequested.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发起连接申请'**
+  String get agentAuditAuthorizationRequested;
+
+  /// No description provided for @agentAuditAuthorizationApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已批准连接'**
+  String get agentAuditAuthorizationApproved;
+
+  /// No description provided for @agentAuditAuthorizationDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拒绝连接'**
+  String get agentAuditAuthorizationDenied;
+
+  /// No description provided for @agentAuditAllRevoked.
+  ///
+  /// In zh, this message translates to:
+  /// **'已撤销全部 Agent'**
+  String get agentAuditAllRevoked;
+
+  /// No description provided for @agentAuditRequestCreated.
+  ///
+  /// In zh, this message translates to:
+  /// **'已创建需求草稿'**
+  String get agentAuditRequestCreated;
+
+  /// No description provided for @agentAuditRequestApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已批准需求草稿'**
+  String get agentAuditRequestApproved;
+
+  /// No description provided for @agentAuditRequestAbandoned.
+  ///
+  /// In zh, this message translates to:
+  /// **'已放弃需求草稿'**
+  String get agentAuditRequestAbandoned;
 }
 
 class _AppLocalizationsDelegate

@@ -18,7 +18,7 @@ class UserInfoRemoteDataSourceImpl implements UserInfoRemoteDataSource {
 
     AppLogger.d('===== 获取用户信息 =====');
     AppLogger.d('请求接口: $endpoint');
-    AppLogger.d('请求头: Authorization: Bearer ${token.substring(0, 15)}...(省略)');
+    AppLogger.d('请求头: Authorization: Bearer [REDACTED]');
 
     try {
       AppLogger.d('开始发送请求...');
