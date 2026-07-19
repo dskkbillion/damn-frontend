@@ -15,8 +15,7 @@ class HeaderInterceptor extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    // 记录进入拦截器前的Headers状态
-    AppLogger.d('[HeaderInterceptor] 进入拦截器，当前headers: ${options.headers}');
+    AppLogger.d('[HeaderInterceptor] 处理请求: ${options.path}');
     
     // Add required headers here
     // 根据实际平台设置client头
@@ -52,10 +51,10 @@ class HeaderInterceptor extends Interceptor {
       AppLogger.d('[HeaderInterceptor] Authorization头已存在');
     }
 
-    // 过滤敏感信息后记录headers
-    final safeHeaders = Map<String, dynamic>.from(options.headers)
-      ..['Authorization'] = options.headers.containsKey('Authorization') ? '[REDACTED]' : 'N/A';
-    AppLogger.d('[HeaderInterceptor] 最终headers: $safeHeaders'); 
+    AppLogger.d(
+      '[HeaderInterceptor] headers ready, auth='
+      '${options.headers.containsKey('Authorization') ? 'present' : 'missing'}',
+    );
     super.onRequest(options, handler);
   }
 
@@ -71,4 +70,4 @@ class HeaderInterceptor extends Interceptor {
     // AppLogger.d('[HeaderInterceptor] Error occurred: ${err.message}');
     super.onError(err, handler);
   }
-} 
+}

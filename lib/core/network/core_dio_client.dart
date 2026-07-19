@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import s
 import 'interceptors/app_info_interceptor.dart'; // Import the new interceptor
 import 'interceptors/cache_interceptor.dart'; // Import cache interceptor
 import 'interceptors/unauthorized_logout_handler.dart';
+import 'interceptors/safe_network_log_interceptor.dart';
 
 // import 'interceptors/auth_interceptor.dart';
 // import 'interceptors/pretty_log_interceptor.dart';
@@ -54,20 +55,7 @@ class CoreDioClient {
       //     compact: true,
       //     maxWidth: 90);
 
-      // Add custom LogInterceptor with conditional response body logging
-      final basicLogInterceptor = LogInterceptor(
-          requestBody: true,
-          responseBody: false, // 默认不打印响应体
-          responseHeader: false,
-          logPrint: (o) {
-            // 过滤掉聊天相关的大量日志
-            final logStr = o.toString();
-            if (!logStr.contains('/api/chat/list') &&
-                !logStr.contains('chatMessageNewVo') &&
-                !logStr.contains('productVo')) {
-              AppLogger.d(logStr);
-            }
-          });
+      final networkLogInterceptor = SafeNetworkLogInterceptor();
 
       dio.interceptors.add(
           _appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
@@ -80,7 +68,7 @@ class CoreDioClient {
 
       dio.interceptors.add(authInterceptor);
       // dio.interceptors.add(logInterceptor); // Keep commented out
-      dio.interceptors.add(basicLogInterceptor); // Add the built-in logger
+      dio.interceptors.add(networkLogInterceptor);
 
       AppLogger.d('[CoreDioClient] Dio initialized successfully.');
     } catch (e) {

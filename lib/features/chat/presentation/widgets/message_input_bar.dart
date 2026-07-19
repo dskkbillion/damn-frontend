@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart'; // Import path_provider
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 导入国际化资源
 import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import '../bloc/chat_messages/chat_messages_bloc.dart';
 import '../../domain/constants/message_type.dart';
@@ -22,10 +23,17 @@ class FileUploadState {
   final FileUploadStatus status;
   final String? url;
   final String? error;
-  
-  const FileUploadState.uploading() : status = FileUploadStatus.uploading, url = null, error = null;
-  const FileUploadState.success(this.url) : status = FileUploadStatus.success, error = null;
-  const FileUploadState.failure(this.error) : status = FileUploadStatus.failure, url = null;
+
+  const FileUploadState.uploading()
+      : status = FileUploadStatus.uploading,
+        url = null,
+        error = null;
+  const FileUploadState.success(this.url)
+      : status = FileUploadStatus.success,
+        error = null;
+  const FileUploadState.failure(this.error)
+      : status = FileUploadStatus.failure,
+        url = null;
 }
 
 class MessageInputBar extends StatefulWidget {
@@ -46,7 +54,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
   String? _recordingPath;
   Timer? _recordingTimer;
   int _recordingDuration = 0;
-  
+
   // 新增：文件上传状态管理
   final List<File> _pendingFiles = [];
   final Map<String, FileUploadState> _fileUploadStates = {};
@@ -79,57 +87,58 @@ class _MessageInputBarState extends State<MessageInputBar> {
           );
       _controller.clear();
       // Ensure keyboard hides after sending
-      FocusScope.of(context).unfocus(); 
+      FocusScope.of(context).unfocus();
     }
   }
 
   Future<void> _startRecording() async {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
-    // --- Add Web Check --- 
+
+    // --- Add Web Check ---
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.chat_web_recording_not_supported)),
       );
       return;
     }
-    // --- End Web Check --- 
+    // --- End Web Check ---
 
     // Check and Request permission AT RUNTIME
     var status = await Permission.microphone.status;
-    print('[Permission Check] Microphone status BEFORE request: $status');
+    AppLogger.d('[Permission Check] Microphone status before request: $status');
 
     if (status.isPermanentlyDenied) {
-        // FIX: Handle permanently denied status
-        print("[Permission Check] Permission permanently denied.");
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-                title: Text(s.chat_mic_permission_denied_title),
-                content: Text(s.chat_mic_permission_denied_message),
-                actions: <Widget>[
-                    TextButton(
-                        child: Text(s.chat_permission_denied_cancel),
-                        onPressed: () => Navigator.of(context).pop(),
-                    ),
-                    TextButton(
-                        child: Text(s.chat_permission_denied_settings),
-                        onPressed: () {
-                            Navigator.of(context).pop();
-                            openAppSettings(); // Open app settings
-                        },
-                    ),
-                ],
+      // FIX: Handle permanently denied status
+      AppLogger.d("[Permission Check] Permission permanently denied.");
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(s.chat_mic_permission_denied_title),
+          content: Text(s.chat_mic_permission_denied_message),
+          actions: <Widget>[
+            TextButton(
+              child: Text(s.chat_permission_denied_cancel),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-        );
-        return; // Stop execution
+            TextButton(
+              child: Text(s.chat_permission_denied_settings),
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings(); // Open app settings
+              },
+            ),
+          ],
+        ),
+      );
+      return; // Stop execution
     }
 
     // Request if denied or restricted, but not permanently denied
     if (!status.isGranted) {
-        status = await Permission.microphone.request();
-        print('[Permission Check] Microphone status AFTER request: $status');
+      status = await Permission.microphone.request();
+      AppLogger.d(
+          '[Permission Check] Microphone status after request: $status');
     }
 
     // Check final status after potential request
@@ -141,11 +150,12 @@ class _MessageInputBarState extends State<MessageInputBar> {
       return;
     }
 
-    // --- Permission Granted - Proceed with recording --- 
+    // --- Permission Granted - Proceed with recording ---
     try {
       final Directory tempDir = await getTemporaryDirectory();
       // 修改为WAV格式，与AI docs保持一致
-      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+      _recordingPath =
+          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
 
       // 使用与AI docs相同的录音配置
       await _audioRecorder.start(
@@ -158,17 +168,16 @@ class _MessageInputBarState extends State<MessageInputBar> {
       );
 
       final recording = await _audioRecorder.isRecording();
-      if(mounted && recording) {
+      if (mounted && recording) {
         setState(() {
           _isRecording = true;
           _recordingDuration = 0;
         });
         _startRecordingTimer();
-        print('Recording started: $_recordingPath');
+        AppLogger.d('Recording started; local path omitted');
       }
-
     } catch (e) {
-      print('Error starting recording: $e');
+      AppLogger.d('Error starting recording: ${e.runtimeType}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.chat_recording_error('$e'))),
       );
@@ -178,8 +187,8 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
   void _startRecordingTimer() {
     _recordingTimer?.cancel(); // Cancel any existing timer
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) { 
-      if(mounted) {
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
         setState(() {
           _recordingDuration++;
         });
@@ -190,30 +199,32 @@ class _MessageInputBarState extends State<MessageInputBar> {
   Future<void> _stopRecordingAndSend() async {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     _recordingTimer?.cancel();
     try {
       final path = await _audioRecorder.stop();
       if (path != null && mounted) {
-        print('Recording stopped: $path, Duration: $_recordingDuration s');
+        AppLogger.d(
+            'Recording stopped; path omitted, duration=${_recordingDuration}s');
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
           context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: ChatMessageType.audio, file: recordingFile),
-          );
+                SendMessageRequested(
+                    type: ChatMessageType.audio, file: recordingFile),
+              );
         } else {
-          print('Recording file invalid or too short.');
+          AppLogger.d('Recording file invalid or too short.');
         }
       } else {
-        print('Stopping recording failed or component unmounted.');
+        AppLogger.d('Stopping recording failed or component unmounted.');
       }
     } catch (e) {
-      print('Error stopping recording: $e');
+      AppLogger.d('Error stopping recording: ${e.runtimeType}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.chat_stop_recording_error('$e'))),
       );
     } finally {
-      if(mounted) {
+      if (mounted) {
         _resetRecordingState();
       }
     }
@@ -224,17 +235,17 @@ class _MessageInputBarState extends State<MessageInputBar> {
     try {
       await _audioRecorder.stop(); // Stop recording
       // Optionally delete the file if needed
-      if(_recordingPath != null) {
+      if (_recordingPath != null) {
         final file = File(_recordingPath!);
-        if(await file.exists()) {
+        if (await file.exists()) {
           await file.delete();
-          print("Recording cancelled and file deleted.");
+          AppLogger.d("Recording cancelled and file deleted.");
         }
       }
     } catch (e) {
-      print("Error cancelling recording: $e");
+      AppLogger.d("Error cancelling recording: ${e.runtimeType}");
     } finally {
-      if(mounted) {
+      if (mounted) {
         _resetRecordingState();
       }
     }
@@ -251,13 +262,14 @@ class _MessageInputBarState extends State<MessageInputBar> {
   Future<void> _pickImage(ImageSource source) async {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     try {
       // Use ImageUploadHelper for consistent image processing
       ImageProcessResult? result;
-      
+
       if (source == ImageSource.camera) {
-        result = await ImageUploadHelper.pickFromCamera(type: ImageUploadType.chat);
+        result =
+            await ImageUploadHelper.pickFromCamera(type: ImageUploadType.chat);
       } else {
         final results = await ImageUploadHelper.pickFromGallery(
           type: ImageUploadType.chat,
@@ -268,29 +280,33 @@ class _MessageInputBarState extends State<MessageInputBar> {
 
       if (result != null) {
         final processResult = result; // 创建局部变量避免空安全问题
-        
+
         if (processResult.isSuccess) {
           // 1. 添加到待上传列表，显示上传状态
           setState(() {
             _pendingFiles.add(processResult.finalFile);
-            _fileUploadStates[processResult.finalFile.path] = const FileUploadState.uploading();
+            _fileUploadStates[processResult.finalFile.path] =
+                const FileUploadState.uploading();
           });
 
-          print('Image processed: ${processResult.finalFile.path}, compression: ${processResult.compressionRatio?.toStringAsFixed(1)}%');
-          
+          AppLogger.d(
+              'Image processed; local path omitted, compression metadata available');
+
           // 2. 发送消息（会触发上传）
           context.read<ChatMessagesBloc>().add(
-            SendMessageRequested(type: ChatMessageType.image, file: processResult.finalFile),
-          );
-          
+                SendMessageRequested(
+                    type: ChatMessageType.image, file: processResult.finalFile),
+              );
+
           // 3. 监听上传结果
           _listenToUploadResult(processResult.finalFile);
-          
+
           // 4. 显示压缩信息
           if (processResult.compressionRatio != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(s.chat_image_compressed(processResult.compressionRatio!.toStringAsFixed(1))),
+                content: Text(s.chat_image_compressed(
+                    processResult.compressionRatio!.toStringAsFixed(1))),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -298,26 +314,29 @@ class _MessageInputBarState extends State<MessageInputBar> {
         } else {
           // 处理失败
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(s.chat_image_process_failed(processResult.error ?? ''))),
+            SnackBar(
+                content: Text(
+                    s.chat_image_process_failed(processResult.error ?? ''))),
           );
         }
       } else {
-        print('No image selected.');
+        AppLogger.d('No image selected.');
       }
     } catch (e) {
-       print('Error picking image: $e');
-       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(s.chat_image_picking_error('$e'))), 
-      ); 
+      AppLogger.d('Error picking image: ${e.runtimeType}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.chat_image_picking_error('$e'))),
+      );
     }
   }
-  
+
   // 支持多图片选择
   Future<void> _pickMultipleImages() async {
     final s = AppLocalizations.of(context);
     try {
       // Use ImageUploadHelper for multiple image selection
-      final List<ImageProcessResult> results = await ImageUploadHelper.pickFromGallery(
+      final List<ImageProcessResult> results =
+          await ImageUploadHelper.pickFromGallery(
         type: ImageUploadType.chat,
         allowMultiple: true,
         maxImages: 9,
@@ -327,22 +346,24 @@ class _MessageInputBarState extends State<MessageInputBar> {
         int successCount = 0;
         int errorCount = 0;
         double totalCompression = 0;
-        
+
         for (final result in results) {
           if (result.isSuccess) {
             setState(() {
               _pendingFiles.add(result.finalFile);
-              _fileUploadStates[result.finalFile.path] = const FileUploadState.uploading();
+              _fileUploadStates[result.finalFile.path] =
+                  const FileUploadState.uploading();
             });
-            
+
             // 逐个发送
             context.read<ChatMessagesBloc>().add(
-              SendMessageRequested(type: ChatMessageType.image, file: result.finalFile),
-            );
-            
+                  SendMessageRequested(
+                      type: ChatMessageType.image, file: result.finalFile),
+                );
+
             _listenToUploadResult(result.finalFile);
             successCount++;
-            
+
             if (result.compressionRatio != null) {
               totalCompression += result.compressionRatio!;
             }
@@ -350,13 +371,14 @@ class _MessageInputBarState extends State<MessageInputBar> {
             errorCount++;
           }
         }
-        
+
         // 显示处理结果摘要
         if (successCount > 0) {
           final avgCompression = totalCompression / successCount;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(s.chat_images_processed_success(successCount, avgCompression.toStringAsFixed(1))),
+              content: Text(s.chat_images_processed_success(
+                  successCount, avgCompression.toStringAsFixed(1))),
               backgroundColor: AppColors.success,
             ),
           );
@@ -372,20 +394,21 @@ class _MessageInputBarState extends State<MessageInputBar> {
         }
       }
     } catch (e) {
-      print('Error picking multiple images: $e');
+      AppLogger.d('Error picking multiple images: ${e.runtimeType}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(s.chat_select_image_error('$e'))),
       );
     }
   }
-  
+
   // 监听上传结果
   void _listenToUploadResult(File file) {
     // 模拟上传过程，实际应该监听Bloc状态变化
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
-          _fileUploadStates[file.path] = const FileUploadState.success('uploaded_url');
+          _fileUploadStates[file.path] =
+              const FileUploadState.success('uploaded_url');
           // 3秒后清除状态
           Timer(const Duration(seconds: 2), () {
             if (mounted) {
@@ -399,11 +422,11 @@ class _MessageInputBarState extends State<MessageInputBar> {
       }
     });
   }
-  
+
   // 构建文件预览区域
   Widget _buildFilePreviewArea() {
     if (_pendingFiles.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -413,7 +436,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
         itemBuilder: (context, index) {
           final file = _pendingFiles[index];
           final uploadState = _fileUploadStates[file.path];
-          
+
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Stack(
@@ -423,7 +446,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
                   borderRadius: BorderRadius.circular(8.0),
                   child: _buildFilePreview(file),
                 ),
-                
+
                 // 上传状态覆盖层
                 if (uploadState != null)
                   Positioned.fill(
@@ -441,7 +464,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
                       ),
                     ),
                   ),
-                
+
                 // 删除按钮
                 Positioned(
                   top: -4,
@@ -468,13 +491,13 @@ class _MessageInputBarState extends State<MessageInputBar> {
       ),
     );
   }
-  
+
   Widget _buildFilePreview(File file) {
     final extension = file.path.toLowerCase();
-    
-    if (extension.endsWith('.jpg') || 
-        extension.endsWith('.jpeg') || 
-        extension.endsWith('.png') || 
+
+    if (extension.endsWith('.jpg') ||
+        extension.endsWith('.jpeg') ||
+        extension.endsWith('.png') ||
         extension.endsWith('.gif')) {
       // 图片预览
       return Image.file(
@@ -493,7 +516,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
       );
     }
   }
-  
+
   Widget _buildUploadStatusIcon(FileUploadState uploadState) {
     switch (uploadState.status) {
       case FileUploadStatus.uploading:
@@ -519,7 +542,7 @@ class _MessageInputBarState extends State<MessageInputBar> {
         );
     }
   }
-  
+
   void _removeFile(int index) {
     final file = _pendingFiles[index];
     setState(() {
@@ -532,10 +555,10 @@ class _MessageInputBarState extends State<MessageInputBar> {
   void _sendMarkdownExample() {
     // 关闭底部菜单
     Navigator.of(context).pop();
-    
+
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     // 使用国际化字符串构建Markdown示例
     final String markdownExample = """
 # ${s.chat_markdown_example_title1}
@@ -554,7 +577,7 @@ ${s.chat_markdown_example_bold_italic}
 
 ```dart
 void main() {
-  print('Hello, Markdown!');
+  AppLogger.d('Markdown input action triggered');
 }
 ```
 
@@ -566,14 +589,15 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
 
     // 发送Markdown消息
     context.read<ChatMessagesBloc>().add(
-      SendMessageRequested(type: ChatMessageType.text, text: markdownExample),
-    );
+          SendMessageRequested(
+              type: ChatMessageType.text, text: markdownExample),
+        );
   }
 
   void _showAttachmentMenu(BuildContext context) {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-     
+
     showModalBottomSheet(
         context: context,
         builder: (BuildContext bc) {
@@ -591,7 +615,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
                   leading: const Icon(Icons.photo_camera),
                   title: Text(s.chat_take_photo),
                   onTap: () {
-                     Navigator.of(context).pop(); // Close bottom sheet
+                    Navigator.of(context).pop(); // Close bottom sheet
                     _pickImage(ImageSource.camera);
                   },
                 ),
@@ -610,7 +634,7 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
                   title: Text(s.chat_send_markdown),
                   onTap: _sendMarkdownExample,
                 ),
-                 // TODO: Add options for file selection etc. later
+                // TODO: Add options for file selection etc. later
               ],
             ),
           );
@@ -621,9 +645,10 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
   Widget _buildVoiceKeyboardButton() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     return IconButton(
-      icon: Icon(_isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
+      icon: Icon(
+          _isVoiceMode ? Icons.keyboard_alt_outlined : Icons.mic_none_outlined),
       onPressed: () {
         setState(() {
           _isVoiceMode = !_isVoiceMode;
@@ -644,12 +669,14 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
       controller: _controller,
       maxLines: 5, // Allow multi-line input
       minLines: 1,
-      textInputAction: TextInputAction.newline, // Or send on enter? Decide behavior
+      textInputAction:
+          TextInputAction.newline, // Or send on enter? Decide behavior
       decoration: InputDecoration(
         hintText: s.chat_enter_message,
         filled: true,
         fillColor: AppColors.backgroundSecondary,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25.0),
           borderSide: BorderSide.none, // No visible border
@@ -663,58 +690,59 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
           borderSide: BorderSide.none, // Or a subtle highlight
         ),
       ),
-      onSubmitted: (_) => _sendMessage(), // Option: Send on keyboard submit action
+      onSubmitted: (_) =>
+          _sendMessage(), // Option: Send on keyboard submit action
     );
   }
 
   Widget _buildPressToTalkButton() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
-    Color buttonColor = _isRecording ? AppColors.error : Theme.of(context).primaryColor;
-    String buttonText = _isRecording ? s.chat_release_to_send(_recordingDuration) : s.chat_press_to_talk;
+
+    Color buttonColor =
+        _isRecording ? AppColors.error : Theme.of(context).primaryColor;
+    String buttonText = _isRecording
+        ? s.chat_release_to_send(_recordingDuration)
+        : s.chat_press_to_talk;
 
     return GestureDetector(
-      // Use LongPressDraggable or simple LongPress handlers based on complexity needed
-      onLongPressStart: (_) {
+        // Use LongPressDraggable or simple LongPress handlers based on complexity needed
+        onLongPressStart: (_) {
           if (!_isRecording) {
-             _startRecording(); 
+            _startRecording();
           }
-      },
-      onLongPressEnd: (_) { 
-         if (_isRecording) {
+        },
+        onLongPressEnd: (_) {
+          if (_isRecording) {
             _stopRecordingAndSend();
-         } 
-      },
-      onLongPressCancel: () { // This might not trigger easily, consider drag update
-          if(_isRecording) {
-              _cancelRecording();
-              print('Recording cancelled via onLongPressCancel');
           }
-      },
-      // Consider adding onLongPressMoveUpdate for cancel-by-dragging logic
+        },
+        onLongPressCancel: () {
+          // This might not trigger easily, consider drag update
+          if (_isRecording) {
+            _cancelRecording();
+            AppLogger.d('Recording cancelled via onLongPressCancel');
+          }
+        },
+        // Consider adding onLongPressMoveUpdate for cancel-by-dragging logic
 
-      child: Container(
+        child: Container(
           height: 48, // Match TextField height approx
           decoration: BoxDecoration(
               color: buttonColor.withOpacity(0.1), // Lighter background
               borderRadius: BorderRadius.circular(25.0),
-              border: Border.all(color: buttonColor)
-          ),
+              border: Border.all(color: buttonColor)),
           child: Center(
-              child: Text(
-                  buttonText,
-                  style: TextStyle(color: buttonColor, fontWeight: FontWeight.bold)
-              )
-          ),
-      )
-    );
+              child: Text(buttonText,
+                  style: TextStyle(
+                      color: buttonColor, fontWeight: FontWeight.bold))),
+        ));
   }
 
   Widget _buildAttachmentButton() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     return IconButton(
       icon: const Icon(Icons.add_circle_outline),
       onPressed: () => _showAttachmentMenu(context),
@@ -726,9 +754,10 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
   Widget _buildSendButton() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     return Visibility(
-      visible: _canSend && !_isVoiceMode, // Show only if text entered and not in voice mode
+      visible: _canSend &&
+          !_isVoiceMode, // Show only if text entered and not in voice mode
       child: IconButton(
         icon: const Icon(Icons.send),
         onPressed: _sendMessage,
@@ -744,7 +773,9 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: const BoxDecoration(
         color: AppColors.backgroundSecondary, // Lighter background for the bar
-        border: Border(top: BorderSide(color: AppColors.borderPrimary, width: 0.5)), // Top border
+        border: Border(
+            top: BorderSide(
+                color: AppColors.borderPrimary, width: 0.5)), // Top border
         // boxShadow removed for flatter design, adjust if needed
       ),
       child: SafeArea(
@@ -753,23 +784,25 @@ ${s.chat_markdown_example_table_col1} | ${s.chat_markdown_example_table_col2} |
           children: [
             // 文件预览区域
             _buildFilePreviewArea(),
-            
+
             // 输入区域
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // Align items vertically
               children: [
                 _buildVoiceKeyboardButton(),
                 const SizedBox(width: 4), // Spacing
                 Expanded(
                   // Switch between TextField and PressToTalk button
-                  child: _isVoiceMode ? _buildPressToTalkButton() : _buildTextField(),
+                  child: _isVoiceMode
+                      ? _buildPressToTalkButton()
+                      : _buildTextField(),
                 ),
                 const SizedBox(width: 4), // Spacing
                 // Show attachment button only when not recording
                 // Or always show? Decide based on UX preference
-                if (!_isRecording)
-                   _buildAttachmentButton(), 
-                
+                if (!_isRecording) _buildAttachmentButton(),
+
                 // Send button is conditionally visible inside its builder
                 _buildSendButton(),
               ],

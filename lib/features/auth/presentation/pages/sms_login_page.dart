@@ -31,10 +31,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     final locale = Localizations.localeOf(context);
     _selectedCountry = CountryCodes.getDefaultCountryCode(locale.languageCode);
     
-    // 调试：打印当前语言环境
-    print('Current locale: ${locale.languageCode}');
-    print('AppLocalizations available: ${AppLocalizations.of(context) != null}');
-    print('auth_phone_number: ${AppLocalizations.of(context).auth_phone_number}');
     }
 
   @override
@@ -108,7 +104,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
             } else if (state is SmsLoginSuccess) {
               // 导航将由全局 AuthStatus 监听器处理
               // Navigator.of(context).pushReplacementNamed('/home');
-              print('Login Success! User ID: ${state.user.id}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(AppLocalizations.of(context).auth_login_success)),
               );
@@ -152,7 +147,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             onSendCode: (phone) async {
                                // 发送验证码时包含区号
                                final fullPhone = '${_selectedCountry.dialCode}$phone';
-                               print('Requesting code for $fullPhone');
                                context.read<SmsLoginCubit>().sendCode(fullPhone);
                             },
                             codeSentState: state is SmsLoginCodeSentSuccess ? CodeButtonState.counting : CodeButtonState.idle,
@@ -182,7 +176,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                                if (_formKey.currentState!.validate()) {
                                  // 登录时包含区号
                                  final fullPhone = '${_selectedCountry.dialCode}${_phoneController.text}';
-                                 print('Attempting login with phone: $fullPhone, code: ${_codeController.text}');
                                  context.read<SmsLoginCubit>().login(
                                    fullPhone,
                                    _codeController.text,
@@ -214,7 +207,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to Privacy Policy
-                              print("Navigate to Privacy Policy");
                             },
                             child: Text(
                               AppLocalizations.of(context).auth_privacy_policy,
@@ -236,7 +228,6 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
                             ),
                             onPressed: () {
                               // TODO: Navigate to User Agreement
-                              print("Navigate to User Agreement");
                             },
                             child: Text(
                               AppLocalizations.of(context).auth_user_agreement,
@@ -256,4 +247,3 @@ class _SmsLoginPageState extends State<SmsLoginPage> {
     );
   }
 }
-

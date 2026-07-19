@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http; // Import http package
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart'; // Import dotenv
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/safe_network_log_interceptor.dart';
 
 import 'i_http_client.dart';
 import '../error/exceptions.dart'; // Assuming exceptions are in core/error
@@ -47,8 +48,7 @@ class DioHttpClient implements IHttpClient {
     _dio = Dio(options);
 
     // Add interceptors
-    _dio.interceptors.add(LogInterceptor(
-        requestBody: true, responseBody: true)); // Enable logging
+    _dio.interceptors.add(SafeNetworkLogInterceptor());
     // _dio.interceptors.add(AuthInterceptor()); // Example auth interceptor
     // _dio.interceptors.add(ErrorInterceptor()); // Example error interceptor
 
@@ -69,7 +69,7 @@ class DioHttpClient implements IHttpClient {
     try {
       return await _secureStorage.read(key: 'auth_token');
     } catch (e) {
-      AppLogger.d('Error reading token from secure storage: $e');
+      AppLogger.d('Error reading token from secure storage: ${e.runtimeType}');
       return null;
     }
   }
@@ -134,7 +134,7 @@ class DioHttpClient implements IHttpClient {
     try {
       final fileName = file.path.split(Platform.pathSeparator).last;
       final fileSize = await file.length();
-      AppLogger.d("正在上传文件: $fileName, 大小: ${fileSize / 1024} KB, 目标: $endpoint");
+      AppLogger.d("正在上传文件: 大小=${fileSize / 1024} KB, 目标=${Uri.parse(endpoint).path}, 文件名省略");
       
       // --- Prepare FormData --- 
       final formData = FormData.fromMap({
@@ -170,12 +170,7 @@ class DioHttpClient implements IHttpClient {
       ));
       
       // 添加详细的日志拦截器，记录上传进度
-      uploadDio.interceptors.add(LogInterceptor(
-        requestBody: true, 
-        responseBody: true,
-        requestHeader: true,
-        responseHeader: true
-      ));
+      uploadDio.interceptors.add(SafeNetworkLogInterceptor());
       
       // 添加进度记录器
       final cancelToken = CancelToken();
@@ -195,13 +190,13 @@ class DioHttpClient implements IHttpClient {
       AppLogger.d("文件上传完成: 状态码=${response.statusCode}");
       return _handleResponse(response);
     } on DioException catch (e) {
-      AppLogger.d("文件上传DioException: 类型=${e.type}, 消息=${e.message}");
-      AppLogger.d("请求信息: ${e.requestOptions.uri}, 方法=${e.requestOptions.method}");
-      AppLogger.d("响应状态: ${e.response?.statusCode}, 数据=${e.response?.data}");
+      AppLogger.d("文件上传DioException: 类型=${e.type}");
+      AppLogger.d("请求信息: ${Uri.parse(e.requestOptions.path).path}, 方法=${e.requestOptions.method}");
+      AppLogger.d("响应状态: ${e.response?.statusCode}");
       throw _handleDioError(e);
     } catch (e) {
-      AppLogger.d("文件上传异常: ${e.runtimeType} - ${e.toString()}");
-      throw ServerException(message: 'Unexpected error during Multipart POST: ${e.toString()}');
+      AppLogger.d("文件上传异常: ${e.runtimeType}");
+      throw ServerException(message: 'Unexpected error during Multipart POST');
     }
   }
 
@@ -227,7 +222,7 @@ class DioHttpClient implements IHttpClient {
     }
     
     final url = Uri.parse('$baseUrl/$pathWithoutLeadingSlash');
-    AppLogger.d("[HttpClient - SSE] 完整URL: $url");
+    AppLogger.d("[HttpClient - SSE] POST ${url.path}");
     
     final request = http.Request('POST', url);
 
@@ -242,8 +237,7 @@ class DioHttpClient implements IHttpClient {
       request.body = jsonEncode(body); // Encode body as JSON string
     }
 
-    AppLogger.d("[HttpClient - SSE] Sending POST request to $url");
-    AppLogger.d("[HttpClient - SSE] Body: ${request.body}");
+    AppLogger.d("[HttpClient - SSE] Sending POST ${url.path}");
 
     try {
       final streamedResponse = await _httpClientForSse.send(request);
@@ -257,10 +251,12 @@ class DioHttpClient implements IHttpClient {
           try {
             // Assuming UTF8 encoding, adjust if different
             final chunkString = utf8.decode(chunkBytes);
-            AppLogger.d("[HttpClient - SSE] Received chunk: $chunkString");
+            AppLogger.d(
+              "[HttpClient - SSE] Received chunk (${chunkBytes.length} bytes)",
+            );
             yield chunkString; // Yield the raw SSE chunk string
-          } catch (e) {
-            AppLogger.d("[HttpClient - SSE] Error decoding chunk: $e");
+          } catch (_) {
+            AppLogger.d("[HttpClient - SSE] Error decoding chunk");
             // Decide how to handle decoding error, maybe yield an error event?
             yield 'event: error\ndata: { "message": "Error decoding stream chunk" }\n\n';
           }
@@ -268,18 +264,17 @@ class DioHttpClient implements IHttpClient {
         AppLogger.d("[HttpClient - SSE] Stream finished.");
       } else {
         // Handle non-200 status code for the initial stream request
-        final responseBody = await streamedResponse.stream.bytesToString();
-        AppLogger.d("[HttpClient - SSE] Error response body: $responseBody");
+        await streamedResponse.stream.drain<void>();
+        AppLogger.d("[HttpClient - SSE] Error response body omitted");
         throw ServerException(
           message:
-              'Failed to initiate stream (${streamedResponse.statusCode}): ${streamedResponse.reasonPhrase} - $responseBody',
+              'Failed to initiate stream (${streamedResponse.statusCode})',
         );
       }
-    } catch (e, stacktrace) {
-      AppLogger.d("[HttpClient - SSE] Error sending request or reading stream: $e");
-      AppLogger.d(stacktrace);
+    } catch (_) {
+      AppLogger.d("[HttpClient - SSE] Error sending request or reading stream");
       throw ServerException(
-          message: 'Network error during streaming: ${e.toString()}');
+          message: 'Network error during streaming');
     }
   }
 
@@ -350,7 +345,7 @@ class DioHttpClient implements IHttpClient {
         break;
     }
     AppLogger.d(
-        "[DioError] Path: ${error.requestOptions.path}, Status: $statusCode, Type: ${error.type}, Message: $errorMessage, Data: ${error.response?.data}");
+        "[DioError] Path: ${Uri.parse(error.requestOptions.path).path}, Status: $statusCode, Type: ${error.type}, response body and message omitted");
     return ServerException(
         message: '${statusCode != null ? '$statusCode: ' : ''}$errorMessage');
   }

@@ -25,7 +25,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       'client': Platform.isAndroid ? 'android' : (Platform.isIOS ? 'ios' : 'unknown'),
       'version': '100',
     };
-    AppLogger.d('Dio配置: 基础URL=${dio.options.baseUrl}, 请求头=${dio.options.headers}');
+    AppLogger.d('Dio配置完成: 基础URL=${dio.options.baseUrl}');
   }
 
   @override
@@ -41,7 +41,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     AppLogger.d('===== 登录 =====');
     AppLogger.d('请求接口: $endpoint');
-    AppLogger.d('登录标识: ${credentials.phone}, 验证码: [REDACTED]');
+    AppLogger.d('登录标识和验证码不记录');
 
     try {
       AppLogger.d('开始发送请求...');
@@ -57,13 +57,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         AppLogger.d('登录成功（Token 已安全接收，不记录）');
         return AuthenticatedUserModel.fromJson(response.data);
       } else {
-        AppLogger.d('登录失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
+        AppLogger.d('登录失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}');
         final String errorMsg = response.data['msg'] ?? '登录失败';
         throw ServerException(message: errorMsg);
       }
     } on DioException catch (e) {
-      AppLogger.d('DIO错误: ${e.message}');
-      AppLogger.d('请求信息: ${e.requestOptions.uri}');
+      AppLogger.d('登录网络请求失败: ${e.type}');
       AppLogger.d('登录请求失败（请求体包含验证码，不记录）');
       if (e.response != null) {
         AppLogger.d('错误响应状态码: ${e.response?.statusCode}');
@@ -75,11 +74,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         }
       }
       throw ServerException(message: '登录失败，网络或服务器错误');
-    } on FormatException catch (e) {
-      AppLogger.d('响应解析错误: ${e.toString()}');
+    } on FormatException {
+      AppLogger.d('登录响应解析错误');
       throw ServerException(message: '登录响应解析失败');
-    } catch (e) {
-      AppLogger.d('未知错误: ${e.toString()}');
+    } catch (_) {
+      AppLogger.d('登录发生未分类错误');
       throw ServerException(message: '登录失败，请稍后重试');
     }
   }
@@ -102,14 +101,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     AppLogger.d('===== 发送验证码 =====');
     AppLogger.d('请求接口: $endpoint');
-    AppLogger.d('手机号: $phone');
-    AppLogger.d('请求头: ${dio.options.headers}');
+    AppLogger.d('登录标识不记录');
+    AppLogger.d('认证请求头已配置（敏感值不记录）');
 
     try {
       AppLogger.d('开始发送请求...');
       final response = await dio.post(endpoint, data: data);
       AppLogger.d('收到服务器响应: 状态码 ${response.statusCode}');
-      AppLogger.d('响应数据: ${response.data}');
       AppLogger.d('code类型: ${response.data['code'].runtimeType}, code值: ${response.data['code']}');
 
       // 检查HTTP状态码和业务状态码
@@ -118,23 +116,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
          AppLogger.d('验证码发送成功!');
         return;
       } else {
-         AppLogger.d('验证码发送失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}, 响应消息: ${response.data['msg']}');
+         AppLogger.d('验证码发送失败: HTTP状态码 ${response.statusCode}, 业务状态码 ${response.data['code']}');
          // 可以考虑解析 response.data 中的错误信息 (如果后端返回了结构化错误)
          throw ServerException(
             message: '发送验证码失败: ${response.data['msg']}');
       }
     } on DioException catch (e) {
-      AppLogger.d('DIO错误: ${e.message}');
-      AppLogger.d('请求信息: ${e.requestOptions.uri}');
-      AppLogger.d('请求数据: ${e.requestOptions.data}');
-      AppLogger.d('请求头: ${e.requestOptions.headers}');
+      AppLogger.d('验证码网络请求失败: ${e.type}');
+      AppLogger.d('验证码请求失败（请求体和请求头不记录）');
       if (e.response != null) {
         AppLogger.d('错误响应状态码: ${e.response?.statusCode}');
-        AppLogger.d('错误响应数据: ${e.response?.data}');
+        AppLogger.d('错误响应已接收（响应体不记录）');
       }
       throw ServerException(message: '验证码发送失败，网络或服务器错误');
-    } catch (e) {
-      AppLogger.d('未知错误: ${e.toString()}');
+    } catch (_) {
+      AppLogger.d('验证码发送发生未分类错误');
       throw ServerException(message: '验证码发送失败，请稍后重试');
     }
   }

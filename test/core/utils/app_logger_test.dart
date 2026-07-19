@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
@@ -48,6 +49,42 @@ void main() {
         AppLogger.w('msg');
         AppLogger.e('msg', Exception('e'), StackTrace.empty, 'TAG');
       }, returnsNormally);
+    });
+
+    test('redacts auth schemes and credential fields before printing', () {
+      final lines = <String>[];
+
+      runZoned(
+        () => AppLogger.d(
+          'Authorization: Bearer header-secret '
+          'Proxy-Authorization: Basic basic-secret '
+          '{"access_token":"response-secret",'
+          '"verification_code":"565656",'
+          '"mobile":"18888888888","email":"qa@example.test"} '
+          'Headers(Cookie: session-cookie) X-API-Key=api-secret',
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (self, parent, zone, line) => lines.add(line),
+        ),
+      );
+
+      final output = lines.join('\n');
+      expect(output, contains('[REDACTED]'));
+      expect(output, isNot(contains('header-secret')));
+      expect(output, isNot(contains('response-secret')));
+      expect(output, isNot(contains('basic-secret')));
+      expect(output, isNot(contains('565656')));
+      expect(output, isNot(contains('18888888888')));
+      expect(output, isNot(contains('qa@example.test')));
+      expect(output, isNot(contains('session-cookie')));
+      expect(output, isNot(contains('api-secret')));
+    });
+
+    test('preserves non-sensitive numeric business codes', () {
+      expect(
+        AppLogger.sanitizeForLogging('statusCode=200, code: 200'),
+        'statusCode=200, code: 200',
+      );
     });
   });
 }

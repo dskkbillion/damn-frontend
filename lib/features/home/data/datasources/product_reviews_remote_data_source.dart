@@ -52,9 +52,10 @@ class ProductReviewsRemoteDataSourceImpl implements ProductReviewsRemoteDataSour
       final headers = await _getHeaders();
       final requestBody = json.encode({'productId': productId});
       
-      AppLogger.d('商品评论API请求URL: $url');
-      AppLogger.d('商品评论API请求头: $headers');
-      AppLogger.d('商品评论API请求体: $requestBody');
+      AppLogger.d('商品评论API请求: ${url.path}');
+      AppLogger.d(
+          '商品评论API认证状态: ${headers.containsKey('Authorization') ? 'present' : 'missing'}');
+      AppLogger.d('商品评论API请求体已配置（字段值省略）');
       
       final response = await _client.post(
         url,
@@ -63,7 +64,7 @@ class ProductReviewsRemoteDataSourceImpl implements ProductReviewsRemoteDataSour
       );
 
       AppLogger.d('商品评论API响应状态码: ${response.statusCode}');
-      AppLogger.d('商品评论API响应内容: ${response.body}');
+      AppLogger.d('商品评论API响应内容已省略');
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body) as Map<String, dynamic>;
@@ -99,4 +100,4 @@ class ProductReviewsRemoteDataSourceImpl implements ProductReviewsRemoteDataSour
       throw ServerException(message: '未知错误: $e');
     }
   }
-} 
+}

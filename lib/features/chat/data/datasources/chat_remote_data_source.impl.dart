@@ -48,7 +48,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     } else {
       final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
       final errorCode = codeValue?.toString(); // Log the actual code value
-      AppLogger.d("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
+      AppLogger.d("API Error ($operation): Code=$errorCode, Status=${response.statusCode}, message omitted");
       throw ServerException(message: errorMessage, statusCode: response.statusCode);
     }
   }
@@ -61,7 +61,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
      } else {
         final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
         final errorCode = codeValue?.toString();
-        AppLogger.d("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
+        AppLogger.d("API Error ($operation): Code=$errorCode, Status=${response.statusCode}, message omitted");
         throw ServerException(message: errorMessage, statusCode: response.statusCode);
      }
   }
@@ -74,7 +74,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
     } else {
       final errorMessage = response.data?['msg'] ?? 'Failed to $operation';
       final errorCode = codeValue?.toString();
-      AppLogger.d("API Error ($operation): $errorMessage, Code: $errorCode, Status: ${response.statusCode}");
+      AppLogger.d("API Error ($operation): Code=$errorCode, Status=${response.statusCode}, message omitted");
       throw ServerException(message: errorMessage, statusCode: response.statusCode);
     }
   }
@@ -147,10 +147,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       }
 
     } on DioException catch (e) {
-      AppLogger.d("DioException fetching rooms: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException fetching rooms: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error fetching rooms", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error fetching rooms: $e");
+      AppLogger.d("Unexpected error fetching rooms: ${e.runtimeType}");
       // If error is TypeError during jsonDecode, it might indicate invalid JSON
       if (e is FormatException) { 
            throw ServerException(message: "Failed to parse server response (Invalid JSON)");
@@ -167,7 +167,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
      } else {
         final errorMessage = decodedData['msg']?.toString() ?? 'Failed to $operation';
         final errorCode = codeValue?.toString();
-        AppLogger.d("API Business Error ($operation): $errorMessage, Code: $errorCode");
+        AppLogger.d("API Business Error ($operation): Code=$errorCode, message omitted");
         // Use a generic status code like 400 for business logic errors if original status was 200
         throw ServerException(message: errorMessage, statusCode: 400); 
      }
@@ -236,10 +236,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       
       return messageDtos;
     } on DioException catch (e) {
-      AppLogger.d("DioException fetching messages: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException fetching messages: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error fetching messages", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error fetching messages: $e");
+      AppLogger.d("Unexpected error fetching messages: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred while fetching messages");
     }
   }
@@ -274,7 +274,7 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         requestData['productId'] = productId;
       }
       
-      AppLogger.d("[API Call] Request data: $requestData");
+      AppLogger.d("[API Call] Request data configured (values omitted)");
 
       final response = await dio.post(
         ChatApiEndpoints.addChat,
@@ -293,11 +293,11 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         return data;
       } else {
          AppLogger.d("API Error (create room): Expected chat room object with 'id' field in 'data', but got ${data?.runtimeType}");
-         AppLogger.d("API Error (create room): Data content: $data");
+         AppLogger.d("API Error (create room): Data content omitted");
          throw ServerException(message: "Invalid response format for create room");
       }
     } on DioException catch (e) {
-      AppLogger.d("DioException creating room: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException creating room: ${e.type}, response body omitted");
       
       // 提供更具体的错误信息
       String errorMessage = "网络连接失败";
@@ -325,14 +325,14 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
         statusCode: e.response?.statusCode
       );
     } catch (e) {
-      AppLogger.d("Unexpected error creating room: $e");
+      AppLogger.d("Unexpected error creating room: ${e.runtimeType}");
       throw ServerException(message: "创建聊天室时发生未知错误");
     }
   }
 
   @override
   Future<ChatMessageDto> sendMessage(ChatMessage message) async {
-    AppLogger.d("[API Call] Sending message: ${message.context}");
+    AppLogger.d("[API Call] Sending message; content omitted");
     // 后端会根据token自动识别发送者身份，不需要前端传递memberId或doctorId
     final requestBody = {
       'chatId': message.chatId,
@@ -344,10 +344,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       final dynamic data = _handleResponse(response, "send message");
       return ChatMessageDto.fromJson(data);
     } on DioException catch (e) {
-      AppLogger.d("DioException sending message: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException sending message: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error sending message", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error sending message: $e");
+      AppLogger.d("Unexpected error sending message: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred");
     }
   }
@@ -359,10 +359,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       final response = await dio.post(ChatApiEndpoints.withdrawMessage, data: {'id': messageId});
       _handleVoidResponse(response, "revoke message");
     } on DioException catch (e) {
-       AppLogger.d("DioException revoking message: ${e.message}, Response: ${e.response?.data}");
+       AppLogger.d("DioException revoking message: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error revoking message", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error revoking message: $e");
+      AppLogger.d("Unexpected error revoking message: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred while revoking message");
     }
   }
@@ -375,10 +375,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       final dynamic data = _handleResponse(response, "fetch room details");
       return ChatRoomDto.fromJson(data);
     } on DioException catch (e) {
-      AppLogger.d("DioException fetching room details: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException fetching room details: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error fetching room details", statusCode: e.response?.statusCode);
     } catch (e) {
-       AppLogger.d("Unexpected error fetching room details: $e");
+       AppLogger.d("Unexpected error fetching room details: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred while fetching room details");
     }
   }
@@ -392,10 +392,10 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       final response = await dio.post(ChatApiEndpoints.deleteMessages, data: { 'ids': messageIds });
       _handleVoidResponse(response, "delete messages");
     } on DioException catch (e) {
-       AppLogger.d("DioException deleting messages: ${e.message}, Response: ${e.response?.data}");
+       AppLogger.d("DioException deleting messages: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error deleting messages", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error deleting messages: $e");
+      AppLogger.d("Unexpected error deleting messages: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred while deleting messages");
     }
   }
@@ -407,11 +407,11 @@ class ChatRemoteDataSourceImpl implements IChatRemoteDataSource {
       final response = await dio.post(ChatApiEndpoints.deleteChatRooms, data: chatIds);
       _handleVoidResponse(response, "delete chat rooms");
     } on DioException catch (e) {
-      AppLogger.d("DioException deleting chat rooms: ${e.message}, Response: ${e.response?.data}");
+      AppLogger.d("DioException deleting chat rooms: ${e.type}, response body omitted");
       throw ServerException(message: e.message ?? "Network error deleting chat rooms", statusCode: e.response?.statusCode);
     } catch (e) {
-      AppLogger.d("Unexpected error deleting chat rooms: $e");
+      AppLogger.d("Unexpected error deleting chat rooms: ${e.runtimeType}");
       throw ServerException(message: "An unexpected error occurred while deleting chat rooms");
     }
   }
-} 
+}

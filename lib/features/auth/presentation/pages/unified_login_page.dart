@@ -125,7 +125,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                         content: Text('验证码发送失败: ${state.failure.message}')),
                   );
                 } else if (state is SmsLoginSuccess) {
-                  debugPrint('Login Success! User ID: ${state.user.id}');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('登录成功!')),
                   );
@@ -322,8 +321,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                       );
                                       return;
                                     }
-                                    debugPrint(
-                                        'Sending code to email: $account');
                                     // #276: 记录当前发送 mode
                                     setState(() {
                                       _lastSentCodeMode = LoginMode.email;
@@ -350,8 +347,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                     }
                                     final fullPhone =
                                         '${_selectedCountry.dialCode}$account';
-                                    debugPrint(
-                                        'Sending code to phone: $fullPhone');
                                     // #276: 记录当前发送 mode
                                     setState(() {
                                       _lastSentCodeMode = LoginMode.phone;
@@ -396,8 +391,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                 : () {
                                     if (_formKey.currentState!.validate()) {
                                       final account = _getCurrentAccount();
-                                      debugPrint(
-                                          'Attempting login with account: $account, code: ${_codeController.text}');
                                       context.read<SmsLoginCubit>().login(
                                             account,
                                             _codeController.text,
@@ -430,7 +423,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                 ),
                                 onPressed: () {
                                   // TODO: Navigate to Privacy Policy
-                                  debugPrint("Navigate to Privacy Policy");
                                 },
                                 child: const Text(
                                   '隐私政策',
@@ -453,7 +445,6 @@ class _UnifiedLoginPageState extends State<UnifiedLoginPage> {
                                 ),
                                 onPressed: () {
                                   // TODO: Navigate to User Agreement
-                                  debugPrint("Navigate to User Agreement");
                                 },
                                 child: const Text(
                                   '用户协议',

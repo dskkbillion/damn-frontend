@@ -37,7 +37,8 @@ class _UploadProgressDialog extends StatelessWidget {
         children: [
           Text(
             fileName,
-            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style:
+                const TextStyle(fontSize: 14, color: AppColors.textSecondary),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -47,9 +48,9 @@ class _UploadProgressDialog extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            progress != null 
-              ? '${(progress! * 100).toStringAsFixed(1)}%'
-              : '准备上传...',
+            progress != null
+                ? '${(progress! * 100).toStringAsFixed(1)}%'
+                : '准备上传...',
             style: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
           ),
         ],
@@ -86,7 +87,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
   String? _recordingPath;
   Timer? _recordingTimer;
   int _recordingDuration = 0;
-  
+
   @override
   void initState() {
     super.initState();
@@ -122,7 +123,8 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_web_recording_not_supported)),
+        SnackBar(
+            content: Text(appLocalizations.chat_web_recording_not_supported)),
       );
       return;
     }
@@ -130,49 +132,54 @@ class _CustomInputBarState extends State<CustomInputBar> {
     // ✅ 使用与AI Chat相同的权限检查方式，更可靠
     // 先用 AudioRecorder 的原生方法检查权限
     if (!await _audioRecorder.hasPermission()) {
-        AppLogger.d('[CustomInputBar] AudioRecorder.hasPermission() returned false, requesting permission...');
+      AppLogger.d(
+          '[CustomInputBar] AudioRecorder.hasPermission() returned false, requesting permission...');
 
-        // 使用 permission_handler 请求权限
-        final status = await Permission.microphone.request();
-        AppLogger.d('[CustomInputBar] Permission.microphone.request() result: $status');
+      // 使用 permission_handler 请求权限
+      final status = await Permission.microphone.request();
+      AppLogger.d(
+          '[CustomInputBar] Permission.microphone.request() result: $status');
 
-        if (!status.isGranted) {
-            // 检查是否永久拒绝
-            if (status.isPermanentlyDenied) {
-                AppLogger.d("[CustomInputBar] Permission permanently denied.");
-                showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                        title: Text(appLocalizations.chat_mic_permission_denied_title),
-                        content: Text(appLocalizations.chat_mic_permission_denied_message),
-                        actions: [
-                            TextButton(
-                                child: Text(appLocalizations.chat_permission_denied_cancel),
-                                onPressed: () => Navigator.of(context).pop(),
-                            ),
-                            TextButton(
-                                child: Text(appLocalizations.chat_permission_denied_settings),
-                                onPressed: () {
-                                    Navigator.of(context).pop();
-                                    openAppSettings();
-                                },
-                            ),
-                        ],
-                    ),
-                );
-            } else {
-                // 普通拒绝
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(appLocalizations.chat_mic_permission_denied)),
-                );
-            }
-            return;
+      if (!status.isGranted) {
+        // 检查是否永久拒绝
+        if (status.isPermanentlyDenied) {
+          AppLogger.d("[CustomInputBar] Permission permanently denied.");
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(appLocalizations.chat_mic_permission_denied_title),
+              content:
+                  Text(appLocalizations.chat_mic_permission_denied_message),
+              actions: [
+                TextButton(
+                  child: Text(appLocalizations.chat_permission_denied_cancel),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                TextButton(
+                  child: Text(appLocalizations.chat_permission_denied_settings),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    openAppSettings();
+                  },
+                ),
+              ],
+            ),
+          );
+        } else {
+          // 普通拒绝
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(appLocalizations.chat_mic_permission_denied)),
+          );
         }
+        return;
+      }
     }
 
     try {
       final Directory tempDir = await getTemporaryDirectory();
-      _recordingPath = '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
+      _recordingPath =
+          '${tempDir.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav';
 
       await _audioRecorder.start(
         const RecordConfig(
@@ -201,7 +208,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
   void _startRecordingTimer() {
     _recordingTimer?.cancel();
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) { 
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
           _recordingDuration++;
@@ -219,17 +226,20 @@ class _CustomInputBarState extends State<CustomInputBar> {
       if (path != null && mounted) {
         final recordingFile = File(path);
         if (await recordingFile.exists() && _recordingDuration > 0) {
-          AppLogger.d('[CustomInputBar] Sending audio file: $path');
+          AppLogger.d(
+              '[CustomInputBar] Sending audio file; local path omitted');
           // Use MessageListCubit to handle audio with file upload
           context.read<MessageListCubit>().sendFileMessage(
-            filePath: path,
-            fileType: ChatMessageType.audio,
-          );
+                filePath: path,
+                fileType: ChatMessageType.audio,
+              );
         }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_stop_recording_error('$e'))),
+        SnackBar(
+            content: Text(appLocalizations
+                .chat_stop_recording_error(e.runtimeType.toString()))),
       );
     } finally {
       if (mounted) {
@@ -267,12 +277,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
 
   Future<void> _pickImage(ImageSource source) async {
     final appLocalizations = AppLocalizations.of(context);
-    
+
     try {
       ImageProcessResult? result;
-      
+
       if (source == ImageSource.camera) {
-        result = await ImageUploadHelper.pickFromCamera(type: ImageUploadType.chat);
+        result =
+            await ImageUploadHelper.pickFromCamera(type: ImageUploadType.chat);
       } else {
         final results = await ImageUploadHelper.pickFromGallery(
           type: ImageUploadType.chat,
@@ -293,11 +304,11 @@ class _CustomInputBarState extends State<CustomInputBar> {
             ),
           ),
         );
-        
+
         try {
           // 获取文件上传服务
           final fileUploadService = GetIt.instance<IFileUploadService>();
-          
+
           // 上传图片文件
           final uploadResult = await fileUploadService.uploadFileWithProgress(
             result.finalFile.path,
@@ -305,12 +316,12 @@ class _CustomInputBarState extends State<CustomInputBar> {
               // 进度回调
             },
           );
-          
+
           // 关闭进度对话框
           if (mounted) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          
+
           uploadResult.fold(
             (failure) {
               // 上传失败
@@ -325,9 +336,9 @@ class _CustomInputBarState extends State<CustomInputBar> {
               if (mounted) {
                 // 通过 MessageListCubit 发送图片消息
                 context.read<MessageListCubit>().sendImageMessage(
-                  url: success.url,
-                  fileName: result!.finalFile.path.split('/').last,
-                );
+                      url: success.url,
+                      fileName: result!.finalFile.path.split('/').last,
+                    );
 
                 // 发送图片后收起键盘
                 FocusScope.of(context).unfocus();
@@ -336,7 +347,8 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 if (result.compressionRatio != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('图片已压缩 ${result.compressionRatio!.toStringAsFixed(1)}% 并发送'),
+                      content: Text(
+                          '图片已压缩 ${result.compressionRatio!.toStringAsFixed(1)}% 并发送'),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -356,7 +368,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           if (mounted) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('图片上传出错: $e')),
@@ -366,27 +378,39 @@ class _CustomInputBarState extends State<CustomInputBar> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.chat_image_picking_error('$e'))),
+        SnackBar(
+            content: Text(appLocalizations.chat_image_picking_error('$e'))),
       );
     }
   }
 
   Future<void> _pickFile() async {
     final appLocalizations = AppLocalizations.of(context);
-    
+
     try {
       // 使用 FilePicker 选择文件
       final result = await FilePicker.platform.pickFiles(
         allowMultiple: false,
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'rar'],
+        allowedExtensions: [
+          'pdf',
+          'doc',
+          'docx',
+          'xls',
+          'xlsx',
+          'ppt',
+          'pptx',
+          'txt',
+          'zip',
+          'rar'
+        ],
         withData: false, // 不直接加载到内存，使用路径
         withReadStream: false,
       );
-      
+
       if (result != null && result.files.isNotEmpty) {
         final file = result.files.first;
-        
+
         // 检查文件大小（限制10MB）
         if (file.size > 10 * 1024 * 1024) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -394,7 +418,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
           );
           return;
         }
-        
+
         if (file.path != null) {
           // 显示上传进度对话框，保存返回的 Future 以便后续关闭
           showDialog(
@@ -407,11 +431,11 @@ class _CustomInputBarState extends State<CustomInputBar> {
               ),
             ),
           );
-          
+
           try {
             // 获取文件上传服务
             final fileUploadService = GetIt.instance<IFileUploadService>();
-            
+
             // 上传文件
             final uploadResult = await fileUploadService.uploadFileWithProgress(
               file.path!,
@@ -420,13 +444,13 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 // progress: ${(progress * 100).toStringAsFixed(1)}%
               },
             );
-            
+
             // 关闭进度对话框 - 使用正确的方式关闭对话框
             if (mounted) {
               // 只pop一次，并且确保是对话框而不是整个页面
               Navigator.of(context, rootNavigator: true).pop();
             }
-            
+
             uploadResult.fold(
               (failure) {
                 // 上传失败
@@ -442,11 +466,11 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 if (mounted) {
                   // 通过 MessageListCubit 发送文件消息
                   context.read<MessageListCubit>().sendDocumentMessage(
-                    url: success.url,
-                    fileName: file.name,
-                    fileSize: file.size ?? 0,
-                    fileExtension: file.extension ?? '',
-                  );
+                        url: success.url,
+                        fileName: file.name,
+                        fileSize: file.size ?? 0,
+                        fileExtension: file.extension ?? '',
+                      );
 
                   // 发送文件后收起键盘
                   FocusScope.of(context).unfocus();
@@ -463,7 +487,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
               // 使用rootNavigator确保关闭的是对话框
               Navigator.of(context, rootNavigator: true).pop();
             }
-            
+
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('上传出错: $e')),
@@ -495,43 +519,47 @@ class _CustomInputBarState extends State<CustomInputBar> {
         isScrollControlled: false, // 不控制滚动，保持默认行为
         builder: (context) {
           return Container(
-        decoration: const BoxDecoration(
-          color: AppColors.backgroundCard,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXl)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: AppColors.primary),
-                title: const Text('拍照'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
+            decoration: const BoxDecoration(
+              color: AppColors.backgroundCard,
+              borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.radiusXl)),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading:
+                        const Icon(Icons.camera_alt, color: AppColors.primary),
+                    title: const Text('拍照'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.camera);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library,
+                        color: AppColors.success),
+                    title: const Text('从相册选择'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.gallery);
+                    },
+                  ),
+                  ListTile(
+                    leading:
+                        const Icon(Icons.attach_file, color: AppColors.warning),
+                    title: const Text('文件'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickFile();
+                    },
+                  ),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.photo_library, color: AppColors.success),
-                title: const Text('从相册选择'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.attach_file, color: AppColors.warning),
-                title: const Text('文件'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickFile();
-                },
-              ),
-            ],
-          ),
-        ),
-      );
+            ),
+          );
         },
       );
     });
@@ -576,7 +604,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
               icon: const Icon(Icons.close, color: AppColors.error),
               onPressed: _cancelRecording,
             ),
-            
+
             // Recording indicator and duration
             Expanded(
               child: Row(
@@ -601,7 +629,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                 ],
               ),
             ),
-            
+
             // Send button
             IconButton(
               icon: const Icon(Icons.send, color: AppColors.info),
@@ -648,7 +676,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
               }
             },
           ),
-          
+
           // Input field or voice button
           Expanded(
             child: _isVoiceMode
@@ -658,8 +686,10 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.backgroundSecondary.withValues(alpha: 0.86),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                        color: AppColors.backgroundSecondary
+                            .withValues(alpha: 0.86),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusXl),
                       ),
                       child: const Center(
                         child: Text(
@@ -682,13 +712,16 @@ class _CustomInputBarState extends State<CustomInputBar> {
                       onSubmitted: (_) => _sendMessage(),
                       decoration: InputDecoration(
                         hintText: '输入消息...',
-                        hintStyle: const TextStyle(color: AppColors.textTertiary),
+                        hintStyle:
+                            const TextStyle(color: AppColors.textTertiary),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusXl),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusXl),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: AppColors.backgroundSecondary.withValues(alpha: 0.86),
+                        fillColor: AppColors.backgroundSecondary
+                            .withValues(alpha: 0.86),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 10,
@@ -697,7 +730,7 @@ class _CustomInputBarState extends State<CustomInputBar> {
                     ),
                   ),
           ),
-          
+
           // Attachment button
           if (!_isVoiceMode)
             IconButton(
@@ -707,13 +740,15 @@ class _CustomInputBarState extends State<CustomInputBar> {
               ),
               onPressed: _showAttachmentOptions,
             ),
-          
+
           // Send button
           if (!_isVoiceMode)
             IconButton(
               icon: Icon(
                 Icons.send,
-                color: _canSend ? Theme.of(context).colorScheme.primary : AppColors.textTertiary,
+                color: _canSend
+                    ? Theme.of(context).colorScheme.primary
+                    : AppColors.textTertiary,
               ),
               onPressed: _canSend ? _sendMessage : null,
             ),

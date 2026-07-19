@@ -101,7 +101,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
         _isMixedMode = prefs.getBool('chat_mixed_mode') ?? false;
       });
     } catch (e) {
-      print('[ChatListPage] Error loading mixed mode setting: $e');
+      AppLogger.d(
+          '[ChatListPage] Error loading mixed mode setting: ${e.runtimeType}');
     }
   }
 
@@ -111,7 +112,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('chat_mixed_mode', value);
     } catch (e) {
-      print('[ChatListPage] Error saving mixed mode setting: $e');
+      AppLogger.d(
+          '[ChatListPage] Error saving mixed mode setting: ${e.runtimeType}');
     }
   }
 
@@ -278,15 +280,15 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
               return Center(child: Text(s.chat_user_refer_id_not_found));
             }
 
-            print(
-                '[ChatListPage] Using referId(commonUserId): $referId, appMode: $currentAppMode');
+            AppLogger.d(
+                '[ChatListPage] User reference resolved; appMode: $currentAppMode');
 
             return BlocListener<ChatListBloc, ChatListState>(
               listener: (context, state) {
                 if (state.navigateToChatId != null) {
                   final chatId = state.navigateToChatId!;
-                  print(
-                      '[ChatListPage] BlocListener triggered navigation to chatId: $chatId');
+                  AppLogger.d(
+                      '[ChatListPage] BlocListener triggered chat navigation; id omitted');
                   context.push(_chatRoomPath(chatId)).then((result) {
                     // Reset navigation trigger in Bloc state after navigation
                     context.read<ChatListBloc>().add(ClearNavigationTrigger());
@@ -428,7 +430,7 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       AppMode appMode, int currentUserId) {
     return RefreshIndicator(
       onRefresh: () async {
-        print('[ChatListPage] Pull-to-refresh triggered');
+        AppLogger.d('[ChatListPage] Pull-to-refresh triggered');
         context.read<ChatListBloc>().add(RefreshChatList());
 
         final completer = Completer();
@@ -554,8 +556,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final sellerId = seller.referId ?? 0;
 
       grouped.putIfAbsent(sellerId, () => []).add(chatRoom);
-      print(
-          "[ChatListPage] Grouping chat room ${chatRoom.id} under seller: ${seller.nickName} (ID: $sellerId)");
+      AppLogger.d(
+          "[ChatListPage] Grouping chat room under seller; identifiers and nickname omitted");
     }
 
     return grouped.entries.map((entry) {
@@ -563,8 +565,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final rooms = entry.value;
       final seller = rooms.first.participant2; // 卖家信息
 
-      print(
-          "[ChatListPage] Created seller group: ${seller.nickName} with ${rooms.length} chat rooms");
+      AppLogger.d(
+          "[ChatListPage] Created seller group with ${rooms.length} chat rooms; nickname omitted");
 
       return SellerChatGroup(
         sellerId: sellerId,
@@ -584,8 +586,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final productId = chatRoom.productId ?? 'no_product';
 
       grouped.putIfAbsent(productId, () => []).add(chatRoom);
-      print(
-          "[ChatListPage] Grouping chat room ${chatRoom.id} under product: ${chatRoom.productName ?? 'Unknown'} (ID: $productId)");
+      AppLogger.d(
+          "[ChatListPage] Grouping chat room under product; identifiers and name omitted");
     }
 
     return grouped.entries.map((entry) {
@@ -593,8 +595,8 @@ class _ChatListPageState extends ConsumerState<ChatListPage> {
       final rooms = entry.value;
       final firstRoom = rooms.first; // 从第一个房间获取商品信息
 
-      print(
-          "[ChatListPage] Created product group: ${firstRoom.productName ?? 'Unknown'} with ${rooms.length} chat rooms");
+      AppLogger.d(
+          "[ChatListPage] Created product group with ${rooms.length} chat rooms; name omitted");
 
       return ProductChatGroup(
         productId: productId,

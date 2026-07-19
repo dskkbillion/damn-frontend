@@ -15,6 +15,7 @@ import 'package:dskk_flutter_refactor/core/network/interceptors/app_info_interce
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
 import 'package:dskk_flutter_refactor/core/network/header_interceptor.dart';
 import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/safe_network_log_interceptor.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:dskk_flutter_refactor/core/services/image_compress_service.dart';
 
@@ -317,44 +318,7 @@ Future<void> registerCoreDependencies() async {
     dio.interceptors.add(getIt<AppInfoInterceptor>()); // 添加AppInfoInterceptor
     dio.interceptors.add(authInterceptor); // 添加AuthInterceptor
     dio.interceptors.add(HeaderInterceptor()); // 添加HeaderInterceptor
-
-    // 添加日志拦截器，但限制大响应的日志输出
-    dio.interceptors.add(InterceptorsWrapper(
-      onResponse: (response, handler) {
-        // 对聊天列表等大响应跳过日志记录
-        final path = response.requestOptions.path;
-        if (path.contains('/api/chat/list') ||
-            path.contains('/api/chat/messages')) {
-          // 只记录基本信息，不记录响应体
-          AppLogger.d(
-              '[HTTP] ${response.requestOptions.method} $path - Status: ${response.statusCode}');
-        } else {
-          // 对其他请求使用PrettyDioLogger
-          // 这里无法直接调用PrettyDioLogger，所以只记录简单日志
-          if (response.statusCode != 200 && response.statusCode != 201) {
-            AppLogger.d(
-                '[HTTP] ${response.requestOptions.method} $path - Status: ${response.statusCode}');
-            if (response.data != null) {
-              final dataStr = response.data.toString();
-              if (dataStr.length < 1000) {
-                AppLogger.d('[HTTP] Response: $dataStr');
-              }
-            }
-          }
-        }
-        handler.next(response);
-      },
-      onRequest: (request, handler) {
-        AppLogger.d('[HTTP] ${request.method} ${request.path}');
-        handler.next(request);
-      },
-      onError: (error, handler) {
-        AppLogger.d(
-            '[HTTP ERROR] ${error.requestOptions.method} ${error.requestOptions.path}');
-        AppLogger.d('[HTTP ERROR] ${error.message}');
-        handler.next(error);
-      },
-    ));
+    dio.interceptors.add(SafeNetworkLogInterceptor());
 
     return dio;
   });
@@ -418,9 +382,7 @@ class AuthInterceptor extends Interceptor {
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    // 记录进入拦截器前的Headers状态
-    AppLogger.d(
-        '[AuthInterceptor] 进入拦截器，当前path: ${options.path}, headers: ${options.headers}');
+    AppLogger.d('[AuthInterceptor] 处理请求: ${options.path}');
 
     // Skip adding token for auth endpoints
     if (options.path.contains('/api/auth/login') ||
@@ -441,12 +403,10 @@ class AuthInterceptor extends Interceptor {
           '[AuthInterceptor] No token found. Request proceeding without Authorization header.');
     }
 
-    // 记录最终的Headers状态（过滤敏感信息）
-    final safeHeaders = Map<String, dynamic>.from(options.headers);
-    if (safeHeaders.containsKey('Authorization')) {
-      safeHeaders['Authorization'] = '[REDACTED]';
-    }
-    AppLogger.d('[AuthInterceptor] 最终headers: $safeHeaders');
+    AppLogger.d(
+      '[AuthInterceptor] 最终认证状态: '
+      '${options.headers.containsKey('Authorization') ? 'present' : 'missing'}',
+    );
 
     handler.next(options);
   }

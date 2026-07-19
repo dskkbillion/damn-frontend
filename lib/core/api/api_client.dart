@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io';
 import 'package:dskk_flutter_refactor/core/network/interceptors/unauthorized_logout_handler.dart';
+import 'package:dskk_flutter_refactor/core/network/interceptors/safe_network_log_interceptor.dart';
 
 class ApiClient {
   final Dio _dio;
@@ -40,7 +41,8 @@ class ApiClient {
     );
 
     // 添加必要的拦截器
-    if (!_instance!._dio.interceptors.any((i) => i is LogInterceptor)) {
+    if (!_instance!._dio.interceptors
+        .any((i) => i is SafeNetworkLogInterceptor)) {
       // 添加AppInfo拦截器
       _instance!._dio.interceptors.add(_createAppInfoInterceptor());
 
@@ -48,16 +50,7 @@ class ApiClient {
       _instance!._dio.interceptors.add(_createAuthInterceptor());
 
       // 添加日志拦截器
-      _instance!._dio.interceptors.add(
-        LogInterceptor(
-          request: true,
-          requestHeader: true,
-          requestBody: true,
-          responseHeader: true,
-          responseBody: true,
-          error: true,
-        ),
-      );
+      _instance!._dio.interceptors.add(SafeNetworkLogInterceptor());
     }
 
     return _instance!;

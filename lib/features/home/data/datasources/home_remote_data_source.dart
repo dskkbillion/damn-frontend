@@ -223,8 +223,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
     try {
       final headers = await _getHeaders();
-      AppLogger.d('商品详情API请求URL: $url');
-      AppLogger.d('商品详情API请求头: $headers');
+      AppLogger.d('商品详情API请求: ${url.path}');
+      AppLogger.d(
+          '商品详情API认证状态: ${headers.containsKey('Authorization') ? 'present' : 'missing'}');
 
       final response = await client.get(
         url,
@@ -232,7 +233,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       );
 
       AppLogger.d('商品详情API响应状态码: ${response.statusCode}');
-      AppLogger.d('商品详情API响应内容: ${response.body}');
+      AppLogger.d('商品详情API响应内容已省略');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -240,7 +241,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['data'] != null) {
           final data = jsonData['data'];
-          AppLogger.d('商品详情数据: $data');
+          AppLogger.d('商品详情数据已接收（字段值省略）');
 
           // 解析顶层翻译数据（_translations 和 _translationMeta 与 code/data 同级）
           ProductTranslation? translation;
@@ -290,8 +291,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
     try {
       final headers = await _getHeaders();
-      AppLogger.d('Banner API请求URL: $url');
-      AppLogger.d('Banner API请求头: $headers');
+      AppLogger.d('Banner API请求: ${url.path}');
+      AppLogger.d(
+          'Banner API认证状态: ${headers.containsKey('Authorization') ? 'present' : 'missing'}');
 
       final response = await client.post(
         url,
@@ -300,7 +302,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       );
 
       AppLogger.d('Banner API响应状态码: ${response.statusCode}');
-      AppLogger.d('Banner API响应内容: ${response.body}');
+      AppLogger.d('Banner API响应内容已省略');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -308,18 +310,16 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200) {
           final List<dynamic> bannersList = jsonData['rows'] ?? [];
-          AppLogger.d('Banner列表: $bannersList');
+          AppLogger.d('Banner列表已接收: 数量=${bannersList.length}');
 
           final banners =
               bannersList.map((item) => BannerModel.fromJson(item)).toList();
 
-          AppLogger.d('解析后的Banner列表: $banners');
-          AppLogger.d(
-              'Banner图片URL: ${banners.map((b) => b.imageUrl).toList()}');
+          AppLogger.d('解析后的Banner列表: 数量=${banners.length}');
 
           return banners;
         } else {
-          AppLogger.d('Banner API返回信息: ${jsonData['msg']}');
+          AppLogger.d('Banner API返回非成功业务码（消息省略）');
           return [];
         }
       } else {
@@ -327,7 +327,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         return [];
       }
     } catch (e) {
-      AppLogger.d('获取轮播图出错: $e');
+      AppLogger.d('获取轮播图出错: ${e.runtimeType}');
       return [];
     }
   }
@@ -339,7 +339,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
     try {
       final headers = await _getHeaders();
-      AppLogger.d('搜索API请求URL: $url');
+      AppLogger.d('搜索API请求: ${url.path}');
 
       final body = json.encode({
         'keyword': keyword,
@@ -348,7 +348,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         'pageSize': pageSize,
       });
 
-      AppLogger.d('搜索API请求体: $body');
+      AppLogger.d('搜索API请求体已配置（关键词省略）');
 
       final response = await client.post(
         url,
@@ -357,7 +357,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       );
 
       AppLogger.d('搜索API响应状态码: ${response.statusCode}');
-      AppLogger.d('搜索API响应内容: ${response.body}');
+      AppLogger.d('搜索API响应内容已省略');
 
       if (response.statusCode == 200) {
         // 确保使用UTF-8解码
@@ -365,7 +365,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         final jsonData = json.decode(responseBody);
         if (jsonData['code'] == 200 && jsonData['rows'] != null) {
           final List<dynamic> productsList = jsonData['rows'] ?? [];
-          AppLogger.d('搜索结果列表: $productsList');
+          AppLogger.d('搜索结果列表已接收: 数量=${productsList.length}');
 
           final List<HomeFeedItemModel> products = [];
 

@@ -67,7 +67,7 @@ class BindContactCubit extends Cubit<BindContactState> {
       'mobile': contact,
     };
 
-    AppLogger.d('[BindContactCubit] 发送验证码到: $contact');
+    AppLogger.d('[BindContactCubit] 发送验证码（联系方式省略）');
     AppLogger.d('[BindContactCubit] 请求接口: $endpoint');
 
     try {
@@ -86,19 +86,19 @@ class BindContactCubit extends Cubit<BindContactState> {
         });
       } else {
         final String errorMsg = response.data['msg'] ?? '发送验证码失败';
-        AppLogger.d('[BindContactCubit] 验证码发送失败: $errorMsg');
+        AppLogger.d('[BindContactCubit] 验证码发送失败（服务端消息省略）');
         emit(BindContactCodeSendFailure(errorMsg));
       }
     } on DioException catch (e) {
-      AppLogger.d('[BindContactCubit] DIO错误: ${e.message}');
+      AppLogger.d('[BindContactCubit] DIO错误: ${e.type}');
       if (e.response?.data is Map && e.response?.data['msg'] != null) {
         emit(BindContactCodeSendFailure(e.response?.data['msg']));
       } else {
         emit(const BindContactCodeSendFailure('发送验证码失败，请检查网络连接'));
       }
     } catch (e) {
-      AppLogger.d('[BindContactCubit] 未知错误: $e');
-      emit(BindContactCodeSendFailure('发送验证码失败: $e'));
+      AppLogger.d('[BindContactCubit] 未知错误: ${e.runtimeType}');
+      emit(const BindContactCodeSendFailure('发送验证码失败'));
     }
   }
 
@@ -113,7 +113,7 @@ class BindContactCubit extends Cubit<BindContactState> {
       'type': type == BindContactType.email ? 'email' : 'phone',
     };
 
-    AppLogger.d('[BindContactCubit] 绑定联系方式: $contact, 类型: ${type.name}');
+    AppLogger.d('[BindContactCubit] 绑定联系方式: 类型=${type.name}, 值省略');
     AppLogger.d('[BindContactCubit] 请求接口: $endpoint');
 
     try {
@@ -125,19 +125,19 @@ class BindContactCubit extends Cubit<BindContactState> {
         emit(const BindContactSuccess());
       } else {
         final String errorMsg = response.data['msg'] ?? '绑定失败';
-        AppLogger.d('[BindContactCubit] 绑定失败: $errorMsg');
+        AppLogger.d('[BindContactCubit] 绑定失败（服务端消息省略）');
         emit(BindContactFailure(errorMsg));
       }
     } on DioException catch (e) {
-      AppLogger.d('[BindContactCubit] DIO错误: ${e.message}');
+      AppLogger.d('[BindContactCubit] DIO错误: ${e.type}');
       if (e.response?.data is Map && e.response?.data['msg'] != null) {
         emit(BindContactFailure(e.response?.data['msg']));
       } else {
         emit(const BindContactFailure('绑定失败，请检查网络连接'));
       }
     } catch (e) {
-      AppLogger.d('[BindContactCubit] 未知错误: $e');
-      emit(BindContactFailure('绑定失败: $e'));
+      AppLogger.d('[BindContactCubit] 未知错误: ${e.runtimeType}');
+      emit(const BindContactFailure('绑定失败'));
     }
   }
 }

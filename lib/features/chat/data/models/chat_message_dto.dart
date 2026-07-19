@@ -45,52 +45,57 @@ class ChatMessageDto with _$ChatMessageDto {
 
   // Method to convert DTO to Entity
   ChatMessage toEntity({required int currentUserId, required int senderId}) {
-     DateTime parsedCreateTime;
-     try {
-        if (createTime != null && createTime!.isNotEmpty) {
-          // 处理API返回的时间格式："2025-08-21 02:14:02"
-          // 服务器返回的是北京时间（UTC+8），需要转换为本地时间
-          String isoTimeString = createTime!;
-          if (createTime!.contains(' ') && !createTime!.contains('T')) {
-            isoTimeString = createTime!.replaceFirst(' ', 'T');
-          }
-          
-          // 服务器时间是北京时间（UTC+8）
-          // 1. 先解析为DateTime（会被当作本地时区）
-          final serverTime = DateTime.parse(isoTimeString);
-          
-          // 2. 创建一个UTC时间（假设服务器时间是UTC+8）
-          // 北京时间减去8小时得到UTC时间
-          final utcTime = serverTime.subtract(const Duration(hours: 8));
-          
-          // 3. 转换为本地时间
-          parsedCreateTime = DateTime.utc(
-            utcTime.year,
-            utcTime.month,
-            utcTime.day,
-            utcTime.hour,
-            utcTime.minute,
-            utcTime.second,
-            utcTime.millisecond,
-            utcTime.microsecond,
-          ).toLocal();
-          
-          AppLogger.d("[ChatMessageDto] Server time (Beijing): $createTime -> Local time: $parsedCreateTime");
-        } else {
-          AppLogger.d("[ChatMessageDto] createTime is null or empty, using current time");
-          parsedCreateTime = DateTime.now();
+    DateTime parsedCreateTime;
+    try {
+      if (createTime != null && createTime!.isNotEmpty) {
+        // 处理API返回的时间格式："2025-08-21 02:14:02"
+        // 服务器返回的是北京时间（UTC+8），需要转换为本地时间
+        String isoTimeString = createTime!;
+        if (createTime!.contains(' ') && !createTime!.contains('T')) {
+          isoTimeString = createTime!.replaceFirst(' ', 'T');
         }
-     } catch (e) {
-        AppLogger.d("[ChatMessageDto] Error parsing createTime '$createTime': $e, using current time");
-        parsedCreateTime = DateTime.now(); // Fallback to now
-     }
+
+        // 服务器时间是北京时间（UTC+8）
+        // 1. 先解析为DateTime（会被当作本地时区）
+        final serverTime = DateTime.parse(isoTimeString);
+
+        // 2. 创建一个UTC时间（假设服务器时间是UTC+8）
+        // 北京时间减去8小时得到UTC时间
+        final utcTime = serverTime.subtract(const Duration(hours: 8));
+
+        // 3. 转换为本地时间
+        parsedCreateTime = DateTime.utc(
+          utcTime.year,
+          utcTime.month,
+          utcTime.day,
+          utcTime.hour,
+          utcTime.minute,
+          utcTime.second,
+          utcTime.millisecond,
+          utcTime.microsecond,
+        ).toLocal();
+
+        AppLogger.d(
+            "[ChatMessageDto] Parsed server message timestamp; value omitted");
+      } else {
+        AppLogger.d(
+            "[ChatMessageDto] createTime is null or empty, using current time");
+        parsedCreateTime = DateTime.now();
+      }
+    } catch (e) {
+      AppLogger.d(
+          "[ChatMessageDto] Error parsing createTime: ${e.runtimeType}; value omitted");
+      parsedCreateTime = DateTime.now(); // Fallback to now
+    }
 
     // 添加调试信息
-    AppLogger.d("[ChatMessageDto] 转换消息 - ID: $id, memberId: $memberId, doctorId: $doctorId, senderId传入值: $senderId");
-    AppLogger.d("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type, context: '$context'");
-    
+    AppLogger.d("[ChatMessageDto] 转换消息；标识和正文已省略");
+    AppLogger.d("[ChatMessageDto] withdrawFlag: $withdrawFlag, type: $type");
+
     return ChatMessage(
-      id: id ?? DateTime.now().millisecondsSinceEpoch, // Generate temporary ID if null
+      id: id ??
+          DateTime.now()
+              .millisecondsSinceEpoch, // Generate temporary ID if null
       chatId: chatId,
       senderId: senderId,
       memberId: memberId,
@@ -103,4 +108,4 @@ class ChatMessageDto with _$ChatMessageDto {
       status: MessageStatus.sent, // Assume sent if received from API/WS
     );
   }
-} 
+}

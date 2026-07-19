@@ -83,7 +83,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token，不添加Bearer前缀
         }
       );
-      AppLogger.d("[AiDocs] 请求参数: $requestData");
+      AppLogger.d("[AiDocs] 请求参数已配置（值省略）");
       
       // 直接使用Dio实例，带上认证头
       final response = await _httpClient.getDioInstance().post(
@@ -127,7 +127,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           'hasMore': conversations.length >= pageSize,
         };
       } else {
-        AppLogger.d('Warning: fetchConversations received unexpected format. Data: $data');
+        AppLogger.d('Warning: fetchConversations received unexpected format');
         conversations = [];
       }
       
@@ -145,7 +145,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in fetchConversations at $path: $e');
+      AppLogger.d('Unexpected error in fetchConversations at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to fetch conversations: ${e.toString()}');
     }
   }
@@ -184,7 +184,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求参数: $requestData");
+      AppLogger.d("[AiDocs] 请求参数已配置（值省略）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -203,7 +203,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       if (data != null && data is List) { 
         AppLogger.d("[DATASOURCE DEBUG] Parsing ${data.length} messages from root data list.");
         messages = (data).map((msgJson) {
-          AppLogger.d("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}");
+          AppLogger.d("[DATASOURCE DEBUG] Parsing message");
            if (msgJson is Map<String, dynamic>) { 
              AppLogger.d("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
              AppLogger.d("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
@@ -215,10 +215,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
            }
            try {
               return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>);
-           } catch (e, stacktrace) {
-              AppLogger.d("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-              AppLogger.d("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-              AppLogger.d("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+           } catch (e) {
+              AppLogger.d("[DATASOURCE ERROR] Failed to parse message: ${e.runtimeType}");
               rethrow;
            }
         }).toList();
@@ -227,7 +225,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         if (data['messages'] is List) {
           AppLogger.d("[DATASOURCE DEBUG] Parsing ${(data['messages'] as List).length} messages from nested 'messages' key.");
           messages = (data['messages'] as List).map((msgJson) {
-             AppLogger.d("[DATASOURCE DEBUG] Parsing msgJson: ${jsonEncode(msgJson)}"); 
+             AppLogger.d("[DATASOURCE DEBUG] Parsing message");
             if (msgJson is Map<String, dynamic>) { 
                AppLogger.d("[DATASOURCE DEBUG]  -> id type: ${msgJson['id']?.runtimeType}");
                AppLogger.d("[DATASOURCE DEBUG]  -> message_id type: ${msgJson['message_id']?.runtimeType}");
@@ -239,10 +237,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             }
             try {
               return AiChatMessageModel.fromJson(msgJson as Map<String, dynamic>); 
-            } catch (e, stacktrace) {
-              AppLogger.d("[DATASOURCE ERROR] Failed to parse msgJson: $e");
-              AppLogger.d("[DATASOURCE ERROR] Stacktrace: $stacktrace");
-              AppLogger.d("[DATASOURCE ERROR] Failing msgJson: ${jsonEncode(msgJson)}");
+            } catch (e) {
+              AppLogger.d("[DATASOURCE ERROR] Failed to parse message: ${e.runtimeType}");
               rethrow; 
             }
           }).toList();
@@ -257,7 +253,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           'hasMore': data['has_more'] ?? (messages.length >= pageSize),
         };
       } else {
-        AppLogger.d('Warning: loadHistory received unexpected format for $conversationId. Data: $data');
+        AppLogger.d('Warning: loadHistory received unexpected format for $conversationId');
         messages = [];
       }
       
@@ -275,7 +271,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in loadHistory for $conversationId at $path: $e');
+      AppLogger.d('Unexpected error in loadHistory for $conversationId at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to load history for $conversationId: ${e.toString()}');
     }
   }
@@ -302,7 +298,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -325,7 +321,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in createConversation at $path: $e');
+      AppLogger.d('Unexpected error in createConversation at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to create conversation: ${e.toString()}');
     }
   }
@@ -354,7 +350,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -371,7 +367,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in deleteConversation for $conversationId at $path: $e');
+      AppLogger.d('Unexpected error in deleteConversation for $conversationId at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to delete conversation $conversationId: ${e.toString()}');
     }
   }
@@ -399,12 +395,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     // 添加音频URL和转录文本参数
     if (audioUrls != null && audioUrls.isNotEmpty) {
       requestData['audio_urls'] = audioUrls;
-      AppLogger.d('[DataSource] Adding audio_urls: $audioUrls');
+      AppLogger.d('[DataSource] Adding audio URLs (${audioUrls.length})');
     }
     
     if (transcription != null && transcription.isNotEmpty) {
       requestData['transcription'] = transcription;
-      AppLogger.d('[DataSource] Adding transcription: $transcription');
+      AppLogger.d('[DataSource] Adding transcription (content omitted)');
     }
     
     // #369 多模态附件分流: 非图片扩展名走 files, 其它默认走 image_urls
@@ -425,14 +421,14 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       });
       if (hasNonImage) {
         requestData['files'] = fileUrls;
-        AppLogger.d('[DataSource] Non-image files detected, adding files: $fileUrls');
+        AppLogger.d('[DataSource] Non-image files detected (${fileUrls.length})');
       } else {
         requestData['image_urls'] = fileUrls;
-        AppLogger.d('[DataSource] Adding image_urls (omni multimodal): $fileUrls');
+        AppLogger.d('[DataSource] Adding image URLs (${fileUrls.length})');
       }
     }
     
-    AppLogger.d('[DataSource] Calling streamChatCompletion with data: $requestData');
+    AppLogger.d('[DataSource] Calling streamChatCompletion (request body omitted)');
 
     try {
       // 获取token
@@ -446,7 +442,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         if (!fullUrl.startsWith('http')) {
           fullUrl = 'http://$fullUrl';
         }
-        AppLogger.d("[AiDocs] 完整URL: $fullUrl");
+        AppLogger.d("[AiDocs] SSE POST ${Uri.parse(fullUrl).path}");
         
         // 创建HTTP请求
         final request = http.Request('POST', Uri.parse(fullUrl));
@@ -456,7 +452,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         if (token != null && token.isNotEmpty) {
           request.headers['Authorization'] = token; // 直接使用token
         }
-        AppLogger.d("[AiDocs] SSE请求头: ${request.headers}");
+        AppLogger.d("[AiDocs] SSE headers configured (values omitted)");
         
         // 添加请求体
         request.body = jsonEncode(requestData);
@@ -472,7 +468,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                   _processSSEData(data, sink);
                 },
                 handleError: (error, stackTrace, sink) {
-                  AppLogger.d('[DataSource - SSE Stream] Error: $error');
+                  AppLogger.d('[DataSource - SSE Stream] Error: ${error.runtimeType}');
                   sink.addError(ds_exceptions.NetworkException(
                     message: "Network error during stream: ${error.toString()}"
                   ));
@@ -497,7 +493,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
     } catch (e) {
       // 处理错误
-      AppLogger.d("Error initiating streamChatCompletion to $path: $e");
+      AppLogger.d("Error initiating streamChatCompletion to $path: ${e.runtimeType}");
       if (e is ds_exceptions.ServerException || e is ds_exceptions.NetworkException) {
         return Stream.error(e);
       } else {
@@ -548,7 +544,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
               }
               
               if (contentChunk != null && contentChunk.isNotEmpty) {
-                AppLogger.d('[DataSource - SSE] Content chunk: $contentChunk');
+                AppLogger.d('[DataSource - SSE] Content chunk received (${contentChunk.length} chars)');
                 sink.add(contentChunk);
               }
             }
@@ -558,8 +554,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         case 'conversation.message.completed':
           AppLogger.d('[DataSource - SSE] Message completed');
           if (data.isNotEmpty) {
-            final jsonData = jsonDecode(data);
-            AppLogger.d('[DataSource - SSE] Completion data: $jsonData');
+            jsonDecode(data);
+            AppLogger.d('[DataSource - SSE] Completion data received');
           }
           // 发送特殊标记表示消息完成
           sink.add('[COMPLETED]');
@@ -588,7 +584,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           // 处理元数据事件，检测是否跳过用户消息显示
           if (data.isNotEmpty) {
             final jsonData = jsonDecode(data);
-            AppLogger.d('[DataSource - SSE] Meta data: $jsonData');
+            AppLogger.d('[DataSource - SSE] Meta data received');
             if (jsonData is Map<String, dynamic>) {
               final skipUserMessage = jsonData['skip_user_message_display'] as bool?;
               if (skipUserMessage == true) {
@@ -606,7 +602,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           if (data.isNotEmpty) {
             try {
               final jsonData = jsonDecode(data);
-              AppLogger.d('[DataSource - SSE] #371 user_audio_transcript: $jsonData');
+              AppLogger.d('[DataSource - SSE] User audio transcript received');
               if (jsonData is Map<String, dynamic>) {
                 final transcript = jsonData['transcript'] as String?;
                 if (transcript != null && transcript.isNotEmpty) {
@@ -614,9 +610,9 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                   sink.add('[USER_AUDIO_TRANSCRIPT]$transcript');
                 }
               }
-            } catch (e) {
+            } catch (_) {
               // transcript 解析失败不影响主回复流, 仅日志
-              AppLogger.d('[DataSource - SSE] #371 transcript JSON parse 失败 (忽略): $e');
+              AppLogger.d('[DataSource - SSE] Transcript JSON parse 失败 (忽略)');
             }
           }
           break;
@@ -627,7 +623,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
           break;
       }
     } catch (e) {
-      AppLogger.d('[DataSource - SSE] Error processing event $event: $e. Data: $data');
+      AppLogger.d('[DataSource - SSE] Error processing event $event: ${e.runtimeType}; data omitted');
       sink.addError(ds_exceptions.DataSourceException(
         message: "Failed to parse SSE event: $e"
       ));
@@ -677,7 +673,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -700,12 +696,12 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       
       final data = _handleResponse(responseData);
       
-      AppLogger.d('[DataSource] Related services response: ${jsonEncode(data)}');
+      AppLogger.d('[DataSource] Related services response received');
       
       if (data != null && data['items'] is List) {
         return (data['items'] as List).map<RelatedServiceModel>((serviceJson) {
            final service = Map<String, dynamic>.from(serviceJson as Map);
-           AppLogger.d('[DataSource] Item JSON: ${jsonEncode(service)}');
+           AppLogger.d('[DataSource] Parsing related service item');
            try {
              return RelatedServiceModel(
                id: service['id'] as int? ?? 0,
@@ -714,29 +710,27 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
                price: (service['price'] as num?)?.toDouble() ?? 0.0,
                tenantId: service['tenantId'] as int? ?? 0,
              );
-           } catch (e, stacktrace) {
-              AppLogger.d('[DataSource] Error parsing item JSON: $e');
-              AppLogger.d(stacktrace); 
+           } catch (e) {
+              AppLogger.d('[DataSource] Error parsing item JSON: ${e.runtimeType}');
               rethrow;
            }
          }).toList();
       } else if (data != null && data['services'] is List) {
         return (data['services'] as List).map((serviceJson) {
            final service = Map<String, dynamic>.from(serviceJson as Map);
-           AppLogger.d('[DataSource] Service JSON: ${jsonEncode(service)}');
+           AppLogger.d('[DataSource] Parsing related service');
            try {
              return RelatedServiceModel.fromJson({
                ...service,
                'name': _getDisplayServiceName(service),
              });
-           } catch (e, stacktrace) {
-              AppLogger.d('[DataSource] Error parsing service JSON: $e');
-              AppLogger.d(stacktrace); 
+           } catch (e) {
+              AppLogger.d('[DataSource] Error parsing service JSON: ${e.runtimeType}');
               rethrow;
            }
          }).toList();
       } else {
-        AppLogger.d('Warning: getRelatedServices received unexpected format. Data: $data');
+        AppLogger.d('Warning: getRelatedServices received unexpected format');
         return [];
       }
     } on ds_exceptions.RateLimitException {
@@ -746,8 +740,8 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in getRelatedServices at $path: $e');
-      throw ds_exceptions.DataSourceException(message: 'Failed to get related services: ${e.toString()}');
+      AppLogger.d('Unexpected error in getRelatedServices at $path: ${e.runtimeType}');
+      throw ds_exceptions.DataSourceException(message: 'Failed to get related services');
     }
   }
 
@@ -792,7 +786,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in getRateLimitStatus: $e');
+      AppLogger.d('Unexpected error in getRateLimitStatus: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to get rate limit status: ${e.toString()}'
       );
@@ -843,7 +837,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in resetUserRateLimit: $e');
+      AppLogger.d('Unexpected error in resetUserRateLimit: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to reset user rate limit: ${e.toString()}'
       );
@@ -881,7 +875,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in getRateLimitConfig: $e');
+      AppLogger.d('Unexpected error in getRateLimitConfig: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to get rate limit config: ${e.toString()}'
       );
@@ -920,7 +914,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
         }
       );
       
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       AppLogger.d("使用60秒超时发起allocate请求");
       
       // 使用带选项的post方法发送请求
@@ -935,7 +929,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in allocateChatResource at $path: $e');
+      AppLogger.d('Unexpected error in allocateChatResource at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to allocate resource: ${e.toString()}');
     }
   }
@@ -972,7 +966,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in getDispatchHistory at $path: $e');
+      AppLogger.d('Unexpected error in getDispatchHistory at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to fetch dispatch history: ${e.toString()}',
       );
@@ -1033,7 +1027,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in cancelChatGeneration: $e');
+      AppLogger.d('Unexpected error in cancelChatGeneration: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(
         message: 'Failed to cancel chat generation: ${e.toString()}'
       );
@@ -1068,7 +1062,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -1091,7 +1085,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in updateConversationTitle at $path: $e');
+      AppLogger.d('Unexpected error in updateConversationTitle at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to update conversation title: ${e.toString()}');
     }
   }
@@ -1122,7 +1116,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求头: ${options.headers}");
+      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(
@@ -1145,7 +1139,7 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
     } on ds_exceptions.NetworkException {
       rethrow;
     } catch (e) {
-      AppLogger.d('Unexpected error in generateConversationTitle at $path: $e');
+      AppLogger.d('Unexpected error in generateConversationTitle at $path: ${e.runtimeType}');
       throw ds_exceptions.DataSourceException(message: 'Failed to generate conversation title: ${e.toString()}');
     }
   }

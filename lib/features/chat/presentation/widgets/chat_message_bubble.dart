@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io'; // 添加这个import来支持File类型
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for Clipboard
 import 'package:audioplayers/audioplayers.dart';
@@ -28,15 +29,15 @@ import '../utils/markdown_style_helper.dart'; // 导入Markdown样式助手
 
 // 撤回状态检查结果
 class RevokeCheckResult {
-    final bool canRevoke;
-    final String reason;
-    final Duration? remainingTime;
-    
-    RevokeCheckResult({
-        required this.canRevoke, 
-        required this.reason,
-        this.remainingTime,
-    });
+  final bool canRevoke;
+  final String reason;
+  final Duration? remainingTime;
+
+  RevokeCheckResult({
+    required this.canRevoke,
+    required this.reason,
+    this.remainingTime,
+  });
 }
 
 // Helper function to format duration (e.g., 0:05, 1:23)
@@ -120,16 +121,18 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
         if (mounted) setState(() => _position = p);
       });
 
-      _playerCompleteSubscription = _audioPlayer.onPlayerComplete.listen((event) {
+      _playerCompleteSubscription =
+          _audioPlayer.onPlayerComplete.listen((event) {
         if (mounted) {
-            setState(() {
-                _playerState = PlayerState.completed;
-                _position = Duration.zero; // Reset position on complete
-            });
+          setState(() {
+            _playerState = PlayerState.completed;
+            _position = Duration.zero; // Reset position on complete
+          });
         }
       });
 
-      _playerStateChangeSubscription = _audioPlayer.onPlayerStateChanged.listen((state) {
+      _playerStateChangeSubscription =
+          _audioPlayer.onPlayerStateChanged.listen((state) {
         if (mounted) setState(() => _playerState = state);
       });
     }
@@ -139,20 +142,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   Future<void> _preloadAudioDuration(String audioUrl) async {
     try {
       if (audioUrl.isEmpty) return;
-      
-      print("[Audio] 预加载音频时长: $audioUrl");
-      
+
+      AppLogger.d("[Audio] 预加载音频时长；URL已省略");
+
       // 设置音频源但不播放
       await _audioPlayer.setSourceUrl(audioUrl);
-      
+
       // 获取音频时长
       final duration = await _audioPlayer.getDuration();
       if (mounted && duration != null) {
-        print("[Audio] 获取到时长: ${duration.inSeconds}秒");
+        AppLogger.d("[Audio] 获取到时长: ${duration.inSeconds}秒");
         setState(() => _duration = duration);
       }
     } catch (e) {
-      print("[Audio] 预加载音频时长出错: $e");
+      AppLogger.d("[Audio] 预加载音频时长出错: ${e.runtimeType}");
     }
   }
 
@@ -179,19 +182,21 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       } else if (_isPaused) {
         await _audioPlayer.resume();
         setState(() => _playerState = PlayerState.playing);
-      } else { // Not playing or paused (stopped/completed/initial)
+      } else {
+        // Not playing or paused (stopped/completed/initial)
         await _audioPlayer.play(UrlSource(url));
         setState(() => _playerState = PlayerState.playing);
       }
     } catch (e) {
       // Handle error (e.g., show a snackbar)
-      print("Error playing audio: $e");
-       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error playing audio: $e')),
+      AppLogger.d("Error playing audio: ${e.runtimeType}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error playing audio: $e')),
       );
-       if (mounted) {
-           setState(() => _playerState = PlayerState.stopped); // Or completed/error state
-       }
+      if (mounted) {
+        setState(() =>
+            _playerState = PlayerState.stopped); // Or completed/error state
+      }
     }
   }
 
@@ -221,7 +226,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                       child: ShimmerEffect(child: CircleAvatar()),
                     ),
                   ),
-                  errorWidget: (context, url, error) => const Center(child: Icon(Icons.error)),
+                  errorWidget: (context, url, error) =>
+                      const Center(child: Icon(Icons.error)),
                 ),
               ),
             ),
@@ -234,8 +240,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   // 构建消息时间显示
   Widget _buildMessageTime() {
     final timeString = DateFormat('HH:mm').format(widget.message.createTime);
-    final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-    
+    final bool isCurrentUser =
+        widget.message.senderId == widget.currentUserParticipantId;
+
     return Padding(
       padding: EdgeInsets.only(
         top: 4.0,
@@ -298,9 +305,11 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       return const SizedBox.shrink();
     }
 
-    final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
+    final bool isCurrentUser =
+        widget.message.senderId == widget.currentUserParticipantId;
     // 由于撤回的消息已在BLoC层过滤，这里不再需要检查撤回状态
-    final alignment = isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
+    final alignment =
+        isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start;
     // 发送方向保留蓝色强调，同时统一为半透明玻璃材质。
     final bubbleColor = isCurrentUser
         ? AppColors.primary.withValues(alpha: 0.18)
@@ -310,31 +319,36 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
     // Avatar Widget (only for opponent) — 点击跳对方公开主页 (#334)
     final avatarWidget = !isCurrentUser && widget.opponent != null
-      ? Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: GestureDetector(
-            onTap: () {
-              final sellerId = widget.opponent?.referId;
-              if (sellerId != null) {
-                context.push('/seller-profile/$sellerId');
-              }
-            },
-            child: CircleAvatar(
-              radius: 18,
-              backgroundImage: (widget.opponent?.avatar != null && widget.opponent!.avatar!.isNotEmpty)
-                  ? CachedNetworkImageProvider(widget.opponent!.avatar!)
-                  : null,
-              backgroundColor: AppColors.borderInput,
-              child: (widget.opponent?.avatar == null || widget.opponent!.avatar!.isEmpty)
-                  ? Text(
-                      widget.opponent?.nickName?.isNotEmpty == true ? widget.opponent!.nickName![0] : '?',
-                      style: const TextStyle(fontSize: 14, color: AppColors.onPrimary),
-                    )
-                  : null,
+        ? Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                final sellerId = widget.opponent?.referId;
+                if (sellerId != null) {
+                  context.push('/seller-profile/$sellerId');
+                }
+              },
+              child: CircleAvatar(
+                radius: 18,
+                backgroundImage: (widget.opponent?.avatar != null &&
+                        widget.opponent!.avatar!.isNotEmpty)
+                    ? CachedNetworkImageProvider(widget.opponent!.avatar!)
+                    : null,
+                backgroundColor: AppColors.borderInput,
+                child: (widget.opponent?.avatar == null ||
+                        widget.opponent!.avatar!.isEmpty)
+                    ? Text(
+                        widget.opponent?.nickName?.isNotEmpty == true
+                            ? widget.opponent!.nickName![0]
+                            : '?',
+                        style: const TextStyle(
+                            fontSize: 14, color: AppColors.onPrimary),
+                      )
+                    : null,
+              ),
             ),
-          ),
-        )
-      : const SizedBox(width: 44);
+          )
+        : const SizedBox(width: 44);
 
     // 对于 AI 需求摘要消息（历史 allocate / 新 ai_summary 双认），使用安全渲染组件，
     // 杜绝内部 prompt 结构（**...** 标题）泄漏进聊天 UI (#377)。
@@ -357,8 +371,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
             if (!isCurrentUser) avatarWidget,
             Flexible(
               child: Column(
-                crossAxisAlignment: isCurrentUser 
-                    ? CrossAxisAlignment.end 
+                crossAxisAlignment: isCurrentUser
+                    ? CrossAxisAlignment.end
                     : CrossAxisAlignment.start,
                 children: [
                   _buildImageContent(context, widget.message.context ?? ''),
@@ -389,17 +403,20 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: isCurrentUser ? 0.10 : 0.05),
+              color: AppColors.primary
+                  .withValues(alpha: isCurrentUser ? 0.10 : 0.05),
               blurRadius: 14,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.7, // Keep max width constraint
+          maxWidth: MediaQuery.of(context).size.width *
+              0.7, // Keep max width constraint
         ),
         // Pass the determined text color to the content builder
-        child: _buildMessageContent(context, textColor, isCurrentUser, widget.message.context ?? ''),
+        child: _buildMessageContent(
+            context, textColor, isCurrentUser, widget.message.context ?? ''),
       ),
     );
 
@@ -418,7 +435,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               children: [
                 bubbleContent,
                 // 翻译区域（微信风格）
-                if (!isCurrentUser && widget.message.type == ChatMessageType.text)
+                if (!isCurrentUser &&
+                    widget.message.type == ChatMessageType.text)
                   _buildTranslationArea(),
                 _buildMessageTime(), // 添加时间显示
               ],
@@ -469,7 +487,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
       );
     }
 
-    if (message.translatedContext != null && message.translatedContext!.isNotEmpty) {
+    if (message.translatedContext != null &&
+        message.translatedContext!.isNotEmpty) {
       return Container(
         margin: const EdgeInsets.only(top: 4.0),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -507,56 +526,59 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     return const SizedBox.shrink();
   }
 
-  Widget _buildMessageContent(BuildContext context, Color textColor, bool isCurrentUser, String messageContext) {
+  Widget _buildMessageContent(BuildContext context, Color textColor,
+      bool isCurrentUser, String messageContext) {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
+
     if (widget.message.type == ChatMessageType.text) {
-       // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
-       return GestureDetector(
-         onLongPressStart: (details) {
-           _showActionMenu(context, details.globalPosition, isCurrentUser);
-         },
-         child: MarkdownBody(
-         data: messageContext,
-           selectable: false, // 禁用选择功能，避免与长按菜单冲突
-         styleSheet: MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
-         onTapLink: (text, href, title) {
-           // 处理链接点击
-           if (href != null) {
-             launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
-           }
-         },
-         // 确保内容自适应并限制在消息气泡内
-         shrinkWrap: true,
-         ),
-       );
-     } else if (widget.message.type == ChatMessageType.audio) {
-       // Pass textColor and isCurrentUser to audio content
-       return _buildAudioContent(context, textColor, isCurrentUser, messageContext);
-     } else if (ChatMessageBubble.isSummaryType(widget.message.type)) {
-       // summary 消息（allocate/ai_summary）已在 build 方法中直接路由到
-       // AiSummaryMessageBubble，这里正常不会被调用。但为防止内部 prompt 结构
-       // （**...**）泄漏，兜底也走确定性 strip，绝不渲染原文。
-       return Text(
-         AiSummaryMessageBubble.stripMarkdownMarkers(messageContext),
-         style: TextStyle(color: textColor, fontSize: 15),
-       );
-     } else if (widget.message.type == ChatMessageType.file) {
-       // 文件消息：复用 FileMessageWidget 渲染（文件名/大小/图标 + 点击预览下载）。
-       // 不可落入下方"未知 type"分支。
-       return FileMessageWidget(
-         message: widget.message,
-         isMe: isCurrentUser,
-       );
-     } else {
-       // 未知/暂不支持的 type：中性降级文案，绝不暗示"请升级 App / 版本太老"，
-       // 避免正常 file 或未来未知 type 被误导成版本问题。颜色用中性色而非红字。
-       return Text(
-         AppLocalizations.of(context).chat_unsupported_message,
-         style: const TextStyle(color: AppColors.textTertiary, fontSize: 15),
-       );
-     }
+      // 用GestureDetector包装Markdown组件，确保长按事件能正确触发
+      return GestureDetector(
+        onLongPressStart: (details) {
+          _showActionMenu(context, details.globalPosition, isCurrentUser);
+        },
+        child: MarkdownBody(
+          data: messageContext,
+          selectable: false, // 禁用选择功能，避免与长按菜单冲突
+          styleSheet:
+              MarkdownStyleHelper.buildChatBubbleStyle(context, textColor),
+          onTapLink: (text, href, title) {
+            // 处理链接点击
+            if (href != null) {
+              launchUrl(Uri.parse(href), mode: LaunchMode.externalApplication);
+            }
+          },
+          // 确保内容自适应并限制在消息气泡内
+          shrinkWrap: true,
+        ),
+      );
+    } else if (widget.message.type == ChatMessageType.audio) {
+      // Pass textColor and isCurrentUser to audio content
+      return _buildAudioContent(
+          context, textColor, isCurrentUser, messageContext);
+    } else if (ChatMessageBubble.isSummaryType(widget.message.type)) {
+      // summary 消息（allocate/ai_summary）已在 build 方法中直接路由到
+      // AiSummaryMessageBubble，这里正常不会被调用。但为防止内部 prompt 结构
+      // （**...**）泄漏，兜底也走确定性 strip，绝不渲染原文。
+      return Text(
+        AiSummaryMessageBubble.stripMarkdownMarkers(messageContext),
+        style: TextStyle(color: textColor, fontSize: 15),
+      );
+    } else if (widget.message.type == ChatMessageType.file) {
+      // 文件消息：复用 FileMessageWidget 渲染（文件名/大小/图标 + 点击预览下载）。
+      // 不可落入下方"未知 type"分支。
+      return FileMessageWidget(
+        message: widget.message,
+        isMe: isCurrentUser,
+      );
+    } else {
+      // 未知/暂不支持的 type：中性降级文案，绝不暗示"请升级 App / 版本太老"，
+      // 避免正常 file 或未来未知 type 被误导成版本问题。颜色用中性色而非红字。
+      return Text(
+        AppLocalizations.of(context).chat_unsupported_message,
+        style: const TextStyle(color: AppColors.textTertiary, fontSize: 15),
+      );
+    }
   }
 
   String _resolveImageUrl(String rawContext) {
@@ -589,158 +611,176 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
   }
 
   Widget _buildImageContent(BuildContext context, String rawImageContext) {
-     final imageUrl = _resolveImageUrl(rawImageContext);
-     // 如果消息正在发送，显示上传进度
-     if (widget.message.status == MessageStatus.sending) {
-       return Container(
-         width: 150,
-         height: 150,
-         decoration: BoxDecoration(
-            color: AppColors.borderInput,
-            borderRadius: BorderRadius.circular(16.0),
-         ),
-         child: Column(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-             const CircularProgressIndicator(strokeWidth: 2.0),
-             const SizedBox(height: 8),
-             Text(AppLocalizations.of(context).chat_uploading, style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
-           ],
-         ),
-       );
-     }
-     
-     // 如果上传失败，显示重试按钮
-     if (widget.message.status == MessageStatus.failed) {
-       return Container(
-         width: 150,
-         height: 150,
-         decoration: BoxDecoration(
-           color: AppColors.borderInput,
-           borderRadius: BorderRadius.circular(16.0),
-         ),
-         child: Column(
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [
-             const Icon(Icons.error_outline, color: AppColors.error, size: 40),
-             const SizedBox(height: 8),
-             Text(AppLocalizations.of(context).chat_upload_failed, style: const TextStyle(fontSize: 12)),
-             const SizedBox(height: 8),
-             ElevatedButton(
-               onPressed: () {
-                 // 重新发送消息
-                 context.read<ChatMessagesBloc>().add(
-                   SendMessageRequested(
-                     type: ChatMessageType.image,
-                     file: File(widget.message.context), // 需要保存原始文件路径
-                   ),
-                 );
-               },
-               style: ElevatedButton.styleFrom(
-                 minimumSize: const Size(60, 24),
-                 padding: const EdgeInsets.symmetric(horizontal: 8),
-               ),
-               child: Text(AppLocalizations.of(context).chat_retry, style: const TextStyle(fontSize: 12)),
-             ),
-           ],
-         ),
-       );
-     }
+    final imageUrl = _resolveImageUrl(rawImageContext);
+    // 如果消息正在发送，显示上传进度
+    if (widget.message.status == MessageStatus.sending) {
+      return Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          color: AppColors.borderInput,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(strokeWidth: 2.0),
+            const SizedBox(height: 8),
+            Text(AppLocalizations.of(context).chat_uploading,
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textTertiary)),
+          ],
+        ),
+      );
+    }
 
-     final heroTag = 'imagePreview_${widget.message.id}';
-     final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-     
-     if (imageUrl.isEmpty) {
-       return Container(
-         width: 150, height: 150,
-         decoration: BoxDecoration(
-         color: AppColors.borderInput,
-            borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
-         ),
-         child: const Center(child: Icon(Icons.broken_image, color: AppColors.error)),
-       );
-     }
-     
-     return GestureDetector(
-       onTap: () => _showImagePreview(context, imageUrl),
-       // 添加长按事件处理，支持撤回和复制功能
-       onLongPressStart: (details) {
-         _showActionMenu(context, details.globalPosition, isCurrentUser);
-       },
-       child: Hero(
-         tag: heroTag,
-         child: ConstrainedBox(
-            constraints: BoxConstraints(
-               maxHeight: 200,
-               maxWidth: MediaQuery.of(context).size.width * 0.6, // 控制图片最大宽度
+    // 如果上传失败，显示重试按钮
+    if (widget.message.status == MessageStatus.failed) {
+      return Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          color: AppColors.borderInput,
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.error, size: 40),
+            const SizedBox(height: 8),
+            Text(AppLocalizations.of(context).chat_upload_failed,
+                style: const TextStyle(fontSize: 12)),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () {
+                // 重新发送消息
+                context.read<ChatMessagesBloc>().add(
+                      SendMessageRequested(
+                        type: ChatMessageType.image,
+                        file: File(widget.message.context), // 需要保存原始文件路径
+                      ),
+                    );
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(60, 24),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+              ),
+              child: Text(AppLocalizations.of(context).chat_retry,
+                  style: const TextStyle(fontSize: 12)),
             ),
-           child: ClipRRect(
-             borderRadius: BorderRadius.circular(16.0), // 给图片添加圆角，与消息气泡一致
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                placeholder: (ctx, url) => const Center(
-                  child: SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: ShimmerEffect(child: CircleAvatar()),
-                  ),
+          ],
+        ),
+      );
+    }
+
+    final heroTag = 'imagePreview_${widget.message.id}';
+    final bool isCurrentUser =
+        widget.message.senderId == widget.currentUserParticipantId;
+
+    if (imageUrl.isEmpty) {
+      return Container(
+        width: 150,
+        height: 150,
+        decoration: BoxDecoration(
+          color: AppColors.borderInput,
+          borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
+        ),
+        child: const Center(
+            child: Icon(Icons.broken_image, color: AppColors.error)),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _showImagePreview(context, imageUrl),
+      // 添加长按事件处理，支持撤回和复制功能
+      onLongPressStart: (details) {
+        _showActionMenu(context, details.globalPosition, isCurrentUser);
+      },
+      child: Hero(
+        tag: heroTag,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: 200,
+            maxWidth: MediaQuery.of(context).size.width * 0.6, // 控制图片最大宽度
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16.0), // 给图片添加圆角，与消息气泡一致
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              placeholder: (ctx, url) => const Center(
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: ShimmerEffect(child: CircleAvatar()),
                 ),
-               errorWidget: (context, url, error) {
-                 print("[Image] 加载错误: $url, 错误: $error");
-                 // 提供更友好的错误显示并添加重试按钮
-                 return Container(
-                   width: 150, height: 150,
-                   decoration: BoxDecoration(
-                     color: AppColors.backgroundSecondary,
-                     borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
-                   ),
-                   child: Column(
-                     mainAxisAlignment: MainAxisAlignment.center,
-                     children: [
-                       const Icon(Icons.broken_image, color: AppColors.error, size: 40),
-                       const SizedBox(height: 8),
-                       Text(AppLocalizations.of(context).chat_image_load_failed, style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
-                       const SizedBox(height: 8),
-                       // 重试按钮
-                       ElevatedButton(
-                         onPressed: () {
-                           // 强制刷新图片缓存
-                           final imageProvider = CachedNetworkImageProvider(imageUrl);
-                           imageProvider.evict().then((_) {
-                             // 触发重新构建
-                             if (mounted) setState(() {});
-                           });
-                         },
-                         style: ElevatedButton.styleFrom(
-                           minimumSize: const Size(50, 24),
-                           padding: const EdgeInsets.symmetric(horizontal: 8),
-                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                         ),
-                         child: Text(AppLocalizations.of(context).chat_retry, style: const TextStyle(fontSize: 12)),
-                       ),
-                     ],
-                   ),
-                 );
-               },
-                fit: BoxFit.cover,
-               // 增加重试次数
-               maxHeightDiskCache: 300,
-               fadeOutDuration: const Duration(milliseconds: 300),
-               fadeInDuration: const Duration(milliseconds: 300),
-               // 修改缓存配置，可选
-               cacheKey: "chat_image_${widget.message.id}",
-               memCacheWidth: 300,
-             ),
-           ),
-         ),
-       ),
-     );
+              ),
+              errorWidget: (context, url, error) {
+                AppLogger.d("[Image] 加载错误: ${error.runtimeType}; URL已省略");
+                // 提供更友好的错误显示并添加重试按钮
+                return Container(
+                  width: 150,
+                  height: 150,
+                  decoration: BoxDecoration(
+                    color: AppColors.backgroundSecondary,
+                    borderRadius: BorderRadius.circular(16.0), // 使用与消息气泡相同的圆角
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.broken_image,
+                          color: AppColors.error, size: 40),
+                      const SizedBox(height: 8),
+                      Text(AppLocalizations.of(context).chat_image_load_failed,
+                          style: const TextStyle(
+                              fontSize: 12, color: AppColors.textTertiary)),
+                      const SizedBox(height: 8),
+                      // 重试按钮
+                      ElevatedButton(
+                        onPressed: () {
+                          // 强制刷新图片缓存
+                          final imageProvider =
+                              CachedNetworkImageProvider(imageUrl);
+                          imageProvider.evict().then((_) {
+                            // 触发重新构建
+                            if (mounted) setState(() {});
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(50, 24),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(AppLocalizations.of(context).chat_retry,
+                            style: const TextStyle(fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              fit: BoxFit.cover,
+              // 增加重试次数
+              maxHeightDiskCache: 300,
+              fadeOutDuration: const Duration(milliseconds: 300),
+              fadeInDuration: const Duration(milliseconds: 300),
+              // 修改缓存配置，可选
+              cacheKey: "chat_image_${widget.message.id}",
+              memCacheWidth: 300,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  Widget _buildAudioContent(BuildContext context, Color iconAndTextColor, bool isCurrentUser, String audioUrl) {
+  Widget _buildAudioContent(BuildContext context, Color iconAndTextColor,
+      bool isCurrentUser, String audioUrl) {
     // Determine icon color based on user (can be same as text or specific)
-    final Color effectiveIconColor = isCurrentUser ? AppColors.textSecondary : AppColors.textSecondary; // Example: use greyish for both
-    final Color effectiveTextColor = isCurrentUser ? AppColors.textSecondary : AppColors.textSecondary; // Example: use greyish for both
+    final Color effectiveIconColor = isCurrentUser
+        ? AppColors.textSecondary
+        : AppColors.textSecondary; // Example: use greyish for both
+    final Color effectiveTextColor = isCurrentUser
+        ? AppColors.textSecondary
+        : AppColors.textSecondary; // Example: use greyish for both
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -762,12 +802,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(),
               onPressed: _playPauseAudio,
-              tooltip: _isPlaying ? AppLocalizations.of(context).chat_audio_pause : AppLocalizations.of(context).chat_audio_play,
+              tooltip: _isPlaying
+                  ? AppLocalizations.of(context).chat_audio_pause
+                  : AppLocalizations.of(context).chat_audio_play,
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // 音频波形或进度条
           Expanded(
             child: Column(
@@ -783,7 +825,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: _duration != null && _position != null
-                        ? (_position!.inMilliseconds / _duration!.inMilliseconds).clamp(0.0, 1.0)
+                        ? (_position!.inMilliseconds /
+                                _duration!.inMilliseconds)
+                            .clamp(0.0, 1.0)
                         : 0.0,
                     child: Container(
                       decoration: BoxDecoration(
@@ -793,9 +837,9 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 // 时间显示
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -813,14 +857,14 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
               ],
             ),
           ),
-          
+
           const SizedBox(width: 8),
         ],
       ),
     );
   }
 
-   Widget _buildStatusIndicator(BuildContext context) {
+  Widget _buildStatusIndicator(BuildContext context) {
     IconData iconData;
     Color iconColor = AppColors.textTertiary;
     double iconSize = 16.0;
@@ -843,141 +887,139 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
     }
 
     return Padding(
-       padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
-       child: Icon(iconData, size: iconSize, color: iconColor),
-     );
-   }
+      padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
+      child: Icon(iconData, size: iconSize, color: iconColor),
+    );
+  }
 
-   void _showActionMenu(BuildContext context, Offset tapPosition, bool isCurrentUser) {
+  void _showActionMenu(
+      BuildContext context, Offset tapPosition, bool isCurrentUser) {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     final List<PopupMenuEntry<String>> menuItems = [];
 
     // 文本消息支持复制
     if (widget.message.type == ChatMessageType.text) {
-        menuItems.add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
+      menuItems
+          .add(PopupMenuItem<String>(value: 'copy', child: Text(s.chat_copy)));
     }
 
     // 当前用户的消息支持撤回（包括文本和图片）
     if (isCurrentUser) {
-        // 检查消息发送时间，判断是否可以撤回
-        final revokeResult = _checkRevokeStatus();
-        
-        if (revokeResult.canRevoke) {
-            // 可以撤回：显示正常的撤回选项
-            menuItems.add(PopupMenuItem<String>(
-                value: 'revoke', 
-                child: Text(s.chat_recall)
-            ));
-    }
-        // 注意：超过2分钟的消息不显示任何撤回选项
+      // 检查消息发送时间，判断是否可以撤回
+      final revokeResult = _checkRevokeStatus();
+
+      if (revokeResult.canRevoke) {
+        // 可以撤回：显示正常的撤回选项
+        menuItems.add(
+            PopupMenuItem<String>(value: 'revoke', child: Text(s.chat_recall)));
+      }
+      // 注意：超过2分钟的消息不显示任何撤回选项
     }
 
     // 如果没有可用选项，显示提示信息
     if (menuItems.isEmpty) {
-        if (isCurrentUser) {
-            // 如果是当前用户的消息但没有可用操作，显示原因
-            final revokeResult = _checkRevokeStatus();
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(revokeResult.reason),
-                    duration: const Duration(seconds: 2),
-                ),
-            );
-        }
-        return;
+      if (isCurrentUser) {
+        // 如果是当前用户的消息但没有可用操作，显示原因
+        final revokeResult = _checkRevokeStatus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(revokeResult.reason),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
     }
 
     showMenu(
-        context: context,
-        position: RelativeRect.fromRect(
-            tapPosition & const Size(40, 40),
-            Offset.zero & overlay.size
-        ),
-        items: menuItems,
-        elevation: 8.0,
+      context: context,
+      position: RelativeRect.fromRect(
+          tapPosition & const Size(40, 40), Offset.zero & overlay.size),
+      items: menuItems,
+      elevation: 8.0,
     ).then<void>((String? selectedValue) {
-        if (selectedValue == null) return;
+      if (selectedValue == null) return;
 
-        switch (selectedValue) {
-            case 'copy':
-                Clipboard.setData(ClipboardData(text: widget.message.context));
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(s.chat_copied_to_clipboard)),
-                );
-                break;
-            case 'revoke':
-                // 再次检查是否可以撤回（防止时间差问题）
-                final revokeResult = _checkRevokeStatus();
-                if (revokeResult.canRevoke) {
-                  // refactored 聊天室走 MessageListCubit 链路,不是 ChatMessagesBloc (#333)
-                  context.read<MessageListCubit>().revokeMessage(widget.message.id);
-                } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(revokeResult.reason),
-                            duration: const Duration(seconds: 2),
-                        ),
-                    );
-                }
-                break;
-        }
+      switch (selectedValue) {
+        case 'copy':
+          Clipboard.setData(ClipboardData(text: widget.message.context));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(s.chat_copied_to_clipboard)),
+          );
+          break;
+        case 'revoke':
+          // 再次检查是否可以撤回（防止时间差问题）
+          final revokeResult = _checkRevokeStatus();
+          if (revokeResult.canRevoke) {
+            // refactored 聊天室走 MessageListCubit 链路,不是 ChatMessagesBloc (#333)
+            context.read<MessageListCubit>().revokeMessage(widget.message.id);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(revokeResult.reason),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+          break;
+      }
     });
   }
 
   // 检查消息撤回状态（更详细的版本）
   RevokeCheckResult _checkRevokeStatus() {
-      final s = AppLocalizations.of(context);
+    final s = AppLocalizations.of(context);
 
-      final now = DateTime.now();
-      final messageTime = widget.message.createTime;
-      final timeDifference = now.difference(messageTime);
+    final now = DateTime.now();
+    final messageTime = widget.message.createTime;
+    final timeDifference = now.difference(messageTime);
 
-      // 允许撤回的时间窗口：2分钟（120秒）
-      const revokeTimeLimit = ChatConstants.revokeTimeLimit;
+    // 允许撤回的时间窗口：2分钟（120秒）
+    const revokeTimeLimit = ChatConstants.revokeTimeLimit;
 
-      print('[Debug] Revoke check - messageTime: $messageTime, now: $now, diff: ${timeDifference.inSeconds}s');
+    AppLogger.d(
+        '[Debug] Revoke check completed; timestamps omitted, diff=${timeDifference.inSeconds}s');
 
-      if (timeDifference <= revokeTimeLimit) {
-          final remainingTime = revokeTimeLimit - timeDifference;
-          return RevokeCheckResult(
-              canRevoke: true,
-              reason: s.chat_revoke_available,
-              remainingTime: remainingTime
-          );
-      } else {
-          final overTime = timeDifference - revokeTimeLimit;
-          return RevokeCheckResult(
-              canRevoke: false,
-              reason: s.chat_revoke_expired(overTime.inSeconds)
-          );
-      }
+    if (timeDifference <= revokeTimeLimit) {
+      final remainingTime = revokeTimeLimit - timeDifference;
+      return RevokeCheckResult(
+          canRevoke: true,
+          reason: s.chat_revoke_available,
+          remainingTime: remainingTime);
+    } else {
+      final overTime = timeDifference - revokeTimeLimit;
+      return RevokeCheckResult(
+          canRevoke: false, reason: s.chat_revoke_expired(overTime.inSeconds));
+    }
   }
 
   // 保留原有的简单检查方法（向后兼容）
   bool _canRevokeMessage() {
-      return _checkRevokeStatus().canRevoke;
+    return _checkRevokeStatus().canRevoke;
   }
 
   // 添加一个方法用于获取allocate消息的显示名称
   String _getSellerName() {
     // 获取国际化资源
     final s = AppLocalizations.of(context);
-    
-    final bool isCurrentUser = widget.message.senderId == widget.currentUserParticipantId;
-    
+
+    final bool isCurrentUser =
+        widget.message.senderId == widget.currentUserParticipantId;
+
     // 如果当前用户是消息发送者（买家），显示"我"
     if (isCurrentUser) {
       return s.chat_me;
     }
-    
+
     // 如果当前用户是消息接收者（卖家），显示对方名称（买家）
     if (widget.opponent != null && widget.opponent!.nickName != null) {
       return widget.opponent!.nickName!;
     }
-    
+
     // 如果无法获取对方名称，返回默认值
     return s.chat_buyer;
   }
