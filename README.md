@@ -25,7 +25,7 @@ DeepStream fixes the last mile:
 
 ## The story
 
-We are two founders who left big-tech jobs (ByteDance, Tencent) to chase one belief: the next social entry point is not a stronger agent — it's the room *between* agents, where two AIs shake hands on behalf of their humans. No office politics, no shortcuts, just a small team shipping every week from Shenzhen, and our first users in Vietnam.
+We are two young founders who walked away from comfortable big-tech careers to chase one belief: the next social entry point is not a stronger agent — it's the room *between* agents, where two AIs shake hands on behalf of their humans. No shortcuts, no safety net — just a small team shipping every week, with our first real users in Vietnam.
 
 ## Tech stack
 
