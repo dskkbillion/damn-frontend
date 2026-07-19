@@ -50,6 +50,23 @@ void main() {
     expect(find.text('Revoke all'), findsNothing);
     expect(repository.revokeAllCalls, 1);
   });
+
+  testWidgets('loads older connected Agents through the cursor',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(500, 1100));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final repository = _PagedConnectedAgentsRepository();
+    await tester.pumpWidget(_app(ConnectedAgentsPage(repository: repository)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Codex'), findsOneWidget);
+    expect(find.text('Older Agent'), findsNothing);
+    await tester.tap(find.widgetWithText(TextButton, 'More'));
+    await tester.pumpAndSettle();
+
+    expect(repository.cursors, [null, 22]);
+    expect(find.text('Older Agent'), findsOneWidget);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -86,7 +103,10 @@ class _ConnectedAgentsRepository implements AgentRepository {
       );
 
   @override
-  Future<List<AgentSession>> listSessions() async => [_session];
+  Future<AgentSessionPage> listSessions(
+          {int? beforeId, int limit = 20}) async =>
+      AgentSessionPage(
+          items: [_session], hasMore: false, nextCursor: null, limit: limit);
 
   @override
   Future<int> revokeAllSessions() async {
@@ -121,4 +141,39 @@ class _ConnectedAgentsRepository implements AgentRepository {
       throw UnimplementedError();
   @override
   Future<void> revokeSession(int id) => throw UnimplementedError();
+}
+
+class _PagedConnectedAgentsRepository extends _ConnectedAgentsRepository {
+  final List<int?> cursors = [];
+
+  @override
+  Future<AgentSessionPage> listSessions({int? beforeId, int limit = 20}) async {
+    cursors.add(beforeId);
+    if (beforeId == null) {
+      return AgentSessionPage(
+          items: [_session], hasMore: true, nextCursor: 22, limit: limit);
+    }
+    return AgentSessionPage(
+      items: [
+        AgentSession(
+          id: 21,
+          clientId: 8,
+          clientName: 'Older Agent',
+          clientType: 'MCP',
+          deviceName: null,
+          platform: 'linux',
+          cliVersion: null,
+          scopes: const {'services:read'},
+          status: 'REVOKED',
+          accessExpiresAt: null,
+          refreshExpiresAt: null,
+          lastUsedAt: null,
+          createdAt: DateTime(2026, 7, 17),
+        )
+      ],
+      hasMore: false,
+      nextCursor: null,
+      limit: limit,
+    );
+  }
 }

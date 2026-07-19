@@ -80,6 +80,31 @@ class AgentSession {
       );
 }
 
+class AgentSessionPage {
+  final List<AgentSession> items;
+  final bool hasMore;
+  final int? nextCursor;
+  final int limit;
+
+  const AgentSessionPage({
+    required this.items,
+    required this.hasMore,
+    required this.nextCursor,
+    required this.limit,
+  });
+
+  factory AgentSessionPage.fromJson(Map<String, dynamic> json) =>
+      AgentSessionPage(
+        items: ((json['items'] as List?) ?? const [])
+            .map((item) =>
+                AgentSession.fromJson(Map<String, dynamic>.from(item as Map)))
+            .toList(),
+        hasMore: json['hasMore'] as bool? ?? false,
+        nextCursor: (json['nextCursor'] as num?)?.toInt(),
+        limit: (json['limit'] as num?)?.toInt() ?? 20,
+      );
+}
+
 class AgentAuditEvent {
   final String action;
   final String result;

@@ -2,6 +2,28 @@ import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('parses paged Agent sessions', () {
+    final page = AgentSessionPage.fromJson({
+      'items': [
+        {
+          'id': 22,
+          'clientId': 11,
+          'clientName': 'Codex',
+          'scopes': ['services:read'],
+          'status': 'ACTIVE',
+        }
+      ],
+      'hasMore': true,
+      'nextCursor': 22,
+      'limit': 20,
+    });
+
+    expect(page.items.single.clientName, 'Codex');
+    expect(page.hasMore, isTrue);
+    expect(page.nextCursor, 22);
+    expect(page.limit, 20);
+  });
+
   test('parses session detail without exposing token fields', () {
     final detail = AgentSessionDetail.fromJson({
       'session': {

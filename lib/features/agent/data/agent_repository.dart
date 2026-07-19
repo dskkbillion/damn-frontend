@@ -13,7 +13,7 @@ abstract class AgentRepository {
   Future<AgentAuthorization> inspectAuthorization(String userCode);
   Future<void> approveAuthorization(String userCode, Set<String> scopes);
   Future<void> denyAuthorization(String userCode);
-  Future<List<AgentSession>> listSessions();
+  Future<AgentSessionPage> listSessions({int? beforeId, int limit = 20});
   Future<AgentSessionDetail> getSession(int id);
   Future<AgentSession> reduceScopes(int id, Set<String> scopes);
   Future<void> revokeSession(int id);
@@ -48,14 +48,13 @@ class DioAgentRepository implements AgentRepository {
   }
 
   @override
-  Future<List<AgentSession>> listSessions() async {
-    final data =
-        await _request(() => dio.get('/api/agent-auth/sessions')) as List;
-    return data
-        .map((item) =>
-            AgentSession.fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList();
-  }
+  Future<AgentSessionPage> listSessions(
+          {int? beforeId, int limit = 20}) async =>
+      AgentSessionPage.fromJson(Map<String, dynamic>.from(await _request(
+          () => dio.get('/api/agent-auth/sessions', queryParameters: {
+                if (beforeId != null) 'beforeId': beforeId,
+                'limit': limit,
+              })) as Map));
 
   @override
   Future<AgentSessionDetail> getSession(int id) async =>

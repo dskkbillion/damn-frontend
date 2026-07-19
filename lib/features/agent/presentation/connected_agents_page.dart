@@ -16,7 +16,10 @@ class _ConnectedAgentsPageState extends State<ConnectedAgentsPage> {
   List<AgentSession>? _sessions;
   String? _error;
   bool _loading = false;
+  bool _loadingMore = false;
   bool _mutationBusy = false;
+  bool _hasMore = false;
+  int? _nextCursor;
   int _loadGeneration = 0;
 
   @override
@@ -32,9 +35,13 @@ class _ConnectedAgentsPageState extends State<ConnectedAgentsPage> {
       _error = null;
     });
     try {
-      final sessions = await widget.repository.listSessions();
+      final page = await widget.repository.listSessions();
       if (mounted && generation == _loadGeneration) {
-        setState(() => _sessions = sessions);
+        setState(() {
+          _sessions = page.items;
+          _hasMore = page.hasMore;
+          _nextCursor = page.nextCursor;
+        });
       }
     } catch (error) {
       if (mounted && generation == _loadGeneration) {
@@ -44,6 +51,28 @@ class _ConnectedAgentsPageState extends State<ConnectedAgentsPage> {
       if (mounted && generation == _loadGeneration) {
         setState(() => _loading = false);
       }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loadingMore || !_hasMore || _nextCursor == null) return;
+    setState(() => _loadingMore = true);
+    try {
+      final page = await widget.repository.listSessions(beforeId: _nextCursor);
+      if (mounted) {
+        setState(() {
+          _sessions = [...?_sessions, ...page.items];
+          _hasMore = page.hasMore;
+          _nextCursor = page.nextCursor;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(agentErrorMessage(context, error))));
+      }
+    } finally {
+      if (mounted) setState(() => _loadingMore = false);
     }
   }
 
@@ -123,7 +152,7 @@ class _ConnectedAgentsPageState extends State<ConnectedAgentsPage> {
                       ])
                     : ListView.separated(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _sessions!.length + 1,
+                        itemCount: _sessions!.length + 1 + (_hasMore ? 1 : 0),
                         separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (context, index) {
                           if (index == 0) {
@@ -142,6 +171,16 @@ class _ConnectedAgentsPageState extends State<ConnectedAgentsPage> {
                                 ],
                               ),
                             ));
+                          }
+                          if (_hasMore && index == _sessions!.length + 1) {
+                            return Center(
+                              child: TextButton(
+                                onPressed: _loadingMore ? null : _loadMore,
+                                child: Text(_loadingMore
+                                    ? l10n.home_loading_more
+                                    : l10n.product_detail_more),
+                              ),
+                            );
                           }
                           final session = _sessions![index - 1];
                           return Card(

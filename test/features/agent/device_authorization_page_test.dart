@@ -126,7 +126,8 @@ class _FakeAgentRepository implements AgentRepository {
   @override
   Future<List<AgentRequestDraft>> listRequests() => throw UnimplementedError();
   @override
-  Future<List<AgentSession>> listSessions() => throw UnimplementedError();
+  Future<AgentSessionPage> listSessions({int? beforeId, int limit = 20}) =>
+      throw UnimplementedError();
   @override
   Future<AgentSession> reduceScopes(int id, Set<String> scopes) =>
       throw UnimplementedError();
