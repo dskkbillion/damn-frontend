@@ -66,7 +66,7 @@ void main() {
   }
 
   void runTestsOffline(Function body) {
-     group('device is offline', () {
+    group('device is offline', () {
       setUp(() {
         when(mockNetworkInfo.isConnected).thenAnswer((_) async => false);
       });
@@ -77,11 +77,14 @@ void main() {
   group('loginWithVerificationCode', () {
     const tPhone = '1234567890';
     const tCode = '123456';
-    const tCredentials = VerificationCodeCredentials(phone: tPhone, code: tCode);
+    const tCredentials =
+        VerificationCodeCredentials(phone: tPhone, code: tCode);
     const tToken = 'sample_token';
     const tUserId = 101;
-    const tAuthenticatedUserModel = AuthenticatedUserModel(token: tToken, code: 200); // 假设有 code
-    const tUserInfo = UserInfo(id: tUserId, mobile: tPhone, nickName: 'Test User');
+    const tAuthenticatedUserModel =
+        AuthenticatedUserModel(token: tToken, code: 200); // 假设有 code
+    const tUserInfo =
+        UserInfo(id: tUserId, mobile: tPhone, nickName: 'Test User');
     const tAuthenticatedUser = AuthenticatedUser(id: tUserId, token: tToken);
 
     runTestsOnline(() {
@@ -93,10 +96,13 @@ void main() {
               .thenAnswer((_) async => tAuthenticatedUserModel);
           when(mockUserInfoRepository.fetchUserInfo(tToken))
               .thenAnswer((_) async => const Right(tUserInfo));
-          when(mockSecureStorage.saveInt('user_id', tUserId)).thenAnswer((_) async => Future.value());
-          when(mockSecureStorage.saveString('auth_token', tToken)).thenAnswer((_) async => Future.value());
+          when(mockSecureStorage.saveInt('user_id', tUserId))
+              .thenAnswer((_) async => Future.value());
+          when(mockSecureStorage.saveString('auth_token', tToken))
+              .thenAnswer((_) async => Future.value());
           // act
-          final result = await repository.loginWithVerificationCode(tCredentials);
+          final result =
+              await repository.loginWithVerificationCode(tCredentials);
           // assert
           expect(result, const Right(tAuthenticatedUser));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
@@ -117,7 +123,8 @@ void main() {
           when(mockRemoteDataSource.loginWithVerificationCode(any))
               .thenThrow(ServerException(message: 'Login failed'));
           // act
-          final result = await repository.loginWithVerificationCode(tCredentials);
+          final result =
+              await repository.loginWithVerificationCode(tCredentials);
           // assert
           expect(result, const Left(ServerFailure(message: 'Login failed')));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
@@ -127,18 +134,21 @@ void main() {
         },
       );
 
-       test(
+      test(
         'should return ServerFailure when fetchUserInfo call fails',
         () async {
           // arrange
           when(mockRemoteDataSource.loginWithVerificationCode(any))
               .thenAnswer((_) async => tAuthenticatedUserModel);
-          when(mockUserInfoRepository.fetchUserInfo(tToken))
-              .thenAnswer((_) async => const Left(ServerFailure(message: 'Fetch user failed')));
+          when(mockUserInfoRepository.fetchUserInfo(tToken)).thenAnswer(
+              (_) async =>
+                  const Left(ServerFailure(message: 'Fetch user failed')));
           // act
-          final result = await repository.loginWithVerificationCode(tCredentials);
+          final result =
+              await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, const Left(ServerFailure(message: 'Fetch user failed')));
+          expect(
+              result, const Left(ServerFailure(message: 'Fetch user failed')));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verify(mockUserInfoRepository.fetchUserInfo(tToken));
           // Note: mockSecureStorage may have interactions from _initializeAuthStatus
@@ -156,11 +166,15 @@ void main() {
               .thenAnswer((_) async => const Right(tUserInfo));
           when(mockSecureStorage.saveInt(any, any))
               .thenThrow(CacheException(message: 'Save failed'));
-           // Assume saveString would also fail or not be reached, test focuses on the first failure
+          // Assume saveString would also fail or not be reached, test focuses on the first failure
           // act
-          final result = await repository.loginWithVerificationCode(tCredentials);
+          final result =
+              await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.')));
+          expect(
+              result,
+              const Left(CacheFailure(
+                  message: 'Login succeeded but failed to save credentials.')));
           expect(repository.getLoggedInUserSync(), const Right(null));
           verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
           verify(mockUserInfoRepository.fetchUserInfo(tToken));
@@ -169,17 +183,18 @@ void main() {
           // verify(mockSecureStorage.saveString('auth_token', tToken));
         },
       );
-
     });
 
     runTestsOffline(() {
-       test(
+      test(
         'should return NetworkFailure when device is offline',
         () async {
           // act
-          final result = await repository.loginWithVerificationCode(tCredentials);
+          final result =
+              await repository.loginWithVerificationCode(tCredentials);
           // assert
-          expect(result, const Left(NetworkFailure(message: 'No internet connection')));
+          expect(result,
+              const Left(NetworkFailure(message: 'No internet connection')));
           verifyNoMoreInteractions(mockRemoteDataSource);
           verifyNoMoreInteractions(mockUserInfoRepository);
           // Note: mockSecureStorage may have interactions from _initializeAuthStatus
@@ -190,36 +205,43 @@ void main() {
   });
 
   group('logout', () {
-     test(
-        'should clear secure storage and return Right(null)',
-        () async {
-          // arrange
-          when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
-          when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
-          // act
-          final result = await repository.logout();
-          // assert
-          expect(result, const Right(null));
-          verify(mockSecureStorage.delete('user_id'));
-          verify(mockSecureStorage.delete('auth_token'));
-          // Note: mockSecureStorage may have interactions from _initializeAuthStatus
-          // verifyNoMoreInteractions(mockSecureStorage);
-        },
-      );
+    test(
+      'should clear secure storage and return Right(null)',
+      () async {
+        // arrange
+        when(mockSecureStorage.delete('user_id'))
+            .thenAnswer((_) async => Future.value());
+        when(mockSecureStorage.delete('auth_token'))
+            .thenAnswer((_) async => Future.value());
+        // act
+        final result = await repository.logout();
+        // assert
+        expect(result, const Right(null));
+        verify(mockSecureStorage.delete('user_id'));
+        verify(mockSecureStorage.delete('auth_token'));
+        // Note: mockSecureStorage may have interactions from _initializeAuthStatus
+        // verifyNoMoreInteractions(mockSecureStorage);
+      },
+    );
 
-      test(
-        'should return Right(null) even if clearing storage fails',
-        () async {
-          // arrange
-           when(mockSecureStorage.delete(any)).thenThrow(CacheException(message: 'Delete failed'));
-          // act
-          final result = await repository.logout();
-          // assert
-          expect(result, const Right(null));
-          verify(mockSecureStorage.delete('user_id'));
-          verify(mockSecureStorage.delete('auth_token')); // Both should be attempted
-        },
-      );
+    test(
+      'should return Right(null) even if clearing storage fails',
+      () async {
+        // arrange
+        when(mockSecureStorage.delete(any))
+            .thenThrow(CacheException(message: 'Delete failed'));
+        // act
+        final result = await repository.logout();
+        // assert
+        expect(result, const Right(null));
+        // Cleanup is sequential. Once the first storage deletion fails, the
+        // repository must absorb the error and report local logout success;
+        // later credential keys cannot be reached in that attempt.
+        verify(mockSecureStorage.delete('user_id'))
+            .called(greaterThanOrEqualTo(1));
+        verifyNever(mockSecureStorage.delete('auth_token'));
+      },
+    );
   });
 
   // TODO: Add tests for sendVerificationCode
@@ -234,7 +256,8 @@ void main() {
         'should call remoteDataSource.sendVerificationCode when successful',
         () async {
           // arrange
-          when(mockRemoteDataSource.sendVerificationCode(phone: anyNamed('phone')))
+          when(mockRemoteDataSource.sendVerificationCode(
+                  phone: anyNamed('phone')))
               .thenAnswer((_) async => Future.value());
           // act
           final result = await repository.sendVerificationCode(phone: tPhone);
@@ -249,31 +272,33 @@ void main() {
         'should return ServerFailure when remoteDataSource throws ServerException',
         () async {
           // arrange
-          when(mockRemoteDataSource.sendVerificationCode(phone: anyNamed('phone')))
+          when(mockRemoteDataSource.sendVerificationCode(
+                  phone: anyNamed('phone')))
               .thenThrow(ServerException(message: 'Failed to send code'));
           // act
           final result = await repository.sendVerificationCode(phone: tPhone);
           // assert
-          expect(result, const Left(ServerFailure(message: 'Failed to send code')));
+          expect(result,
+              const Left(ServerFailure(message: 'Failed to send code')));
           verify(mockRemoteDataSource.sendVerificationCode(phone: tPhone));
           verifyNoMoreInteractions(mockRemoteDataSource);
         },
       );
     });
 
-     runTestsOffline(() {
-       test(
+    runTestsOffline(() {
+      test(
         'should return NetworkFailure when device is offline',
         () async {
           // act
           final result = await repository.sendVerificationCode(phone: tPhone);
           // assert
-          expect(result, const Left(NetworkFailure(message: 'No internet connection')));
+          expect(result,
+              const Left(NetworkFailure(message: 'No internet connection')));
           verifyNoMoreInteractions(mockRemoteDataSource);
         },
       );
     });
-
   });
 
   group('_initializeAuthStatus', () {
@@ -281,10 +306,13 @@ void main() {
     const tToken = 'test.token.123';
     const tAuthenticatedUser = AuthenticatedUser(id: tUserId, token: tToken);
 
-    test('should initialize with Authenticated status when token is valid', () async {
+    test('should initialize with Authenticated status when token is valid',
+        () async {
       // Arrange - Mock all the calls used in _initializeAuthStatus
-      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
-      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockSecureStorage.getInt('user_id'))
+          .thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token'))
+          .thenAnswer((_) async => tToken);
       when(mockTokenValidator.validateToken(tToken))
           .thenAnswer((_) async => TokenValidationResult.valid);
 
@@ -311,14 +339,19 @@ void main() {
       verify(mockTokenValidator.validateToken(tToken));
     });
 
-    test('should initialize with Unauthenticated status when token is expired', () async {
+    test('should initialize with Unauthenticated status when token is expired',
+        () async {
       // Arrange
-      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
-      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockSecureStorage.getInt('user_id'))
+          .thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token'))
+          .thenAnswer((_) async => tToken);
       when(mockTokenValidator.validateToken(tToken))
           .thenAnswer((_) async => TokenValidationResult.expired);
-      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
-      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('user_id'))
+          .thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token'))
+          .thenAnswer((_) async => Future.value());
 
       // Act
       final repo = AuthRepositoryImpl(
@@ -341,14 +374,19 @@ void main() {
       verify(mockSecureStorage.delete('auth_token'));
     });
 
-    test('should initialize with Unauthenticated status when token is invalid', () async {
+    test('should initialize with Unauthenticated status when token is invalid',
+        () async {
       // Arrange
-      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
-      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockSecureStorage.getInt('user_id'))
+          .thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token'))
+          .thenAnswer((_) async => tToken);
       when(mockTokenValidator.validateToken(tToken))
           .thenAnswer((_) async => TokenValidationResult.invalid);
-      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
-      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('user_id'))
+          .thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token'))
+          .thenAnswer((_) async => Future.value());
 
       // Act
       final repo = AuthRepositoryImpl(
@@ -371,10 +409,13 @@ void main() {
       verify(mockSecureStorage.delete('auth_token'));
     });
 
-    test('should assume token is valid when validation encounters an error', () async {
+    test('should assume token is valid when validation encounters an error',
+        () async {
       // Arrange
-      when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => tUserId);
-      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => tToken);
+      when(mockSecureStorage.getInt('user_id'))
+          .thenAnswer((_) async => tUserId);
+      when(mockSecureStorage.getString('auth_token'))
+          .thenAnswer((_) async => tToken);
       when(mockTokenValidator.validateToken(tToken))
           .thenAnswer((_) async => TokenValidationResult.error);
 
@@ -397,12 +438,16 @@ void main() {
       verify(mockTokenValidator.validateToken(tToken));
     });
 
-    test('should initialize with Unauthenticated status when no token is found', () async {
+    test('should initialize with Unauthenticated status when no token is found',
+        () async {
       // Arrange
       when(mockSecureStorage.getInt('user_id')).thenAnswer((_) async => null);
-      when(mockSecureStorage.getString('auth_token')).thenAnswer((_) async => null);
-      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
-      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.getString('auth_token'))
+          .thenAnswer((_) async => null);
+      when(mockSecureStorage.delete('user_id'))
+          .thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token'))
+          .thenAnswer((_) async => Future.value());
 
       // Act
       final repo = AuthRepositoryImpl(
@@ -425,11 +470,16 @@ void main() {
       verifyZeroInteractions(mockTokenValidator); // 没有token就不会验证
     });
 
-    test('should initialize with Unauthenticated status when storage throws an exception', () async {
+    test(
+        'should initialize with Unauthenticated status when storage throws an exception',
+        () async {
       // Arrange
-      when(mockSecureStorage.getInt('user_id')).thenThrow(Exception('Storage error'));
-      when(mockSecureStorage.delete('user_id')).thenAnswer((_) async => Future.value());
-      when(mockSecureStorage.delete('auth_token')).thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.getInt('user_id'))
+          .thenThrow(Exception('Storage error'));
+      when(mockSecureStorage.delete('user_id'))
+          .thenAnswer((_) async => Future.value());
+      when(mockSecureStorage.delete('auth_token'))
+          .thenAnswer((_) async => Future.value());
 
       // Act
       final repo = AuthRepositoryImpl(
