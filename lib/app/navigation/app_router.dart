@@ -907,8 +907,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isUnknown = loginStatus is AuthUnknown;
       final currentMode = ref.read(appModeProvider); // Use read for redirect
 
+      // `loginStatus.toString()` includes the authenticated user object and
+      // therefore its bearer token. Keep route diagnostics credential-free.
       print(
-          'Redirect Check: Location: ${state.matchedLocation}, Login: $loginStatus, Mode: $currentMode, Logging In: $isLoggingIn');
+          'Redirect Check: Location: ${state.matchedLocation}, Login: ${loginStatus.runtimeType}, Mode: $currentMode, Logging In: $isLoggingIn');
 
       if (isUnknown) return null;
 
