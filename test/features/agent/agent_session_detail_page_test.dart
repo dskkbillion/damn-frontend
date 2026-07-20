@@ -16,6 +16,10 @@ void main() {
     )));
     await tester.pumpAndSettle();
 
+    final listView = tester.widget<ListView>(find.byType(ListView));
+    final padding = listView.padding! as EdgeInsets;
+    expect(padding.bottom, greaterThanOrEqualTo(96));
+
     expect(find.text('Studio Mac'), findsOneWidget);
     expect(find.text('Client type: CLI'), findsOneWidget);
     expect(find.text('Client identifier: #11'), findsOneWidget);

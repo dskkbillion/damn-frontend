@@ -116,7 +116,13 @@ class _AgentSessionDetailPageState extends State<AgentSessionDetailPage> {
                 )
               : session == null
                   ? const SizedBox.shrink()
-                  : ListView(padding: const EdgeInsets.all(16), children: [
+                  : ListView(
+                      padding: EdgeInsets.fromLTRB(
+                          16,
+                          16,
+                          16,
+                          MediaQuery.paddingOf(context).bottom + 96),
+                      children: [
                       Card(
                           child: Padding(
                               padding: const EdgeInsets.all(16),
