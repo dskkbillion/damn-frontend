@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/network/cache/cache_dio_helper.dart';
 import 'dart:async';
 import 'package:injectable/injectable.dart'; // Import injectable
 
@@ -22,7 +23,8 @@ import 'package:dskk_flutter_refactor/core/services/background_refresh_service.d
 // class UserInfo { ... }
 // abstract class IUserInfoRepository { ... }
 
-@LazySingleton(as: IAuthRepository) // Register as LazySingleton for the interface
+@LazySingleton(
+    as: IAuthRepository) // Register as LazySingleton for the interface
 @injectable // Mark class for injectable generator
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -31,7 +33,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   final IUserInfoRepository userInfoRepository; // 注入 UserInfo Repository
   final TokenValidator tokenValidator;
 
-  final StreamController<AuthStatus> _statusController = StreamController<AuthStatus>.broadcast();
+  final StreamController<AuthStatus> _statusController =
+      StreamController<AuthStatus>.broadcast();
   AuthenticatedUser? _currentUser;
 
   AuthRepositoryImpl({
@@ -57,7 +60,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
       if (id != null && token != null) {
         // 验证Token有效性
-        AppLogger.d('Found existing token and id in secure storage. Validating token...');
+        AppLogger.d(
+            'Found existing token and id in secure storage. Validating token...');
         final validationResult = await tokenValidator.validateToken(token);
 
         switch (validationResult) {
@@ -81,7 +85,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
           case TokenValidationResult.error:
             // 出错时暂时假定Token可能有效
-            AppLogger.d('Error validating token. Assuming token is valid for now.');
+            AppLogger.d(
+                'Error validating token. Assuming token is valid for now.');
             _currentUser = AuthenticatedUser(id: id, token: token);
             _statusController.add(Authenticated(_currentUser!));
             break;
@@ -113,11 +118,14 @@ class AuthRepositoryImpl implements IAuthRepository {
         AppLogger.d('ServerException in repository: ${e.message}');
         // Check for unauthenticated errors specifically if needed
         if (e is UnauthenticatedException) {
-            await _handleLogoutLocally(); // Ensure local state is cleared on auth errors
-            return Left(AuthenticationFailure(message: e.message ?? 'Session expired or invalid'));
+          await _handleLogoutLocally(); // Ensure local state is cleared on auth errors
+          return Left(AuthenticationFailure(
+              message: e.message ?? 'Session expired or invalid'));
         }
-        return Left(ServerFailure(message: e.message ?? 'Unknown server error'));
-      } on CacheException catch (e) { // 假设 SecureStorage 可能抛出
+        return Left(
+            ServerFailure(message: e.message ?? 'Unknown server error'));
+      } on CacheException catch (e) {
+        // 假设 SecureStorage 可能抛出
         AppLogger.d('CacheException in repository: ${e.message}');
         return Left(CacheFailure(message: e.message ?? 'Storage error'));
       } catch (e) {
@@ -133,57 +141,66 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, AuthenticatedUser>> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
     // Step 1: Call login API to get the token model
-    final loginResult = await _networkedOperation(() =>
-        remoteDataSource.loginWithVerificationCode(credentials));
+    final loginResult = await _networkedOperation(
+        () => remoteDataSource.loginWithVerificationCode(credentials));
 
     return loginResult.fold(
       (failure) => Left(failure),
       (authenticatedUserModel) async {
         // Step 2: Use the token to fetch UserInfo (contains id)
-        final userFetchResult =
-            await userInfoRepository.fetchUserInfo(authenticatedUserModel.token);
+        final userFetchResult = await userInfoRepository
+            .fetchUserInfo(authenticatedUserModel.token);
 
         return userFetchResult.fold(
           (failure) {
-             AppLogger.d('Failed to fetch user info after successful token acquisition: $failure');
-             // 不清除 token，让 core 的 token 校验逻辑来处理
-             return Left(failure);
+            AppLogger.d(
+                'Failed to fetch user info after successful token acquisition: $failure');
+            // 不清除 token，让 core 的 token 校验逻辑来处理
+            return Left(failure);
           },
           (userInfo) async {
             // Step 3: Combine id and token, save, and update status
-            final authenticatedUser = AuthenticatedUser(id: userInfo.id, token: authenticatedUserModel.token);
+            final authenticatedUser = AuthenticatedUser(
+                id: userInfo.id, token: authenticatedUserModel.token);
             try {
               // 假设 secureStorage 有 saveInt 和 saveString
               await secureStorage.saveInt('user_id', userInfo.id); // 使用约定 key
-              await secureStorage.saveString('auth_token', authenticatedUserModel.token); // 使用约定 key
+              await secureStorage.saveString(
+                  'auth_token', authenticatedUserModel.token); // 使用约定 key
 
               // 同时保存commonUserId
               if (userInfo.commonUserId != null) {
                 await secureStorage.saveCommonUserId(userInfo.commonUserId!);
                 // 同时保存为 refer_id，供聊天模块使用
-                await secureStorage.saveString('refer_id', userInfo.commonUserId.toString());
+                await secureStorage.saveString(
+                    'refer_id', userInfo.commonUserId.toString());
                 AppLogger.d('Saved commonUserId: ${userInfo.commonUserId}');
-                AppLogger.d('Saved refer_id: ${userInfo.commonUserId} for chat module');
+                AppLogger.d(
+                    'Saved refer_id: ${userInfo.commonUserId} for chat module');
               } else {
                 // 显式清除旧值，防止残留
                 await secureStorage.deleteCommonUserId();
                 await secureStorage.delete('refer_id');
-                AppLogger.d('commonUserId from UserInfo is null. Cleared stale common_user_id and refer_id from secure storage.');
+                AppLogger.d(
+                    'commonUserId from UserInfo is null. Cleared stale common_user_id and refer_id from secure storage.');
               }
 
               _currentUser = authenticatedUser;
               _statusController.add(Authenticated(authenticatedUser));
-              AppLogger.d('Login successful. UserID: ${userInfo.id}; token omitted from logs.');
+              AppLogger.d(
+                  'Login successful. UserID: ${userInfo.id}; token omitted from logs.');
               return Right(authenticatedUser);
             } on CacheException catch (e) {
-              AppLogger.d('Failed to save credentials after login: ${e.message}');
+              AppLogger.d(
+                  'Failed to save credentials after login: ${e.message}');
               // Never publish an authenticated state unless credentials were
               // persisted successfully. Otherwise router refresh can navigate
               // while the login UI reports failure.
               _currentUser = null;
               await _clearLocalAuthData();
               _statusController.add(const Unauthenticated());
-              return const Left(CacheFailure(message: 'Login succeeded but failed to save credentials.'));
+              return const Left(CacheFailure(
+                  message: 'Login succeeded but failed to save credentials.'));
             }
           },
         );
@@ -194,25 +211,27 @@ class AuthRepositoryImpl implements IAuthRepository {
   // 清理本地认证数据
   Future<void> _clearLocalAuthData() async {
     try {
-       // 假设 secureStorage 有 delete 方法
-       await secureStorage.delete('user_id');
-       await secureStorage.delete('auth_token');
-       await secureStorage.delete('common_user_id'); // 同时清理commonUserId
-       await secureStorage.delete('refer_id'); // 清理refer_id（用于聊天模块）
-       AppLogger.d('Cleared local auth data (id, token, commonUserId, refer_id).');
+      await CacheDioHelper.clearAllCache();
+      // 假设 secureStorage 有 delete 方法
+      await secureStorage.delete('user_id');
+      await secureStorage.delete('auth_token');
+      await secureStorage.delete('common_user_id'); // 同时清理commonUserId
+      await secureStorage.delete('refer_id'); // 清理refer_id（用于聊天模块）
+      AppLogger.d(
+          'Cleared local auth data (id, token, commonUserId, refer_id).');
     } catch (e) {
-        AppLogger.d('Error clearing local auth data: $e');
+      AppLogger.d('Error clearing local auth data: $e');
     }
   }
 
   // 处理本地登出状态变更
   Future<void> _handleLogoutLocally() async {
-     _currentUser = null;
-     _statusController.add(const Unauthenticated());
-     await _clearLocalAuthData();
-     if (GetIt.instance.isRegistered<BackgroundRefreshService>()) {
-       GetIt.instance<BackgroundRefreshService>().dispose();
-     }
+    _currentUser = null;
+    _statusController.add(const Unauthenticated());
+    await _clearLocalAuthData();
+    if (GetIt.instance.isRegistered<BackgroundRefreshService>()) {
+      GetIt.instance<BackgroundRefreshService>().dispose();
+    }
   }
 
   @override
@@ -243,7 +262,8 @@ class AuthRepositoryImpl implements IAuthRepository {
     } catch (e) {
       // 理论上这里不应出错，除非 currentUser 状态管理有问题
       AppLogger.d('Error getting logged in user sync: $e');
-      return const Left(UnknownFailure(message: 'Failed to get current user status'));
+      return const Left(
+          UnknownFailure(message: 'Failed to get current user status'));
     }
   }
 }

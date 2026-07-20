@@ -3,6 +3,7 @@ import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'dart:io'; // For Platform check
 
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dskk_flutter_refactor/core/events/event_bus.dart'; // 导入事件总线
 import 'package:dskk_flutter_refactor/features/chat/data/models/chat_message_dto.dart'; // Import DTO
@@ -36,27 +37,30 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
   bool _isConnected = false; // 连接状态标志
   int? _activeChatId; // 当前用户正在查看的聊天室 ID，收到该房间消息时不增加未读数
 
-  final StreamController<ChatMessageDto> _messageStreamController = StreamController.broadcast();
-  final StreamController<ConnectionStatus> _connectionStatusController = StreamController.broadcast();
+  final StreamController<ChatMessageDto> _messageStreamController =
+      StreamController.broadcast();
+  final StreamController<ConnectionStatus> _connectionStatusController =
+      StreamController.broadcast();
 
   @override
   Stream<ChatMessageDto> get messageStream => _messageStreamController.stream;
   @override
-  Stream<ConnectionStatus> get connectionStatusStream => _connectionStatusController.stream;
+  Stream<ConnectionStatus> get connectionStatusStream =>
+      _connectionStatusController.stream;
 
   @override
   Future<void> connect(String commonUserId, String token) async {
     // 防止重复连接：如果已经连接了相同的用户，直接返回
-    if (_isConnected &&
-        _commonUserId == commonUserId &&
-        _token == token) {
-      AppLogger.d("[WebSocket] Already connected; skipping duplicate connection");
+    if (_isConnected && _commonUserId == commonUserId && _token == token) {
+      AppLogger.d(
+          "[WebSocket] Already connected; skipping duplicate connection");
       return;
     }
 
     // 如果是不同用户或token，先断开旧连接
     if (_isConnected && (_commonUserId != commonUserId || _token != token)) {
-      AppLogger.d("[WebSocket] User or token changed; disconnecting old connection");
+      AppLogger.d(
+          "[WebSocket] User or token changed; disconnecting old connection");
       await disconnect();
     }
 
@@ -74,7 +78,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     }
 
     if (_commonUserId == null || _token == null) {
-      AppLogger.d("[WebSocket] Error: Cannot connect without commonUserId and token.");
+      AppLogger.d(
+          "[WebSocket] Error: Cannot connect without commonUserId and token.");
       _connectionStatusController.add(ConnectionStatus.error);
       return;
     }
@@ -84,7 +89,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     if (backendUrl == null || backendUrl.isEmpty) {
       throw Exception('BACKEND_BASE_URL environment variable is not set');
     }
-    
+
     // Parse and clean the URL
     Uri parsedUrl;
     try {
@@ -92,7 +97,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     } catch (e) {
       throw Exception('Invalid BACKEND_BASE_URL format: $backendUrl');
     }
-    
+
     // Convert HTTP/HTTPS to WS/WSS scheme
     String wsScheme;
     if (parsedUrl.scheme == 'https') {
@@ -102,52 +107,66 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     } else {
       wsScheme = 'ws';
     }
-    
-    // Build WebSocket URL properly
-    // Backend URL already contains /prod-api, so we just append the WebSocket path
+
+    final ticket = await _issueWebSocketTicket(backendUrl);
+
+    // BACKEND_BASE_URL already contains /prod-api, so append the WebSocket
+    // path without carrying the member bearer token in the URI. A short-lived,
+    // single-use ticket is safe to expose to the WebSocket handshake and is
+    // consumed by the server before the session is registered.
+    final explicitPort = parsedUrl.port;
+    final hasUsableExplicitPort = parsedUrl.hasPort &&
+        explicitPort > 0 &&
+        explicitPort != 80 &&
+        explicitPort != 443;
     final wsUri = Uri(
       scheme: wsScheme,
       host: parsedUrl.host,
-      port: parsedUrl.hasPort ? parsedUrl.port : null,
-      path: '${parsedUrl.path}/websocket/message/$_commonUserId/${WsConstants.rolePath}',
+      port: hasUsableExplicitPort ? explicitPort : null,
+      path:
+          '${parsedUrl.path}/websocket/message/$_commonUserId/${WsConstants.rolePath}',
       queryParameters: {
-        'token': _token!,
+        'ticket': ticket,
       },
     );
-    
-    final url = wsUri.toString();
-    AppLogger.d("[WebSocket] Connecting (auth=present)");
+
+    AppLogger.d("[WebSocket] Connecting (ticket=present)");
 
     try {
-       // Choose channel based on platform
+      // Choose channel based on platform
       if (kIsWeb) {
         // Note: Web sockets might have different security considerations (WSS)
-         _channel = WebSocketChannel.connect(Uri.parse(url));
-          AppLogger.d("[WebSocket] Using Web Channel.");
-      } else if (Platform.isAndroid || Platform.isIOS || Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
-          // Use IOWebSocketChannel for mobile/desktop
-          _channel = IOWebSocketChannel.connect(url);
-           AppLogger.d("[WebSocket] Using IO Channel.");
+        _channel = WebSocketChannel.connect(wsUri);
+        AppLogger.d("[WebSocket] Using Web Channel.");
+      } else if (Platform.isAndroid ||
+          Platform.isIOS ||
+          Platform.isLinux ||
+          Platform.isMacOS ||
+          Platform.isWindows) {
+        // Use IOWebSocketChannel for mobile/desktop
+        _channel = IOWebSocketChannel.connect(wsUri);
+        AppLogger.d("[WebSocket] Using IO Channel.");
       } else {
-           AppLogger.d("[WebSocket] Error: Unsupported platform for WebSocket.");
-           _connectionStatusController.add(ConnectionStatus.error);
-           return;
+        AppLogger.d("[WebSocket] Error: Unsupported platform for WebSocket.");
+        _connectionStatusController.add(ConnectionStatus.error);
+        return;
       }
+
+      // WebSocketChannel.connect returns before the HTTP Upgrade completes.
+      // Awaiting ready makes a rejected handshake a handled error instead of an
+      // unhandled exception that can stringify the complete connection URI.
+      await _channel!.ready;
 
       _isConnected = true; // 标记为已连接
       _connectionStatusController.add(ConnectionStatus.connected);
       AppLogger.d("[WebSocket] Connected successfully.");
       _reconnectAttempts = 0; // Reset attempts on successful connection
 
-      // Send authentication message
-      _sendAuthMessage();
-
       // Start listening to messages
       _listenToMessages();
 
       // Start heartbeat
       _startHeartbeat();
-
     } catch (e) {
       AppLogger.d("[WebSocket] Connection error: ${e.runtimeType}");
       _isConnected = false; // 标记为未连接
@@ -156,6 +175,38 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     }
   }
 
+  Future<String> _issueWebSocketTicket(String backendUrl) async {
+    try {
+      final response = await Dio(
+        BaseOptions(
+          baseUrl: backendUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Authorization': 'Bearer $_token',
+            'clienttype': '1',
+            'client': kIsWeb
+                ? 'web'
+                : Platform.isIOS
+                    ? 'ios'
+                    : 'android',
+            'version': '100',
+          },
+        ),
+      ).post('/api/websocket/ticket');
+
+      final body = response.data;
+      final data = body is Map ? body['data'] : null;
+      final ticket = data is Map ? data['ticket']?.toString() : null;
+      if (ticket == null || ticket.isEmpty) {
+        throw const FormatException('missing websocket ticket');
+      }
+      return ticket;
+    } catch (error) {
+      AppLogger.d('[WebSocket] Ticket request failed: ${error.runtimeType}');
+      throw StateError('Unable to establish WebSocket authentication');
+    }
+  }
 
   void _listenToMessages() {
     _channelSubscription?.cancel(); // Cancel previous subscription if any
@@ -168,7 +219,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
           if (decodedMessage is Map<String, dynamic>) {
             final action = decodedMessage['action']?.toString();
             final hasData = decodedMessage['data'] != null;
-            AppLogger.d("[WebSocket] 🔍 Decoded action: $action (type: ${action.runtimeType}), hasData: $hasData");
+            AppLogger.d(
+                "[WebSocket] 🔍 Decoded action: $action (type: ${action.runtimeType}), hasData: $hasData");
 
             switch (action) {
               case WsAction.loginSuccess:
@@ -199,14 +251,16 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
                 break;
               default:
                 if (hasData) {
-                  AppLogger.d("[WebSocket] Falling back to chat payload parsing for action: $action");
+                  AppLogger.d(
+                      "[WebSocket] Falling back to chat payload parsing for action: $action");
                   _handleChatMessage(decodedMessage, incrementUnread: true);
                 } else {
-                  AppLogger.d("[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
+                  AppLogger.d(
+                      "[WebSocket] Received unhandled message action: ${decodedMessage['action']}");
                 }
             }
           } else {
-             AppLogger.d("[WebSocket] Received non-map message");
+            AppLogger.d("[WebSocket] Received non-map message");
           }
         } catch (e) {
           AppLogger.d("[WebSocket] Error decoding message: ${e.runtimeType}");
@@ -226,7 +280,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       },
       cancelOnError: false, // 保持监听，单条坏消息不应杀掉整个连接
     );
-     AppLogger.d("[WebSocket] Listening for messages.");
+    AppLogger.d("[WebSocket] Listening for messages.");
   }
 
   void _handleChatMessage(
@@ -236,7 +290,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     try {
       final messageData = decodedMessage['data'];
       if (messageData is! Map<String, dynamic>) {
-        AppLogger.d("[WebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
+        AppLogger.d(
+            "[WebSocket] Error: Unexpected format for 'data' field: ${messageData.runtimeType}");
         return;
       }
 
@@ -254,7 +309,7 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       AppLogger.d("[WebSocket] Error parsing message data: ${e.runtimeType}");
     }
   }
-  
+
   // 触发聊天消息全局通知
   void _triggerChatNotification(
     ChatMessageDto messageDto, {
@@ -267,7 +322,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
       // _commonUserId 也是 CommonUser.id，三者同体系，可直接比较。
       //   memberId == currentUserId → 这条消息是自己发的
       //   doctorId == currentUserId → 自己是接收者（对方发的）
-      final isParticipant = (messageDto.memberId == currentUserId || messageDto.doctorId == currentUserId);
+      final isParticipant = (messageDto.memberId == currentUserId ||
+          messageDto.doctorId == currentUserId);
 
       // 对方的 ID：若自己是发送者(memberId)，则对方是接收者(doctorId)，反之亦然
       final otherParticipantId = (messageDto.memberId == currentUserId)
@@ -303,7 +359,8 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
           lastMessageTime: messageDto.createTime != null
               ? DateTime.tryParse(messageDto.createTime!)
               : DateTime.now(),
-          unreadCountDelta: (incrementUnread && messageDto.chatId != _activeChatId) ? 1 : 0,
+          unreadCountDelta:
+              (incrementUnread && messageDto.chatId != _activeChatId) ? 1 : 0,
         );
 
         EventBus().fireChatListUpdateEvent(chatListUpdateEvent);
@@ -314,18 +371,12 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     }
   }
 
-  void _sendAuthMessage() {
-    if (_channel != null && _token != null) {
-      final authMessage = jsonEncode({'type': WsMessageType.auth, 'token': _token});
-      AppLogger.d("[WebSocket] Sending auth message (token omitted)");
-      _channel!.sink.add(authMessage);
-    }
-  }
-
   void _startHeartbeat() {
     _heartbeatTimer?.cancel(); // Cancel existing timer
     _pongTimer?.cancel();
-    _heartbeatTimer = Timer.periodic(ChatConstants.wsHeartbeatInterval, (timer) { // 心跳保活
+    _heartbeatTimer =
+        Timer.periodic(ChatConstants.wsHeartbeatInterval, (timer) {
+      // 心跳保活
       if (_channel != null) {
         final pingMessage = jsonEncode({'type': WsMessageType.ping});
         AppLogger.d("[WebSocket] Sending Ping (keep-alive)");
@@ -333,16 +384,18 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
         // 启动 PONG 超时检测：如果超时未收到 PONG，视为连接已死
         _pongTimer?.cancel();
         _pongTimer = Timer(ChatConstants.wsPongTimeout, () {
-          AppLogger.d("[WebSocket] ⚠️ PONG timeout! Connection assumed dead, reconnecting...");
+          AppLogger.d(
+              "[WebSocket] ⚠️ PONG timeout! Connection assumed dead, reconnecting...");
           _handleReconnect();
         });
       }
     });
-    AppLogger.d("[WebSocket] Heartbeat started (30s interval, ping mode, pong timeout ${ChatConstants.wsPongTimeout.inSeconds}s).");
+    AppLogger.d(
+        "[WebSocket] Heartbeat started (30s interval, ping mode, pong timeout ${ChatConstants.wsPongTimeout.inSeconds}s).");
   }
 
   void _handleReconnect() {
-     AppLogger.d("[WebSocket] Handling reconnect...");
+    AppLogger.d("[WebSocket] Handling reconnect...");
     _isConnected = false; // 标记为未连接
     _heartbeatTimer?.cancel(); // Stop heartbeat during reconnection attempts
     _pongTimer?.cancel();
@@ -352,27 +405,32 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
 
     if (_reconnectAttempts < _maxReconnectAttempts) {
       _reconnectAttempts++;
-      AppLogger.d("[WebSocket] Reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds} seconds...");
+      AppLogger.d(
+          "[WebSocket] Reconnect attempt $_reconnectAttempts/$_maxReconnectAttempts in ${_reconnectDelay.inSeconds} seconds...");
       Future.delayed(_reconnectDelay, () {
-         if (_commonUserId != null && _token != null) { // Check if credentials still valid
-            _connectionStatusController.add(ConnectionStatus.connecting); // Set status before attempting
-            _establishConnection();
-         } else {
-             AppLogger.d("[WebSocket] Cannot reconnect: User credentials lost.");
-             _connectionStatusController.add(ConnectionStatus.disconnected); // Stay disconnected
-         }
+        if (_commonUserId != null && _token != null) {
+          // Check if credentials still valid
+          _connectionStatusController
+              .add(ConnectionStatus.connecting); // Set status before attempting
+          _establishConnection();
+        } else {
+          AppLogger.d("[WebSocket] Cannot reconnect: User credentials lost.");
+          _connectionStatusController
+              .add(ConnectionStatus.disconnected); // Stay disconnected
+        }
       });
     } else {
       AppLogger.d("[WebSocket] Max reconnect attempts reached. Giving up.");
-      _connectionStatusController.add(ConnectionStatus.disconnected); // Stay disconnected
+      _connectionStatusController
+          .add(ConnectionStatus.disconnected); // Stay disconnected
     }
   }
-
 
   @override
   Future<void> disconnect() async {
     AppLogger.d("[WebSocket] Disconnecting...");
-    _reconnectAttempts = _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
+    _reconnectAttempts =
+        _maxReconnectAttempts; // Prevent auto-reconnect after explicit disconnect
     _heartbeatTimer?.cancel();
     _pongTimer?.cancel();
     _channelSubscription?.cancel();
@@ -380,10 +438,10 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     _channel = null;
     _isConnected = false; // 标记为未连接
     _connectionStatusController.add(ConnectionStatus.disconnected);
-     AppLogger.d("[WebSocket] Disconnected.");
-     // Don't close controllers here if the Bloc might reconnect later
-     // _messageStreamController.close();
-     // _connectionStatusController.close();
+    AppLogger.d("[WebSocket] Disconnected.");
+    // Don't close controllers here if the Bloc might reconnect later
+    // _messageStreamController.close();
+    // _connectionStatusController.close();
   }
 
   @override
@@ -406,4 +464,4 @@ class ChatWebSocketDataSourceImpl implements IChatWebSocketDataSource {
     }
   }
   */
-} 
+}

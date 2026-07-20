@@ -12,16 +12,17 @@ part 'websocket_cubit.freezed.dart';
 class WebSocketCubit extends Cubit<WebSocketState> {
   final IChatWebSocketDataSource _webSocketDataSource;
   StreamSubscription<ConnectionStatus>? _connectionStatusSubscription;
-  
+
   WebSocketCubit({
     required IChatWebSocketDataSource webSocketDataSource,
   })  : _webSocketDataSource = webSocketDataSource,
         super(const WebSocketState.disconnected()) {
-    _connectionStatusSubscription = _webSocketDataSource.connectionStatusStream.listen(
+    _connectionStatusSubscription =
+        _webSocketDataSource.connectionStatusStream.listen(
       _handleConnectionStatus,
     );
   }
-  
+
   /// Connect to WebSocket
   Future<void> connect({String? commonUserId, String? token}) async {
     if (state is _Connected || state is _Connecting) return;
@@ -33,11 +34,13 @@ class WebSocketCubit extends Cubit<WebSocketState> {
         commonUserId ?? '',
         token ?? '',
       );
-    } catch (e) {
-      emit(WebSocketState.error(e.toString()));
+    } catch (_) {
+      // Connection errors can contain a transport URI. Never surface its raw
+      // string because a future transport implementation may include secrets.
+      emit(const WebSocketState.error('WebSocket connection error'));
     }
   }
-  
+
   /// Disconnect from WebSocket
   Future<void> disconnect() async {
     await _webSocketDataSource.disconnect();
@@ -68,7 +71,7 @@ class WebSocketCubit extends Cubit<WebSocketState> {
         break;
     }
   }
-  
+
   @override
   Future<void> close() {
     _connectionStatusSubscription?.cancel();

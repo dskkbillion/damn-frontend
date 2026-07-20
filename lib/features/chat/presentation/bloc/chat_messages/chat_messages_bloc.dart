@@ -479,7 +479,8 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
               "[Bloc] Message ${newMessage.id} from WebSocket already exists, ignoring.");
         }
       } catch (e) {
-        AppLogger.d("[Bloc] Error processing WebSocket message: $e");
+        AppLogger.d(
+            "[Bloc] Error processing WebSocket message: ${e.runtimeType}");
         // FIX: Wrap error message in ValueGetter
         emit(currentState.copyWith(
             error: () => "Error processing received message"));
@@ -708,7 +709,7 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
 
       add(_MessageReceived(messageDto));
     }, onError: (error) {
-      AppLogger.d("[WebSocket] Error on message stream: $error");
+      AppLogger.d("[WebSocket] Error on message stream: ${error.runtimeType}");
       // Handle stream error, maybe emit failure state
       emit(const ChatMessagesError("WebSocket connection error."));
     }, onDone: () {

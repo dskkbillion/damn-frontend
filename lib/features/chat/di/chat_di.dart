@@ -74,9 +74,9 @@ import 'package:dskk_flutter_refactor/features/home/domain/repositories/home_rep
 /// 从SecureStorage中读取真实的用户信息，而不是使用模拟数据
 class ChatUserRepositoryImpl implements IUserRepository {
   final FlutterSecureStorage _secureStorage;
-  
+
   ChatUserRepositoryImpl(this._secureStorage);
-  
+
   @override
   Future<Either<Failure, User>> getCurrentUser() async {
     try {
@@ -84,11 +84,13 @@ class ChatUserRepositoryImpl implements IUserRepository {
       final userId = await _secureStorage.read(key: 'user_id');
       // 优先读取 refer_id（聊天模块专用），如果没有则尝试读取 common_user_id
       final referId = await _secureStorage.read(key: 'refer_id');
-      final commonUserIdFromOldKey = await _secureStorage.read(key: 'common_user_id');
+      final commonUserIdFromOldKey =
+          await _secureStorage.read(key: 'common_user_id');
       final commonUserId = referId ?? commonUserIdFromOldKey ?? '1';
 
-      AppLogger.d('[ChatUserRepository] referId: $referId, common_user_id: $commonUserIdFromOldKey');
-      
+      AppLogger.d(
+          '[ChatUserRepository] referId: $referId, common_user_id: $commonUserIdFromOldKey');
+
       // 读取用户类型（从AppMode或者存储中获取）
       final appMode = await _secureStorage.read(key: 'app_mode');
       String userType = ParticipantType.member; // 默认值
@@ -101,17 +103,19 @@ class ChatUserRepositoryImpl implements IUserRepository {
       } else if (appMode == 'buyer') {
         userType = ParticipantType.member;
       }
-      
+
       // 调试：检查auth_token是否存在
       final authToken = await _secureStorage.read(key: 'auth_token');
-      AppLogger.d('[ChatUserRepository] userId: $userId, commonUserId: $commonUserId');
-      AppLogger.d('[ChatUserRepository] appMode: $appMode, userType: $userType');
+      AppLogger.d(
+          '[ChatUserRepository] userId: $userId, commonUserId: $commonUserId');
+      AppLogger.d(
+          '[ChatUserRepository] appMode: $appMode, userType: $userType');
       AppLogger.d('[ChatUserRepository] authToken存在: ${authToken != null}');
-      
+
       if (userId == null) {
         return const Left(AuthFailure(message: '未找到用户ID'));
       }
-      
+
       // 修改：使用commonUserId作为User对象的id字段，而不是userId
       // commonUserId对应聊天室中参与者的referId，这是关键的匹配字段
       final user = User(
@@ -120,8 +124,9 @@ class ChatUserRepositoryImpl implements IUserRepository {
         nickName: '用户${userId.substring(userId.length - 4)}',
         type: userType, // 使用动态获取的用户类型
       );
-      
-      AppLogger.d('[ChatUserRepository] 创建用户: id=${user.id}, commonUserId=${user.commonUserId}, type=${user.type}'); // 添加日志确认
+
+      AppLogger.d(
+          '[ChatUserRepository] 创建用户: id=${user.id}, commonUserId=${user.commonUserId}, type=${user.type}'); // 添加日志确认
       return Right(user);
     } catch (e) {
       AppLogger.d('[ChatUserRepository] 错误: $e'); // 添加更详细的错误日志
@@ -132,12 +137,11 @@ class ChatUserRepositoryImpl implements IUserRepository {
 
 @module
 abstract class ChatInjectableModule {
-
-  // --- 提供命名的Mock实现用于测试 --- 
+  // --- 提供命名的Mock实现用于测试 ---
   @lazySingleton
-  @Named('mockUserRepository')  // 使用Named注解来标识这是一个特定的mock实现
+  @Named('mockUserRepository') // 使用Named注解来标识这是一个特定的mock实现
   IUserRepository get mockUserRepository => MockUserRepository();
-  
+
   // 提供真实的IUserRepository实现
   @lazySingleton
   IUserRepository provideChatUserRepository() {
@@ -163,7 +167,8 @@ abstract class ChatInjectableModule {
   IChatRepository chatRepository(
     IChatRemoteDataSource remoteDataSource,
     IUserRepository userRepository, // 直接使用注入的IUserRepository
-  ) => ChatRepositoryImpl(
+  ) =>
+      ChatRepositoryImpl(
         remoteDataSource: remoteDataSource,
         userRepository: userRepository, // 使用注入的userRepository
       );
@@ -182,13 +187,14 @@ abstract class ChatInjectableModule {
       GetMessageListImpl(repository);
 
   @lazySingleton
-  SendMessage sendMessage(IChatRepository chatRepository, IFileRepository fileRepository) =>
+  SendMessage sendMessage(
+          IChatRepository chatRepository, IFileRepository fileRepository) =>
       SendMessageImpl(chatRepository, fileRepository);
 
   @lazySingleton
   RevokeMessage revokeMessage(IChatRepository repository) =>
       RevokeMessageImpl(repository);
-  
+
   @lazySingleton
   GetChatRoomDetails getChatRoomDetails(IChatRepository repository) =>
       GetChatRoomDetailsImpl(repository);
@@ -212,17 +218,18 @@ abstract class ChatInjectableModule {
     CreateChatRoom createChatRoom,
     DeleteChatRoom deleteChatRoom,
     shared_prefs.IChatLocalDataSource localDataSource,
-  ) => ChatListBloc(
+  ) =>
+      ChatListBloc(
         getChatRoomList: getChatRoomList,
         createChatRoom: createChatRoom,
         deleteChatRoom: deleteChatRoom,
         localDataSource: localDataSource,
       );
-  
+
   // 注册ChatMessagesBloc
   // 我们无法直接在这里使用registerFactoryParam，因为InjectableModule是抽象类
   // 我们需要在初始化依赖时手动注册，添加下面这个方法作为注释提醒
-  // 
+  //
   // 实际注册需要手动在main.dart或injection_container.dart中添加：
   //
   // getIt.registerFactoryParam<ChatMessagesBloc, int, void>(
@@ -237,7 +244,7 @@ abstract class ChatInjectableModule {
   //     webSocketDataSource: getIt<IChatWebSocketDataSource>(),
   //   ),
   // );
-} 
+}
 
 // ChatMessagesBloc 需要手动注册，因为 ChatMessagesBloc 需要额外的 chatId 参数
 void registerChatMessagesBloc(GetIt getIt) {
@@ -254,7 +261,7 @@ void registerChatMessagesBloc(GetIt getIt) {
       translationService: ChatTranslationService(getIt<CoreDioClient>()),
     ),
   );
-} 
+}
 
 /// 聊天模块的依赖注入类
 class ChatDI {
@@ -270,9 +277,10 @@ class ChatDI {
       getIt.registerLazySingleton<shared_prefs.IChatLocalDataSource>(
         () => ChatLocalDataSourceImpl(prefs: prefs),
       );
-      AppLogger.d('[ChatDI] Registered SharedPreferences-based IChatLocalDataSource');
+      AppLogger.d(
+          '[ChatDI] Registered SharedPreferences-based IChatLocalDataSource');
     }
-    
+
     // Database-based local data source (for message queue)
     if (!getIt.isRegistered<database.IChatLocalDataSource>()) {
       getIt.registerLazySingleton<database.IChatLocalDataSource>(
@@ -288,14 +296,14 @@ class ChatDI {
       );
       AppLogger.d('[ChatDI] Registered IChatRemoteDataSource');
     }
-    
+
     if (!getIt.isRegistered<IFileRemoteDataSource>()) {
       getIt.registerLazySingleton<IFileRemoteDataSource>(
         () => FileRemoteDataSourceImpl(dio: getIt<Dio>()),
       );
       AppLogger.d('[ChatDI] Registered IFileRemoteDataSource');
     }
-    
+
     if (!getIt.isRegistered<IChatWebSocketDataSource>()) {
       getIt.registerLazySingleton<IChatWebSocketDataSource>(
         () => ChatWebSocketDataSourceImpl(),
@@ -313,7 +321,7 @@ class ChatDI {
       );
       AppLogger.d('[ChatDI] Registered IChatRepository');
     }
-    
+
     if (!getIt.isRegistered<IFileRepository>()) {
       getIt.registerLazySingleton<IFileRepository>(
         () => FileRepositoryImpl(
@@ -347,7 +355,8 @@ class ChatDI {
 
     if (!getIt.isRegistered<SendMessage>()) {
       getIt.registerLazySingleton<SendMessage>(
-        () => SendMessageImpl(getIt<IChatRepository>(), getIt<IFileRepository>()),
+        () =>
+            SendMessageImpl(getIt<IChatRepository>(), getIt<IFileRepository>()),
       );
       AppLogger.d('[ChatDI] Registered SendMessage');
     }
@@ -409,13 +418,15 @@ class ChatDI {
           translationService: ChatTranslationService(getIt<CoreDioClient>()),
         ),
       );
-      AppLogger.d('[ChatDI] Registered ChatMessagesBloc factory with parameters');
+      AppLogger.d(
+          '[ChatDI] Registered ChatMessagesBloc factory with parameters');
     } else {
-      AppLogger.d('[ChatDI] ChatMessagesBloc factory already registered, skipping');
+      AppLogger.d(
+          '[ChatDI] ChatMessagesBloc factory already registered, skipping');
     }
 
     // Register new Cubits for refactored architecture
-    
+
     // ChatCubit
     if (!getIt.isRegistered<ChatCubit>()) {
       getIt.registerFactory<ChatCubit>(
@@ -427,7 +438,7 @@ class ChatDI {
       );
       AppLogger.d('[ChatDI] Registered ChatCubit');
     }
-    
+
     // Register ChatPreloadService if not already registered
     if (!getIt.isRegistered<ChatPreloadService>()) {
       getIt.registerLazySingleton<ChatPreloadService>(
@@ -435,16 +446,18 @@ class ChatDI {
       );
       AppLogger.d('[ChatDI] Registered ChatPreloadService');
     }
-    
+
     // MessageListCubit with new dependencies
     if (!getIt.isRegistered<MessageListCubit>()) {
       // 引入home模块的IHomeRepository（如果已注册）
       IHomeRepository? homeRepository;
       if (getIt.isRegistered<IHomeRepository>()) {
         homeRepository = getIt<IHomeRepository>();
-        AppLogger.d('[ChatDI] IHomeRepository found and will be injected to MessageListCubit');
+        AppLogger.d(
+            '[ChatDI] IHomeRepository found and will be injected to MessageListCubit');
       } else {
-        AppLogger.d('[ChatDI] IHomeRepository not found, MessageListCubit will use default variants');
+        AppLogger.d(
+            '[ChatDI] IHomeRepository not found, MessageListCubit will use default variants');
       }
 
       getIt.registerFactory<MessageListCubit>(
@@ -459,9 +472,10 @@ class ChatDI {
           homeRepository: homeRepository,
         ),
       );
-      AppLogger.d('[ChatDI] Registered MessageListCubit with enhanced dependencies');
+      AppLogger.d(
+          '[ChatDI] Registered MessageListCubit with enhanced dependencies');
     }
-    
+
     // WebSocketCubit
     if (!getIt.isRegistered<WebSocketCubit>()) {
       getIt.registerLazySingleton<WebSocketCubit>(
@@ -471,7 +485,7 @@ class ChatDI {
       );
       AppLogger.d('[ChatDI] Registered WebSocketCubit');
     }
-    
+
     // MessageQueueCubit
     if (!getIt.isRegistered<MessageQueueCubit>()) {
       getIt.registerFactory<MessageQueueCubit>(
@@ -504,11 +518,13 @@ class ChatDI {
 
         // 初始化管理器，开始监听认证状态
         manager.initialize();
-        AppLogger.d('[ChatDI] ✅ GlobalWebSocketManager initialized and listening');
+        AppLogger.d(
+            '[ChatDI] ✅ GlobalWebSocketManager initialized and listening');
 
         return manager;
       } catch (e) {
-        AppLogger.d('[ChatDI] ❌ Failed to initialize GlobalWebSocketManager: $e');
+        AppLogger.d(
+            '[ChatDI] ❌ Failed to initialize GlobalWebSocketManager: ${e.runtimeType}');
         return null;
       }
     } else {
@@ -516,4 +532,4 @@ class ChatDI {
       return getIt<GlobalWebSocketManager>();
     }
   }
-} 
+}

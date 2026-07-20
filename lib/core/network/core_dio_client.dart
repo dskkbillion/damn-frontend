@@ -60,13 +60,16 @@ class CoreDioClient {
       dio.interceptors.add(
           _appInfoInterceptor); // Add AppInfoInterceptor FIRST (or adjust order as needed)
 
+      // Authentication must run before caching so the cache key can be
+      // partitioned by an irreversible credential digest.
+      dio.interceptors.add(authInterceptor);
+
       // 添加缓存拦截器（如果提供了）
       if (_cacheInterceptor != null) {
         dio.interceptors.add(_cacheInterceptor);
         AppLogger.d('[CoreDioClient] Cache interceptor added');
       }
 
-      dio.interceptors.add(authInterceptor);
       // dio.interceptors.add(logInterceptor); // Keep commented out
       dio.interceptors.add(networkLogInterceptor);
 

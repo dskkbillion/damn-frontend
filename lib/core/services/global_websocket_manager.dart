@@ -59,7 +59,8 @@ class GlobalWebSocketManager {
         },
         (user) {
           if (user != null) {
-            AppLogger.d('[GlobalWebSocketManager] User already logged in, connecting WebSocket');
+            AppLogger.d(
+                '[GlobalWebSocketManager] User already logged in, connecting WebSocket');
             _connectWebSocket();
           } else {
             AppLogger.d('[GlobalWebSocketManager] No user logged in');
@@ -67,7 +68,8 @@ class GlobalWebSocketManager {
         },
       );
     } catch (e) {
-      AppLogger.d('[GlobalWebSocketManager] Error checking auth status: $e');
+      AppLogger.d(
+          '[GlobalWebSocketManager] Error checking auth status: ${e.runtimeType}');
     }
   }
 
@@ -76,10 +78,12 @@ class GlobalWebSocketManager {
     AppLogger.d('[GlobalWebSocketManager] Auth status changed: $authStatus');
 
     if (authStatus is Authenticated) {
-      AppLogger.d('[GlobalWebSocketManager] User authenticated, connecting WebSocket');
+      AppLogger.d(
+          '[GlobalWebSocketManager] User authenticated, connecting WebSocket');
       _connectWebSocket();
     } else if (authStatus is Unauthenticated) {
-      AppLogger.d('[GlobalWebSocketManager] User logged out, disconnecting WebSocket');
+      AppLogger.d(
+          '[GlobalWebSocketManager] User logged out, disconnecting WebSocket');
       _disconnectWebSocket();
     }
   }
@@ -92,11 +96,13 @@ class GlobalWebSocketManager {
       final token = await _storage.getToken();
 
       if (commonUserId == null || token == null) {
-        AppLogger.d('[GlobalWebSocketManager] Missing credentials, cannot connect');
+        AppLogger.d(
+            '[GlobalWebSocketManager] Missing credentials, cannot connect');
         return;
       }
 
-      AppLogger.d('[GlobalWebSocketManager] Connecting with userId: $commonUserId');
+      AppLogger.d(
+          '[GlobalWebSocketManager] Connecting with userId: $commonUserId');
 
       // 连接 WebSocket
       await _webSocketCubit.connect(
@@ -104,9 +110,11 @@ class GlobalWebSocketManager {
         token: token,
       );
 
-      AppLogger.d('[GlobalWebSocketManager] ✅ WebSocket connected successfully');
+      AppLogger.d(
+          '[GlobalWebSocketManager] ✅ WebSocket connected successfully');
     } catch (e) {
-      AppLogger.d('[GlobalWebSocketManager] ❌ Failed to connect WebSocket: $e');
+      AppLogger.d(
+          '[GlobalWebSocketManager] ❌ Failed to connect WebSocket: ${e.runtimeType}');
     }
   }
 
@@ -117,7 +125,8 @@ class GlobalWebSocketManager {
       _webSocketCubit.disconnect();
       AppLogger.d('[GlobalWebSocketManager] ✅ WebSocket disconnected');
     } catch (e) {
-      AppLogger.d('[GlobalWebSocketManager] ❌ Failed to disconnect WebSocket: $e');
+      AppLogger.d(
+          '[GlobalWebSocketManager] ❌ Failed to disconnect WebSocket: ${e.runtimeType}');
     }
   }
 
