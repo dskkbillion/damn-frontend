@@ -84,6 +84,14 @@ class ChatMessageBubble extends StatefulWidget {
   static bool isSummaryType(String type) =>
       type == ChatMessageType.allocate || type == ChatMessageType.aiSummary;
 
+  /// Agent requests created before the backend adopted [ChatMessageType.aiSummary]
+  /// were stored as ordinary text. Recognize only their durable, explicit
+  /// envelope so historical requests use the same demand-summary card without
+  /// reclassifying normal buyer messages.
+  static bool isLegacyAgentRequestMessage(ChatMessage message) =>
+      message.type == ChatMessageType.text &&
+      RegExp(r'^\[DeepStream request #\d+\]\s+').hasMatch(message.context);
+
   @override
   State<ChatMessageBubble> createState() => _ChatMessageBubbleState();
 }
@@ -352,7 +360,8 @@ class _ChatMessageBubbleState extends State<ChatMessageBubble> {
 
     // 对于 AI 需求摘要消息（历史 allocate / 新 ai_summary 双认），使用安全渲染组件，
     // 杜绝内部 prompt 结构（**...** 标题）泄漏进聊天 UI (#377)。
-    if (ChatMessageBubble.isSummaryType(widget.message.type)) {
+    if (ChatMessageBubble.isSummaryType(widget.message.type) ||
+        ChatMessageBubble.isLegacyAgentRequestMessage(widget.message)) {
       return AiSummaryMessageBubble(
         message: widget.message,
         sellerName: _getSellerName(),
