@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 // Needed for File type if using local file upload later
 
 import 'package:http/http.dart' as http; // Assuming we might need this for SSE later, keep for context
@@ -18,6 +19,7 @@ import 'i_ai_chat_remote_data_source.dart';
 import 'exceptions.dart' as ds_exceptions;
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// {@template ai_chat_remote_data_source_impl}
 /// Implementation of [IAiChatRemoteDataSource] that uses an [IHttpClient]
@@ -664,16 +666,21 @@ class AiChatRemoteDataSourceImpl implements IAiChatRemoteDataSource {
       // 获取token
       const storage = FlutterSecureStorage();
       final token = await storage.read(key: 'auth_token');
+      final prefs = await SharedPreferences.getInstance();
+      final language = prefs.getString('app_language') ??
+          PlatformDispatcher.instance.locale.languageCode;
       AppLogger.d("[AiDocs] 获取相关服务，认证状态: ${token != null && token.isNotEmpty ? 'present' : 'missing'}");
       
-      // 创建包含认证头的选项
+      // 模型端使用独立 Dio，不经过业务 API 的 HeaderInterceptor。
+      // #432: 必须显式携带当前 App 语言，否则模型端只能回退原文。
       final options = Options(
         headers: {
+          'Accept-Language': language,
           if (token != null && token.isNotEmpty)
             'Authorization': token, // 直接使用token
         }
       );
-      AppLogger.d("[AiDocs] 请求已配置（headers omitted）");
+      AppLogger.d("[AiDocs] 推荐请求语言: $language");
       
       // 直接使用Dio实例
       final response = await _httpClient.getDioInstance().post(

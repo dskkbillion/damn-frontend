@@ -45,6 +45,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
+  String? _recommendationsLocale;
 
   // 🔥 添加状态来控制推荐次数提示框的显示
   bool _isRateLimitWarningDismissed = false;
@@ -176,10 +177,15 @@ class _ChatPageState extends State<ChatPage> {
                         }
                         // #327 已有缓存(同 conversation 未发新消息)直接打开 bottom sheet
                         // 失效点已在切会话/新发消息处把 recommendations 清空,这里只判 status+非空
-                        final hasCached = bloc.state.recommendationsStatus ==
+                        final currentLocale =
+                            Localizations.localeOf(context).languageCode;
+                        final hasCached =
+                            _recommendationsLocale == currentLocale &&
+                            bloc.state.recommendationsStatus ==
                                 RecommendationsStatus.loaded &&
                             bloc.state.recommendations.isNotEmpty;
                         if (!hasCached) {
+                          _recommendationsLocale = currentLocale;
                           bloc.add(FetchRecommendations());
                         }
                         _showRecommendationsBottomSheet(context);
