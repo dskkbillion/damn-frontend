@@ -208,6 +208,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
                                 ),
                               ),
                               textAlignVertical: TextAlignVertical.center,
+                              // iOS keeps focus on outside taps unless handled
+                              // explicitly.
+                              onTapOutside: (_) =>
+                                  FocusManager.instance.primaryFocus?.unfocus(),
                               // Send button logic moved solely to IconButton
                               onSubmitted: baseCanSendMessage
                                   ? (_) => widget
