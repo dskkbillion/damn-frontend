@@ -115,6 +115,20 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                                   const SizedBox(height: 14),
                                   Text(
                                       '${l10n.agentCreatedAt}: ${agentDate(request.createdAt)}'),
+                                  if (request.submittedAt != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                        '${l10n.agentSubmittedAt}: ${agentDate(request.submittedAt)}'),
+                                  ],
+                                  if (request.providerRespondedAt != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                        '${l10n.agentProviderRespondedAt}: ${agentDate(request.providerRespondedAt)}'),
+                                  ],
+                                  if (request.chatId != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text('${l10n.agentChatId}: ${request.chatId}'),
+                                  ],
                                 ],
                               ))),
                       const SizedBox(height: 12),

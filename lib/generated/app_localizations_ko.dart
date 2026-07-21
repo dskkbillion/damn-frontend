@@ -5170,6 +5170,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get agentStatusApproved => 'Approved';
 
   @override
+  String get agentStatusSubmitted => 'Submitted to provider';
+
+  @override
+  String get agentStatusProviderResponded => 'Provider responded';
+
+  @override
   String get agentStatusAbandoned => 'Abandoned';
 
   @override
@@ -5305,24 +5311,33 @@ class AppLocalizationsKo extends AppLocalizations {
   String get agentCreatedAt => 'Created at';
 
   @override
-  String get agentReviewSafetyNotice =>
-      'Approval confirms the request content only. It does not pay or create an order automatically.';
+  String get agentSubmittedAt => 'Submitted at';
 
   @override
-  String get agentApproveRequest => 'Approve request';
+  String get agentProviderRespondedAt => 'Provider responded at';
+
+  @override
+  String get agentChatId => 'Consultation chat ID';
+
+  @override
+  String get agentReviewSafetyNotice =>
+      'Submitting creates a consultation and sends this brief to the provider. It does not pay or create an order.';
+
+  @override
+  String get agentApproveRequest => 'Submit to provider';
 
   @override
   String get agentAbandonRequest => 'Abandon draft';
 
   @override
   String get agentApproveRequestConfirmation =>
-      'Approve this request content? This action will not make a payment.';
+      'Send this request to the provider and create a consultation? This will not pay or place an order.';
 
   @override
   String get agentAbandonRequestConfirmation => 'Abandon this request draft?';
 
   @override
-  String get agentApprove => 'Approve';
+  String get agentApprove => 'Confirm submission';
 
   @override
   String get agentAbandon => '폐기';

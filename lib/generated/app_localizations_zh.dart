@@ -5109,6 +5109,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agentStatusApproved => '已批准';
 
   @override
+  String get agentStatusSubmitted => '已提交给服务方';
+
+  @override
+  String get agentStatusProviderResponded => '服务方已回复';
+
+  @override
   String get agentStatusAbandoned => '已放弃';
 
   @override
@@ -5237,23 +5243,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agentCreatedAt => '创建时间';
 
   @override
-  String get agentReviewSafetyNotice =>
-      '批准只表示你确认这份需求内容，不会付款或自动生成订单。后续价格与交易仍需单独确认。';
+  String get agentSubmittedAt => '提交时间';
 
   @override
-  String get agentApproveRequest => '批准需求';
+  String get agentProviderRespondedAt => '服务方回复时间';
+
+  @override
+  String get agentChatId => '咨询会话 ID';
+
+  @override
+  String get agentReviewSafetyNotice =>
+      '提交后会建立咨询会话并把需求发送给服务方；不会付款或自动生成订单。后续价格与交易仍需单独确认。';
+
+  @override
+  String get agentApproveRequest => '提交给服务方';
 
   @override
   String get agentAbandonRequest => '放弃草稿';
 
   @override
-  String get agentApproveRequestConfirmation => '确认需求内容无误并批准？本操作不会付款。';
+  String get agentApproveRequestConfirmation =>
+      '确认将这份需求发送给服务方并建立咨询会话？本操作不会付款或下单。';
 
   @override
   String get agentAbandonRequestConfirmation => '确认放弃这份需求草稿？';
 
   @override
-  String get agentApprove => '批准';
+  String get agentApprove => '确认提交';
 
   @override
   String get agentAbandon => '放弃';

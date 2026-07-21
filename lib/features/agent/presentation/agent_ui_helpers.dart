@@ -28,8 +28,10 @@ String agentStatusLabel(BuildContext context, String status) {
       return l10n.agentStatusExpired;
     case 'AWAITING_APP_REVIEW':
       return l10n.agentStatusAwaitingReview;
-    case 'APPROVED':
-      return l10n.agentStatusApproved;
+    case 'SUBMITTED':
+      return l10n.agentStatusSubmitted;
+    case 'PROVIDER_RESPONDED':
+      return l10n.agentStatusProviderResponded;
     case 'ABANDONED':
       return l10n.agentStatusAbandoned;
     default:
@@ -105,8 +107,10 @@ String agentAuditActionLabel(BuildContext context, String action) {
       return l10n.agentAuditAllRevoked;
     case 'REQUEST_DRAFT_CREATE':
       return l10n.agentAuditRequestCreated;
-    case 'REQUEST_APP_APPROVE':
+    case 'REQUEST_SUBMIT_TO_PROVIDER':
       return l10n.agentAuditRequestApproved;
+    case 'REQUEST_PROVIDER_RESPONDED':
+      return l10n.agentStatusProviderResponded;
     case 'REQUEST_APP_ABANDON':
       return l10n.agentAuditRequestAbandoned;
     default:

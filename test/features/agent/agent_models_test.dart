@@ -63,10 +63,20 @@ void main() {
       'brief': 'Minimal blue identity',
       'status': 'AWAITING_APP_REVIEW',
       'appReviewUrl': '/requests/9/review',
+      'providerMemberId': 23,
+      'chatId': 81,
+      'initialMessageId': 95,
+      'submittedAt': '2026-07-21 10:00:00',
+      'providerRespondedAt': '2026-07-21 10:05:00',
     });
 
     expect(draft.serviceId, 42);
     expect(draft.status, 'AWAITING_APP_REVIEW');
     expect(draft.appReviewUrl, '/requests/9/review');
+    expect(draft.providerMemberId, 23);
+    expect(draft.chatId, 81);
+    expect(draft.initialMessageId, 95);
+    expect(draft.submittedAt, isNotNull);
+    expect(draft.providerRespondedAt, isNotNull);
   });
 }

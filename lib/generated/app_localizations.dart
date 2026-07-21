@@ -9464,6 +9464,18 @@ abstract class AppLocalizations {
   /// **'已批准'**
   String get agentStatusApproved;
 
+  /// No description provided for @agentStatusSubmitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已提交给服务方'**
+  String get agentStatusSubmitted;
+
+  /// No description provided for @agentStatusProviderResponded.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务方已回复'**
+  String get agentStatusProviderResponded;
+
   /// No description provided for @agentStatusAbandoned.
   ///
   /// In zh, this message translates to:
@@ -9710,16 +9722,34 @@ abstract class AppLocalizations {
   /// **'创建时间'**
   String get agentCreatedAt;
 
+  /// No description provided for @agentSubmittedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交时间'**
+  String get agentSubmittedAt;
+
+  /// No description provided for @agentProviderRespondedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务方回复时间'**
+  String get agentProviderRespondedAt;
+
+  /// No description provided for @agentChatId.
+  ///
+  /// In zh, this message translates to:
+  /// **'咨询会话 ID'**
+  String get agentChatId;
+
   /// No description provided for @agentReviewSafetyNotice.
   ///
   /// In zh, this message translates to:
-  /// **'批准只表示你确认这份需求内容，不会付款或自动生成订单。后续价格与交易仍需单独确认。'**
+  /// **'提交后会建立咨询会话并把需求发送给服务方；不会付款或自动生成订单。后续价格与交易仍需单独确认。'**
   String get agentReviewSafetyNotice;
 
   /// No description provided for @agentApproveRequest.
   ///
   /// In zh, this message translates to:
-  /// **'批准需求'**
+  /// **'提交给服务方'**
   String get agentApproveRequest;
 
   /// No description provided for @agentAbandonRequest.
@@ -9731,7 +9761,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentApproveRequestConfirmation.
   ///
   /// In zh, this message translates to:
-  /// **'确认需求内容无误并批准？本操作不会付款。'**
+  /// **'确认将这份需求发送给服务方并建立咨询会话？本操作不会付款或下单。'**
   String get agentApproveRequestConfirmation;
 
   /// No description provided for @agentAbandonRequestConfirmation.
@@ -9743,7 +9773,7 @@ abstract class AppLocalizations {
   /// No description provided for @agentApprove.
   ///
   /// In zh, this message translates to:
-  /// **'批准'**
+  /// **'确认提交'**
   String get agentApprove;
 
   /// No description provided for @agentAbandon.

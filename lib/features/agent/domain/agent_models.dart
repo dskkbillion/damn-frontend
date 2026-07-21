@@ -143,7 +143,12 @@ class AgentRequestDraft {
   final String title;
   final String brief;
   final String status;
+  final int? providerMemberId;
+  final int? chatId;
+  final int? initialMessageId;
   final String? appReviewUrl;
+  final DateTime? submittedAt;
+  final DateTime? providerRespondedAt;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -153,7 +158,12 @@ class AgentRequestDraft {
     required this.title,
     required this.brief,
     required this.status,
+    this.providerMemberId,
+    this.chatId,
+    this.initialMessageId,
     required this.appReviewUrl,
+    this.submittedAt,
+    this.providerRespondedAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -165,7 +175,12 @@ class AgentRequestDraft {
         title: json['title'] as String? ?? '',
         brief: json['brief'] as String? ?? '',
         status: json['status'] as String? ?? 'UNKNOWN',
+        providerMemberId: (json['providerMemberId'] as num?)?.toInt(),
+        chatId: (json['chatId'] as num?)?.toInt(),
+        initialMessageId: (json['initialMessageId'] as num?)?.toInt(),
         appReviewUrl: json['appReviewUrl'] as String?,
+        submittedAt: _date(json['submittedAt']),
+        providerRespondedAt: _date(json['providerRespondedAt']),
         createdAt: _date(json['createdAt']),
         updatedAt: _date(json['updatedAt']),
       );
