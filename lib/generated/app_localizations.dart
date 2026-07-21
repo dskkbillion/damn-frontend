@@ -9560,6 +9560,12 @@ abstract class AppLocalizations {
   /// **'允许接入'**
   String get agentAllow;
 
+  /// No description provided for @agentAndCliTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 与 CLI'**
+  String get agentAndCliTitle;
+
   /// No description provided for @agentConnectedAgents.
   ///
   /// In zh, this message translates to:
@@ -9691,6 +9697,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'Agent 需求草稿'**
   String get agentRequestDrafts;
+
+  /// No description provided for @agentOpenChat.
+  ///
+  /// In zh, this message translates to:
+  /// **'进入咨询会话'**
+  String get agentOpenChat;
 
   /// No description provided for @agentNoRequestDrafts.
   ///

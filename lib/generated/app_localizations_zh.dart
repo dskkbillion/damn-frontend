@@ -5158,6 +5158,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agentAllow => '允许接入';
 
   @override
+  String get agentAndCliTitle => 'Agent 与 CLI';
+
+  @override
   String get agentConnectedAgents => '已连接的 Agent';
 
   @override
@@ -5226,6 +5229,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get agentRequestDrafts => 'Agent 需求草稿';
+
+  @override
+  String get agentOpenChat => '进入咨询会话';
 
   @override
   String get agentNoRequestDrafts => '暂无 Agent 创建的需求草稿';

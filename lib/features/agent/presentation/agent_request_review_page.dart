@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
 import 'agent_ui_helpers.dart';
@@ -152,6 +153,14 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                         TextButton(
                             onPressed: _busy ? null : () => _review(false),
                             child: Text(l10n.agentAbandonRequest)),
+                      ] else if (request.chatId != null) ...[
+                        const SizedBox(height: 24),
+                        FilledButton.icon(
+                          onPressed: () => context.go(
+                              '/chat/refactored/${request.chatId}'),
+                          icon: const Icon(Icons.forum_outlined),
+                          label: Text(l10n.agentOpenChat),
+                        ),
                       ],
                     ]),
     );

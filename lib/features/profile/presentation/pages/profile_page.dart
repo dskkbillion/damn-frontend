@@ -230,20 +230,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
 
-                  // 设置
+                  // Agent 与 CLI 是账号级能力：用户需要能从 App 内发现
+                  // Device Flow 授权、已连接会话和待审核需求，而不是依赖深链。
                   ProfileMenuSection(
-                    title: appLocalizations.profile_settings,
+                    title: appLocalizations.agentAndCliTitle,
                     menuItems: [
                       MenuItem(
-                        icon: Icons.security,
-                        text: appLocalizations.profile_account_security,
+                        icon: Icons.add_link,
+                        text: appLocalizations.agentConnectTitle,
                         onTap: () {
-                          // 使用go_router导航到账号安全页面
-                          context.push(ProfileRoutes.accountSecurityPath);
+                          context.push('/agent/connect');
                         },
                       ),
                       MenuItem(
-                        icon: Icons.devices_other_outlined,
+                        icon: Icons.devices_outlined,
                         text: appLocalizations.agentConnectedAgents,
                         onTap: () {
                           context.push(ProfileRoutes.connectedAgentsPath);
@@ -254,6 +254,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         text: appLocalizations.agentRequestDrafts,
                         onTap: () {
                           context.push(ProfileRoutes.agentRequestsPath);
+                        },
+                      ),
+                    ],
+                  ),
+
+                  // 设置
+                  ProfileMenuSection(
+                    title: appLocalizations.profile_settings,
+                    menuItems: [
+                      MenuItem(
+                        icon: Icons.security,
+                        text: appLocalizations.profile_account_security,
+                        onTap: () {
+                          // 使用go_router导航到账号安全页面
+                          context.push(ProfileRoutes.accountSecurityPath);
                         },
                       ),
                       MenuItem(

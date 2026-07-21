@@ -949,7 +949,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       // while the user is in seller mode as well.
       final isAccountLevelLocation =
           location == ProfileRoutes.accountSecurityPath ||
-              location == ProfileRoutes.connectedAgentsPath;
+              location == ProfileRoutes.connectedAgentsPath ||
+              location == ProfileRoutes.agentRequestsPath ||
+              location == '/agent/connect';
       final List<String> buyerPaths = [
         HomeRoutes.homePath,
         '/ai_chat',

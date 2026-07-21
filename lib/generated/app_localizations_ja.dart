@@ -5212,6 +5212,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get agentAllow => 'Allow connection';
 
   @override
+  String get agentAndCliTitle => 'Agent と CLI';
+
+  @override
   String get agentConnectedAgents => 'Connected Agents';
 
   @override
@@ -5284,6 +5287,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get agentRequestDrafts => 'Agent request drafts';
+
+  @override
+  String get agentOpenChat => '相談チャットを開く';
 
   @override
   String get agentNoRequestDrafts => 'No Agent-created request drafts';
