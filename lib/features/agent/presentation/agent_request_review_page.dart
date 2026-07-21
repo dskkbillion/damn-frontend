@@ -128,7 +128,8 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                                   ],
                                   if (request.chatId != null) ...[
                                     const SizedBox(height: 8),
-                                    Text('${l10n.agentChatId}: ${request.chatId}'),
+                                    Text(
+                                        '${l10n.agentChatId}: ${request.chatId}'),
                                   ],
                                 ],
                               ))),
