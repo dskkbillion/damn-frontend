@@ -320,21 +320,33 @@ class _ProductManagementPageState extends State<ProductManagementPage>
           ),
         ],
       ),
-      floatingActionButton: BlocBuilder<ProductManagementBloc, ProductManagementState>(
-        builder: (context, state) {
-          final status = _getStatusByTabIndex(_tabController.index);
-          final hasProducts = _getProductListByStatus(state, status)?.isNotEmpty ?? false;
+      floatingActionButton: Padding(
+        // This nested Scaffold is displayed beneath the seller shell's
+        // persistent floating navigation. Reserve that same visual space so
+        // the create action remains visible and tappable.
+        padding: EdgeInsets.only(
+          bottom: GlassNavigationMetrics.contentBottomInset(context),
+        ),
+        child: BlocBuilder<ProductManagementBloc, ProductManagementState>(
+          builder: (context, state) {
+            final status = _getStatusByTabIndex(_tabController.index);
+            final hasProducts =
+                _getProductListByStatus(state, status)?.isNotEmpty ?? false;
 
-          if (!hasProducts) return const SizedBox.shrink();
+            if (!hasProducts) return const SizedBox.shrink();
 
-          return FloatingActionButton(
-            onPressed: () {
-              context.read<ProductManagementBloc>().add(const NavigateToProductCreate());
-            },
-            tooltip: AppLocalizations.of(context).product_management_create_product,
-            child: const Icon(Icons.add),
-          );
-        },
+            return FloatingActionButton(
+              onPressed: () {
+                context
+                    .read<ProductManagementBloc>()
+                    .add(const NavigateToProductCreate());
+              },
+              tooltip:
+                  AppLocalizations.of(context).product_management_create_product,
+              child: const Icon(Icons.add),
+            );
+          },
+        ),
       ),
     );
   }
