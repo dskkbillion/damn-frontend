@@ -46,6 +46,10 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
   String? _recommendationsLocale;
+  static const double _conversationPanelEdgeWidth = 24;
+  static const double _conversationPanelOpenDistance = 72;
+  double? _conversationPanelDragStartX;
+  bool _isOpeningConversationPanel = false;
 
   // 🔥 添加状态来控制推荐次数提示框的显示
   bool _isRateLimitWarningDismissed = false;
@@ -196,9 +200,14 @@ class _ChatPageState extends State<ChatPage> {
           const SizedBox(width: AppDimensions.spacingMd),
         ],
       ),
-      body: GlassBackdrop(
-        atmosphereIntensity: 0.4,
-        child: Padding(
+      body: Listener(
+        onPointerDown: _onConversationPanelPointerDown,
+        onPointerMove: _onConversationPanelPointerMove,
+        onPointerUp: (_) => _conversationPanelDragStartX = null,
+        onPointerCancel: (_) => _conversationPanelDragStartX = null,
+        child: GlassBackdrop(
+          atmosphereIntensity: 0.4,
+          child: Padding(
           // 内层 Scaffold 的可用高度已经扣除了部分导航区域；只补齐
           // Home Indicator 与一档呼吸距离，避免输入舱和导航重叠。
           padding: EdgeInsets.only(
@@ -244,15 +253,36 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
   }
 
-  void _openConversationPanel() {
+  void _onConversationPanelPointerDown(PointerDownEvent event) {
+    _conversationPanelDragStartX =
+        event.position.dx <= _conversationPanelEdgeWidth
+            ? event.position.dx
+            : null;
+  }
+
+  void _onConversationPanelPointerMove(PointerMoveEvent event) {
+    final startX = _conversationPanelDragStartX;
+    if (startX == null || _isOpeningConversationPanel) return;
+
+    if (event.position.dx - startX < _conversationPanelOpenDistance) return;
+
+    _conversationPanelDragStartX = null;
+    _isOpeningConversationPanel = true;
+    _openConversationPanel().whenComplete(() {
+      if (mounted) _isOpeningConversationPanel = false;
+    });
+  }
+
+  Future<void> _openConversationPanel() {
     final aiChatBloc = context.read<AiChatBloc>();
 
-    showGeneralDialog<void>(
+    return showGeneralDialog<void>(
       context: context,
       useRootNavigator: true,
       barrierDismissible: true,
