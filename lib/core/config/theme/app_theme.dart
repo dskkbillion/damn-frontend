@@ -36,11 +36,13 @@ class AppTheme {
     useMaterial3: true,
 
     // 页面切换动画
+    // iOS/macOS 必须使用 Cupertino builder：它除转场外还提供系统边缘
+    // 左滑返回手势。自定义淡入缩放 builder 仅保留视觉动画，无法接管该手势。
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android: DeepStreamFadePageTransitionsBuilder(),
-        TargetPlatform.iOS: DeepStreamFadePageTransitionsBuilder(),
-        TargetPlatform.macOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
         TargetPlatform.windows: DeepStreamFadePageTransitionsBuilder(),
         TargetPlatform.linux: DeepStreamFadePageTransitionsBuilder(),
       },
@@ -183,7 +185,8 @@ class AppTheme {
         ),
       ),
       contentPadding: const EdgeInsets.all(AppDimensions.spacingLg),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
+      hintStyle:
+          AppTextStyles.bodyMedium.copyWith(color: AppColors.textTertiary),
       labelStyle: AppTextStyles.labelMedium,
     ),
 
@@ -271,11 +274,12 @@ class AppTheme {
     useMaterial3: true,
 
     // 页面切换动画
+    // 与亮色主题保持一致，避免暗色模式下回退为无手势的自定义转场。
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
         TargetPlatform.android: DeepStreamFadePageTransitionsBuilder(),
-        TargetPlatform.iOS: DeepStreamFadePageTransitionsBuilder(),
-        TargetPlatform.macOS: DeepStreamFadePageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
         TargetPlatform.windows: DeepStreamFadePageTransitionsBuilder(),
         TargetPlatform.linux: DeepStreamFadePageTransitionsBuilder(),
       },
@@ -283,21 +287,36 @@ class AppTheme {
 
     // 文字主题（暗色模式覆盖颜色）
     textTheme: TextTheme(
-      displayLarge: AppTextStyles.displayLarge.copyWith(color: AppColorsDark.textPrimary),
-      displayMedium: AppTextStyles.displayMedium.copyWith(color: AppColorsDark.textPrimary),
-      displaySmall: AppTextStyles.displaySmall.copyWith(color: AppColorsDark.textPrimary),
-      headlineLarge: AppTextStyles.headlineLarge.copyWith(color: AppColorsDark.textPrimary),
-      headlineMedium: AppTextStyles.headlineMedium.copyWith(color: AppColorsDark.textPrimary),
-      headlineSmall: AppTextStyles.headlineSmall.copyWith(color: AppColorsDark.textPrimary),
-      titleLarge: AppTextStyles.titleLarge.copyWith(color: AppColorsDark.textPrimary),
-      titleMedium: AppTextStyles.titleMedium.copyWith(color: AppColorsDark.textPrimary),
-      titleSmall: AppTextStyles.titleSmall.copyWith(color: AppColorsDark.textPrimary),
-      bodyLarge: AppTextStyles.bodyLarge.copyWith(color: AppColorsDark.textPrimary),
-      bodyMedium: AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textPrimary),
-      bodySmall: AppTextStyles.bodySmall.copyWith(color: AppColorsDark.textSecondary),
-      labelLarge: AppTextStyles.labelLarge.copyWith(color: AppColorsDark.textPrimary),
-      labelMedium: AppTextStyles.labelMedium.copyWith(color: AppColorsDark.textPrimary),
-      labelSmall: AppTextStyles.labelSmall.copyWith(color: AppColorsDark.textSecondary),
+      displayLarge:
+          AppTextStyles.displayLarge.copyWith(color: AppColorsDark.textPrimary),
+      displayMedium: AppTextStyles.displayMedium
+          .copyWith(color: AppColorsDark.textPrimary),
+      displaySmall:
+          AppTextStyles.displaySmall.copyWith(color: AppColorsDark.textPrimary),
+      headlineLarge: AppTextStyles.headlineLarge
+          .copyWith(color: AppColorsDark.textPrimary),
+      headlineMedium: AppTextStyles.headlineMedium
+          .copyWith(color: AppColorsDark.textPrimary),
+      headlineSmall: AppTextStyles.headlineSmall
+          .copyWith(color: AppColorsDark.textPrimary),
+      titleLarge:
+          AppTextStyles.titleLarge.copyWith(color: AppColorsDark.textPrimary),
+      titleMedium:
+          AppTextStyles.titleMedium.copyWith(color: AppColorsDark.textPrimary),
+      titleSmall:
+          AppTextStyles.titleSmall.copyWith(color: AppColorsDark.textPrimary),
+      bodyLarge:
+          AppTextStyles.bodyLarge.copyWith(color: AppColorsDark.textPrimary),
+      bodyMedium:
+          AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textPrimary),
+      bodySmall:
+          AppTextStyles.bodySmall.copyWith(color: AppColorsDark.textSecondary),
+      labelLarge:
+          AppTextStyles.labelLarge.copyWith(color: AppColorsDark.textPrimary),
+      labelMedium:
+          AppTextStyles.labelMedium.copyWith(color: AppColorsDark.textPrimary),
+      labelSmall:
+          AppTextStyles.labelSmall.copyWith(color: AppColorsDark.textSecondary),
     ),
 
     // 卡片主题 - 深海卡片 + 微妙边框
@@ -325,7 +344,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         ),
         minimumSize: const Size(0, 44),
-        textStyle: AppTextStyles.button.copyWith(color: AppColorsDark.backgroundDeep),
+        textStyle:
+            AppTextStyles.button.copyWith(color: AppColorsDark.backgroundDeep),
       ),
     ),
 
@@ -353,7 +373,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         ),
         minimumSize: const Size(0, 44),
-        textStyle: AppTextStyles.button.copyWith(color: AppColorsDark.backgroundDeep),
+        textStyle:
+            AppTextStyles.button.copyWith(color: AppColorsDark.backgroundDeep),
       ),
     ),
 
@@ -375,7 +396,8 @@ class AppTheme {
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
-      titleTextStyle: AppTextStyles.headlineSmall.copyWith(color: AppColorsDark.textPrimary),
+      titleTextStyle: AppTextStyles.headlineSmall
+          .copyWith(color: AppColorsDark.textPrimary),
       iconTheme: const IconThemeData(
         color: AppColorsDark.textPrimary,
         size: AppDimensions.iconLg,
@@ -415,8 +437,10 @@ class AppTheme {
         ),
       ),
       contentPadding: const EdgeInsets.all(AppDimensions.spacingLg),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textTertiary),
-      labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColorsDark.textSecondary),
+      hintStyle:
+          AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textTertiary),
+      labelStyle: AppTextStyles.labelMedium
+          .copyWith(color: AppColorsDark.textSecondary),
     ),
 
     // TabBar 主题
@@ -451,7 +475,8 @@ class AppTheme {
     chipTheme: ChipThemeData(
       backgroundColor: AppColorsDark.backgroundElevated,
       selectedColor: AppColorsDark.accentPrimary.withValues(alpha: 0.15),
-      labelStyle: AppTextStyles.labelMedium.copyWith(color: AppColorsDark.textPrimary),
+      labelStyle:
+          AppTextStyles.labelMedium.copyWith(color: AppColorsDark.textPrimary),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
@@ -464,8 +489,10 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
       ),
-      titleTextStyle: AppTextStyles.headlineMedium.copyWith(color: AppColorsDark.textPrimary),
-      contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textPrimary),
+      titleTextStyle: AppTextStyles.headlineMedium
+          .copyWith(color: AppColorsDark.textPrimary),
+      contentTextStyle:
+          AppTextStyles.bodyMedium.copyWith(color: AppColorsDark.textPrimary),
     ),
 
     // BottomSheet 主题
