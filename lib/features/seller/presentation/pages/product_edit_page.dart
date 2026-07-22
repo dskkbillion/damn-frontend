@@ -487,13 +487,13 @@ class _ProductEditPageState extends State<ProductEditPage> {
     print('[ProductEditPage] isPreviewMode: ${widget.isPreviewMode}, productId: ${widget.productId}');
     print('[ProductEditPage] Current controller values - name: "${_nameController.text}", description: "${_descriptionController.text}"');
     
-    // 更新基本文本字段
-    if (mounted) {
-      setState(() {
-        _nameController.text = formData.name;
-        _descriptionController.text = formData.description;
-      });
-      print('[ProductEditPage] Updated text controllers - name: "${_nameController.text}", description: "${_descriptionController.text}"');
+    // TextEditingController must only be initialized from the loaded product.
+    // Reassigning `.text` on every BLoC emission clears the IME composing
+    // range, which duplicates Pinyin characters while Chinese is being typed.
+    if (mounted && _isInitialDataLoad) {
+      _setInitialControllerText(_nameController, formData.name);
+      _setInitialControllerText(_descriptionController, formData.description);
+      print('[ProductEditPage] Initialized text controllers - name: "${_nameController.text}", description: "${_descriptionController.text}"');
     }
     
     // 如果有变体数据，更新到本地服务档位（编辑模式和预览模式都需要）
@@ -566,6 +566,18 @@ class _ProductEditPageState extends State<ProductEditPage> {
     print('  - Buyer info items: ${_buyerInfoItems.length}');
     print('  - Success cases: managed in BLoC');
     print('  - Variants: ${formData.variants.length}');
+  }
+
+  void _setInitialControllerText(
+    TextEditingController controller,
+    String text,
+  ) {
+    if (controller.text == text) return;
+
+    controller.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
   }
 
   /// 将页面组件的本地数据同步到BLoC状态
