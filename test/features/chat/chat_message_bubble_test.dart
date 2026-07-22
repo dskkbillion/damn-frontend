@@ -85,6 +85,10 @@ void main() {
 
     expect(find.textContaining('硬件组装'), findsOneWidget);
     expect(find.text('用户画像推测'), findsNothing);
+    expect(
+      tester.widget<Text>(find.text('我想看看')).textAlign,
+      TextAlign.center,
+    );
 
     await tester.tap(find.text('展开'));
     await tester.pumpAndSettle();

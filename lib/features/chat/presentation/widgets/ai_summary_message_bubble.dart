@@ -160,69 +160,87 @@ class _AiSummaryMessageBubbleState extends State<AiSummaryMessageBubble> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_outlined,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _titleText,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        height: 1.25,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      DateFormat('HH:mm').format(widget.message.createTime),
-                      style: const TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (canExpand)
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
+          SizedBox(
+            height: 42,
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                Positioned(
+                  left: 0,
+                  child: Container(
                     width: 34,
                     height: 34,
-                  ),
-                  tooltip: _isExpanded
-                      ? appLocalizations.chat_collapse
-                      : appLocalizations.chat_expand,
-                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                  icon: AnimatedRotation(
-                    turns: _isExpanded ? .5 : 0,
-                    duration: const Duration(milliseconds: 180),
-                    child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: AppColors.textTertiary,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Text(
+                      'AI',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
-            ],
+                Positioned.fill(
+                  left: 42,
+                  right: 42,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        _titleText,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          height: 1.25,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        DateFormat('HH:mm').format(widget.message.createTime),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (canExpand)
+                  Positioned(
+                    right: 0,
+                    child: IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 34,
+                        height: 34,
+                      ),
+                      tooltip: _isExpanded
+                          ? appLocalizations.chat_collapse
+                          : appLocalizations.chat_expand,
+                      onPressed: () =>
+                          setState(() => _isExpanded = !_isExpanded),
+                      icon: AnimatedRotation(
+                        turns: _isExpanded ? .5 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        child: const _Chevron(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
           const SizedBox(height: 14),
           AnimatedSwitcher(
@@ -268,11 +286,8 @@ class _AiSummaryMessageBubbleState extends State<AiSummaryMessageBubble> {
                       ),
                     ),
                     const SizedBox(width: 2),
-                    Icon(
-                      _isExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
-                      size: 18,
+                    _Chevron(
+                      isUp: _isExpanded,
                       color: AppColors.primary,
                     ),
                   ],
@@ -362,10 +377,13 @@ class _SummarySectionCard extends StatelessWidget {
         if (section.title?.isNotEmpty == true) ...[
           Row(
             children: [
-              const Icon(
-                Icons.circle,
-                size: 6,
-                color: AppColors.primary,
+              Container(
+                width: 5,
+                height: 5,
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
               ),
               const SizedBox(width: 9),
               Expanded(
@@ -427,4 +445,46 @@ class _SummaryRowView extends StatelessWidget {
       style: const TextStyle(fontSize: 14, height: 1.5),
     );
   }
+}
+
+class _Chevron extends StatelessWidget {
+  final bool isUp;
+  final Color color;
+
+  const _Chevron({this.isUp = false, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: isUp ? 3.141592653589793 : 0,
+      child: CustomPaint(
+        size: const Size(16, 10),
+        painter: _ChevronPainter(color),
+      ),
+    );
+  }
+}
+
+class _ChevronPainter extends CustomPainter {
+  final Color color;
+
+  const _ChevronPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path()
+      ..moveTo(1.5, 1.5)
+      ..lineTo(size.width / 2, size.height - 1.5)
+      ..lineTo(size.width - 1.5, 1.5);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_ChevronPainter oldDelegate) => oldDelegate.color != color;
 }
