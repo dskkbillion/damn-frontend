@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 日期格式化
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
+import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
 import '../../domain/entities/chat_message.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart'; // 国际化资源
 import 'chat_message_bubble.dart'; // 复用 isAiSummaryMessage 前缀表（唯一事实来源）
@@ -153,168 +154,166 @@ class _AiSummaryMessageBubbleState extends State<AiSummaryMessageBubble> {
             sections.expand((section) => section.rows).length > 2);
     final preview = _previewText(safeText, sections);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundCard.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.14)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.07),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
+    return GlassCard(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.gradientStream,
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                  ),
-                  child: const Icon(Icons.auto_awesome_rounded,
-                      size: 19, color: AppColors.onPrimary),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _titleText,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.25,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        DateFormat('HH:mm').format(widget.message.createTime),
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: const Icon(
+                  Icons.auto_awesome_outlined,
+                  size: 18,
+                  color: AppColors.primary,
                 ),
-                if (canExpand)
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    tooltip: _isExpanded
-                        ? appLocalizations.chat_collapse
-                        : appLocalizations.chat_expand,
-                    onPressed: () => setState(() => _isExpanded = !_isExpanded),
-                    icon: AnimatedRotation(
-                      turns: _isExpanded ? .5 : 0,
-                      duration: const Duration(milliseconds: 180),
-                      child: const Icon(Icons.keyboard_arrow_down_rounded,
-                          color: AppColors.textSecondary),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _titleText,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        height: 1.25,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      DateFormat('HH:mm').format(widget.message.createTime),
+                      style: const TextStyle(
+                        color: AppColors.textTertiary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (canExpand)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 34,
+                    height: 34,
+                  ),
+                  tooltip: _isExpanded
+                      ? appLocalizations.chat_collapse
+                      : appLocalizations.chat_expand,
+                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                  icon: AnimatedRotation(
+                    turns: _isExpanded ? .5 : 0,
+                    duration: const Duration(milliseconds: 180),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: AppColors.textTertiary,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axisAlignment: -1,
-                      child: child,
-                    ),
+          const SizedBox(height: 14),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: -1,
+                child: child,
+              ),
+            ),
+            child: _isExpanded
+                ? KeyedSubtree(
+                    key: const ValueKey('expanded-summary'),
+                    child: _buildExpandedContent(sections, safeText),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('collapsed-summary'),
+                    child: _buildPreview(preview),
                   ),
-                  child: _isExpanded
-                      ? KeyedSubtree(
-                          key: const ValueKey('expanded-summary'),
-                          child: _buildExpandedContent(sections, safeText),
-                        )
-                      : KeyedSubtree(
-                          key: const ValueKey('collapsed-summary'),
-                          child: _buildPreview(preview),
-                        ),
-                ),
-                if (canExpand) ...[
-                  const SizedBox(height: 10),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                    onTap: () => setState(() => _isExpanded = !_isExpanded),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _isExpanded
-                                ? appLocalizations.chat_collapse
-                                : appLocalizations.chat_expand,
-                            style: const TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            _isExpanded
-                                ? Icons.keyboard_arrow_up_rounded
-                                : Icons.keyboard_arrow_down_rounded,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                        ],
+          ),
+          if (canExpand) ...[
+            const SizedBox(height: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+              onTap: () => setState(() => _isExpanded = !_isExpanded),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isExpanded
+                          ? appLocalizations.chat_collapse
+                          : appLocalizations.chat_expand,
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ],
+                    const SizedBox(width: 2),
+                    Icon(
+                      _isExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildPreview(String preview) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.055),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-      ),
-      child: Text(
-        preview,
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 15,
-          height: 1.55,
-          color:
-              _isLeakedSample ? AppColors.textTertiary : AppColors.textPrimary,
-          fontStyle: _isLeakedSample ? FontStyle.italic : FontStyle.normal,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 3,
+          height: 38,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
-      ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            preview,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.5,
+              color: _isLeakedSample
+                  ? AppColors.textTertiary
+                  : AppColors.textPrimary,
+              fontStyle: _isLeakedSample ? FontStyle.italic : FontStyle.normal,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -325,7 +324,11 @@ class _AiSummaryMessageBubbleState extends State<AiSummaryMessageBubble> {
       children: [
         for (var index = 0; index < sections.length; index++) ...[
           _SummarySectionCard(section: sections[index]),
-          if (index != sections.length - 1) const SizedBox(height: 10),
+          if (index != sections.length - 1)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1, color: AppColors.divider),
+            ),
         ],
       ],
     );
@@ -353,49 +356,37 @@ class _SummarySectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.backgroundSecondary.withValues(alpha: 0.48),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (section.title?.isNotEmpty == true) ...[
-            Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (section.title?.isNotEmpty == true) ...[
+          Row(
+            children: [
+              const Icon(
+                Icons.circle,
+                size: 6,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  section.title!,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    section.title!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 9),
-          ],
-          for (var index = 0; index < section.rows.length; index++) ...[
-            _SummaryRowView(row: section.rows[index]),
-            if (index != section.rows.length - 1) const SizedBox(height: 7),
-          ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 9),
         ],
-      ),
+        for (var index = 0; index < section.rows.length; index++) ...[
+          _SummaryRowView(row: section.rows[index]),
+          if (index != section.rows.length - 1) const SizedBox(height: 7),
+        ],
+      ],
     );
   }
 }
