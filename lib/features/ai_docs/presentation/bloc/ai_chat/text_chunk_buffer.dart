@@ -6,7 +6,7 @@ import '../../settings/chat_settings_manager.dart';
 /// 用于实现ChatGPT风格的"淡出式"流式输出效果
 class TextChunkBuffer {
   final StringBuffer _buffer = StringBuffer();
-  const Duration _flushInterval = Duration(milliseconds: 300);
+  static const Duration _flushInterval = Duration(milliseconds: 300);
   final int _minChunkSize = 8; // 最小分块大小
   Timer? _flushTimer;
   bool _isDisposed = false;
@@ -114,4 +114,4 @@ class TextChunk {
   String toString() {
     return 'TextChunk(content: "$content", isComplete: $isComplete, id: $id)';
   }
-} 
+}

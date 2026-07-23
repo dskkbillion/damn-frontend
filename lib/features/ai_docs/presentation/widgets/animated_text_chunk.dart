@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 
 /// 带淡入动画效果的文本块组件
 /// 用于实现ChatGPT风格的文本块逐步显示效果
@@ -142,4 +143,4 @@ class StreamingTextDisplay extends StatelessWidget {
     // 如果什么都没有，返回空容器
     return const SizedBox.shrink();
   }
-} 
+}
