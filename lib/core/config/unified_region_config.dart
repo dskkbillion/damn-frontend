@@ -123,13 +123,12 @@ class UnifiedRegionConfig {
     return currency == Currency.usd;
   }
 
-  /// Get currency symbol
-  static String get currencySymbol => Currency.usd.symbol;
+  /// Credits do not use a fiat currency symbol.
+  static String get currencySymbol => '';
 
-  /// Format price display with USD
+  /// Format price display as integer credits.
   static String formatPrice(double amount) {
-    final formatted = amount.toStringAsFixed(Currency.usd.decimalDigits);
-    return '\$$formatted';
+    return '${amount.round()} 积分';
   }
 
   /// Get unified-mode feature flags.
@@ -137,7 +136,7 @@ class UnifiedRegionConfig {
         // Payment features
         'enableWechatPay': false,
         'enableAlipay': false,
-        'enableStripe': true,
+        'enableStripe': false,
 
         // Login features
         'enableWechatLogin': true,
