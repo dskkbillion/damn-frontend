@@ -79,7 +79,7 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     // 设置默认选中的支付方式
     _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty
         ? _availablePaymentMethods.first
-        : payment_models.PaymentMethod.alipay;
+        : payment_models.PaymentMethod.credits;
 
     context.read<PaymentBloc>().add(ResetPaymentEvent());
   }
@@ -99,7 +99,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           });
           _dismissLoadingDialog();
           _showLoadingDialog('支付中...');
-        } else if (state is PaymentCompletedState || state is PaymentFailedState) {
+        } else if (state is PaymentCompletedState ||
+            state is PaymentFailedState) {
           setState(() {
             _isProcessing = false;
           });
@@ -133,7 +134,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           });
           _dismissLoadingDialog(); // 关闭加载对话框
 
-          AppLogger.d('[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
+          AppLogger.d(
+              '[OrderConfirmPage] 收到ExternalPaymentProcessingState, URL: ${state.paymentUrl}');
 
           // 显示支付链接对话框
           showDialog(
@@ -157,17 +159,21 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.warning.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                          border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusSm),
+                          border: Border.all(
+                              color: AppColors.warning.withOpacity(0.3)),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.info_outline, size: 16, color: AppColors.warning),
+                            Icon(Icons.info_outline,
+                                size: 16, color: AppColors.warning),
                             SizedBox(width: AppDimensions.spacingSm),
                             Expanded(
                               child: Text(
                                 '注意：信用卡支付将以美元结算，具体汇率以银行为准',
-                                style: TextStyle(fontSize: 12, color: AppColors.warning),
+                                style: TextStyle(
+                                    fontSize: 12, color: AppColors.warning),
                               ),
                             ),
                           ],
@@ -175,19 +181,22 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                       ),
                     if (RegionConfig.currentRegion == RegionType.domestic)
                       const SizedBox(height: AppDimensions.spacingMd),
-                    const Text('如果浏览器没有自动打开，请选择以下操作：', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                    const Text('如果浏览器没有自动打开，请选择以下操作：',
+                        style: TextStyle(
+                            fontSize: 14, color: AppColors.textSecondary)),
                     const SizedBox(height: AppDimensions.spacingLg),
                     // 显示支付URL（截断显示）
                     Container(
                       padding: const EdgeInsets.all(AppDimensions.spacingSm),
                       decoration: BoxDecoration(
                         color: AppColors.backgroundSecondary,
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                        borderRadius:
+                            BorderRadius.circular(AppDimensions.radiusSm),
                       ),
                       child: Text(
                         state.paymentUrl.length > 50
-                          ? '${state.paymentUrl.substring(0, 50)}...'
-                          : state.paymentUrl,
+                            ? '${state.paymentUrl.substring(0, 50)}...'
+                            : state.paymentUrl,
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),
@@ -199,7 +208,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                       // 尝试再次打开URL
                       try {
                         final uri = Uri.parse(state.paymentUrl);
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
                       } catch (e) {
                         AppLogger.d('[OrderConfirmPage] 手动打开URL失败: $e');
                       }
@@ -249,68 +259,71 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                 tintOpacity: 0.62,
-                  child: Row(
-                    children: [
-                      // 商品图片
-                      if (widget.imageUrl != null)
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(widget.imageUrl!),
-                              fit: BoxFit.cover,
-                            ),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                child: Row(
+                  children: [
+                    // 商品图片
+                    if (widget.imageUrl != null)
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(widget.imageUrl!),
+                            fit: BoxFit.cover,
                           ),
-                        )
-                      else
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: AppColors.borderInput,
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                          ),
-                          child: const Icon(Icons.image, size: 40, color: AppColors.textTertiary),
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusSm),
                         ),
-                      const SizedBox(width: AppDimensions.spacingLg),
-                      // 商品名称和价格
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.displayProductName ?? widget.productName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: AppDimensions.spacingSm),
-                            Text(
-                              PriceFormatter.format(widget.price),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                            Text(
-                              '数量: ${widget.quantity}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
+                      )
+                    else
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppColors.borderInput,
+                          borderRadius:
+                              BorderRadius.circular(AppDimensions.radiusSm),
                         ),
+                        child: const Icon(Icons.image,
+                            size: 40, color: AppColors.textTertiary),
                       ),
-                    ],
-                  ),
+                    const SizedBox(width: AppDimensions.spacingLg),
+                    // 商品名称和价格
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.displayProductName ?? widget.productName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingSm),
+                          Text(
+                            PriceFormatter.format(widget.price),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          Text(
+                            '数量: ${widget.quantity}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
+              ),
 
               const SizedBox(height: AppDimensions.spacingXxl),
 
@@ -386,11 +399,11 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
 
               // 动态生成支付方式选项
               ..._availablePaymentMethods.map((method) => Column(
-                children: [
-                  _buildPaymentMethodOption(method),
-                  const SizedBox(height: AppDimensions.spacingMd),
-                ],
-              )),
+                    children: [
+                      _buildPaymentMethodOption(method),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                    ],
+                  )),
 
               const SizedBox(height: 32),
 
@@ -415,7 +428,8 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
                             SizedBox(width: AppDimensions.spacingMd),
@@ -452,17 +466,27 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
     String subtitle;
 
     switch (method) {
+      case payment_models.PaymentMethod.credits:
+        iconData = Icons.stars_rounded;
+        iconColor = AppColors.warning;
+        logoAsset = null;
+        subtitle = '使用平台积分，支付后即时扣除';
+        break;
       case payment_models.PaymentMethod.alipay:
         iconData = Icons.payment;
         iconColor = AppColors.info; // 支付宝品牌色
         logoAsset = 'assets/images/alipay_logo.png';
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
+        subtitle = RegionConfig.currentRegion == RegionType.domestic
+            ? '安全快捷支付'
+            : 'Fast and secure payment';
         break;
       case payment_models.PaymentMethod.wechat:
         iconData = Icons.wechat;
         iconColor = Colors.green; // 微信品牌色
         logoAsset = null;
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '微信安全支付' : 'WeChat Pay';
+        subtitle = RegionConfig.currentRegion == RegionType.domestic
+            ? '微信安全支付'
+            : 'WeChat Pay';
         break;
       case payment_models.PaymentMethod.stripe:
         iconData = Icons.credit_card;
@@ -485,17 +509,13 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
   }
 
   /// 构建支付方式选项UI
-  Widget _buildPaymentOption(
-    payment_models.PaymentMethod method,
-    String name,
-    String? logoAsset,
-    IconData fallbackIcon,
-    Color iconColor,
-    {String? subtitle}
-  ) {
+  Widget _buildPaymentOption(payment_models.PaymentMethod method, String name,
+      String? logoAsset, IconData fallbackIcon, Color iconColor,
+      {String? subtitle}) {
     final isSelected = _selectedPaymentMethod == method;
     final effectiveIconColor = iconColor;
-    final effectiveTextColor = isSelected ? Theme.of(context).primaryColor : null;
+    final effectiveTextColor =
+        isSelected ? Theme.of(context).primaryColor : null;
 
     return GestureDetector(
       onTap: () {
@@ -516,87 +536,89 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
           color: isSelected
               ? Theme.of(context).primaryColor.withOpacity(0.05)
               : null,
-          ),
-          child: Row(
-            children: [
-              // 选择指示器
-              Icon(
-                isSelected
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-                color: isSelected
-                    ? Theme.of(context).primaryColor
-                    : AppColors.textTertiary,
-              ),
-              const SizedBox(width: AppDimensions.spacingLg),
+        ),
+        child: Row(
+          children: [
+            // 选择指示器
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : AppColors.textTertiary,
+            ),
+            const SizedBox(width: AppDimensions.spacingLg),
 
-              // 支付方式图标/Logo
-              if (logoAsset != null)
-                Image.asset(
-                  logoAsset,
-                  width: 60,
-                  height: 30,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 60,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: effectiveIconColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                      ),
-                      child: Icon(
-                        fallbackIcon,
-                        color: effectiveIconColor,
-                        size: 20,
-                      ),
-                    );
-                  },
-                )
-              else
-                Container(
-                  width: 60,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: effectiveIconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
-                  ),
-                  child: Icon(
-                    fallbackIcon,
-                    color: effectiveIconColor,
-                    size: 20,
-                  ),
+            // 支付方式图标/Logo
+            if (logoAsset != null)
+              Image.asset(
+                logoAsset,
+                width: 60,
+                height: 30,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 60,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: effectiveIconColor.withOpacity(0.1),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusSm),
+                    ),
+                    child: Icon(
+                      fallbackIcon,
+                      color: effectiveIconColor,
+                      size: 20,
+                    ),
+                  );
+                },
+              )
+            else
+              Container(
+                width: 60,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: effectiveIconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
                 ),
+                child: Icon(
+                  fallbackIcon,
+                  color: effectiveIconColor,
+                  size: 20,
+                ),
+              ),
 
-              const SizedBox(width: AppDimensions.spacingLg),
+            const SizedBox(width: AppDimensions.spacingLg),
 
-              // 支付方式名称
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            // 支付方式名称
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: effectiveTextColor,
+                    ),
+                  ),
+                  if (subtitle != null)
                     Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: effectiveTextColor,
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
                       ),
                     ),
-                    if (subtitle != null)
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
   }
 
   /// 显示加载对话框
@@ -623,29 +645,32 @@ class _OrderConfirmPageState extends State<OrderConfirmPage> {
       return;
     }
 
-    AppLogger.d('[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
+    AppLogger.d(
+        '[OrderConfirmPage] 开始创建订单并支付 - 商品: ${widget.productName}, 支付方式: $_selectedPaymentMethod');
 
     // 设置BuildContext给PaymentBloc，用于Stripe支付的WebView
     context.read<PaymentBloc>().setContext(context);
 
     // 发起创建订单并支付事件
     context.read<PaymentBloc>().add(
-      CreateOrderAndPayEvent(
-        productId: widget.productId,
-        variantId: widget.variantId,
-        quantity: widget.quantity,
-        sellerId: widget.sellerId,
-        price: widget.price,
-        chatRoomId: widget.chatRoomId,
-        productName: widget.productName,
-        imageUrl: widget.imageUrl,
-        paymentMethod: _selectedPaymentMethod.code, // 传递选择的支付方式代码
-      ),
-    );
+          CreateOrderAndPayEvent(
+            productId: widget.productId,
+            variantId: widget.variantId,
+            quantity: widget.quantity,
+            sellerId: widget.sellerId,
+            price: widget.price,
+            chatRoomId: widget.chatRoomId,
+            productName: widget.productName,
+            imageUrl: widget.imageUrl,
+            paymentMethod: _selectedPaymentMethod.code, // 传递选择的支付方式代码
+          ),
+        );
   }
 
   Color _getButtonColor() {
     switch (_selectedPaymentMethod) {
+      case payment_models.PaymentMethod.credits:
+        return AppColors.warning;
       case payment_models.PaymentMethod.alipay:
         return AppColors.info; // 支付宝品牌色
       case payment_models.PaymentMethod.wechat:

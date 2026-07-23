@@ -2,8 +2,9 @@ import 'package:equatable/equatable.dart';
 
 /// 支付方式枚举
 enum PaymentMethod {
+  credits('credits', '积分支付'),
   alipay('alipay', '支付宝'),
-  wechat('weapp', '微信支付'),  // 后端期望 'weapp' 代表微信APP支付
+  wechat('weapp', '微信支付'), // 后端期望 'weapp' 代表微信APP支付
   stripe('stripe', '信用卡支付'); // 后端期望 'stripe' 代表Stripe支付
 
   const PaymentMethod(this.code, this.displayName);
@@ -40,47 +41,51 @@ enum PaymentStatus {
 enum PaymentResultType {
   /// 支付成功 - 跳转到支付成功页面或订单详情
   success('success', '支付成功'),
-  
+
   /// 用户主动取消 - 跳转到订单页面的待付款状态，而不是失败页面
   userCancelled('user_cancelled', '用户取消支付'),
-  
+
   /// 网络错误 - 提供重试选项，跳转到待付款订单
   networkError('network_error', '网络连接出错'),
-  
+
   /// 支付结果未知 - 提供状态查询功能，跳转到待付款订单
   unknown('unknown', '支付结果未知'),
-  
+
   /// 其他支付失败 - 跳转到支付失败页面
   failed('failed', '支付失败'),
-  
+
   /// 正在处理中 - 提示用户等待，跳转到待付款订单
   processing('processing', '支付处理中');
 
   const PaymentResultType(this.code, this.displayName);
   final String code;
   final String displayName;
-  
+
   /// 是否应该跳转到待付款订单而不是失败页面
-  bool get shouldNavigateToOrders => this != PaymentResultType.success && this != PaymentResultType.failed;
-  
+  bool get shouldNavigateToOrders =>
+      this != PaymentResultType.success && this != PaymentResultType.failed;
+
   /// 是否需要提供重试功能
-  bool get shouldOfferRetry => this == PaymentResultType.networkError || this == PaymentResultType.unknown;
-  
+  bool get shouldOfferRetry =>
+      this == PaymentResultType.networkError ||
+      this == PaymentResultType.unknown;
+
   /// 是否需要提供状态查询功能
-  bool get shouldOfferStatusQuery => this == PaymentResultType.unknown || this == PaymentResultType.processing;
+  bool get shouldOfferStatusQuery =>
+      this == PaymentResultType.unknown || this == PaymentResultType.processing;
 }
 
 /// 支付请求参数
 class PaymentRequest extends Equatable {
-  final String orderId;            // 订单ID
-  final String amount;             // 支付金额
-  final String subject;            // 商品标题
-  final String description;        // 商品描述
-  final PaymentMethod method;      // 支付方式
-  final PaymentScene scene;        // 支付场景
-  final String? passbackParams;    // 回传参数
-  final int? timeoutExpress;       // 超时时间（分钟）
-  
+  final String orderId; // 订单ID
+  final String amount; // 支付金额
+  final String subject; // 商品标题
+  final String description; // 商品描述
+  final PaymentMethod method; // 支付方式
+  final PaymentScene scene; // 支付场景
+  final String? passbackParams; // 回传参数
+  final int? timeoutExpress; // 超时时间（分钟）
+
   const PaymentRequest({
     required this.orderId,
     required this.amount,
@@ -91,7 +96,7 @@ class PaymentRequest extends Equatable {
     this.passbackParams,
     this.timeoutExpress,
   });
-  
+
   Map<String, dynamic> toJson() {
     return {
       'orderId': orderId,
@@ -104,7 +109,7 @@ class PaymentRequest extends Equatable {
       'timeoutExpress': timeoutExpress,
     };
   }
-  
+
   factory PaymentRequest.fromJson(Map<String, dynamic> json) {
     return PaymentRequest(
       orderId: json['orderId'] ?? '',
@@ -113,7 +118,7 @@ class PaymentRequest extends Equatable {
       description: json['description'] ?? '',
       method: PaymentMethod.values.firstWhere(
         (e) => e.code == json['method'],
-        orElse: () => PaymentMethod.alipay,
+        orElse: () => PaymentMethod.credits,
       ),
       scene: PaymentScene.values.firstWhere(
         (e) => e.code == json['scene'],
@@ -123,24 +128,30 @@ class PaymentRequest extends Equatable {
       timeoutExpress: json['timeoutExpress'],
     );
   }
-  
+
   @override
   List<Object?> get props => [
-    orderId, amount, subject, description, 
-    method, scene, passbackParams, timeoutExpress
-  ];
+        orderId,
+        amount,
+        subject,
+        description,
+        method,
+        scene,
+        passbackParams,
+        timeoutExpress
+      ];
 }
 
 /// 支付响应
 class PaymentResponse extends Equatable {
   final bool success;
-  final String? data;              // 支付串或跳转URL
-  final String? orderId;          // 订单ID
-  final String? paymentId;        // 支付记录ID
-  final String? message;          // 响应消息
-  final int? code;               // 响应代码
-  final PaymentResultType resultType;  // 支付结果类型，用于导航策略
-  
+  final String? data; // 支付串或跳转URL
+  final String? orderId; // 订单ID
+  final String? paymentId; // 支付记录ID
+  final String? message; // 响应消息
+  final int? code; // 响应代码
+  final PaymentResultType resultType; // 支付结果类型，用于导航策略
+
   const PaymentResponse({
     required this.success,
     this.data,
@@ -150,7 +161,7 @@ class PaymentResponse extends Equatable {
     this.code,
     this.resultType = PaymentResultType.failed,
   });
-  
+
   factory PaymentResponse.success({
     required String data,
     String? orderId,
@@ -167,7 +178,7 @@ class PaymentResponse extends Equatable {
       resultType: PaymentResultType.success,
     );
   }
-  
+
   factory PaymentResponse.failure({
     required String message,
     int? code,
@@ -182,7 +193,7 @@ class PaymentResponse extends Equatable {
       resultType: resultType ?? PaymentResultType.failed,
     );
   }
-  
+
   factory PaymentResponse.fromJson(Map<String, dynamic> json) {
     return PaymentResponse(
       success: json['success'] ?? false,
@@ -193,7 +204,7 @@ class PaymentResponse extends Equatable {
       code: json['code'],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'success': success,
@@ -204,21 +215,22 @@ class PaymentResponse extends Equatable {
       'code': code,
     };
   }
-  
+
   @override
-  List<Object?> get props => [success, data, orderId, paymentId, message, code, resultType];
+  List<Object?> get props =>
+      [success, data, orderId, paymentId, message, code, resultType];
 }
 
 /// 支付结果
 class PaymentResult extends Equatable {
   final PaymentStatus status;
-  final String? orderId;          // 订单ID
-  final String? tradeNo;          // 交易号
-  final String? amount;           // 实际支付金额
-  final String? message;          // 结果消息
-  final DateTime? payTime;        // 支付时间
+  final String? orderId; // 订单ID
+  final String? tradeNo; // 交易号
+  final String? amount; // 实际支付金额
+  final String? message; // 结果消息
+  final DateTime? payTime; // 支付时间
   final Map<String, dynamic>? extraData; // 额外数据
-  
+
   const PaymentResult({
     required this.status,
     this.orderId,
@@ -228,7 +240,7 @@ class PaymentResult extends Equatable {
     this.payTime,
     this.extraData,
   });
-  
+
   /// 支付成功
   factory PaymentResult.success({
     required String orderId,
@@ -248,7 +260,7 @@ class PaymentResult extends Equatable {
       extraData: extraData,
     );
   }
-  
+
   /// 支付失败
   factory PaymentResult.failure({
     String? orderId,
@@ -262,7 +274,7 @@ class PaymentResult extends Equatable {
       extraData: extraData,
     );
   }
-  
+
   /// 支付取消
   factory PaymentResult.cancelled({
     String? orderId,
@@ -276,21 +288,19 @@ class PaymentResult extends Equatable {
       extraData: extraData,
     );
   }
-  
+
   /// 是否成功
   bool get isSuccess => status == PaymentStatus.success;
-  
+
   /// 是否失败
   bool get isFailed => status == PaymentStatus.failed;
-  
+
   /// 是否取消
   bool get isCancelled => status == PaymentStatus.cancelled;
-  
+
   @override
-  List<Object?> get props => [
-    status, orderId, tradeNo, amount, 
-    message, payTime, extraData
-  ];
+  List<Object?> get props =>
+      [status, orderId, tradeNo, amount, message, payTime, extraData];
 }
 
 /// 支付异常类
@@ -299,16 +309,16 @@ class PaymentException implements Exception {
   final int? code;
   final String? orderId;
   final dynamic originalError;
-  
+
   const PaymentException({
     required this.message,
     this.code,
     this.orderId,
     this.originalError,
   });
-  
+
   @override
   String toString() {
     return 'PaymentException{message: $message, code: $code, orderId: $orderId}';
   }
-} 
+}

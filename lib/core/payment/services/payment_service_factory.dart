@@ -62,8 +62,10 @@ class PaymentServiceFactory {
     switch (paymentMethod.toLowerCase()) {
       case 'alipay':
         return await getAlipayService();
+      case 'credits':
+        return await getAlipayService();
       case 'wechat':
-      case 'weapp':  // 兼容后端返回的weapp
+      case 'weapp': // 兼容后端返回的weapp
         return await getWechatService();
       case 'stripe':
         return await getStripeService();
@@ -75,7 +77,7 @@ class PaymentServiceFactory {
   /// 获取所有可用的支付服务
   Future<List<IPaymentService>> getAvailableServices() async {
     final services = <IPaymentService>[];
-    
+
     try {
       final alipayService = await getAlipayService();
       if (alipayService.isAvailable) {
@@ -84,7 +86,7 @@ class PaymentServiceFactory {
     } catch (e) {
       AppLogger.d('[PaymentServiceFactory] Failed to load Alipay service: $e');
     }
-    
+
     try {
       final wechatService = await getWechatService();
       if (wechatService.isAvailable) {
@@ -93,7 +95,7 @@ class PaymentServiceFactory {
     } catch (e) {
       AppLogger.d('[PaymentServiceFactory] Failed to load Wechat service: $e');
     }
-    
+
     try {
       final stripeService = await getStripeService();
       if (stripeService.isAvailable) {
@@ -102,7 +104,7 @@ class PaymentServiceFactory {
     } catch (e) {
       AppLogger.d('[PaymentServiceFactory] Failed to load Stripe service: $e');
     }
-    
+
     return services;
   }
 
@@ -112,13 +114,15 @@ class PaymentServiceFactory {
       final service = await getPaymentService(paymentMethod);
       return service.isAvailable;
     } catch (e) {
-      AppLogger.d('[PaymentServiceFactory] Payment method $paymentMethod not available: $e');
+      AppLogger.d(
+          '[PaymentServiceFactory] Payment method $paymentMethod not available: $e');
       return false;
     }
   }
 
   /// 获取支付方式配置信息
-  Future<Map<String, dynamic>> getPaymentMethodInfo(String paymentMethod) async {
+  Future<Map<String, dynamic>> getPaymentMethodInfo(
+      String paymentMethod) async {
     switch (paymentMethod.toLowerCase()) {
       case 'alipay':
         try {
@@ -166,6 +170,14 @@ class PaymentServiceFactory {
           'available': (await getStripeService()).isAvailable,
           'mock': false,
         };
+      case 'credits':
+        return {
+          'method': 'credits',
+          'name': '积分支付',
+          'icon': 'stars',
+          'available': true,
+          'mock': false,
+        };
       default:
         return {
           'method': paymentMethod,
@@ -185,4 +197,4 @@ class PaymentServiceFactory {
     // _wechatService = null; // 暂时禁用
     _stripeService = null;
   }
-} 
+}

@@ -7,29 +7,30 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import 'package:dskk_flutter_refactor/core/widgets/app_network_image.dart';
 import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 
 /// 商品卡片组件
-/// 
+///
 /// 用于在商品管理列表页面显示商品信息和操作按钮
 class ProductCard extends StatelessWidget {
   /// 商品数据
   final SellerManagedProduct product;
-  
+
   /// 编辑按钮点击回调
   final Function(SellerManagedProduct) onEdit;
-  
+
   /// 删除按钮点击回调
   final Function(SellerManagedProduct)? onDelete;
-  
+
   /// 上架/下架切换回调
   final Function(SellerManagedProduct, bool)? onToggleStatus;
-  
+
   /// 发布按钮点击回调 (针对草稿商品)
   final Function(SellerManagedProduct)? onPublish;
-  
+
   /// 查看详情回调
   final Function(SellerManagedProduct)? onView;
-  
+
   /// 构造函数
   const ProductCard({
     super.key,
@@ -40,90 +41,94 @@ class ProductCard extends StatelessWidget {
     this.onPublish,
     this.onView,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     // 商品状态标签
     final statusTag = _buildStatusTag();
-    
+
     return GlassCard(
-      margin: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm, horizontal: AppDimensions.spacingLg),
+      margin: const EdgeInsets.symmetric(
+          vertical: AppDimensions.spacingSm,
+          horizontal: AppDimensions.spacingLg),
       padding: const EdgeInsets.all(12.0),
       borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 商品基本信息
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 商品图片
-                product.images.isNotEmpty
-                    ? AppNetworkImage(
-                        imageUrl: product.images.split(',').first,
-                        width: 80,
-                        height: 80,
-                        borderRadius: BorderRadius.circular(8.0),
-                      )
-                    : _buildErrorImage(),
-                const SizedBox(width: 12),
-                // 商品信息
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              product.name,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 商品基本信息
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 商品图片
+              product.images.isNotEmpty
+                  ? AppNetworkImage(
+                      imageUrl: product.images.split(',').first,
+                      width: 80,
+                      height: 80,
+                      borderRadius: BorderRadius.circular(8.0),
+                    )
+                  : _buildErrorImage(),
+              const SizedBox(width: 12),
+              // 商品信息
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            product.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          // statusTag, // 暂时注释掉状态标签
-                        ],
+                        ),
+                        // statusTag, // 暂时注释掉状态标签
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      PriceFormatter.format(product.price),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 4),
+                    ),
+                    const SizedBox(height: 4),
+                    if (product.sales != null)
                       Text(
-                                                  '¥${product.price.toStringAsFixed(2)}',
+                        AppLocalizations.of(context)
+                                .seller_product_card_sales(product.sales!) ??
+                            'Sales: ${product.sales}',
                         style: const TextStyle(
-                          fontSize: 18,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      if (product.sales != null)
-                        Text(
-                          AppLocalizations.of(context).seller_product_card_sales(product.sales!) ?? 'Sales: ${product.sales}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            
-            const SizedBox(height: 12),
-            
-            // 操作按钮
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: _buildActionButtons(context),
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // 操作按钮
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: _buildActionButtons(context),
+          ),
+        ],
+      ),
     );
   }
-  
+
   /// 构建状态标签
   Widget _buildStatusTag() {
     switch (product.status) {
@@ -134,16 +139,20 @@ class ProductCard extends StatelessWidget {
       case ProductStatus.draft:
         return StatusTags.draft();
       case ProductStatus.unknown:
-        return StatusTag(text: product.status.displayName, type: StatusTagType.warning);
+        return StatusTag(
+            text: product.status.displayName, type: StatusTagType.warning);
       case ProductStatus.reviewing:
-        return StatusTag(text: product.status.displayName, type: StatusTagType.info);
+        return StatusTag(
+            text: product.status.displayName, type: StatusTagType.info);
       case ProductStatus.rejected:
-        return StatusTag(text: product.status.displayName, type: StatusTagType.defaultTag);
+        return StatusTag(
+            text: product.status.displayName, type: StatusTagType.defaultTag);
       case ProductStatus.soldOut:
-        return StatusTag(text: product.status.displayName, type: StatusTagType.defaultTag);
+        return StatusTag(
+            text: product.status.displayName, type: StatusTagType.defaultTag);
     }
   }
-  
+
   /// 构建操作按钮
   List<Widget> _buildActionButtons(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -228,7 +237,7 @@ class ProductCard extends StatelessWidget {
 
     return buttons;
   }
-  
+
   /// 构建图片加载错误占位图
   Widget _buildErrorImage() {
     return Container(

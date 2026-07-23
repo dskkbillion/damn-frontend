@@ -12,14 +12,10 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 // 导入国际化
 import '../../../../generated/app_localizations.dart';
 
-import 'package:get_it/get_it.dart';
-import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
-
 import '../bloc/seller_home/seller_home_bloc.dart';
 import '../bloc/seller_home/seller_home_event.dart';
 import '../bloc/seller_home/seller_home_state.dart';
 import '../../domain/entities/seller_dashboard_data.dart';
-import '../../data/datasources/stripe_connect_remote_data_source.dart';
 import '../routes/seller_routes.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/seller_home_skeleton.dart';
@@ -34,9 +30,6 @@ class SellerHomePage extends ConsumerStatefulWidget {
 }
 
 class _SellerHomePageState extends ConsumerState<SellerHomePage> {
-  // null = 还没查完；true = 未绑定；false = 已绑定或查询失败
-  bool? _stripeUnlinked;
-
   @override
   void initState() {
     super.initState();
@@ -57,24 +50,7 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
         AppLogger.d(
             '[SellerHomePage] Data already exists or loading, skipping LoadDashboardData');
       }
-
-      _checkStripeAccountStatus();
     });
-  }
-
-  Future<void> _checkStripeAccountStatus() async {
-    try {
-      final dio = GetIt.I<CoreDioClient>().dio;
-      final dataSource = StripeConnectRemoteDataSourceImpl(dio);
-      final status = await dataSource.getAccountStatus();
-      if (mounted) {
-        setState(() {
-          _stripeUnlinked = status.status == ConnectStatus.notCreated;
-        });
-      }
-    } catch (_) {
-      // 查询失败不影响主页展示，静默忽略
-    }
   }
 
   @override
@@ -152,12 +128,6 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                     _buildOrdersCard(context, dashboardData),
 
                     const SizedBox(height: 16),
-
-                    // 未绑定收款账户提示
-                    if (_stripeUnlinked == true) ...[
-                      _buildStripeUnlinkedBanner(context),
-                      const SizedBox(height: 16),
-                    ],
 
                     // 功能列表卡片
                     _buildFunctionsCard(context),
@@ -572,12 +542,6 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   label: AppLocalizations.of(context).seller_home_wallet,
                   onTap: () => context.goNamed('seller_wallet'),
                 ),
-                _buildFunctionItem(
-                  context,
-                  icon: Icons.account_balance_outlined,
-                  label: '收款账户',
-                  onTap: () => context.push('/seller/connect-account'),
-                ),
                 // TODO(#306): 认证功能暂未完善，隐藏入口
                 // _buildFunctionItem(
                 //   context,
@@ -812,37 +776,4 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
     }
   }
 
-  // 未绑定收款账户提示 banner（#385 延迟绑定：发布商品不强制，首次提现前提示）
-  Widget _buildStripeUnlinkedBanner(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push(SellerRoutes.connectAccount),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.warning.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-          border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.account_balance_outlined,
-                color: AppColors.warning, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '绑定收款账户后才能接收买家付款，点击立即绑定',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.warning,
-                  height: 1.4,
-                ),
-              ),
-            ),
-            Icon(Icons.chevron_right, color: AppColors.warning, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
 }

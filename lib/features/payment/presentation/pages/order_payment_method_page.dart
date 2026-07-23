@@ -36,20 +36,22 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
   @override
   void initState() {
     super.initState();
-    AppLogger.d('[OrderPaymentMethodPage] initState() - Order ID: ${widget.order.id}');
+    AppLogger.d(
+        '[OrderPaymentMethodPage] initState() - Order ID: ${widget.order.id}');
 
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
     // 设置默认选中的支付方式
     _selectedPaymentMethod = _availablePaymentMethods.isNotEmpty
         ? _availablePaymentMethods.first
-        : payment_models.PaymentMethod.alipay;
+        : payment_models.PaymentMethod.credits;
 
     // 确保 BLoC 状态是 OrderDetailLoaded，以便支付功能正常工作
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final bloc = context.read<OrderDetailBloc>();
       if (bloc.state is! OrderDetailLoaded) {
-        AppLogger.d('[OrderPaymentMethodPage] State is not OrderDetailLoaded, reloading order...');
+        AppLogger.d(
+            '[OrderPaymentMethodPage] State is not OrderDetailLoaded, reloading order...');
         bloc.add(LoadOrderDetail(orderId: widget.order.id));
       }
     });
@@ -90,7 +92,8 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
               response.data != null &&
               response.data!.isNotEmpty) {
             // 打开Stripe WebView
-            _openStripeWebView(response.data!, response.orderId ?? widget.order.id.toString());
+            _openStripeWebView(
+                response.data!, response.orderId ?? widget.order.id.toString());
             return;
           }
 
@@ -101,10 +104,12 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
             };
 
             if (response.success) {
-              params['orderId'] = response.orderId ?? widget.order.id.toString();
+              params['orderId'] =
+                  response.orderId ?? widget.order.id.toString();
             } else {
               params['errorMessage'] = response.message ?? '支付失败';
-              params['orderId'] = response.orderId ?? widget.order.id.toString();
+              params['orderId'] =
+                  response.orderId ?? widget.order.id.toString();
             }
 
             context.pushNamed('paymentResult', queryParameters: params);
@@ -140,57 +145,59 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                 padding: const EdgeInsets.all(AppDimensions.spacingLg),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
                 tintOpacity: 0.62,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '订单编号: ${widget.order.orderSn}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '订单编号: ${widget.order.orderSn}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                       ),
-                      const SizedBox(height: AppDimensions.spacingSm),
-                      if (widget.order.items.isNotEmpty)
-                        Text(
-                          widget.order.items.first.productName,
-                          style: const TextStyle(
+                    ),
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    if (widget.order.items.isNotEmpty)
+                      Text(
+                        widget.order.items.first.productName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '应付金额',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      const SizedBox(height: AppDimensions.spacingLg),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '应付金额',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        Text(
+                          RegionConfig.formatPrice(totalAmount),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
                           ),
-                          Text(
-                            RegionConfig.formatPrice(totalAmount),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
+              ),
 
               const SizedBox(height: 32),
 
               // 支付方式标题
               Text(
-                RegionConfig.currentRegion == RegionType.domestic ? '选择支付方式' : 'Select Payment Method',
+                RegionConfig.currentRegion == RegionType.domestic
+                    ? '选择支付方式'
+                    : 'Select Payment Method',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -200,11 +207,11 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
 
               // 动态生成支付方式选项
               ..._availablePaymentMethods.map((method) => Column(
-                children: [
-                  _buildPaymentMethodOption(method),
-                  const SizedBox(height: AppDimensions.spacingMd),
-                ],
-              )),
+                    children: [
+                      _buildPaymentMethodOption(method),
+                      const SizedBox(height: AppDimensions.spacingMd),
+                    ],
+                  )),
 
               const SizedBox(height: 32),
 
@@ -229,7 +236,8 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
                             SizedBox(width: AppDimensions.spacingMd),
@@ -266,17 +274,27 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
     String subtitle;
 
     switch (method) {
+      case payment_models.PaymentMethod.credits:
+        iconData = Icons.stars_rounded;
+        iconColor = AppColors.warning;
+        logoAsset = null;
+        subtitle = '使用平台积分，支付后即时扣除';
+        break;
       case payment_models.PaymentMethod.alipay:
         iconData = Icons.payment;
         iconColor = Colors.blue; // 支付宝品牌色
         logoAsset = 'assets/images/alipay_logo.png';
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '安全快捷支付' : 'Fast and secure payment';
+        subtitle = RegionConfig.currentRegion == RegionType.domestic
+            ? '安全快捷支付'
+            : 'Fast and secure payment';
         break;
       case payment_models.PaymentMethod.wechat:
         iconData = Icons.wechat;
         iconColor = Colors.green; // 微信品牌色
         logoAsset = null;
-        subtitle = RegionConfig.currentRegion == RegionType.domestic ? '微信安全支付' : 'WeChat Pay';
+        subtitle = RegionConfig.currentRegion == RegionType.domestic
+            ? '微信安全支付'
+            : 'WeChat Pay';
         break;
       case payment_models.PaymentMethod.stripe:
         iconData = Icons.credit_card;
@@ -299,17 +317,13 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
   }
 
   /// 构建支付方式选项UI
-  Widget _buildPaymentOption(
-    payment_models.PaymentMethod method,
-    String name,
-    String? logoAsset,
-    IconData fallbackIcon,
-    Color iconColor,
-    {String? subtitle}
-  ) {
+  Widget _buildPaymentOption(payment_models.PaymentMethod method, String name,
+      String? logoAsset, IconData fallbackIcon, Color iconColor,
+      {String? subtitle}) {
     final isSelected = _selectedPaymentMethod == method;
     final effectiveIconColor = iconColor;
-    final effectiveTextColor = isSelected ? Theme.of(context).primaryColor : null;
+    final effectiveTextColor =
+        isSelected ? Theme.of(context).primaryColor : null;
 
     return GestureDetector(
       onTap: () {
@@ -356,7 +370,8 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                     height: 30,
                     decoration: BoxDecoration(
                       color: effectiveIconColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusSm),
                     ),
                     child: Icon(
                       fallbackIcon,
@@ -392,7 +407,8 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
                     name,
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                       color: effectiveTextColor,
                     ),
                   ),
@@ -454,14 +470,17 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
           'orderId': orderId,
         };
 
-        if (result != null && result['result'] == PaymentWebViewResult.success) {
+        if (result != null &&
+            result['result'] == PaymentWebViewResult.success) {
           // Stripe 的 success_url 只说明结账页已回跳；订单状态仍需以后端
           // webhook 的落库结果为准，避免超时关闭的订单被错误展示为“支付成功”。
           params['success'] = 'pending';
-        } else if (result != null && result['result'] == PaymentWebViewResult.cancelled) {
+        } else if (result != null &&
+            result['result'] == PaymentWebViewResult.cancelled) {
           params['success'] = 'false';
           params['errorMessage'] = '用户取消支付';
-        } else if (result != null && result['result'] == PaymentWebViewResult.pending) {
+        } else if (result != null &&
+            result['result'] == PaymentWebViewResult.pending) {
           // #326: 用户声明已支付但 success_url 没自动跳 — 让 paymentResult 页查后端
           params['success'] = 'pending';
           params['errorMessage'] = '正在确认支付结果...';
@@ -493,19 +512,22 @@ class _OrderPaymentMethodPageState extends State<OrderPaymentMethodPage> {
       return;
     }
 
-    AppLogger.d('[OrderPaymentMethodPage] 开始支付 - 订单ID: ${widget.order.id}, 支付方式: $_selectedPaymentMethod');
+    AppLogger.d(
+        '[OrderPaymentMethodPage] 开始支付 - 订单ID: ${widget.order.id}, 支付方式: $_selectedPaymentMethod');
 
     // 触发支付事件 - 传递选择的支付方式
     context.read<OrderDetailBloc>().add(
-      ProcessPaymentWithMethod(
-        orderId: widget.order.id,
-        paymentMethod: _selectedPaymentMethod,
-      ),
-    );
+          ProcessPaymentWithMethod(
+            orderId: widget.order.id,
+            paymentMethod: _selectedPaymentMethod,
+          ),
+        );
   }
 
   Color _getButtonColor() {
     switch (_selectedPaymentMethod) {
+      case payment_models.PaymentMethod.credits:
+        return AppColors.warning;
       case payment_models.PaymentMethod.alipay:
         return Colors.blue; // 支付宝品牌色
       case payment_models.PaymentMethod.wechat:

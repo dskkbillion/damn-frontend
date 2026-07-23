@@ -45,11 +45,12 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       AppLogger.d('[PaymentBloc] 正在处理支付请求，忽略重复事件');
       return;
     }
-    
+
     try {
       _isProcessing = true; // 设置处理标志
-      AppLogger.d('[PaymentBloc] 开始处理订单创建和支付 - 商品: ${event.productName}, 支付方式: ${event.paymentMethod}');
-      
+      AppLogger.d(
+          '[PaymentBloc] 开始处理订单创建和支付 - 商品: ${event.productName}, 支付方式: ${event.paymentMethod}');
+
       // 显示创建订单中状态
       emit(CreatingOrderState());
 
@@ -68,14 +69,15 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         (failure) {
           // 创建订单失败
           _isProcessing = false; // 重置处理标志
-          
+
           // 特殊处理重复提交错误
           String errorMessage = failure.message;
-          if (errorMessage.contains('不允许重复提交') || errorMessage.contains('重复提交')) {
+          if (errorMessage.contains('不允许重复提交') ||
+              errorMessage.contains('重复提交')) {
             errorMessage = '请勿频繁操作，稍等片刻后再试';
             AppLogger.d('[PaymentBloc] 检测到重复提交错误，显示用户友好提示');
           }
-          
+
           Fluttertoast.showToast(msg: errorMessage);
           emit(PaymentFailedState(errorMessage: errorMessage));
         },
@@ -85,12 +87,14 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           emit(PayingState(orderId: creationResult.orderId));
 
           // 获取对应的支付服务
-          final paymentService = await paymentServiceFactory.getPaymentService(event.paymentMethod);
+          final paymentService = await paymentServiceFactory
+              .getPaymentService(event.paymentMethod);
 
           // 创建支付请求
           final paymentRequest = payment_models.PaymentRequest(
             orderId: creationResult.orderId,
-            amount: (event.price * event.quantity).toStringAsFixed(2),
+            amount: _selectedAmount(
+                event.paymentMethod, event.price * event.quantity),
             subject: event.productName,
             description: '${event.productName} x ${event.quantity}',
             method: _getPaymentMethod(event.paymentMethod),
@@ -98,12 +102,14 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
           );
 
           // 发起支付
-          final paymentResult = await paymentService.createPayment(paymentRequest);
+          final paymentResult =
+              await paymentService.createPayment(paymentRequest);
 
           // 处理支付结果
           if (paymentResult.success) {
             // 检查支付结果类型
-            if (paymentResult.resultType == payment_models.PaymentResultType.processing) {
+            if (paymentResult.resultType ==
+                payment_models.PaymentResultType.processing) {
               // 支付处理中（如Stripe跳转）
               _isProcessing = false; // 重置处理标志
               // emit外部支付处理中状态
@@ -145,16 +151,18 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       AppLogger.d('[PaymentBloc] 正在处理支付请求，忽略重复直接支付事件');
       return;
     }
-    
+
     try {
       _isProcessing = true; // 设置处理标志
-      AppLogger.d('[PaymentBloc] 开始处理直接支付 - 订单: ${event.orderId}, 支付方式: ${event.paymentMethod}');
-      
+      AppLogger.d(
+          '[PaymentBloc] 开始处理直接支付 - 订单: ${event.orderId}, 支付方式: ${event.paymentMethod}');
+
       // 显示支付中状态
       emit(PayingState(orderId: event.orderId));
 
       // 获取对应的支付服务
-      final paymentService = await paymentServiceFactory.getPaymentService(event.paymentMethod);
+      final paymentService =
+          await paymentServiceFactory.getPaymentService(event.paymentMethod);
 
       // 创建支付请求
       final paymentRequest = payment_models.PaymentRequest(
@@ -197,9 +205,17 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
         return payment_models.PaymentMethod.wechat;
       case 'stripe':
         return payment_models.PaymentMethod.stripe;
+      case 'credits':
+        return payment_models.PaymentMethod.credits;
       case 'alipay':
       default:
         return payment_models.PaymentMethod.alipay;
     }
   }
-} 
+
+  String _selectedAmount(String method, double amount) {
+    return method.toLowerCase() == 'credits'
+        ? amount.round().toString()
+        : amount.toStringAsFixed(2);
+  }
+}

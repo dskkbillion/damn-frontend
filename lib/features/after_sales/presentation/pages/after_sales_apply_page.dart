@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 // Import OrderItem
 import 'package:dskk_flutter_refactor/features/orders/domain/entities/order_item.dart';
@@ -314,15 +315,14 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                       controller: _amountController, // Use controller
                       decoration: InputDecoration(
                         labelText: s.after_sales_refund_amount_label,
-                        hintText: s.after_sales_refund_amount_hint(
-                            RegionConfig.currencySymbol,
-                            maxRefundAmount
-                                .toStringAsFixed(2)), // Show max amount
-                        prefixText: '${RegionConfig.currencySymbol} ',
+                        hintText: '最多 ${maxRefundAmount.round()} 积分',
+                        suffixText: '积分',
                         border: const OutlineInputBorder(),
                       ),
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
                       validator: (value) {
                         // Add validation
                         if (value == null || value.isEmpty) {
@@ -336,9 +336,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                           return s.after_sales_refund_amount_positive;
                         }
                         if (amount > maxRefundAmount) {
-                          return s.after_sales_refund_amount_exceed(
-                              RegionConfig.currencySymbol,
-                              maxRefundAmount.toStringAsFixed(2));
+                          return '退款积分不能超过 ${maxRefundAmount.round()}';
                         }
                         return null;
                       },
@@ -492,7 +490,7 @@ class _AfterSalesApplyPageState extends State<AfterSalesApplyPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}',
+                  RegionConfig.formatPrice(item.price),
                   style: textTheme.titleSmall
                       ?.copyWith(color: colorScheme.primary),
                 ),

@@ -20,17 +20,23 @@ class SellerOrderItemCard extends StatelessWidget {
   final VoidCallback? onTap; // 点击卡片的回调 (导航到详情)
   final bool hasBuyerMaterials; // 是否有买家提供的材料
 
-  const SellerOrderItemCard({super.key, required this.order, this.onTap, this.hasBuyerMaterials = false});
+  const SellerOrderItemCard(
+      {super.key,
+      required this.order,
+      this.onTap,
+      this.hasBuyerMaterials = false});
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // 调试日志
     AppLogger.d('[SellerOrderItemCard] Building card for order ${order.id}');
-    AppLogger.d('[SellerOrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
-    AppLogger.d('[SellerOrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}');
+    AppLogger.d(
+        '[SellerOrderItemCard] Buyer info - id: ${order.buyer?.id}, nickname: ${order.buyer?.nickname}');
+    AppLogger.d(
+        '[SellerOrderItemCard] Tenant info - id: ${order.tenant?.id}, nickname: ${order.tenant?.nickname}');
 
     // 假设 order.items 非空，并且我们显示第一个 item 的信息作为预览
     final firstItem = order.items.isNotEmpty ? order.items.first : null;
@@ -40,9 +46,10 @@ class SellerOrderItemCard extends StatelessWidget {
       if (onTap != null) {
         onTap!(); // Use the main onTap callback passed from the list page
       } else {
-         // TODO: Define seller detail route and navigate
-         // context.go('/seller/orders/${order.id}');
-         AppLogger.d('[SellerOrderItemCard] Navigate to seller detail for order ${order.id}');
+        // TODO: Define seller detail route and navigate
+        // context.go('/seller/orders/${order.id}');
+        AppLogger.d(
+            '[SellerOrderItemCard] Navigate to seller detail for order ${order.id}');
       }
     }
 
@@ -52,7 +59,8 @@ class SellerOrderItemCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       tintOpacity: 0.62,
       child: InkWell(
-        onTap: onTap ?? navigateToDetail, // Default to navigate if onTap is null
+        onTap:
+            onTap ?? navigateToDetail, // Default to navigate if onTap is null
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -68,12 +76,14 @@ class SellerOrderItemCard extends StatelessWidget {
                     child: Row(
                       children: [
                         // 买家头像
-                        if (order.buyer?.avatar != null && order.buyer!.avatar!.isNotEmpty)
+                        if (order.buyer?.avatar != null &&
+                            order.buyer!.avatar!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundImage: NetworkImage(order.buyer!.avatar!),
+                              backgroundImage:
+                                  NetworkImage(order.buyer!.avatar!),
                               backgroundColor: AppColors.backgroundSecondary,
                               onBackgroundImageError: (_, __) {},
                             ),
@@ -83,7 +93,8 @@ class SellerOrderItemCard extends StatelessWidget {
                             padding: const EdgeInsets.only(right: 8.0),
                             child: CircleAvatar(
                               radius: 16,
-                              backgroundColor: colorScheme.surfaceContainerHighest,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 Icons.person,
                                 size: 16,
@@ -92,7 +103,8 @@ class SellerOrderItemCard extends StatelessWidget {
                             ),
                           ),
                         // 买家昵称
-                        if (order.buyer?.nickname != null && order.buyer!.nickname!.isNotEmpty)
+                        if (order.buyer?.nickname != null &&
+                            order.buyer!.nickname!.isNotEmpty)
                           Expanded(
                             child: Text(
                               order.buyer!.nickname!,
@@ -102,14 +114,24 @@ class SellerOrderItemCard extends StatelessWidget {
                             ),
                           ),
                         // 如果有买家材料且订单状态适合显示
-                        if (hasBuyerMaterials && _shouldShowMaterials(order.state)) ...[
+                        if (hasBuyerMaterials &&
+                            _shouldShowMaterials(order.state)) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
-                              border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.08),
+                              borderRadius:
+                                  BorderRadius.circular(AppDimensions.radiusMd),
+                              border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -124,7 +146,8 @@ class SellerOrderItemCard extends StatelessWidget {
                                   '含材料',
                                   style: textTheme.bodySmall?.copyWith(
                                     fontSize: 10,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                 ),
                               ],
@@ -146,7 +169,8 @@ class SellerOrderItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 商品图片
-                  if (firstItem?.imageUrl != null && firstItem!.imageUrl.isNotEmpty)
+                  if (firstItem?.imageUrl != null &&
+                      firstItem!.imageUrl.isNotEmpty)
                     AppNetworkImage(
                       imageUrl: firstItem.imageUrl,
                       width: 80,
@@ -154,11 +178,13 @@ class SellerOrderItemCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8.0),
                     )
                   else // 如果没有图片URL，显示占位符
-                     Container(
-                          width: 80, height: 80,
-                          color: AppColors.backgroundSecondary,
-                          child: const Icon(Icons.image, color: AppColors.textTertiary),
-                        ),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      color: AppColors.backgroundSecondary,
+                      child: const Icon(Icons.image,
+                          color: AppColors.textTertiary),
+                    ),
                   const SizedBox(width: 12.0),
                   // 商品详情
                   Expanded(
@@ -172,18 +198,22 @@ class SellerOrderItemCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4.0),
-                        if (firstItem?.skuName != null && firstItem!.skuName!.isNotEmpty)
+                        if (firstItem?.skuName != null &&
+                            firstItem!.skuName!.isNotEmpty)
                           Text(
-                             firstItem.skuName!, // 商品描述/规格
-                             style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
-                             maxLines: 1,
-                             overflow: TextOverflow.ellipsis,
+                            firstItem.skuName!, // 商品描述/规格
+                            style: textTheme.bodySmall
+                                ?.copyWith(color: colorScheme.secondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         const SizedBox(height: 8.0),
                         Text(
-                           // 显示订单总价
-                          '${RegionConfig.currencySymbol}${order.priceSummary.payPrice.toStringAsFixed(2)}',
-                          style: textTheme.titleMedium?.copyWith(color: colorScheme.primary, fontWeight: FontWeight.bold),
+                          // 显示订单总价
+                          RegionConfig.formatPrice(order.priceSummary.payPrice),
+                          style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -197,20 +227,22 @@ class SellerOrderItemCard extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 0, bottom: 4.0), // Adjust padding as needed
+                  padding: const EdgeInsets.only(
+                      left: 0, bottom: 4.0), // Adjust padding as needed
                   child: Text(
                     '${order.createdAt.year}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.day.toString().padLeft(2, '0')} ${order.createdAt.hour.toString().padLeft(2, '0')}:${order.createdAt.minute.toString().padLeft(2, '0')}',
-                    style: textTheme.bodySmall?.copyWith(color: colorScheme.secondary),
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.secondary),
                   ),
                 ),
               ),
               // 操作按钮区域 - 使用新的 SellerOrderItemCardActionButtons
               Align(
-                 alignment: Alignment.centerRight,
-                 child: SellerOrderItemCardActionButtons(
-                   order: order,
-                   // Pass callbacks if defined in SellerOrderItemCardActionButtons
-                 ),
+                alignment: Alignment.centerRight,
+                child: SellerOrderItemCardActionButtons(
+                  order: order,
+                  // Pass callbacks if defined in SellerOrderItemCardActionButtons
+                ),
               ),
             ],
           ),
@@ -218,7 +250,7 @@ class SellerOrderItemCard extends StatelessWidget {
       ),
     );
   }
-  
+
   /// 判断是否应该显示买家材料标签
   bool _shouldShowMaterials(OrderStatus status) {
     return status == OrderStatus.awaitingStart ||

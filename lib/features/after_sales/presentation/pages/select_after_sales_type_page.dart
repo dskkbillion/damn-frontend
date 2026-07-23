@@ -49,35 +49,40 @@ class SelectAfterSalesTypePage extends StatelessWidget {
       tintColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       tintOpacity: 0.3,
       child: Row(
-          children: [
-            // Use item.imageUrl
-            Container(
-              width: 60, height: 60,
-              color: AppColors.backgroundSecondary,
-              child: item.imageUrl.isNotEmpty
-                 ? AppNetworkImage(
-                     imageUrl: item.imageUrl,
-                     fit: BoxFit.cover,
-                     borderRadius: BorderRadius.circular(4.0),
-                   )
-                 : Icon(Icons.image, color: AppColors.textTertiary),
+        children: [
+          // Use item.imageUrl
+          Container(
+            width: 60,
+            height: 60,
+            color: AppColors.backgroundSecondary,
+            child: item.imageUrl.isNotEmpty
+                ? AppNetworkImage(
+                    imageUrl: item.imageUrl,
+                    fit: BoxFit.cover,
+                    borderRadius: BorderRadius.circular(4.0),
+                  )
+                : Icon(Icons.image, color: AppColors.textTertiary),
+          ),
+          const SizedBox(width: 16),
+          // Use item fields for text
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.productName,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(item.skuName ?? '',
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary)),
+                const SizedBox(height: 4),
+                Text(RegionConfig.formatPrice(item.price),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 16),
-            // Use item fields for text
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(item.skuName ?? '', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  const SizedBox(height: 4),
-                  Text('${RegionConfig.currencySymbol}${item.price.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -94,20 +99,23 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           title: s.after_sales_type_remake_title,
           subtitle: s.after_sales_type_remake_subtitle,
           onTap: () {
-             print('Selected: REMAKE for item $currentItemId');
-             // Pass orderItem as extra
-             context.push('/afterSalesApply?itemId=$currentItemId&type=REMAKE', extra: orderItem);
+            print('Selected: REMAKE for item $currentItemId');
+            // Pass orderItem as extra
+            context.push('/afterSalesApply?itemId=$currentItemId&type=REMAKE',
+                extra: orderItem);
           },
         ),
-         _buildTypeTile(
+        _buildTypeTile(
           context,
           icon: Icons.add_box_outlined,
           title: s.after_sales_type_supplement_title,
           subtitle: s.after_sales_type_supplement_subtitle,
-           onTap: () {
-             print('Selected: SUPPLEMENT for item $currentItemId');
-             // Pass orderItem as extra
-             context.push('/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT', extra: orderItem);
+          onTap: () {
+            print('Selected: SUPPLEMENT for item $currentItemId');
+            // Pass orderItem as extra
+            context.push(
+                '/afterSalesApply?itemId=$currentItemId&type=SUPPLEMENT',
+                extra: orderItem);
           },
         ),
         _buildTypeTile(
@@ -115,10 +123,11 @@ class SelectAfterSalesTypePage extends StatelessWidget {
           icon: Icons.currency_exchange,
           title: s.after_sales_type_refund_title,
           subtitle: s.after_sales_type_refund_subtitle,
-           onTap: () {
-             print('Selected: REFUND for item $currentItemId');
-             // Pass orderItem as extra
-              context.push('/afterSalesApply?itemId=$currentItemId&type=REFUND', extra: orderItem);
+          onTap: () {
+            print('Selected: REFUND for item $currentItemId');
+            // Pass orderItem as extra
+            context.push('/afterSalesApply?itemId=$currentItemId&type=REFUND',
+                extra: orderItem);
           },
         ),
       ],
@@ -126,20 +135,23 @@ class SelectAfterSalesTypePage extends StatelessWidget {
   }
 
   // Helper to build individual type selection tiles
-  Widget _buildTypeTile(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
-      return GlassCard(
-         margin: const EdgeInsets.only(bottom: 12.0),
-         padding: EdgeInsets.zero,
-         borderRadius: BorderRadius.circular(12.0),
-         tintOpacity: 0.62,
-         child: ListTile(
-           leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-           title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-           subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-           trailing: const Icon(Icons.chevron_right),
-           onTap: onTap,
-         ),
-      );
+  Widget _buildTypeTile(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String subtitle,
+      required VoidCallback onTap}) {
+    return GlassCard(
+      margin: const EdgeInsets.only(bottom: 12.0),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12.0),
+      tintOpacity: 0.62,
+      child: ListTile(
+        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onTap,
+      ),
+    );
   }
-
 }

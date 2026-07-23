@@ -170,12 +170,6 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                         onTap: () => context.push('/seller/wallet'),
                       ),
                       _buildMenuSection(
-                        '收款账户',
-                        Icons.account_balance_outlined,
-                        '',
-                        onTap: () => context.push('/seller/connect-account'),
-                      ),
-                      _buildMenuSection(
                         AppLocalizations.of(context)
                             .seller_profile_time_management,
                         Icons.access_time_outlined,

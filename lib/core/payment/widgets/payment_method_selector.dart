@@ -30,21 +30,21 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
   late models.PaymentMethod _selectedMethod;
   bool _isProcessing = false;
   late List<models.PaymentMethod> _availablePaymentMethods;
-  
+
   @override
   void initState() {
     super.initState();
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
     // 设置默认选中的支付方式
-    _selectedMethod = _availablePaymentMethods.isNotEmpty 
-        ? _availablePaymentMethods.first 
-        : models.PaymentMethod.alipay;
+    _selectedMethod = _availablePaymentMethods.isNotEmpty
+        ? _availablePaymentMethods.first
+        : models.PaymentMethod.credits;
   }
 
   Future<void> _handlePayment() async {
     if (_isProcessing) return;
-    
+
     setState(() {
       _isProcessing = true;
     });
@@ -52,7 +52,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     try {
       final factory = GetIt.instance<PaymentServiceFactory>();
       final service = await factory.getPaymentService(_selectedMethod.code);
-      
+
       final request = models.PaymentRequest(
         orderId: widget.orderId,
         amount: widget.amount,
@@ -61,14 +61,14 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         method: _selectedMethod,
         scene: models.PaymentScene.order,
       );
-      
+
       // 创建支付订单
       final response = await service.createPayment(request);
-      
+
       if (response.success && response.data != null) {
         // 发起支付
         final result = await service.pay(response.data!);
-        
+
         // 导航到相应页面
         final navigationService = GetIt.instance<PaymentNavigationService>();
         if (mounted) {
@@ -77,20 +77,22 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
             success: result.isSuccess,
             message: result.message,
             orderId: result.orderId,
-            resultType: result.isSuccess 
-                ? models.PaymentResultType.success 
+            resultType: result.isSuccess
+                ? models.PaymentResultType.success
                 : models.PaymentResultType.failed,
           );
           PaymentNavigationService.handlePaymentResult(context, navResponse);
         }
       } else {
-        throw Exception(response.message ?? AppLocalizations.of(context).payment_create_order_failed);
+        throw Exception(response.message ??
+            AppLocalizations.of(context).payment_create_order_failed);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).payment_failed_message(e.toString())),
+            content: Text(AppLocalizations.of(context)
+                .payment_failed_message(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -112,6 +114,12 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
     String subtitle;
 
     switch (method) {
+      case models.PaymentMethod.credits:
+        iconData = Icons.stars_rounded;
+        iconColor = Colors.amber;
+        bgColor = Colors.amber.shade50;
+        subtitle = '使用 DeepStream 积分';
+        break;
       case models.PaymentMethod.alipay:
         iconData = Icons.payment;
         iconColor = Colors.blue;
@@ -131,7 +139,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         subtitle = 'Credit/Debit Card';
         break;
     }
-    
+
     return ListTile(
       leading: Container(
         width: 40,
@@ -155,7 +163,7 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
       onTap: () => setState(() => _selectedMethod = method),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -201,7 +209,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
         ),
 
         // 动态生成支付方式选项
-        ..._availablePaymentMethods.map((method) => _buildPaymentMethodTile(method)),
+        ..._availablePaymentMethods
+            .map((method) => _buildPaymentMethodTile(method)),
 
         const SizedBox(height: 20),
 
@@ -253,6 +262,8 @@ class _PaymentMethodSelectorState extends State<PaymentMethodSelector> {
 
   Color _getButtonColor() {
     switch (_selectedMethod) {
+      case models.PaymentMethod.credits:
+        return Colors.amber;
       case models.PaymentMethod.alipay:
         return Colors.blue;
       case models.PaymentMethod.wechat:

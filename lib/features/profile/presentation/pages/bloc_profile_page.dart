@@ -39,13 +39,16 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           );
         } else if (state is ProfileAvatarUploaded) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).profile_avatar_uploaded)),
+            SnackBar(
+                content:
+                    Text(AppLocalizations.of(context).profile_avatar_uploaded)),
           );
           // 更新上传头像后获取最新用户信息
           context.read<ProfileBloc>().add(const GetUserProfileEvent());
         } else if (state is ProfileUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).profile_updated)),
+            SnackBar(
+                content: Text(AppLocalizations.of(context).profile_updated)),
           );
         } else if (state is ProfileAuthStatusLoaded) {
           if (state.isAuthenticated) {
@@ -59,20 +62,24 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           // 🔄 买家→卖家：翻转动画（绕垂直轴）
           Navigator.of(context).push(
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => SellerProfilePage(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  SellerProfilePage(
                 onSwitchToBuyer: () {
-                  context.read<ProfileBloc>().add(const SwitchToBuyerModeEvent());
+                  context
+                      .read<ProfileBloc>()
+                      .add(const SwitchToBuyerModeEvent());
                 },
               ),
               transitionDuration: const Duration(milliseconds: 600),
               reverseTransitionDuration: const Duration(milliseconds: 600),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 // 🎯 翻转动画：围绕Y轴（垂直轴）旋转
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
                     final rotationValue = animation.value * 3.14159; // 0 到 π
-                    
+
                     if (rotationValue >= 3.14159 / 2) {
                       // 后半段：显示新页面
                       return Transform(
@@ -104,16 +111,18 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
           // 🔄 卖家→买家：翻转动画（绕垂直轴）
           Navigator.of(context).pushReplacement(
             PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const BlocProfilePage(),
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const BlocProfilePage(),
               transitionDuration: const Duration(milliseconds: 600),
               reverseTransitionDuration: const Duration(milliseconds: 600),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
                 // 🎯 翻转动画：围绕Y轴（垂直轴）旋转
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
                     final rotationValue = animation.value * 3.14159; // 0 到 π
-                    
+
                     if (rotationValue >= 3.14159 / 2) {
                       // 后半段：显示新页面
                       return Transform(
@@ -146,22 +155,29 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       builder: (context, state) {
         if (state is ProfileLoading || state is ProfileInitial) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).profile_personal_center)),
+            appBar: AppBar(
+                title:
+                    Text(AppLocalizations.of(context).profile_personal_center)),
             body: const Center(child: CircularProgressIndicator()),
           );
-        } else if (state is ProfileLoaded || state is ProfileUpdated || state is ProfileAvatarUploaded) {
+        } else if (state is ProfileLoaded ||
+            state is ProfileUpdated ||
+            state is ProfileAvatarUploaded) {
           // 显示已加载的用户资料
           final UserProfile profile = state is ProfileLoaded
               ? state.profile
               : state is ProfileUpdated
                   ? state.profile
-                  : (context.read<ProfileBloc>().state as ProfileLoaded).profile;
+                  : (context.read<ProfileBloc>().state as ProfileLoaded)
+                      .profile;
 
           return _buildUserProfilePage(context, profile);
         } else {
           // 默认内容
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).profile_personal_center)),
+            appBar: AppBar(
+                title:
+                    Text(AppLocalizations.of(context).profile_personal_center)),
             body: Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -250,7 +266,9 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                         icon: const Icon(Icons.refresh),
                         onPressed: isLoading
                             ? null
-                            : () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
+                            : () => context
+                                .read<ProfileBloc>()
+                                .add(GetWalletSummaryEvent()),
                       ),
                     ],
                   ),
@@ -267,14 +285,15 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '¥ ${state.walletSummary.balance.toStringAsFixed(2)}',
+                          RegionConfig.formatPrice(state.walletSummary.balance),
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(AppLocalizations.of(context).profile_account_balance),
+                        Text(AppLocalizations.of(context)
+                            .profile_account_balance),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -282,17 +301,21 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(AppLocalizations.of(context).profile_pending_settlement),
+                                Text(AppLocalizations.of(context)
+                                    .profile_pending_settlement),
                                 const SizedBox(height: 4),
-                                Text('${RegionConfig.currencySymbol} ${state.walletSummary.pendingAmount?.toStringAsFixed(2) ?? '0.00'}'),
+                                Text(RegionConfig.formatPrice(
+                                    state.walletSummary.pendingAmount ?? 0)),
                               ],
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(AppLocalizations.of(context).profile_total_income),
+                                Text(AppLocalizations.of(context)
+                                    .profile_total_income),
                                 const SizedBox(height: 4),
-                                Text('${RegionConfig.currencySymbol} ${state.walletSummary.totalIncome?.toStringAsFixed(2) ?? '0.00'}'),
+                                Text(RegionConfig.formatPrice(
+                                    state.walletSummary.totalIncome ?? 0)),
                               ],
                             ),
                             const Icon(Icons.arrow_forward_ios, size: 16),
@@ -303,8 +326,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   else
                     Center(
                       child: TextButton(
-                        onPressed: () => context.read<ProfileBloc>().add(GetWalletSummaryEvent()),
-                        child: Text(AppLocalizations.of(context).profile_load_wallet),
+                        onPressed: () => context
+                            .read<ProfileBloc>()
+                            .add(GetWalletSummaryEvent()),
+                        child: Text(
+                            AppLocalizations.of(context).profile_load_wallet),
                       ),
                     ),
                 ],
@@ -341,8 +367,11 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
                   },
                   child: Row(
                     children: [
-                      Text(AppLocalizations.of(context).profile_all_orders, style: const TextStyle(color: AppColors.textTertiary)),
-                      const Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.textTertiary),
+                      Text(AppLocalizations.of(context).profile_all_orders,
+                          style:
+                              const TextStyle(color: AppColors.textTertiary)),
+                      const Icon(Icons.arrow_forward_ios,
+                          size: 12, color: AppColors.textTertiary),
                     ],
                   ),
                 ),
@@ -355,11 +384,28 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildOrderStatusItem(icon: Icons.payment, label: AppLocalizations.of(context).profile_awaiting_payment, badge: 2),
-                _buildOrderStatusItem(icon: Icons.local_shipping, label: AppLocalizations.of(context).profile_awaiting_shipment),
-                _buildOrderStatusItem(icon: Icons.inventory, label: AppLocalizations.of(context).profile_awaiting_receipt, badge: 1),
-                _buildOrderStatusItem(icon: Icons.star_border, label: AppLocalizations.of(context).profile_awaiting_review),
-                _buildOrderStatusItem(icon: Icons.undo, label: AppLocalizations.of(context).profile_refund_after_sales),
+                _buildOrderStatusItem(
+                    icon: Icons.payment,
+                    label:
+                        AppLocalizations.of(context).profile_awaiting_payment,
+                    badge: 2),
+                _buildOrderStatusItem(
+                    icon: Icons.local_shipping,
+                    label:
+                        AppLocalizations.of(context).profile_awaiting_shipment),
+                _buildOrderStatusItem(
+                    icon: Icons.inventory,
+                    label:
+                        AppLocalizations.of(context).profile_awaiting_receipt,
+                    badge: 1),
+                _buildOrderStatusItem(
+                    icon: Icons.star_border,
+                    label:
+                        AppLocalizations.of(context).profile_awaiting_review),
+                _buildOrderStatusItem(
+                    icon: Icons.undo,
+                    label: AppLocalizations.of(context)
+                        .profile_refund_after_sales),
               ],
             ),
           ),
@@ -421,12 +467,32 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
   Widget _buildMenuSection(BuildContext context) {
     final s = AppLocalizations.of(context);
     final List<Map<String, dynamic>> menuItems = [
-      {'icon': Icons.location_on, 'title': s.profile_shipping_address, 'route': '/address'},
-      {'icon': Icons.favorite, 'title': s.profile_favorites, 'route': '/favorites'},
-      {'icon': Icons.history, 'title': s.profile_browsing_history, 'route': '/history'},
-      {'icon': Icons.headset_mic, 'title': s.profile_contact_support, 'route': '/customer-service'},
+      {
+        'icon': Icons.location_on,
+        'title': s.profile_shipping_address,
+        'route': '/address'
+      },
+      {
+        'icon': Icons.favorite,
+        'title': s.profile_favorites,
+        'route': '/favorites'
+      },
+      {
+        'icon': Icons.history,
+        'title': s.profile_browsing_history,
+        'route': '/history'
+      },
+      {
+        'icon': Icons.headset_mic,
+        'title': s.profile_contact_support,
+        'route': '/customer-service'
+      },
       {'icon': Icons.help, 'title': s.profile_help_center, 'route': '/help'},
-      {'icon': Icons.feedback, 'title': s.profile_feedback, 'route': '/feedback'},
+      {
+        'icon': Icons.feedback,
+        'title': s.profile_feedback,
+        'route': '/feedback'
+      },
     ];
 
     return GlassCard(
@@ -508,7 +574,8 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: Text(AppLocalizations.of(context).profile_choose_from_album),
+              title:
+                  Text(AppLocalizations.of(context).profile_choose_from_album),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -531,17 +598,22 @@ class _BlocProfilePageState extends State<BlocProfilePage> {
       );
 
       if (image != null) {
-        context.read<ProfileBloc>().add(UploadAvatarEvent(imageFile: File(image.path)));
+        context
+            .read<ProfileBloc>()
+            .add(UploadAvatarEvent(imageFile: File(image.path)));
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).profile_image_pick_failed(e.toString()))),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)
+                .profile_image_pick_failed(e.toString()))),
       );
     }
   }
 
   void _showEditProfileDialog(BuildContext context, UserProfile profile) {
-    final TextEditingController nickNameController = TextEditingController(text: profile.nickName);
+    final TextEditingController nickNameController =
+        TextEditingController(text: profile.nickName);
     bool onlineFlag = profile.onlineFlag ?? false;
 
     showDialog(

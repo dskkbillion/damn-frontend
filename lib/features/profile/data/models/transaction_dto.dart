@@ -33,13 +33,13 @@ class TransactionDto extends Equatable {
   /// 从JSON映射创建TransactionDto实例
   factory TransactionDto.fromJson(Map<String, dynamic> json) {
     return TransactionDto(
-      id: json['id'] ?? '',
-      amount: _parseDouble(json['amount']) ?? 0.0,
-      type: json['type'] ?? 'unknown',
-      description: json['description'] ?? '',
-      date: json['date'] is String
-          ? DateTime.parse(json['date'])
-          : (json['date'] is DateTime ? json['date'] : DateTime.now()),
+      id: (json['id'] ?? json['changeSn'] ?? '').toString(),
+      amount: _parseDouble(json['amount'] ?? json['changeAmount']) ?? 0.0,
+      type: (json['type'] ?? 'unknown').toString().toLowerCase(),
+      description:
+          (json['description'] ?? json['subject'] ?? json['remark'] ?? '')
+              .toString(),
+      date: _parseDate(json['date'] ?? json['changedTime']),
       status: json['status'] ?? 'completed',
     );
   }
@@ -71,5 +71,11 @@ class TransactionDto extends Equatable {
       }
     }
     return null;
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
+    return DateTime.now();
   }
 }

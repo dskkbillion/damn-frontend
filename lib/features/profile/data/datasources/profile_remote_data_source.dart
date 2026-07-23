@@ -10,7 +10,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/transaction_dto.dart';
 import '../models/user_profile_dto.dart';
 import '../models/wallet_summary_dto.dart';
-import '../models/seller_balance_dto.dart';
 import '../models/saved_item_dto.dart';
 import '../models/liked_story_dto.dart';
 import '../../../../core/services/image_compress_service.dart';
@@ -31,8 +30,8 @@ abstract class ProfileRemoteDataSource {
   ///
   /// 如果服务器返回非200状态码，则抛出 [ServerException]
   Future<UserProfileDto> updateUserProfile({
-    String? nickName,  // 改为可选参数
-    String? avatar,    // 添加头像参数
+    String? nickName, // 改为可选参数
+    String? avatar, // 添加头像参数
     bool? onlineFlag,
   });
 
@@ -131,7 +130,10 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        if (data is Map<String, dynamic> && data.containsKey('code') && data['code'] == 200 && data['data'] != null) {
+        if (data is Map<String, dynamic> &&
+            data.containsKey('code') &&
+            data['code'] == 200 &&
+            data['data'] != null) {
           try {
             return UserProfileDto.fromJson(data['data']);
           } catch (e) {
@@ -140,7 +142,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           }
         } else {
           throw ServerException(
-            message: (data is Map<String, dynamic> ? data['msg'] : null) ?? '获取用户信息失败(业务错误)',
+            message: (data is Map<String, dynamic> ? data['msg'] : null) ??
+                '获取用户信息失败(业务错误)',
             statusCode: (data is Map<String, dynamic> ? data['code'] : null),
           );
         }
@@ -152,7 +155,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       }
     } on DioException catch (e) {
       AppLogger.d("DioException in getUserProfile: ${e.response?.data}");
-      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+      throw ServerException(
+          message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
       if (e is ServerException) rethrow;
       AppLogger.d("Unexpected error in getUserProfile: $e");
@@ -162,8 +166,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
   @override
   Future<UserProfileDto> updateUserProfile({
-    String? nickName,  // 改为可选参数
-    String? avatar,    // 添加头像参数
+    String? nickName, // 改为可选参数
+    String? avatar, // 添加头像参数
     bool? onlineFlag,
   }) async {
     try {
@@ -173,30 +177,39 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       }
 
       final requestData = <String, dynamic>{};
-      
+
       if (nickName != null) requestData['nickName'] = nickName;
       if (avatar != null) requestData['avatar'] = avatar;
       if (onlineFlag != null) requestData['onlineFlag'] = onlineFlag;
-      
+
       // 使用 /api/member/edit 接口，因为它会同时更新 CommonUser 表
       // modify 接口只更新 Member 表，导致聊天列表无法获取最新的昵称和头像
       final response = await dio.post('/api/member/edit', data: requestData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && responseData.containsKey('code') && responseData['code'] == 200) {
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('code') &&
+            responseData['code'] == 200) {
           // 检查是否返回了用户数据
-          if (responseData['data'] != null && responseData['data'] is Map<String, dynamic>) {
+          if (responseData['data'] != null &&
+              responseData['data'] is Map<String, dynamic>) {
             return UserProfileDto.fromJson(responseData['data']);
           } else {
             // 如果只返回成功消息，重新获取用户信息
-            AppLogger.d('Update successful but no user data returned, fetching latest profile...');
+            AppLogger.d(
+                'Update successful but no user data returned, fetching latest profile...');
             return await getUserProfile();
           }
         } else {
           throw ServerException(
-            message: (responseData is Map<String, dynamic> ? responseData['msg'] : null) ?? '更新用户信息失败',
-            statusCode: (responseData is Map<String, dynamic> ? responseData['code'] : null),
+            message: (responseData is Map<String, dynamic>
+                    ? responseData['msg']
+                    : null) ??
+                '更新用户信息失败',
+            statusCode: (responseData is Map<String, dynamic>
+                ? responseData['code']
+                : null),
           );
         }
       } else {
@@ -206,7 +219,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         );
       }
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+      throw ServerException(
+          message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
@@ -217,19 +231,20 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   Future<String> uploadAvatar({required String imageFilePath}) async {
     try {
       final file = File(imageFilePath);
-      
+
       // 先压缩图片
       AppLogger.d('[ProfileRemoteDataSourceImpl] 开始压缩头像图片...');
       final compressedFile = await imageCompressService.compressAvatar(file);
-      
+
       if (compressedFile == null) {
         throw ServerException(message: '图片压缩失败');
       }
-      
+
       // 检查压缩后的文件大小
       final compressedSize = await compressedFile.length();
-      AppLogger.d('[ProfileRemoteDataSourceImpl] 压缩后文件大小: ${_formatFileSize(compressedSize)}');
-      
+      AppLogger.d(
+          '[ProfileRemoteDataSourceImpl] 压缩后文件大小: ${_formatFileSize(compressedSize)}');
+
       // 如果压缩后仍然很大，进一步压缩到5MB以下
       File finalFile = compressedFile;
       if (compressedSize > 5 * 1024 * 1024) {
@@ -240,14 +255,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           maxWidth: 512,
           maxHeight: 512,
         );
-        
+
         if (furtherCompressed != null) {
           finalFile = furtherCompressed;
           final finalSize = await finalFile.length();
-          AppLogger.d('[ProfileRemoteDataSourceImpl] 最终文件大小: ${_formatFileSize(finalSize)}');
+          AppLogger.d(
+              '[ProfileRemoteDataSourceImpl] 最终文件大小: ${_formatFileSize(finalSize)}');
         }
       }
-      
+
       // 创建FormData
       String fileName = 'avatar.jpg'; // 统一使用jpg格式
       FormData formData = FormData.fromMap({
@@ -259,13 +275,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       });
 
       // 使用正确的文件上传接口
-      final response = await dio.post('/api/common/public/upload', data: formData);
+      final response =
+          await dio.post('/api/common/public/upload', data: formData);
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && 
-            responseData.containsKey('code') && 
-            responseData['code'] == 200 && 
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('code') &&
+            responseData['code'] == 200 &&
             responseData['data'] != null) {
           // 根据实际API响应结构获取图片URL
           final data = responseData['data'];
@@ -278,8 +295,13 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           }
         } else {
           throw ServerException(
-            message: (responseData is Map<String, dynamic> ? responseData['msg'] : null) ?? '上传头像失败',
-            statusCode: (responseData is Map<String, dynamic> ? responseData['code'] : null),
+            message: (responseData is Map<String, dynamic>
+                    ? responseData['msg']
+                    : null) ??
+                '上传头像失败',
+            statusCode: (responseData is Map<String, dynamic>
+                ? responseData['code']
+                : null),
           );
         }
       } else {
@@ -299,14 +321,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       } else if (e.response?.statusCode == 415) {
         throw ServerException(message: '不支持的图片格式，请选择JPG或PNG格式');
       } else {
-        throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+        throw ServerException(
+            message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
       }
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
     }
   }
-  
+
   /// 格式化文件大小显示
   String _formatFileSize(int bytes) {
     if (bytes < 1024) {
@@ -321,28 +344,27 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   @override
   Future<WalletSummaryDto> getWalletSummary() async {
     try {
-      // 卖家钱包余额改取 Stripe 真相源 /api/wallet/seller/balance（替代旧 /api/member/balance/info）。
-      // 实测响应（嵌套 data）：{ "code":200, "msg":"操作成功",
-      //   "data":{ "bound":true, "available":12345, "pending":6789, "currency":"usd" } }
-      // available/pending 单位为 cents，由 SellerBalanceDto 负责 ÷100 换算。
-      final response = await dio.get('/api/wallet/seller/balance');
-      AppLogger.d('Requesting seller balance from: /api/wallet/seller/balance');
+      final response = await dio.get('/api/member/credits/info');
+      AppLogger.d('Requesting credits wallet from: /api/member/credits/info');
 
       final data = response.data;
       if (response.statusCode == 200 &&
           data is Map<String, dynamic> &&
           data['code'] == 200 &&
           data['data'] != null) {
-        final balance = SellerBalanceDto.fromJson(data['data'] as Map<String, dynamic>);
-        // bound=false 也是合法响应（未绑定），按 0 余额 + bound 标记正常映射，不当作错误。
-        return WalletSummaryDto.fromWalletSummary(balance.toWalletSummary());
+        return WalletSummaryDto.fromJson(data['data'] as Map<String, dynamic>);
       }
       throw ServerException(
-        message: (data is Map<String, dynamic> ? data['msg'] as String? : null) ?? '获取钱包信息失败',
-        statusCode: (data is Map<String, dynamic> ? data['code'] as int? : null) ?? response.statusCode,
+        message:
+            (data is Map<String, dynamic> ? data['msg'] as String? : null) ??
+                '获取钱包信息失败',
+        statusCode:
+            (data is Map<String, dynamic> ? data['code'] as int? : null) ??
+                response.statusCode,
       );
     } on DioException catch (e) {
-      throw ServerException(message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
+      throw ServerException(
+          message: e.message ?? '网络请求失败', statusCode: e.response?.statusCode);
     } catch (e) {
       if (e is ServerException) rethrow;
       throw ServerException(message: e.toString());
@@ -374,43 +396,25 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         queryParams['type'] = transactionType;
       }
 
-      // 临时返回模拟数据，因为API不存在
-      AppLogger.d('交易记录API未实现，返回模拟数据');
-      // 延迟1秒模拟网络请求
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // 返回空列表，表示暂无交易记录
-      return [];
-      
-      // 注释掉错误的API调用代码
-      /*
       final response = await dio.get(
-        '/api/member/balance/record/page',
+        '/api/member/credits/changes',
         queryParameters: queryParams,
       );
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData is Map<String, dynamic> && 
-            responseData.containsKey('code') && 
-            responseData['code'] == 200 && 
-            responseData['data'] != null) {
-          
-          final data = responseData['data'];
-          if (data is Map<String, dynamic> && 
-              data.containsKey('rows') && 
-              data['rows'] is List) {
-            final transactionsList = data['rows'] as List;
+        if (responseData is Map<String, dynamic> &&
+            responseData['code'] == 200 &&
+            responseData['rows'] is List) {
+          final transactionsList = responseData['rows'] as List;
           return transactionsList
-              .map((json) => TransactionDto.fromJson(json))
+              .whereType<Map>()
+              .map((json) =>
+                  TransactionDto.fromJson(Map<String, dynamic>.from(json)))
               .toList();
-          }
         }
       }
-      
-      // 如果没有有效的响应数据，返回空列表
       return [];
-      */
     } catch (e) {
       AppLogger.d('获取交易记录失败: $e');
       throw ServerException(

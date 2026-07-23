@@ -39,7 +39,7 @@ class SellerOrderDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     print('💰💰💰 [卖家OrderDetailPage] 正在构建页面，订单ID: $orderId 💰💰💰');
-    
+
     return BlocProvider(
       create: (context) => GetIt.instance<SellerOrderDetailBloc>()
         ..add(LoadSellerOrderDetail(orderId: orderId)),
@@ -49,71 +49,95 @@ class SellerOrderDetailPage extends StatelessWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.pop(),
           ),
-          title: Text(AppLocalizations.of(context).order_seller_detail_title(orderId)),
+          title: Text(
+              AppLocalizations.of(context).order_seller_detail_title(orderId)),
         ),
         body: BlocListener<SellerOrderDetailBloc, SellerOrderDetailState>(
           listener: (context, state) {
             // Show SnackBar for action success/failure
             if (state is SellerOrderDetailActionSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.green),
+                SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.green),
               );
             } else if (state is SellerOrderDetailActionFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Theme.of(context).colorScheme.error),
+                SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Theme.of(context).colorScheme.error),
               );
             }
           },
           child: BlocBuilder<SellerOrderDetailBloc, SellerOrderDetailState>(
             builder: (context, state) {
-              // --- Handle different states to build UI --- 
+              // --- Handle different states to build UI ---
               // Action states that still show the UI
               if (state is SellerOrderDetailActionInProgress) {
-                return _buildSuccessUI(context, state.order, isLoadingAction: true);
+                return _buildSuccessUI(context, state.order,
+                    isLoadingAction: true);
               } else if (state is SellerOrderDetailActionFailure) {
-                return _buildSuccessUI(context, state.order, isLoadingAction: false);
+                return _buildSuccessUI(context, state.order,
+                    isLoadingAction: false);
               } else if (state is SellerOrderDetailActionSuccess) {
                 // If action succeeded without reload, show the success state order
-                return _buildSuccessUI(context, state.order, isLoadingAction: false);
-              } 
+                return _buildSuccessUI(context, state.order,
+                    isLoadingAction: false);
+              }
               // Main success state
               else if (state is SellerOrderDetailLoadSuccess) {
                 // If loaded successfully, show the loaded order
-                return _buildSuccessUI(context, state.order, isLoadingAction: false, materials: state.materials, deliveries: state.deliveries);
-              } 
+                return _buildSuccessUI(context, state.order,
+                    isLoadingAction: false,
+                    materials: state.materials,
+                    deliveries: state.deliveries);
+              }
               // Loading state
-              else if (state is SellerOrderDetailLoading && state.loadingOrderId == orderId) {
+              else if (state is SellerOrderDetailLoading &&
+                  state.loadingOrderId == orderId) {
                 // Show the order structure during the initial load.
-                return const SellerPageSkeleton(variant: SellerSkeletonVariant.detail);
-              } 
+                return const SellerPageSkeleton(
+                    variant: SellerSkeletonVariant.detail);
+              }
               // Failure state
-              else if (state is SellerOrderDetailLoadFailure && state.failedOrderId == orderId) {
-                 // Show error message on load failure
-                return Center(child: Text(AppLocalizations.of(context).order_seller_load_failed(state.failedOrderId, state.message)));
-              } 
+              else if (state is SellerOrderDetailLoadFailure &&
+                  state.failedOrderId == orderId) {
+                // Show error message on load failure
+                return Center(
+                    child: Text(AppLocalizations.of(context)
+                        .order_seller_load_failed(
+                            state.failedOrderId, state.message)));
+              }
               // Initial state or fallback
               else {
-                return Center(child: Text(AppLocalizations.of(context).order_seller_preparing));
+                return Center(
+                    child: Text(
+                        AppLocalizations.of(context).order_seller_preparing));
               }
             },
           ), // End BlocBuilder
         ), // End BlocListener
         // Make sure bottomNavigationBar is inside Scaffold
-        bottomNavigationBar: BlocBuilder<SellerOrderDetailBloc, SellerOrderDetailState>(
+        bottomNavigationBar:
+            BlocBuilder<SellerOrderDetailBloc, SellerOrderDetailState>(
           builder: (context, state) {
-             Order? currentOrder;
-             // Extract order from relevant states that should show actions
-             if (state is SellerOrderDetailLoadSuccess) currentOrder = state.order;
-             if (state is SellerOrderDetailActionInProgress) currentOrder = state.order;
-             if (state is SellerOrderDetailActionFailure) currentOrder = state.order;
-             if (state is SellerOrderDetailActionSuccess) currentOrder = state.order;
+            Order? currentOrder;
+            // Extract order from relevant states that should show actions
+            if (state is SellerOrderDetailLoadSuccess)
+              currentOrder = state.order;
+            if (state is SellerOrderDetailActionInProgress)
+              currentOrder = state.order;
+            if (state is SellerOrderDetailActionFailure)
+              currentOrder = state.order;
+            if (state is SellerOrderDetailActionSuccess)
+              currentOrder = state.order;
 
-             // If we have order data, show the actions bar
-             if (currentOrder != null) {
-               return SellerOrderDetailActions(order: currentOrder);
-             }
-             // Otherwise, return an empty container
-             return const SizedBox.shrink();
+            // If we have order data, show the actions bar
+            if (currentOrder != null) {
+              return SellerOrderDetailActions(order: currentOrder);
+            }
+            // Otherwise, return an empty container
+            return const SizedBox.shrink();
           },
         ),
       ), // End Scaffold
@@ -121,7 +145,8 @@ class SellerOrderDetailPage extends StatelessWidget {
   }
 
   // Helper function to build price rows consistently
-  Widget _buildPriceRow(BuildContext context, String label, double value, {bool isTotal = false, bool isDiscount = false}) {
+  Widget _buildPriceRow(BuildContext context, String label, double value,
+      {bool isTotal = false, bool isDiscount = false}) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -132,10 +157,12 @@ class SellerOrderDetailPage extends StatelessWidget {
         children: [
           Text(label, style: textTheme.bodyMedium),
           Text(
-            '${isDiscount ? '-' : ''}${RegionConfig.currencySymbol}${value.toStringAsFixed(2)}',
+            '${isDiscount ? '-' : ''}${RegionConfig.formatPrice(value)}',
             style: textTheme.bodyMedium?.copyWith(
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isDiscount ? Colors.green : (isTotal ? colorScheme.primary : null),
+              color: isDiscount
+                  ? Colors.green
+                  : (isTotal ? colorScheme.primary : null),
             ),
           ),
         ],
@@ -150,7 +177,9 @@ class SellerOrderDetailPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Text('$label: ', style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary)),
+          Text('$label: ',
+              style: textTheme.bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.secondary)),
           Expanded(child: Text(value, style: textTheme.bodySmall)),
         ],
       ),
@@ -169,7 +198,9 @@ class SellerOrderDetailPage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
-          Text('$label: ', style: textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.secondary)),
+          Text('$label: ',
+              style: textTheme.bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.secondary)),
           Expanded(child: Text(formattedTime, style: textTheme.bodySmall)),
         ],
       ),
@@ -177,8 +208,11 @@ class SellerOrderDetailPage extends StatelessWidget {
   }
 
   // --- Helper Widget Builder for Success/Action States ---
-  Widget _buildSuccessUI(BuildContext context, Order order, {bool isLoadingAction = false, List<OrderMaterials>? materials, List<OrderDelivery>? deliveries}) {
-     return Stack(
+  Widget _buildSuccessUI(BuildContext context, Order order,
+      {bool isLoadingAction = false,
+      List<OrderMaterials>? materials,
+      List<OrderDelivery>? deliveries}) {
+    return Stack(
       children: [
         SingleChildScrollView(
           child: Column(
@@ -190,61 +224,95 @@ class SellerOrderDetailPage extends StatelessWidget {
               // 2. 移除状态描述卡片，直接显示订单商品
               // 3. Order Items Section
               GlassCard(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  child: Column(
-                        children: List.generate(order.items.length, (index) {
-                            final item = order.items[index];
-                            return Column(
-                            children: [
-                              OrderDetailItemTile(item: item),
-                              if (index < order.items.length - 1)
-                                const Divider(height: 16, thickness: 0.5),
-                            ],
-                          );
-                        }),
-                      ),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  children: List.generate(order.items.length, (index) {
+                    final item = order.items[index];
+                    return Column(
+                      children: [
+                        OrderDetailItemTile(item: item),
+                        if (index < order.items.length - 1)
+                          const Divider(height: 16, thickness: 0.5),
+                      ],
+                    );
+                  }),
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 16),
               // 4. Price Summary Section
               GlassCard(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                      children: [
-                        _buildPriceRow(context, AppLocalizations.of(context).order_price_total_amount, order.priceSummary.totalPrice),
-                        if (order.priceSummary.deliveryPrice > 0)
-                          _buildPriceRow(context, AppLocalizations.of(context).order_price_shipping, order.priceSummary.deliveryPrice),
-                        if (order.priceSummary.discountPrice > 0)
-                          _buildPriceRow(context, AppLocalizations.of(context).order_price_discount, -order.priceSummary.discountPrice, isDiscount: true),
-                        const Divider(height: 16, thickness: 0.5),
-                        _buildPriceRow(context, AppLocalizations.of(context).order_price_actual_paid, order.priceSummary.payPrice, isTotal: true),
-                      ],
-                    ),
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    _buildPriceRow(
+                        context,
+                        AppLocalizations.of(context).order_price_total_amount,
+                        order.priceSummary.totalPrice),
+                    if (order.priceSummary.deliveryPrice > 0)
+                      _buildPriceRow(
+                          context,
+                          AppLocalizations.of(context).order_price_shipping,
+                          order.priceSummary.deliveryPrice),
+                    if (order.priceSummary.discountPrice > 0)
+                      _buildPriceRow(
+                          context,
+                          AppLocalizations.of(context).order_price_discount,
+                          -order.priceSummary.discountPrice,
+                          isDiscount: true),
+                    const Divider(height: 16, thickness: 0.5),
+                    _buildPriceRow(
+                        context,
+                        AppLocalizations.of(context).order_price_actual_paid,
+                        order.priceSummary.payPrice,
+                        isTotal: true),
+                  ],
                 ),
-                // 卖家佣金拆分（仅当后端返回佣金数据时显示）
-                SellerOrderFeeBreakdown(order: order),
-                const SizedBox(height: 16),
+              ),
+              // 卖家佣金拆分（仅当后端返回佣金数据时显示）
+              SellerOrderFeeBreakdown(order: order),
+              const SizedBox(height: 16),
               // 5. Time Info Section
-               GlassCard(
-                  margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoRow(context, AppLocalizations.of(context).order_seller_order_number, order.orderSn ?? 'N/A'),
-                        _buildTimeRow(context, AppLocalizations.of(context).order_seller_order_time, order.createdAt),
-                        if (order.paymentInfo.payTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_pay_time, order.paymentInfo.payTime),
-                        if (order.completeTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_complete_time, order.completeTime),
-                        if (order.cancelTime != null)
-                            _buildTimeRow(context, AppLocalizations.of(context).order_seller_cancel_time, order.cancelTime),
-                      ],
-                    ),
+              GlassCard(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                        context,
+                        AppLocalizations.of(context).order_seller_order_number,
+                        order.orderSn ?? 'N/A'),
+                    _buildTimeRow(
+                        context,
+                        AppLocalizations.of(context).order_seller_order_time,
+                        order.createdAt),
+                    if (order.paymentInfo.payTime != null)
+                      _buildTimeRow(
+                          context,
+                          AppLocalizations.of(context).order_seller_pay_time,
+                          order.paymentInfo.payTime),
+                    if (order.completeTime != null)
+                      _buildTimeRow(
+                          context,
+                          AppLocalizations.of(context)
+                              .order_seller_complete_time,
+                          order.completeTime),
+                    if (order.cancelTime != null)
+                      _buildTimeRow(
+                          context,
+                          AppLocalizations.of(context).order_seller_cancel_time,
+                          order.cancelTime),
+                  ],
                 ),
-                const SizedBox(height: 16), // Spacing after time card
-                
+              ),
+              const SizedBox(height: 16), // Spacing after time card
+
               // 6. Buyer Materials Section (显示买家提供的材料)
               SellerOrderMaterialsSection(
                 order: order,
@@ -257,17 +325,18 @@ class SellerOrderDetailPage extends StatelessWidget {
               // Spacer before bottom padding (which is for the action bar)
               // const SizedBox(height: 16),
 
-              const SizedBox(height: 80), // Add padding at the bottom for the action bar
+              const SizedBox(
+                  height: 80), // Add padding at the bottom for the action bar
             ],
           ),
         ),
         if (isLoadingAction)
-           Positioned.fill(
-             child: Container(
-               color: Colors.black.withOpacity(0.1),
-               child: const Center(child: CircularProgressIndicator()),
-             ),
-           ),
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.1),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+          ),
       ],
     );
   }

@@ -15,6 +15,7 @@ import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
+import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
@@ -46,7 +47,6 @@ class _WalletPageState extends State<WalletPage> {
     super.initState();
     // 加载钱包摘要信息
     context.read<WalletBloc>().add(const FetchWalletSummary());
-    _refreshConnectStatus();
     // 监听滚动事件，实现无限滚动加载
     _scrollController.addListener(_onScroll);
   }
@@ -168,7 +168,6 @@ class _WalletPageState extends State<WalletPage> {
             onPressed: () {
               context.read<WalletBloc>().add(const RefreshWalletSummary());
               _loadTransactions();
-              _refreshConnectStatus();
             },
           ),
         ],
@@ -261,8 +260,6 @@ class _WalletPageState extends State<WalletPage> {
 
           return Column(
             children: [
-              // #385 KYC 未完成提醒 banner
-              if (_needsConnectAttention) _buildKycBanner(),
               // 钱包摘要信息
               if (walletSummary != null) _buildWalletSummary(walletSummary),
 
@@ -514,14 +511,14 @@ class _WalletPageState extends State<WalletPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                AppLocalizations.of(context).profile_wallet_account_balance,
+                '可用积分',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
-                '${RegionConfig.currencySymbol}${summary.balance.toStringAsFixed(2)}',
+                PriceFormatter.format(summary.balance),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -531,62 +528,10 @@ class _WalletPageState extends State<WalletPage> {
             ],
           ),
           const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(AppLocalizations.of(context).profile_wallet_pending_amount),
-              Text(
-                  '${RegionConfig.currencySymbol}${(summary.pendingAmount ?? 0.0).toStringAsFixed(2)}'),
-            ],
+          const Text(
+            '积分仅可用于 DeepStream 内的服务，不可转让或提现。',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(AppLocalizations.of(context).profile_wallet_total_income),
-              Text(
-                  '${RegionConfig.currencySymbol}${(summary.totalIncome ?? 0.0).toStringAsFixed(2)}'),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const SizedBox(height: 16),
-          // 未绑定时创建 Stripe Connect 账户；账户未激活时明确引导继续验证。
-          if (!summary.bound) ...[
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _showQuickConnectSheet(),
-                icon: const Icon(Icons.link),
-                label: const Text('绑定收款账户'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ] else
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: summary.balance > 0
-                    ? () {
-                        if (_connectStatus != null &&
-                            !_connectStatus!.payoutsEnabled) {
-                          context.push('/seller/connect-account');
-                          return;
-                        }
-                        _showWithdrawDialog(summary.balance);
-                      }
-                    : null,
-                icon: const Icon(Icons.account_balance),
-                label: Text(
-                    _connectStatus != null && !_connectStatus!.payoutsEnabled
-                        ? '继续验证后提现'
-                        : AppLocalizations.of(context).profile_wallet_withdraw),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -597,8 +542,8 @@ class _WalletPageState extends State<WalletPage> {
     final bool isIncome = transaction.type == 'income';
     final Color amountColor = isIncome ? AppColors.success : AppColors.error;
     final String amountText = isIncome
-        ? '+${transaction.amount.toStringAsFixed(2)}'
-        : '-${transaction.amount.abs().toStringAsFixed(2)}';
+        ? '+${transaction.amount.round()} 积分'
+        : '-${transaction.amount.abs().round()} 积分';
 
     // 交易状态图标
     IconData statusIcon;
@@ -722,7 +667,7 @@ class _WalletPageState extends State<WalletPage> {
               _buildDetailRow(
                   AppLocalizations.of(context)
                       .profile_wallet_transaction_amount,
-                  '${RegionConfig.currencySymbol}${transaction.amount.abs().toStringAsFixed(2)}'),
+                  PriceFormatter.format(transaction.amount.abs())),
               _buildDetailRow(
                   AppLocalizations.of(context)
                       .profile_wallet_transaction_description,

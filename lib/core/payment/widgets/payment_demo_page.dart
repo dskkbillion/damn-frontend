@@ -18,10 +18,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
   late PaymentMethod _selectedMethod;
   late List<PaymentMethod> _availablePaymentMethods;
   bool _isProcessing = false;
-  
+
   final _amountController = TextEditingController(text: '0.01');
   final _subjectController = TextEditingController(text: 'Test Product');
-  final _orderIdController = TextEditingController(text: 'TEST${DateTime.now().millisecondsSinceEpoch}');
+  final _orderIdController = TextEditingController(
+      text: 'TEST${DateTime.now().millisecondsSinceEpoch}');
 
   @override
   void initState() {
@@ -29,11 +30,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
     // 根据区域配置获取可用的支付方式
     _availablePaymentMethods = RegionConfig.supportedPaymentMethods;
     // 设置默认选中的支付方式
-    _selectedMethod = _availablePaymentMethods.isNotEmpty 
-        ? _availablePaymentMethods.first 
-        : PaymentMethod.alipay;
+    _selectedMethod = _availablePaymentMethods.isNotEmpty
+        ? _availablePaymentMethods.first
+        : PaymentMethod.credits;
   }
-  
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -70,7 +71,8 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
         if (result.success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.payment_initiated_success(result.message ?? '')),
+              content:
+                  Text(l10n.payment_initiated_success(result.message ?? '')),
               backgroundColor: Colors.green,
             ),
           );
@@ -201,8 +203,8 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+                  children: [
+                    Text(
                       l10n.payment_test_params,
                       style: const TextStyle(
                         fontSize: 18,
@@ -210,7 +212,6 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _orderIdController,
                       decoration: InputDecoration(
@@ -219,7 +220,6 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _amountController,
                       decoration: InputDecoration(
@@ -229,7 +229,6 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 16),
-
                     TextField(
                       controller: _subjectController,
                       decoration: InputDecoration(
@@ -256,11 +255,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
 
             // 动态生成支付方式选项
             ..._availablePaymentMethods.map((method) => Column(
-              children: [
-                _buildPaymentMethodOption(method),
-                const SizedBox(height: 12),
-              ],
-            )),
+                  children: [
+                    _buildPaymentMethodOption(method),
+                    const SizedBox(height: 12),
+                  ],
+                )),
 
             const SizedBox(height: 32),
 
@@ -280,11 +279,13 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : Text(
-                        l10n.payment_test_button(_selectedMethod.displayName, _amountController.text),
+                        l10n.payment_test_button(_selectedMethod.displayName,
+                            _amountController.text),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -332,7 +333,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
       ),
     );
   }
-  
+
   Widget _buildPaymentMethodOption(PaymentMethod method) {
     final l10n = AppLocalizations.of(context);
     IconData iconData;
@@ -340,6 +341,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
     String name;
 
     switch (method) {
+      case PaymentMethod.credits:
+        iconData = Icons.stars_rounded;
+        iconColor = Colors.amber;
+        name = '积分支付';
+        break;
       case PaymentMethod.alipay:
         iconData = Icons.payment;
         iconColor = Colors.blue;
@@ -359,7 +365,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
 
     return _buildPaymentOption(method, name, iconData, iconColor);
   }
-  
+
   Widget _buildPaymentOption(
     PaymentMethod method,
     String name,
@@ -367,7 +373,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
     Color color,
   ) {
     final isSelected = _selectedMethod == method;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -385,9 +391,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
           color: isSelected ? color.withOpacity(0.05) : null,
         ),
         child: Row(
-        children: [
+          children: [
             Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
               color: isSelected ? color : Colors.grey,
             ),
             const SizedBox(width: 16),
@@ -405,7 +413,7 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
             ),
             const SizedBox(width: 16),
             Expanded(
-            child: Text(
+              child: Text(
                 name,
                 style: TextStyle(
                   fontSize: 16,
@@ -419,9 +427,11 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
       ),
     );
   }
-  
+
   Color _getPaymentColor() {
     switch (_selectedMethod) {
+      case PaymentMethod.credits:
+        return Colors.amber;
       case PaymentMethod.wechat:
         return Colors.green;
       case PaymentMethod.alipay:
@@ -430,4 +440,4 @@ class _PaymentDemoPageState extends State<PaymentDemoPage> {
         return Colors.purple;
     }
   }
-} 
+}

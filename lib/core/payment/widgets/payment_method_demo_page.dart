@@ -14,10 +14,11 @@ class PaymentMethodDemoPage extends StatefulWidget {
 }
 
 class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
-  final PaymentServiceFactory _paymentFactory = GetIt.instance<PaymentServiceFactory>();
+  final PaymentServiceFactory _paymentFactory =
+      GetIt.instance<PaymentServiceFactory>();
   String _lastResult = '';
   bool _isLoading = false;
-  
+
   // 缓存支付方式信息
   final Map<String, Map<String, dynamic>> _paymentMethodInfos = {};
   final Map<String, bool> _serviceAvailability = {};
@@ -33,7 +34,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
     try {
       // 根据区域配置动态加载支付方式信息
       final supportedMethods = RegionConfig.supportedPaymentMethods;
-      
+
       for (final method in supportedMethods) {
         final methodCode = method.code;
         final info = await _paymentFactory.getPaymentMethodInfo(methodCode);
@@ -84,6 +85,11 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             String title;
 
             switch (method) {
+              case PaymentMethod.credits:
+                icon = Icons.stars_rounded;
+                color = Colors.amber;
+                title = '积分支付';
+                break;
               case PaymentMethod.alipay:
                 icon = Icons.payment;
                 color = Colors.blue;
@@ -130,6 +136,11 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             String label;
 
             switch (method) {
+              case PaymentMethod.credits:
+                icon = Icons.stars_rounded;
+                color = Colors.amber;
+                label = '测试积分支付';
+                break;
               case PaymentMethod.alipay:
                 icon = Icons.payment;
                 color = Colors.blue;
@@ -150,7 +161,8 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             return Column(
               children: [
                 ElevatedButton.icon(
-                  onPressed: _isLoading ? null : () => _testPayment(method.code),
+                  onPressed:
+                      _isLoading ? null : () => _testPayment(method.code),
                   icon: Icon(icon),
                   label: Text(_isLoading ? l10n.core_processing : label),
                   style: ElevatedButton.styleFrom(
@@ -183,7 +195,9 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
               ),
               child: SingleChildScrollView(
                 child: Text(
-                  _lastResult.isEmpty ? l10n.payment_no_test_result : _lastResult,
+                  _lastResult.isEmpty
+                      ? l10n.payment_no_test_result
+                      : _lastResult,
                   style: const TextStyle(
                     fontSize: 12,
                     fontFamily: 'monospace',
@@ -241,13 +255,16 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: isAvailable ? Colors.green : Colors.red,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isAvailable ? AppLocalizations.of(context).payment_available : AppLocalizations.of(context).payment_unavailable,
+                    isAvailable
+                        ? AppLocalizations.of(context).payment_available
+                        : AppLocalizations.of(context).payment_unavailable,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -286,7 +303,8 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
             if (methodInfo['error'] != null) ...[
               const SizedBox(height: 8),
               Text(
-                AppLocalizations.of(context).payment_error_label(methodInfo['error'].toString()),
+                AppLocalizations.of(context)
+                    .payment_error_label(methodInfo['error'].toString()),
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.red.shade600,
@@ -307,7 +325,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
 
     try {
       final service = await _paymentFactory.getPaymentService(method);
-      
+
       _updateResult('✓ 获取到$method服务\n');
       _updateResult('状态：${service.isAvailable ? "可用" : "不可用"}\n');
 
@@ -318,7 +336,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
       // 创建测试支付请求 - 动态获取支付方式
       final paymentMethod = PaymentMethod.values.firstWhere(
         (pm) => pm.code == method,
-        orElse: () => PaymentMethod.alipay,
+        orElse: () => PaymentMethod.credits,
       );
       final l10n = AppLocalizations.of(context);
       final request = PaymentRequest(
@@ -349,7 +367,7 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
 
       if (response.success) {
         _updateResult('\n✅ 支付成功！\n');
-        
+
         // 根据结果类型给出导航建议
         if (response.resultType.shouldNavigateToOrders) {
           _updateResult('💡 建议：跳转到待付款订单页面\n');
@@ -364,7 +382,6 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
         _updateResult('\n❌ 支付失败\n');
         _updateResult('错误代码: ${response.code ?? "无"}\n');
       }
-
     } catch (e) {
       _updateResult('\n💥 异常: $e\n');
     } finally {
@@ -381,4 +398,4 @@ class _PaymentMethodDemoPageState extends State<PaymentMethodDemoPage> {
       _lastResult += message;
     });
   }
-} 
+}
