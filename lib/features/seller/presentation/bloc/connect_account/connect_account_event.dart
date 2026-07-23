@@ -11,7 +11,14 @@ abstract class ConnectAccountEvent extends Equatable {
 class CheckConnectAccountStatus extends ConnectAccountEvent {}
 
 /// 创建 Connect 账户
-class CreateConnectAccount extends ConnectAccountEvent {}
+class CreateConnectAccount extends ConnectAccountEvent {
+  final String country;
+
+  const CreateConnectAccount({required this.country});
+
+  @override
+  List<Object?> get props => [country];
+}
 
 /// 获取 Onboarding 链接
 class FetchOnboardingLink extends ConnectAccountEvent {}

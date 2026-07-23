@@ -11,6 +11,8 @@ import '../bloc/connect_account/connect_account_state.dart';
 import 'stripe_connect_webview_page.dart';
 import 'stripe_connect_embedded_page.dart';
 import '../../data/datasources/stripe_connect_remote_data_source.dart';
+import '../../domain/entities/stripe_connect_country.dart';
+import '../widgets/connect_country_selector.dart';
 
 /// 卖家收款账户绑定页面
 class ConnectAccountPage extends StatefulWidget {
@@ -21,6 +23,8 @@ class ConnectAccountPage extends StatefulWidget {
 }
 
 class _ConnectAccountPageState extends State<ConnectAccountPage> {
+  StripeConnectCountry? _selectedCountry;
+
   @override
   void initState() {
     super.initState();
@@ -107,14 +111,27 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
+          ConnectCountrySelector(
+            value: _selectedCountry,
+            onChanged: (country) {
+              setState(() => _selectedCountry = country);
+            },
+          ),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                context.read<ConnectAccountBloc>().add(CreateConnectAccount());
-              },
+              onPressed: _selectedCountry?.directChargeEnabled == true
+                  ? () {
+                      context.read<ConnectAccountBloc>().add(
+                            CreateConnectAccount(
+                              country: _selectedCountry!.code,
+                            ),
+                          );
+                    }
+                  : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: AppColors.onPrimary,
@@ -270,6 +287,12 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
             tintOpacity: 0.62,
             child: Column(
               children: [
+                if (status.country?.isNotEmpty == true) ...[
+                  _buildCountryRow(
+                    stripeConnectCountryName(status.country),
+                  ),
+                  const Divider(height: 24),
+                ],
                 _buildStatusRow('收款功能', status.chargesEnabled),
                 const Divider(height: 24),
                 _buildStatusRow('提款功能', status.payoutsEnabled),
@@ -305,6 +328,22 @@ class _ConnectAccountPageState extends State<ConnectAccountPage> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountryRow(String countryName) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          '开户地址',
+          style: TextStyle(fontSize: 15, color: AppColors.textPrimary),
+        ),
+        Text(
+          countryName,
+          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
         ),
       ],
     );

@@ -5,6 +5,8 @@ import 'package:dskk_flutter_refactor/core/config/theme/app_dimensions.dart';
 import '../bloc/connect_account/connect_account_bloc.dart';
 import '../bloc/connect_account/connect_account_event.dart';
 import '../bloc/connect_account/connect_account_state.dart';
+import '../../domain/entities/stripe_connect_country.dart';
+import 'connect_country_selector.dart';
 
 /// 快速绑定收款账户 bottom sheet（#385）
 /// 1~2步完成绑定，利用 Stripe deferred onboarding 延迟 KYC。
@@ -18,6 +20,7 @@ class QuickConnectSheet extends StatefulWidget {
 
 class _QuickConnectSheetState extends State<QuickConnectSheet> {
   bool _isLoading = false;
+  StripeConnectCountry? _selectedCountry;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,8 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
           left: AppDimensions.spacingXl,
           right: AppDimensions.spacingXl,
           top: AppDimensions.spacingXl,
-          bottom: MediaQuery.of(context).viewInsets.bottom + AppDimensions.spacingXl,
+          bottom: MediaQuery.of(context).viewInsets.bottom +
+              AppDimensions.spacingXl,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -69,7 +73,8 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
             const SizedBox(height: 8),
             const Text(
               '绑定后将进入 Stripe 身份验证。资料审核通过后即可提现。',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
+              style: TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary, height: 1.5),
             ),
             const SizedBox(height: 24),
 
@@ -85,14 +90,26 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.lock_outline, size: 14, color: AppColors.textSecondary),
+                  Icon(Icons.lock_outline,
+                      size: 14, color: AppColors.textSecondary),
                   SizedBox(width: 6),
                   Text(
                     '由 Stripe 安全处理，信息加密传输',
-                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style:
+                        TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 24),
+
+            ConnectCountrySelector(
+              value: _selectedCountry,
+              onChanged: _isLoading
+                  ? (_) {}
+                  : (country) {
+                      setState(() => _selectedCountry = country);
+                    },
             ),
             const SizedBox(height: 24),
 
@@ -101,11 +118,16 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        context.read<ConnectAccountBloc>().add(CreateConnectAccount());
-                      },
+                onPressed:
+                    _isLoading || _selectedCountry?.directChargeEnabled != true
+                        ? null
+                        : () {
+                            context.read<ConnectAccountBloc>().add(
+                                  CreateConnectAccount(
+                                    country: _selectedCountry!.code,
+                                  ),
+                                );
+                          },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: AppColors.onPrimary,
@@ -117,9 +139,12 @@ class _QuickConnectSheetState extends State<QuickConnectSheet> {
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('开始绑定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    : const Text('开始绑定',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
               ),
             ),
           ],

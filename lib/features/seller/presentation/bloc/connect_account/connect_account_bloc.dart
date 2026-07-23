@@ -1,4 +1,5 @@
 import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
+import 'package:dskk_flutter_refactor/core/error/exceptions.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/datasources/stripe_connect_remote_data_source.dart';
@@ -40,7 +41,7 @@ class ConnectAccountBloc
   ) async {
     emit(ConnectAccountLoading());
     try {
-      final status = await _dataSource.createConnectAccount();
+      final status = await _dataSource.createConnectAccount(event.country);
       AppLogger.d('[ConnectAccountBloc] 账户创建成功，状态: ${status.status}');
 
       // 创建成功后走跳转式 Onboarding
@@ -52,7 +53,10 @@ class ConnectAccountBloc
         add(CheckConnectAccountStatus());
         return;
       }
-      emit(const ConnectAccountError(message: '创建收款账户失败'));
+      final message = e is ServerException && e.message?.isNotEmpty == true
+          ? e.message!
+          : '创建收款账户失败';
+      emit(ConnectAccountError(message: message));
     }
   }
 

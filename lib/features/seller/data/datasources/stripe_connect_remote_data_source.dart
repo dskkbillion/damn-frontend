@@ -30,6 +30,7 @@ class ConnectAccountStatus {
   final bool payoutsEnabled;
   final bool detailsSubmitted;
   final String? accountId;
+  final String? country;
   final String? errorMessage;
   final List<String> currentlyDue;
   final List<String> pastDue;
@@ -42,6 +43,7 @@ class ConnectAccountStatus {
     this.payoutsEnabled = false,
     this.detailsSubmitted = false,
     this.accountId,
+    this.country,
     this.errorMessage,
     this.currentlyDue = const [],
     this.pastDue = const [],
@@ -87,6 +89,7 @@ class ConnectAccountStatus {
       payoutsEnabled: payoutsEnabled,
       detailsSubmitted: detailsSubmitted,
       accountId: json['accountId']?.toString(),
+      country: json['country']?.toString(),
       currentlyDue: currentlyDue,
       pastDue: pastDue,
       pendingVerification: pendingVerification,
@@ -107,7 +110,7 @@ class ConnectAccountStatus {
 /// Stripe Connect 远程数据源接口
 abstract class IStripeConnectRemoteDataSource {
   /// 创建 Connect 账户
-  Future<ConnectAccountStatus> createConnectAccount();
+  Future<ConnectAccountStatus> createConnectAccount(String country);
 
   /// 获取 Onboarding 链接
   Future<String> getOnboardingLink();
@@ -127,10 +130,13 @@ class StripeConnectRemoteDataSourceImpl
   StripeConnectRemoteDataSourceImpl(this._dio);
 
   @override
-  Future<ConnectAccountStatus> createConnectAccount() async {
+  Future<ConnectAccountStatus> createConnectAccount(String country) async {
     try {
-      AppLogger.d('[StripeConnect] 创建 Connect 账户');
-      final response = await _dio.post('/api/stripe-connect/create-account');
+      AppLogger.d('[StripeConnect] 创建 Connect 账户 (country=$country)');
+      final response = await _dio.post(
+        '/api/stripe-connect/create-account',
+        data: {'country': country},
+      );
       _checkResponse(response);
 
       final data = response.data['data'];
