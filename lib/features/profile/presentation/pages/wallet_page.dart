@@ -522,7 +522,7 @@ class _WalletPageState extends State<WalletPage> {
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.success,
+                  color: AppColors.primaryVariant,
                 ),
               ),
             ],
@@ -540,7 +540,10 @@ class _WalletPageState extends State<WalletPage> {
   // 构建交易记录项
   Widget _buildTransactionItem(TransactionDto transaction) {
     final bool isIncome = transaction.type == 'income';
-    final Color amountColor = isIncome ? AppColors.success : AppColors.error;
+    // 积分增减是资金方向而非成功/错误状态：收入使用稍亮的品牌蓝，
+    // 支出使用中性灰；真正的交易状态仍由下方 statusColor 表达。
+    final Color amountColor =
+        isIncome ? AppColors.primaryVariant : AppColors.textSecondary;
     final String amountText = isIncome
         ? '+${transaction.amount.round()} 积分'
         : '-${transaction.amount.abs().round()} 积分';
@@ -573,9 +576,7 @@ class _WalletPageState extends State<WalletPage> {
       tintOpacity: 0.62,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isIncome
-              ? AppColors.success.withValues(alpha: 0.1)
-              : AppColors.error.withValues(alpha: 0.1),
+          backgroundColor: amountColor.withValues(alpha: 0.1),
           child: Icon(
             isIncome ? Icons.arrow_downward : Icons.arrow_upward,
             color: amountColor,
