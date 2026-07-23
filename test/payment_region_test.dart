@@ -10,52 +10,62 @@ void main() {
   });
 
   group('Payment Methods by Region', () {
-    test('Domestic region should have Alipay and WeChat only', () {
+    test('Domestic region should use credits only for the MVP', () {
       // Set to domestic region
       RegionConfig.setRegion(RegionType.domestic);
-      
+
       // Get supported payment methods
       final methods = RegionConfig.supportedPaymentMethods;
-      
-      // Verify the correct payment methods are available
-      expect(methods.length, 2);
-      expect(methods.contains(PaymentMethod.alipay), true);
-      expect(methods.contains(PaymentMethod.wechat), true);
-      expect(methods.contains(PaymentMethod.stripe), false);
-      
-      // Verify the currency
-      expect(RegionConfig.defaultCurrency.code, 'CNY');
-      expect(RegionConfig.defaultCurrency.symbol, '¥');
-      
-      // Verify individual payment method support
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), true);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), true);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), false);
-    });
-    
-    test('International region should have Stripe only', () {
-      // Set to international region
-      RegionConfig.setRegion(RegionType.international);
-      
-      // Get supported payment methods
-      final methods = RegionConfig.supportedPaymentMethods;
-      
-      // Verify the correct payment methods are available
-      expect(methods.length, 1);
-      expect(methods.contains(PaymentMethod.stripe), true);
+
+      // Cash payment methods stay disabled until the credits MVP changes.
+      expect(methods, [PaymentMethod.credits]);
       expect(methods.contains(PaymentMethod.alipay), false);
       expect(methods.contains(PaymentMethod.wechat), false);
-      
-      // Verify the currency
+      expect(methods.contains(PaymentMethod.stripe), false);
+
+      // Region currency remains available for non-transactional localization.
+      expect(RegionConfig.defaultCurrency.code, 'CNY');
+      expect(RegionConfig.defaultCurrency.symbol, '¥');
+
+      // Verify individual payment method support
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.credits), true);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), false);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), false);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), false);
+    });
+
+    test('International region should use credits only for the MVP', () {
+      // Set to international region
+      RegionConfig.setRegion(RegionType.international);
+
+      // Get supported payment methods
+      final methods = RegionConfig.supportedPaymentMethods;
+
+      // Stripe checkout remains disabled until the credits recharge gate opens.
+      expect(methods, [PaymentMethod.credits]);
+      expect(methods.contains(PaymentMethod.stripe), false);
+      expect(methods.contains(PaymentMethod.alipay), false);
+      expect(methods.contains(PaymentMethod.wechat), false);
+
+      // Region currency remains available for non-transactional localization.
       expect(RegionConfig.defaultCurrency.code, 'USD');
       expect(RegionConfig.defaultCurrency.symbol, '\$');
-      
+
       // Verify individual payment method support
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), true);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), false);
-      expect(RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), false);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.credits), true);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.stripe), false);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.alipay), false);
+      expect(
+          RegionConfig.isPaymentMethodSupported(PaymentMethod.wechat), false);
     });
-    
+
     test('Features should be correctly configured by region', () {
       // Test domestic features
       RegionConfig.setRegion(RegionType.domestic);
@@ -65,7 +75,7 @@ void main() {
       expect(RegionConfig.isFeatureEnabled('showICPLicense'), true);
       expect(RegionConfig.isFeatureEnabled('enableGoogleLogin'), false);
       expect(RegionConfig.isFeatureEnabled('enableAppleLogin'), false);
-      
+
       // Test international features
       RegionConfig.setRegion(RegionType.international);
       expect(RegionConfig.isFeatureEnabled('enableWechatShare'), false);
