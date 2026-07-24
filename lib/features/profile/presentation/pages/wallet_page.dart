@@ -19,6 +19,8 @@ import 'package:dskk_flutter_refactor/core/utils/price_formatter.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/network/core_dio_client.dart';
+import 'package:dskk_flutter_refactor/features/credits/presentation/cubit/credits_purchase_cubit.dart';
+import 'package:dskk_flutter_refactor/features/credits/presentation/cubit/credits_purchase_state.dart';
 import 'package:dskk_flutter_refactor/features/seller/data/datasources/stripe_connect_remote_data_source.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_bloc.dart';
 import 'package:dskk_flutter_refactor/features/seller/presentation/bloc/connect_account/connect_account_event.dart';
@@ -47,6 +49,7 @@ class _WalletPageState extends State<WalletPage> {
     super.initState();
     // 加载钱包摘要信息
     context.read<WalletBloc>().add(const FetchWalletSummary());
+    context.read<CreditsPurchaseCubit>().loadProducts();
     // 监听滚动事件，实现无限滚动加载
     _scrollController.addListener(_onScroll);
   }
@@ -260,8 +263,18 @@ class _WalletPageState extends State<WalletPage> {
 
           return Column(
             children: [
+              BlocListener<CreditsPurchaseCubit, CreditsPurchaseState>(
+                listenWhen: (previous, current) =>
+                    previous.status != current.status ||
+                    previous.message != current.message,
+                listener: _onCreditsPurchaseStateChanged,
+                child: const SizedBox.shrink(),
+              ),
               // 钱包摘要信息
-              if (walletSummary != null) _buildWalletSummary(walletSummary),
+              if (walletSummary != null) ...[
+                _buildWalletSummary(walletSummary),
+                _buildCreditPurchaseSection(walletSummary),
+              ],
 
               // 筛选条件
               Padding(
@@ -424,6 +437,94 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
+  void _onCreditsPurchaseStateChanged(
+    BuildContext context,
+    CreditsPurchaseState state,
+  ) {
+    final messageKey = state.message;
+    if (messageKey == null) return;
+    final l10n = AppLocalizations.of(context);
+    final message = _creditPurchaseMessage(l10n, messageKey);
+
+    Color? backgroundColor;
+    SnackBarAction? action;
+    switch (state.status) {
+      case CreditsPurchaseStatus.confirmed:
+        backgroundColor = AppColors.success;
+        context.read<WalletBloc>().add(const RefreshWalletSummary());
+        _loadTransactions();
+        break;
+      case CreditsPurchaseStatus.failure:
+        backgroundColor = AppColors.error;
+        break;
+      case CreditsPurchaseStatus.pending:
+      case CreditsPurchaseStatus.delayed:
+        backgroundColor = AppColors.warning;
+        action = SnackBarAction(
+          label: l10n.credit_purchase_check_arrival,
+          onPressed: () {
+            context.read<CreditsPurchaseCubit>().retryBalanceCheck();
+          },
+        );
+        break;
+      case CreditsPurchaseStatus.cancelled:
+      case CreditsPurchaseStatus.processing:
+        break;
+      case CreditsPurchaseStatus.initial:
+      case CreditsPurchaseStatus.loading:
+      case CreditsPurchaseStatus.ready:
+      case CreditsPurchaseStatus.purchasing:
+      case CreditsPurchaseStatus.unavailable:
+        return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        action: action,
+      ),
+    );
+  }
+
+  String _creditPurchaseMessage(
+    AppLocalizations l10n,
+    CreditsPurchaseMessage message,
+  ) {
+    return switch (message) {
+      CreditsPurchaseMessage.pendingDetected =>
+        l10n.credit_purchase_status_pending_detected,
+      CreditsPurchaseMessage.serverPending =>
+        l10n.credit_purchase_status_server_pending,
+      CreditsPurchaseMessage.noProducts =>
+        l10n.credit_purchase_status_no_products,
+      CreditsPurchaseMessage.loadFailed =>
+        l10n.credit_purchase_status_load_failed,
+      CreditsPurchaseMessage.balancePreflightFailed =>
+        l10n.credit_purchase_status_balance_preflight_failed,
+      CreditsPurchaseMessage.cancelled => l10n.credit_purchase_status_cancelled,
+      CreditsPurchaseMessage.storePending =>
+        l10n.credit_purchase_status_store_pending,
+      CreditsPurchaseMessage.submitted => l10n.credit_purchase_status_submitted,
+      CreditsPurchaseMessage.networkAmbiguous =>
+        l10n.credit_purchase_status_network_ambiguous,
+      CreditsPurchaseMessage.storeAmbiguous =>
+        l10n.credit_purchase_status_store_ambiguous,
+      CreditsPurchaseMessage.purchaseFailed =>
+        l10n.credit_purchase_status_failed,
+      CreditsPurchaseMessage.unsafeReconciliation =>
+        l10n.credit_purchase_status_unsafe_reconciliation,
+      CreditsPurchaseMessage.checkingAgain =>
+        l10n.credit_purchase_status_checking_again,
+      CreditsPurchaseMessage.balanceUpdatedGuarded =>
+        l10n.credit_purchase_status_balance_updated_guarded,
+      CreditsPurchaseMessage.confirmed => l10n.credit_purchase_status_confirmed,
+      CreditsPurchaseMessage.reversed => l10n.credit_purchase_status_reversed,
+      CreditsPurchaseMessage.delayed => l10n.credit_purchase_status_delayed,
+      CreditsPurchaseMessage.unavailable => l10n.credit_purchase_unavailable,
+    };
+  }
+
   // #385 弹快速绑定 sheet，绑定成功后刷新钱包状态
   Future<void> _showQuickConnectSheet() async {
     final dio = sl<CoreDioClient>().dio;
@@ -511,7 +612,7 @@ class _WalletPageState extends State<WalletPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '可用积分',
+                AppLocalizations.of(context).credit_wallet_available,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -528,9 +629,194 @@ class _WalletPageState extends State<WalletPage> {
             ],
           ),
           const Divider(),
-          const Text(
-            '积分仅可用于 DeepStream 内的服务，不可转让或提现。',
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          Text(
+            AppLocalizations.of(context).credit_wallet_usage_notice,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreditPurchaseSection(WalletSummary summary) {
+    return GlassCard(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: EdgeInsets.zero,
+      borderRadius: BorderRadius.circular(12),
+      tintOpacity: 0.62,
+      child: ExpansionTile(
+        leading: const Icon(
+          Icons.add_card_rounded,
+          color: AppColors.primaryVariant,
+        ),
+        title: Text(
+          AppLocalizations.of(context).credit_purchase_title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          AppLocalizations.of(context).credit_purchase_subtitle,
+          style: const TextStyle(fontSize: 12),
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        children: [
+          BlocBuilder<CreditsPurchaseCubit, CreditsPurchaseState>(
+            builder: (context, purchaseState) {
+              final l10n = AppLocalizations.of(context);
+              if (purchaseState.status == CreditsPurchaseStatus.loading &&
+                  purchaseState.products.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: LoadingIndicator(size: 24)),
+                );
+              }
+
+              if (purchaseState.status == CreditsPurchaseStatus.unavailable &&
+                  purchaseState.products.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(
+                    children: [
+                      Text(
+                        purchaseState.message == null
+                            ? l10n.credit_purchase_unavailable
+                            : _creditPurchaseMessage(
+                                l10n,
+                                purchaseState.message!,
+                              ),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          context.read<CreditsPurchaseCubit>().loadProducts();
+                        },
+                        child: Text(l10n.credit_purchase_reload),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: purchaseState.products.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final product = purchaseState.products[index];
+                        final isActive = purchaseState.status ==
+                                CreditsPurchaseStatus.purchasing &&
+                            purchaseState.activePackageIdentifier ==
+                                product.packageIdentifier;
+
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          title: Text(
+                            l10n.credit_purchase_credits(product.credits),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: SizedBox(
+                            width: 104,
+                            child: ElevatedButton(
+                              onPressed: purchaseState.blocksNewPurchase
+                                  ? null
+                                  : () {
+                                      context
+                                          .read<CreditsPurchaseCubit>()
+                                          .purchase(
+                                            packageIdentifier:
+                                                product.packageIdentifier,
+                                            currentBalance: summary.balance,
+                                          );
+                                    },
+                              child: isActive
+                                  ? const SizedBox.square(
+                                      dimension: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Text(
+                                      product.localizedPrice,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  if (purchaseState.status ==
+                          CreditsPurchaseStatus.processing ||
+                      purchaseState.status == CreditsPurchaseStatus.pending ||
+                      purchaseState.status == CreditsPurchaseStatus.delayed)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.schedule_rounded,
+                            size: 18,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              purchaseState.message == null
+                                  ? l10n.credit_purchase_checking
+                                  : _creditPurchaseMessage(
+                                      l10n,
+                                      purchaseState.message!,
+                                    ),
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          if (purchaseState.status ==
+                                  CreditsPurchaseStatus.pending ||
+                              purchaseState.status ==
+                                  CreditsPurchaseStatus.delayed)
+                            TextButton(
+                              onPressed: () {
+                                context
+                                    .read<CreditsPurchaseCubit>()
+                                    .retryBalanceCheck();
+                              },
+                              child: Text(l10n.credit_purchase_check),
+                            ),
+                        ],
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      l10n.credit_purchase_disclaimer,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -544,9 +830,10 @@ class _WalletPageState extends State<WalletPage> {
     // 支出使用中性灰；真正的交易状态仍由下方 statusColor 表达。
     final Color amountColor =
         isIncome ? AppColors.primaryVariant : AppColors.textSecondary;
+    final l10n = AppLocalizations.of(context);
     final String amountText = isIncome
-        ? '+${transaction.amount.round()} 积分'
-        : '-${transaction.amount.abs().round()} 积分';
+        ? l10n.credit_amount_positive(transaction.amount.round())
+        : l10n.credit_amount_negative(transaction.amount.abs().round());
 
     // 交易状态图标
     IconData statusIcon;

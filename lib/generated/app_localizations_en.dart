@@ -5629,4 +5629,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentAuditRequestAbandoned => 'Request draft abandoned';
+
+  @override
+  String get credit_wallet_available => 'Available credits';
+
+  @override
+  String get credit_wallet_usage_notice =>
+      'Credits can be used for goods and services in DeepStream. They cannot currently be withdrawn or transferred.';
+
+  @override
+  String get credit_purchase_title => 'Buy credits';
+
+  @override
+  String get credit_purchase_subtitle =>
+      'Choose a credit pack. Payment is processed by your app store.';
+
+  @override
+  String get credit_purchase_unavailable =>
+      'Credit purchases are currently unavailable.';
+
+  @override
+  String get credit_purchase_reload => 'Reload';
+
+  @override
+  String credit_purchase_credits(int credits) {
+    return '$credits credits';
+  }
+
+  @override
+  String get credit_purchase_checking => 'Checking…';
+
+  @override
+  String get credit_purchase_check => 'Check status';
+
+  @override
+  String get credit_purchase_check_arrival => 'Check status';
+
+  @override
+  String get credit_purchase_disclaimer =>
+      'Credits are for use within DeepStream and cannot be withdrawn, transferred, or redeemed for cash. Payments and refunds are handled by your app store.';
+
+  @override
+  String credit_amount_positive(int credits) {
+    return '+$credits credits';
+  }
+
+  @override
+  String credit_amount_negative(int credits) {
+    return '-$credits credits';
+  }
+
+  @override
+  String get credit_purchase_status_pending_detected =>
+      'A purchase awaiting verification was found. Checking whether the credits have arrived.';
+
+  @override
+  String get credit_purchase_status_server_pending =>
+      'The server is still processing your previous purchase. Check again shortly.';
+
+  @override
+  String get credit_purchase_status_no_products =>
+      'No credit packs are currently available.';
+
+  @override
+  String get credit_purchase_status_load_failed =>
+      'Could not load credit packs. Try again later.';
+
+  @override
+  String get credit_purchase_status_balance_preflight_failed =>
+      'Could not retrieve your latest credit balance, so the purchase was not started.';
+
+  @override
+  String get credit_purchase_status_cancelled => 'Purchase canceled.';
+
+  @override
+  String get credit_purchase_status_store_pending =>
+      'Your app store is processing the payment. Do not purchase again.';
+
+  @override
+  String get credit_purchase_status_submitted =>
+      'Payment submitted. Checking whether the credits have arrived.';
+
+  @override
+  String get credit_purchase_status_network_ambiguous =>
+      'The connection was interrupted, so the purchase result is not yet confirmed. Do not purchase again.';
+
+  @override
+  String get credit_purchase_status_store_ambiguous =>
+      'Your app store returned an inconclusive result. Verification is in progress; do not purchase again.';
+
+  @override
+  String get credit_purchase_status_failed =>
+      'The purchase was not completed. Try again later.';
+
+  @override
+  String get credit_purchase_status_unsafe_reconciliation =>
+      'Your previous purchase cannot be verified safely. Do not purchase again; contact support.';
+
+  @override
+  String get credit_purchase_status_checking_again =>
+      'Checking the purchase status again.';
+
+  @override
+  String get credit_purchase_status_balance_updated_guarded =>
+      'Your credit balance was updated, but the on-device verification record could not be cleared safely. Check again later.';
+
+  @override
+  String get credit_purchase_status_confirmed => 'Credits added.';
+
+  @override
+  String get credit_purchase_status_reversed =>
+      'This purchase was reversed or refunded, so no credits were added.';
+
+  @override
+  String get credit_purchase_status_delayed =>
+      'Payment verification is still in progress. Do not purchase again. If the credits do not arrive or the app store has not charged you after an extended period, contact support.';
 }

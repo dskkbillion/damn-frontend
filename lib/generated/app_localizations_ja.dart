@@ -5437,4 +5437,114 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get agentAuditRequestAbandoned => 'リクエスト下書きが破棄されました';
+
+  @override
+  String get credit_wallet_available => '利用可能なクレジット';
+
+  @override
+  String get credit_wallet_usage_notice =>
+      'クレジットは DeepStream 内の商品やサービスに利用できます。現在、出金や譲渡はできません。';
+
+  @override
+  String get credit_purchase_title => 'クレジットを購入';
+
+  @override
+  String get credit_purchase_subtitle => 'クレジットパックを選択してください。支払いはアプリストアで処理されます。';
+
+  @override
+  String get credit_purchase_unavailable => '現在、クレジットを購入できません。';
+
+  @override
+  String get credit_purchase_reload => '再読み込み';
+
+  @override
+  String credit_purchase_credits(int credits) {
+    return '$creditsクレジット';
+  }
+
+  @override
+  String get credit_purchase_checking => '確認中…';
+
+  @override
+  String get credit_purchase_check => '状況を確認';
+
+  @override
+  String get credit_purchase_check_arrival => '反映を確認';
+
+  @override
+  String get credit_purchase_disclaimer =>
+      'クレジットは DeepStream 内でのみ利用でき、出金、譲渡、現金への換金はできません。支払いと返金はアプリストアで処理されます。';
+
+  @override
+  String credit_amount_positive(int credits) {
+    return '+$creditsクレジット';
+  }
+
+  @override
+  String credit_amount_negative(int credits) {
+    return '-$creditsクレジット';
+  }
+
+  @override
+  String get credit_purchase_status_pending_detected =>
+      '確認待ちの購入が見つかりました。クレジットの反映状況を確認しています。';
+
+  @override
+  String get credit_purchase_status_server_pending =>
+      '前回の購入をサーバーで処理中です。しばらくしてから再度確認してください。';
+
+  @override
+  String get credit_purchase_status_no_products => '現在購入できるクレジットパックはありません。';
+
+  @override
+  String get credit_purchase_status_load_failed =>
+      'クレジットパックを読み込めませんでした。しばらくしてから再試行してください。';
+
+  @override
+  String get credit_purchase_status_balance_preflight_failed =>
+      '最新のクレジット残高を取得できなかったため、購入は開始されませんでした。';
+
+  @override
+  String get credit_purchase_status_cancelled => '購入をキャンセルしました。';
+
+  @override
+  String get credit_purchase_status_store_pending =>
+      'アプリストアで支払いを処理中です。重複して購入しないでください。';
+
+  @override
+  String get credit_purchase_status_submitted => '支払いを送信しました。クレジットの反映を確認しています。';
+
+  @override
+  String get credit_purchase_status_network_ambiguous =>
+      '通信が途切れたため、購入結果を確認できません。重複して購入しないでください。';
+
+  @override
+  String get credit_purchase_status_store_ambiguous =>
+      'アプリストアから明確な結果を取得できませんでした。確認中のため、重複して購入しないでください。';
+
+  @override
+  String get credit_purchase_status_failed =>
+      '購入を完了できませんでした。しばらくしてから再試行してください。';
+
+  @override
+  String get credit_purchase_status_unsafe_reconciliation =>
+      '前回の購入を安全に確認できません。重複購入せず、サポートにお問い合わせください。';
+
+  @override
+  String get credit_purchase_status_checking_again => '購入状況を再確認しています。';
+
+  @override
+  String get credit_purchase_status_balance_updated_guarded =>
+      'クレジット残高は更新されましたが、端末上の購入確認記録を安全に消去できませんでした。しばらくしてから再度確認してください。';
+
+  @override
+  String get credit_purchase_status_confirmed => 'クレジットが反映されました。';
+
+  @override
+  String get credit_purchase_status_reversed =>
+      'この購入は取り消しまたは返金されたため、クレジットは反映されませんでした。';
+
+  @override
+  String get credit_purchase_status_delayed =>
+      '支払い記録を引き続き確認しています。重複して購入しないでください。長時間反映されない場合やアプリストアで請求されていない場合は、サポートにお問い合わせください。';
 }

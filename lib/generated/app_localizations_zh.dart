@@ -5379,4 +5379,108 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get agentAuditRequestAbandoned => '已放弃需求草稿';
+
+  @override
+  String get credit_wallet_available => '可用积分';
+
+  @override
+  String get credit_wallet_usage_notice =>
+      '积分可用于购买 DeepStream 内的商品和服务，目前不可提现或转赠。';
+
+  @override
+  String get credit_purchase_title => '购买积分';
+
+  @override
+  String get credit_purchase_subtitle => '选择积分包，付款由应用商店处理。';
+
+  @override
+  String get credit_purchase_unavailable => '暂时无法购买积分。';
+
+  @override
+  String get credit_purchase_reload => '重新加载';
+
+  @override
+  String credit_purchase_credits(int credits) {
+    return '$credits 积分';
+  }
+
+  @override
+  String get credit_purchase_checking => '核对中…';
+
+  @override
+  String get credit_purchase_check => '检查状态';
+
+  @override
+  String get credit_purchase_check_arrival => '检查到账';
+
+  @override
+  String get credit_purchase_disclaimer =>
+      '积分仅限在 DeepStream 内使用，不可提现、转赠或兑换现金；付款和退款由应用商店处理。';
+
+  @override
+  String credit_amount_positive(int credits) {
+    return '+$credits 积分';
+  }
+
+  @override
+  String credit_amount_negative(int credits) {
+    return '-$credits 积分';
+  }
+
+  @override
+  String get credit_purchase_status_pending_detected => '发现一笔待核对的购买，正在检查到账状态。';
+
+  @override
+  String get credit_purchase_status_server_pending => '服务器仍在处理上一笔购买，请稍后再检查。';
+
+  @override
+  String get credit_purchase_status_no_products => '当前没有可购买的积分包。';
+
+  @override
+  String get credit_purchase_status_load_failed => '积分包加载失败，请稍后重试。';
+
+  @override
+  String get credit_purchase_status_balance_preflight_failed =>
+      '无法获取最新积分余额，本次购买未发起。';
+
+  @override
+  String get credit_purchase_status_cancelled => '购买已取消。';
+
+  @override
+  String get credit_purchase_status_store_pending => '应用商店正在处理付款，请勿重复购买。';
+
+  @override
+  String get credit_purchase_status_submitted => '付款已提交，正在核对积分到账。';
+
+  @override
+  String get credit_purchase_status_network_ambiguous =>
+      '网络中断，购买结果暂未确认，请勿重复购买。';
+
+  @override
+  String get credit_purchase_status_store_ambiguous =>
+      '应用商店返回的结果不明确，正在核对，请勿重复购买。';
+
+  @override
+  String get credit_purchase_status_failed => '购买未完成，请稍后重试。';
+
+  @override
+  String get credit_purchase_status_unsafe_reconciliation =>
+      '无法安全核对上一笔购买，请勿重复购买并联系客服处理。';
+
+  @override
+  String get credit_purchase_status_checking_again => '正在重新核对购买状态。';
+
+  @override
+  String get credit_purchase_status_balance_updated_guarded =>
+      '积分余额已更新，但设备上的购买核对记录尚未安全清除，请稍后再检查。';
+
+  @override
+  String get credit_purchase_status_confirmed => '积分已到账。';
+
+  @override
+  String get credit_purchase_status_reversed => '该笔购买已撤销或退款，积分未到账。';
+
+  @override
+  String get credit_purchase_status_delayed =>
+      '付款记录仍在核对中，请勿重复购买；若长期未到账或应用商店未扣款，请联系客服核对。';
 }

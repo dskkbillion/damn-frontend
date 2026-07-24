@@ -35,6 +35,7 @@ import 'package:dskk_flutter_refactor/features/profile/data/datasources/profile_
 import 'package:dskk_flutter_refactor/features/profile/data/repositories/wallet_repository_impl.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_summary.dart';
 import 'package:dskk_flutter_refactor/features/profile/domain/usecases/get_wallet_transactions.dart';
+import 'package:dskk_flutter_refactor/features/credits/presentation/cubit/credits_purchase_cubit.dart';
 import 'package:dskk_flutter_refactor/features/favorites/presentation/routes/favorites_routes.dart';
 // Import Chat Module Routes
 import 'package:dskk_flutter_refactor/features/chat/presentation/routes/chat_routes.dart';
@@ -490,8 +491,15 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           );
 
           return state.buildSmartPage(
-            BlocProvider(
-              create: (context) => walletBloc,
+            MultiBlocProvider(
+              providers: [
+                BlocProvider<WalletBloc>(
+                  create: (context) => walletBloc,
+                ),
+                BlocProvider<CreditsPurchaseCubit>(
+                  create: (context) => getIt<CreditsPurchaseCubit>(),
+                ),
+              ],
               child: const WalletPage(),
             ),
             name: 'sellerWallet',

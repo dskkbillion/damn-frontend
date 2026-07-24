@@ -33,6 +33,7 @@ import '../../../../core/services/image_compress_service.dart'; // 引入图片�
 import '../../../agent/data/agent_repository.dart';
 import '../../../agent/presentation/connected_agents_page.dart';
 import '../../../agent/presentation/agent_requests_page.dart';
+import '../../../credits/presentation/cubit/credits_purchase_cubit.dart';
 
 class ProfileRoutes {
   ProfileRoutes._(); // 私有构造函数，防止实例化
@@ -124,10 +125,17 @@ class ProfileRoutes {
               AppLogger.d(
                   'Successfully created WalletBloc with app dependencies');
 
-              // 返回带BlocProvider的WalletPage
+              // 钱包余额和商店购买状态彼此独立，分别由两个 Bloc 管理。
               return state.buildSmartPage(
-                BlocProvider<WalletBloc>(
-                  create: (context) => walletBloc,
+                MultiBlocProvider(
+                  providers: [
+                    BlocProvider<WalletBloc>(
+                      create: (context) => walletBloc,
+                    ),
+                    BlocProvider<CreditsPurchaseCubit>(
+                      create: (context) => getIt<CreditsPurchaseCubit>(),
+                    ),
+                  ],
                   child: const WalletPage(),
                 ),
                 name: 'wallet',

@@ -9991,6 +9991,186 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已放弃需求草稿'**
   String get agentAuditRequestAbandoned;
+
+  /// No description provided for @credit_wallet_available.
+  ///
+  /// In zh, this message translates to:
+  /// **'可用积分'**
+  String get credit_wallet_available;
+
+  /// No description provided for @credit_wallet_usage_notice.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分可用于购买 DeepStream 内的商品和服务，目前不可提现或转赠。'**
+  String get credit_wallet_usage_notice;
+
+  /// No description provided for @credit_purchase_title.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买积分'**
+  String get credit_purchase_title;
+
+  /// No description provided for @credit_purchase_subtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择积分包，付款由应用商店处理。'**
+  String get credit_purchase_subtitle;
+
+  /// No description provided for @credit_purchase_unavailable.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂时无法购买积分。'**
+  String get credit_purchase_unavailable;
+
+  /// No description provided for @credit_purchase_reload.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新加载'**
+  String get credit_purchase_reload;
+
+  /// No description provided for @credit_purchase_credits.
+  ///
+  /// In zh, this message translates to:
+  /// **'{credits} 积分'**
+  String credit_purchase_credits(int credits);
+
+  /// No description provided for @credit_purchase_checking.
+  ///
+  /// In zh, this message translates to:
+  /// **'核对中…'**
+  String get credit_purchase_checking;
+
+  /// No description provided for @credit_purchase_check.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查状态'**
+  String get credit_purchase_check;
+
+  /// No description provided for @credit_purchase_check_arrival.
+  ///
+  /// In zh, this message translates to:
+  /// **'检查到账'**
+  String get credit_purchase_check_arrival;
+
+  /// No description provided for @credit_purchase_disclaimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分仅限在 DeepStream 内使用，不可提现、转赠或兑换现金；付款和退款由应用商店处理。'**
+  String get credit_purchase_disclaimer;
+
+  /// No description provided for @credit_amount_positive.
+  ///
+  /// In zh, this message translates to:
+  /// **'+{credits} 积分'**
+  String credit_amount_positive(int credits);
+
+  /// No description provided for @credit_amount_negative.
+  ///
+  /// In zh, this message translates to:
+  /// **'-{credits} 积分'**
+  String credit_amount_negative(int credits);
+
+  /// No description provided for @credit_purchase_status_pending_detected.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现一笔待核对的购买，正在检查到账状态。'**
+  String get credit_purchase_status_pending_detected;
+
+  /// No description provided for @credit_purchase_status_server_pending.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器仍在处理上一笔购买，请稍后再检查。'**
+  String get credit_purchase_status_server_pending;
+
+  /// No description provided for @credit_purchase_status_no_products.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前没有可购买的积分包。'**
+  String get credit_purchase_status_no_products;
+
+  /// No description provided for @credit_purchase_status_load_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分包加载失败，请稍后重试。'**
+  String get credit_purchase_status_load_failed;
+
+  /// No description provided for @credit_purchase_status_balance_preflight_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法获取最新积分余额，本次购买未发起。'**
+  String get credit_purchase_status_balance_preflight_failed;
+
+  /// No description provided for @credit_purchase_status_cancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买已取消。'**
+  String get credit_purchase_status_cancelled;
+
+  /// No description provided for @credit_purchase_status_store_pending.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用商店正在处理付款，请勿重复购买。'**
+  String get credit_purchase_status_store_pending;
+
+  /// No description provided for @credit_purchase_status_submitted.
+  ///
+  /// In zh, this message translates to:
+  /// **'付款已提交，正在核对积分到账。'**
+  String get credit_purchase_status_submitted;
+
+  /// No description provided for @credit_purchase_status_network_ambiguous.
+  ///
+  /// In zh, this message translates to:
+  /// **'网络中断，购买结果暂未确认，请勿重复购买。'**
+  String get credit_purchase_status_network_ambiguous;
+
+  /// No description provided for @credit_purchase_status_store_ambiguous.
+  ///
+  /// In zh, this message translates to:
+  /// **'应用商店返回的结果不明确，正在核对，请勿重复购买。'**
+  String get credit_purchase_status_store_ambiguous;
+
+  /// No description provided for @credit_purchase_status_failed.
+  ///
+  /// In zh, this message translates to:
+  /// **'购买未完成，请稍后重试。'**
+  String get credit_purchase_status_failed;
+
+  /// No description provided for @credit_purchase_status_unsafe_reconciliation.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法安全核对上一笔购买，请勿重复购买并联系客服处理。'**
+  String get credit_purchase_status_unsafe_reconciliation;
+
+  /// No description provided for @credit_purchase_status_checking_again.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在重新核对购买状态。'**
+  String get credit_purchase_status_checking_again;
+
+  /// No description provided for @credit_purchase_status_balance_updated_guarded.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分余额已更新，但设备上的购买核对记录尚未安全清除，请稍后再检查。'**
+  String get credit_purchase_status_balance_updated_guarded;
+
+  /// No description provided for @credit_purchase_status_confirmed.
+  ///
+  /// In zh, this message translates to:
+  /// **'积分已到账。'**
+  String get credit_purchase_status_confirmed;
+
+  /// No description provided for @credit_purchase_status_reversed.
+  ///
+  /// In zh, this message translates to:
+  /// **'该笔购买已撤销或退款，积分未到账。'**
+  String get credit_purchase_status_reversed;
+
+  /// No description provided for @credit_purchase_status_delayed.
+  ///
+  /// In zh, this message translates to:
+  /// **'付款记录仍在核对中，请勿重复购买；若长期未到账或应用商店未扣款，请联系客服核对。'**
+  String get credit_purchase_status_delayed;
 }
 
 class _AppLocalizationsDelegate

@@ -25,6 +25,7 @@ import 'package:dskk_flutter_refactor/features/payment/di/payment_di.dart';
 import 'package:dskk_flutter_refactor/features/ai_docs/di/ai_docs_di.dart';
 import 'package:dskk_flutter_refactor/features/chat/di/chat_di.dart';
 import 'package:dskk_flutter_refactor/features/profile/di/profile_di.dart';
+import 'package:dskk_flutter_refactor/features/credits/di/credits_di.dart';
 import 'package:dskk_flutter_refactor/features/seller/di/seller_di.dart';
 import 'package:dskk_flutter_refactor/core/config/region_config.dart';
 import 'package:dskk_flutter_refactor/features/home/presentation/navigation/home_navigation_di.dart';
@@ -112,6 +113,9 @@ Future<void> main() async {
 
   await ProfileDI.init(getIt);
   AppLogger.d('[Unified Production] Profile module initialized.');
+
+  await CreditsDI.init(getIt);
+  AppLogger.d('[Unified Production] Mobile credit purchases initialized.');
 
   // 初始化全局 WebSocket 管理器（必须在 AuthDI 和 ChatDI 之后）
   ChatDI.initGlobalWebSocketManager(getIt);

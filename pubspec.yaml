@@ -105,6 +105,7 @@ dependencies:
   # tobias: ^3.3.0 # 支付宝SDK Flutter插件 - 暂时禁用
   # fluwx: ^5.5.5 # 微信SDK Flutter插件 - 暂时禁用
   google_sign_in: ^6.2.1 # Google登录SDK
+  purchases_flutter: ^10.4.3 # RevenueCat: Apple IAP / Google Play Billing
   fluttertoast: ^8.2.4 # 用于显示支付结果提示
   yaml: ^3.1.2 # 用于解析配置文件
 

@@ -5629,4 +5629,118 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get agentAuditRequestAbandoned => 'Đã bỏ bản nháp yêu cầu';
+
+  @override
+  String get credit_wallet_available => 'Số điểm khả dụng';
+
+  @override
+  String get credit_wallet_usage_notice =>
+      'Điểm có thể dùng để mua sản phẩm và dịch vụ trong DeepStream. Hiện chưa thể rút hoặc chuyển điểm.';
+
+  @override
+  String get credit_purchase_title => 'Mua điểm';
+
+  @override
+  String get credit_purchase_subtitle =>
+      'Chọn một gói điểm. Thanh toán do cửa hàng ứng dụng xử lý.';
+
+  @override
+  String get credit_purchase_unavailable => 'Tạm thời không thể mua điểm.';
+
+  @override
+  String get credit_purchase_reload => 'Tải lại';
+
+  @override
+  String credit_purchase_credits(int credits) {
+    return '$credits điểm';
+  }
+
+  @override
+  String get credit_purchase_checking => 'Đang kiểm tra…';
+
+  @override
+  String get credit_purchase_check => 'Kiểm tra trạng thái';
+
+  @override
+  String get credit_purchase_check_arrival => 'Kiểm tra đã nhận';
+
+  @override
+  String get credit_purchase_disclaimer =>
+      'Điểm chỉ dùng trong DeepStream và không thể rút, chuyển hoặc quy đổi thành tiền mặt. Thanh toán và hoàn tiền do cửa hàng ứng dụng xử lý.';
+
+  @override
+  String credit_amount_positive(int credits) {
+    return '+$credits điểm';
+  }
+
+  @override
+  String credit_amount_negative(int credits) {
+    return '-$credits điểm';
+  }
+
+  @override
+  String get credit_purchase_status_pending_detected =>
+      'Đã phát hiện một giao dịch mua đang chờ xác minh. Hệ thống đang kiểm tra việc cộng điểm.';
+
+  @override
+  String get credit_purchase_status_server_pending =>
+      'Máy chủ vẫn đang xử lý giao dịch mua trước. Vui lòng kiểm tra lại sau.';
+
+  @override
+  String get credit_purchase_status_no_products =>
+      'Hiện không có gói điểm nào để mua.';
+
+  @override
+  String get credit_purchase_status_load_failed =>
+      'Không thể tải các gói điểm. Vui lòng thử lại sau.';
+
+  @override
+  String get credit_purchase_status_balance_preflight_failed =>
+      'Không thể lấy số điểm mới nhất nên giao dịch mua chưa được bắt đầu.';
+
+  @override
+  String get credit_purchase_status_cancelled => 'Bạn đã hủy giao dịch mua.';
+
+  @override
+  String get credit_purchase_status_store_pending =>
+      'Cửa hàng ứng dụng đang xử lý thanh toán. Vui lòng không mua lại.';
+
+  @override
+  String get credit_purchase_status_submitted =>
+      'Thanh toán đã được gửi. Hệ thống đang kiểm tra việc cộng điểm.';
+
+  @override
+  String get credit_purchase_status_network_ambiguous =>
+      'Mạng bị gián đoạn nên chưa thể xác nhận kết quả mua. Vui lòng không mua lại.';
+
+  @override
+  String get credit_purchase_status_store_ambiguous =>
+      'Cửa hàng ứng dụng không trả về kết quả rõ ràng. Hệ thống đang xác minh; vui lòng không mua lại.';
+
+  @override
+  String get credit_purchase_status_failed =>
+      'Giao dịch mua chưa hoàn tất. Vui lòng thử lại sau.';
+
+  @override
+  String get credit_purchase_status_unsafe_reconciliation =>
+      'Không thể xác minh an toàn giao dịch mua trước. Vui lòng không mua lại và liên hệ bộ phận hỗ trợ.';
+
+  @override
+  String get credit_purchase_status_checking_again =>
+      'Đang kiểm tra lại trạng thái mua.';
+
+  @override
+  String get credit_purchase_status_balance_updated_guarded =>
+      'Số điểm đã được cập nhật nhưng chưa thể xóa an toàn bản ghi xác minh mua trên thiết bị. Vui lòng kiểm tra lại sau.';
+
+  @override
+  String get credit_purchase_status_confirmed => 'Điểm đã được cộng.';
+
+  @override
+  String get credit_purchase_status_reversed =>
+      'Giao dịch mua này đã bị hủy hoặc hoàn tiền nên điểm chưa được cộng.';
+
+  @override
+  String get credit_purchase_status_delayed =>
+      'Vẫn đang xác minh bản ghi thanh toán. Vui lòng không mua lại; nếu điểm chưa được cộng sau một thời gian dài hoặc cửa hàng ứng dụng chưa trừ tiền, hãy liên hệ bộ phận hỗ trợ.';
 }
