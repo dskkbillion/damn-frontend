@@ -10,6 +10,7 @@ import 'package:dskk_flutter_refactor/core/network/network_info.dart';
 import 'package:dskk_flutter_refactor/core/network/mock_network_info.dart'
     as mock;
 import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
+import 'package:dskk_flutter_refactor/core/config/app_feature_flags.dart';
 
 // Import authentication related classes
 import 'package:dskk_flutter_refactor/features/auth/domain/entities/auth_status.dart';
@@ -539,6 +540,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     GoRoute(
       path: SellerRoutes.connectAccount,
       name: 'seller_connect_account',
+      // 积分 MVP 不开放现金提现或 Stripe Connect。保留历史页面代码，未来满足
+      // cash_earnings 账本与合规闸门后，只需显式开启产品开关即可恢复。
+      redirect: (context, state) => AppFeatureFlags.sellerCashRouteRedirect(
+        creditsWalletPath: SellerRoutes.wallet,
+      ),
       pageBuilder: (context, state) {
         try {
           final getIt = GetIt.I;
@@ -991,7 +997,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           buyerPaths.any((p) => location.startsWith(p)) &&
               !isAccountLevelLocation;
       // 排除卖家主页路径（检查是否匹配 /seller-profile/{id} 模式）
-      // 允许 buyer 模式访问收款账户绑定页面（提现时需要）
+      // 旧 Connect 深链由路由自身在积分 MVP 下重定向到积分钱包。
       bool isSellerShellLocation =
           sellerPaths.any((p) => location.startsWith(p)) &&
               !location.startsWith(sellerPublicProfilePathPrefix) &&
