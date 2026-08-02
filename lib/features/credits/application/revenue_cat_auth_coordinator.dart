@@ -50,7 +50,10 @@ class RevenueCatAuthCoordinator {
         .catchError((Object error, StackTrace stackTrace) {
       // Missing store configuration or a temporarily unavailable identity
       // endpoint must not prevent the app from starting.
-      AppLogger.d('[RevenueCatAuth] Purchase identity is not ready');
+      AppLogger.d(
+        '[RevenueCatAuth] Purchase identity is not ready: '
+        '${error.runtimeType}: $error',
+      );
     });
   }
 

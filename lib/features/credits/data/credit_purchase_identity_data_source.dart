@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dskk_flutter_refactor/core/utils/app_logger.dart';
 
 import '../domain/credit_purchase_exception.dart';
 import '../domain/entities/credit_purchase_bootstrap.dart';
@@ -41,24 +42,42 @@ class CreditPurchaseIdentityDataSourceImpl
     final purchasesEnabled = payload['purchasesEnabled'];
     final hasPendingFulfillment = payload['hasPendingFulfillment'];
     final offeringId = payload['offeringId'];
+    final rawEnabledStores = payload['enabledStores'];
     final rawProducts = payload['products'];
+    AppLogger.d(
+      '[RevenueCatBootstrap] enabled=$purchasesEnabled, '
+      'pending=$hasPendingFulfillment, offering=$offeringId, '
+      'stores=$rawEnabledStores, '
+      'productCount=${rawProducts is List ? rawProducts.length : 'invalid'}',
+    );
     if (appUserId is! String ||
         purchasesEnabled is! bool ||
         hasPendingFulfillment is! bool ||
         offeringId is! String ||
         offeringId.isEmpty ||
+        rawEnabledStores is! List ||
         rawProducts is! List) {
       throw const CreditPurchaseUnavailableException('移动端购买配置无效');
     }
 
+    final enabledStores =
+        rawEnabledStores.map(_parseEnabledStore).toList(growable: false);
+    if (enabledStores.length > CreditStore.values.length ||
+        !_allUnique(enabledStores)) {
+      throw const CreditPurchaseUnavailableException('移动端购买配置无效');
+    }
+    if (purchasesEnabled && enabledStores.isEmpty) {
+      throw const CreditPurchaseUnavailableException('移动端购买配置无效');
+    }
     final products = rawProducts.map(_parseProduct).toList(growable: false);
-    _validateCatalog(products);
+    _validateCatalog(enabledStores, products);
 
     return CreditPurchaseBootstrap(
       appUserId: appUserId,
       purchasesEnabled: purchasesEnabled,
       hasPendingFulfillment: hasPendingFulfillment,
       offeringId: offeringId,
+      enabledStores: enabledStores,
       products: products,
     );
   }
@@ -205,12 +224,30 @@ class CreditPurchaseIdentityDataSourceImpl
     );
   }
 
-  void _validateCatalog(List<CreditProductCatalogEntry> products) {
-    if (products.length != 6) {
+  CreditStore _parseEnabledStore(Object? rawStore) {
+    return switch (rawStore) {
+      'APP_STORE' => CreditStore.appStore,
+      'PLAY_STORE' => CreditStore.playStore,
+      _ => throw const CreditPurchaseUnavailableException('移动端购买配置无效'),
+    };
+  }
+
+  void _validateCatalog(
+    List<CreditStore> enabledStores,
+    List<CreditProductCatalogEntry> products,
+  ) {
+    if (enabledStores.isEmpty) {
+      if (products.isEmpty) {
+        return;
+      }
+      throw const CreditPurchaseUnavailableException('移动端购买配置无效');
+    }
+    if (products.length != enabledStores.length * 3 ||
+        products.any((product) => !enabledStores.contains(product.store))) {
       throw const CreditPurchaseUnavailableException('移动端购买配置无效');
     }
 
-    for (final store in CreditStore.values) {
+    for (final store in enabledStores) {
       final storeProducts =
           products.where((product) => product.store == store).toList();
       if (storeProducts.length != 3 ||
@@ -229,8 +266,9 @@ class CreditPurchaseIdentityDataSourceImpl
     for (final packId in packIds) {
       final variants =
           products.where((product) => product.packId == packId).toList();
-      if (variants.length != 2 ||
-          variants.map((product) => product.store).toSet().length != 2 ||
+      if (variants.length != enabledStores.length ||
+          variants.map((product) => product.store).toSet().length !=
+              enabledStores.length ||
           variants.map((product) => product.credits).toSet().length != 1) {
         throw const CreditPurchaseUnavailableException('移动端购买配置无效');
       }

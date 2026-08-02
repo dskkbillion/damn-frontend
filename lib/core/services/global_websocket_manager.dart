@@ -75,7 +75,12 @@ class GlobalWebSocketManager {
 
   /// 处理认证状态变化
   void _handleAuthStatusChange(AuthStatus authStatus) {
-    AppLogger.d('[GlobalWebSocketManager] Auth status changed: $authStatus');
+    // Authenticated.toString() includes the full AuthenticatedUser value and
+    // therefore its bearer token. Log only the state class here.
+    AppLogger.d(
+      '[GlobalWebSocketManager] Auth status changed: '
+      '${authStatus.runtimeType}',
+    );
 
     if (authStatus is Authenticated) {
       AppLogger.d(

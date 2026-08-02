@@ -76,6 +76,11 @@ class CreditPurchaseRepository implements ICreditPurchaseRepository {
     if (bootstrap.offeringId != configuredOfferingId) {
       throw const CreditPurchaseUnavailableException('移动端购买配置不一致');
     }
+    if (!bootstrap.enabledStores.contains(currentStore)) {
+      throw const CreditPurchaseUnavailableException(
+        '当前平台尚未开放积分购买',
+      );
+    }
     final catalog = bootstrap.products
         .where((product) => product.store == currentStore)
         .toList(growable: false);
@@ -371,6 +376,7 @@ class CreditPurchaseRepository implements ICreditPurchaseRepository {
         bootstrap.hasPendingFulfillment ||
         bootstrap.appUserId != _boundAppUserId ||
         bootstrap.offeringId != _boundOfferingId ||
+        !bootstrap.enabledStores.contains(currentStore) ||
         catalog.length != 3 ||
         catalog.toSet().length != _boundCatalog.toSet().length ||
         !catalog.toSet().containsAll(_boundCatalog) ||

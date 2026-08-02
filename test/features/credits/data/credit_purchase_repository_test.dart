@@ -65,13 +65,16 @@ CreditPurchaseBootstrap _bootstrap(
   String appUserId, {
   bool enabled = true,
   String offeringId = 'credits_v1',
+  List<CreditStore> enabledStores = CreditStore.values,
+  List<CreditProductCatalogEntry>? products,
 }) {
   return CreditPurchaseBootstrap(
     appUserId: appUserId,
     purchasesEnabled: enabled,
     hasPendingFulfillment: false,
     offeringId: offeringId,
-    products: _catalog,
+    enabledStores: enabledStores,
+    products: products ?? _catalog,
   );
 }
 
@@ -79,7 +82,10 @@ Map<String, Object> _bootstrapResponse(
   String appUserId, {
   bool enabled = true,
   String offeringId = 'credits_v1',
+  List<CreditStore> enabledStores = CreditStore.values,
+  List<CreditProductCatalogEntry>? products,
 }) {
+  final catalog = products ?? _catalog;
   return {
     'code': 200,
     'data': {
@@ -87,7 +93,13 @@ Map<String, Object> _bootstrapResponse(
       'purchasesEnabled': enabled,
       'hasPendingFulfillment': false,
       'offeringId': offeringId,
-      'products': _catalog
+      'enabledStores': enabledStores
+          .map(
+            (store) =>
+                store == CreditStore.appStore ? 'APP_STORE' : 'PLAY_STORE',
+          )
+          .toList(),
+      'products': catalog
           .map(
             (product) => {
               'packId': product.packId,
@@ -331,7 +343,330 @@ void main() {
 
       expect(bootstrap.appUserId, expectedId);
       expect(bootstrap.offeringId, 'credits_v1');
+      expect(bootstrap.enabledStores, CreditStore.values);
       expect(bootstrap.products, hasLength(6));
+    });
+
+    test('should accept an Apple-only catalog with exactly three products',
+        () async {
+      final appleProducts = _catalog
+          .where((product) => product.store == CreditStore.appStore)
+          .toList();
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [CreditStore.appStore],
+        products: appleProducts,
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      final bootstrap =
+          await CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap();
+
+      expect(bootstrap.enabledStores, const [CreditStore.appStore]);
+      expect(bootstrap.products, appleProducts);
+    });
+
+    test('should accept a Google-only catalog with exactly three products',
+        () async {
+      final googleProducts = _catalog
+          .where((product) => product.store == CreditStore.playStore)
+          .toList();
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [CreditStore.playStore],
+        products: googleProducts,
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      final bootstrap =
+          await CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap();
+
+      expect(bootstrap.enabledStores, const [CreditStore.playStore]);
+      expect(bootstrap.products, googleProducts);
+    });
+
+    test('should accept a ready catalog while purchases are disabled',
+        () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabled: false,
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      final bootstrap =
+          await CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap();
+
+      expect(bootstrap.purchasesEnabled, isFalse);
+      expect(bootstrap.enabledStores, CreditStore.values);
+      expect(bootstrap.products, hasLength(6));
+    });
+
+    test('should accept an empty catalog while purchases are disabled',
+        () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabled: false,
+        enabledStores: const [],
+        products: const [],
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      final bootstrap =
+          await CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap();
+
+      expect(bootstrap.purchasesEnabled, isFalse);
+      expect(bootstrap.enabledStores, isEmpty);
+      expect(bootstrap.products, isEmpty);
+    });
+
+    test('should reject an empty catalog while purchases are enabled',
+        () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [],
+        products: const [],
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject products when no catalog-ready store exists', () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabled: false,
+        enabledStores: const [],
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject an old bootstrap without enabledStores', () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+      );
+      (response['data']! as Map<String, Object>).remove('enabledStores');
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject an unknown enabled store', () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+      );
+      final data = response['data']! as Map<String, Object>;
+      data['enabledStores'] = ['APP_STORE', 'UNKNOWN_STORE'];
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject duplicate enabled stores', () async {
+      final appleProducts = _catalog
+          .where((product) => product.store == CreditStore.appStore)
+          .toList();
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [CreditStore.appStore],
+        products: appleProducts,
+      );
+      final data = response['data']! as Map<String, Object>;
+      data['enabledStores'] = ['APP_STORE', 'APP_STORE'];
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject products for a store that is not enabled', () async {
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [CreditStore.appStore],
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+    });
+
+    test('should reject an enabled store with fewer than three products',
+        () async {
+      final appleProducts = _catalog
+          .where((product) => product.store == CreditStore.appStore)
+          .take(2)
+          .toList();
+      final response = _bootstrapResponse(
+        '12345678-1234-1234-1234-1234567890ab',
+        enabledStores: const [CreditStore.appStore],
+        products: appleProducts,
+      );
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response<Object>(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: response,
+                ),
+              );
+            },
+          ),
+        );
+
+      await expectLater(
+        CreditPurchaseIdentityDataSourceImpl(dio).getBootstrap(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
     });
 
     test('should reject a response without data.appUserId', () async {
@@ -540,6 +875,89 @@ void main() {
   });
 
   group('CreditPurchaseRepository', () {
+    test('should bind Apple when only the App Store is enabled', () async {
+      const opaqueId = '12345678-1234-1234-1234-1234567890ab';
+      final appleProducts = _catalog
+          .where((product) => product.store == CreditStore.appStore)
+          .toList();
+      final gateway = _FakeRevenueCatGateway();
+      final repository = CreditPurchaseRepository(
+        identityDataSource: _FakeIdentityDataSource(
+          _bootstrap(
+            opaqueId,
+            enabledStores: const [CreditStore.appStore],
+            products: appleProducts,
+          ),
+        ),
+        pendingPurchaseStore: _FakePendingPurchaseStore(),
+        gateway: gateway,
+        apiKeyProvider: const _FakeApiKeyProvider(),
+      );
+
+      await repository.bindAuthenticatedUser();
+      await repository.getProducts();
+
+      expect(repository.isBound, isTrue);
+      expect(gateway.requestedCatalog, appleProducts);
+    });
+
+    test('should bind Google when only the Play Store is enabled', () async {
+      const opaqueId = '12345678-1234-1234-1234-1234567890ab';
+      final googleProducts = _catalog
+          .where((product) => product.store == CreditStore.playStore)
+          .toList();
+      final gateway = _FakeRevenueCatGateway();
+      final repository = CreditPurchaseRepository(
+        identityDataSource: _FakeIdentityDataSource(
+          _bootstrap(
+            opaqueId,
+            enabledStores: const [CreditStore.playStore],
+            products: googleProducts,
+          ),
+        ),
+        pendingPurchaseStore: _FakePendingPurchaseStore(),
+        gateway: gateway,
+        apiKeyProvider: const _FakeApiKeyProvider(
+          store: CreditStore.playStore,
+        ),
+      );
+
+      await repository.bindAuthenticatedUser();
+      await repository.getProducts();
+
+      expect(repository.isBound, isTrue);
+      expect(gateway.requestedCatalog, googleProducts);
+    });
+
+    test('should reject the current platform when its store is not enabled',
+        () async {
+      const opaqueId = '12345678-1234-1234-1234-1234567890ab';
+      final googleProducts = _catalog
+          .where((product) => product.store == CreditStore.playStore)
+          .toList();
+      final gateway = _FakeRevenueCatGateway();
+      final repository = CreditPurchaseRepository(
+        identityDataSource: _FakeIdentityDataSource(
+          _bootstrap(
+            opaqueId,
+            enabledStores: const [CreditStore.playStore],
+            products: googleProducts,
+          ),
+        ),
+        pendingPurchaseStore: _FakePendingPurchaseStore(),
+        gateway: gateway,
+        apiKeyProvider: const _FakeApiKeyProvider(),
+      );
+
+      await expectLater(
+        repository.bindAuthenticatedUser(),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+
+      expect(repository.isBound, isFalse);
+      expect(gateway.configuredIds, isEmpty);
+    });
+
     test('should preserve the opaque ID case when configuring RevenueCat',
         () async {
       const opaqueId = 'A2345678-1234-1234-1234-1234567890AB';
@@ -775,6 +1193,49 @@ void main() {
 
       await repository.bindAuthenticatedUser();
       identity.bootstrap = _bootstrap(opaqueId, enabled: false);
+
+      await expectLater(
+        repository.purchase(
+          packageIdentifier: 'credits_100',
+          baselineBalance: 100,
+          expectedCredits: 100,
+        ),
+        throwsA(isA<CreditPurchaseUnavailableException>()),
+      );
+
+      expect(identity.calls, 2);
+      expect(gateway.purchaseCalls, 0);
+    });
+
+    test('should recheck the enabled store immediately before purchase',
+        () async {
+      const opaqueId = '12345678-1234-1234-1234-1234567890ab';
+      final appleProducts = _catalog
+          .where((product) => product.store == CreditStore.appStore)
+          .toList();
+      final googleProducts = _catalog
+          .where((product) => product.store == CreditStore.playStore)
+          .toList();
+      final identity = _FakeIdentityDataSource(
+        _bootstrap(
+          opaqueId,
+          enabledStores: const [CreditStore.appStore],
+          products: appleProducts,
+        ),
+      );
+      final gateway = _FakeRevenueCatGateway();
+      final repository = CreditPurchaseRepository(
+        identityDataSource: identity,
+        pendingPurchaseStore: _FakePendingPurchaseStore(),
+        gateway: gateway,
+        apiKeyProvider: const _FakeApiKeyProvider(),
+      );
+      await repository.bindAuthenticatedUser();
+      identity.bootstrap = _bootstrap(
+        opaqueId,
+        enabledStores: const [CreditStore.playStore],
+        products: googleProducts,
+      );
 
       await expectLater(
         repository.purchase(

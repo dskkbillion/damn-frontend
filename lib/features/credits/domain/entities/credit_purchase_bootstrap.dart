@@ -36,6 +36,7 @@ class CreditPurchaseBootstrap extends Equatable {
     required this.purchasesEnabled,
     required this.hasPendingFulfillment,
     required this.offeringId,
+    required this.enabledStores,
     required this.products,
   });
 
@@ -43,6 +44,7 @@ class CreditPurchaseBootstrap extends Equatable {
   final bool purchasesEnabled;
   final bool hasPendingFulfillment;
   final String offeringId;
+  final List<CreditStore> enabledStores;
   final List<CreditProductCatalogEntry> products;
 
   @override
@@ -51,6 +53,7 @@ class CreditPurchaseBootstrap extends Equatable {
         purchasesEnabled,
         hasPendingFulfillment,
         offeringId,
+        enabledStores,
         products,
       ];
 }

@@ -137,6 +137,10 @@ web/plugins.dart
 config/alipay_keys.yaml
 config/payment_keys.yaml
 config/*_keys.yaml
+
+# Android upload signing credentials
+/android/upload-keystore.jks
+/android/key.properties
 .gstack/
 .omx/
 .omc/

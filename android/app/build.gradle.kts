@@ -5,10 +5,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val uploadKeystoreFile = rootProject.file("upload-keystore.jks")
+val uploadStorePassword = System.getenv("DSKK_ANDROID_UPLOAD_STORE_PASSWORD")
+val uploadKeyPassword = System.getenv("DSKK_ANDROID_UPLOAD_KEY_PASSWORD")
+
 android {
     namespace = "com.duoshaokk.app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -30,11 +34,25 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (
+            uploadKeystoreFile.exists() &&
+            !uploadStorePassword.isNullOrBlank() &&
+            !uploadKeyPassword.isNullOrBlank()
+        ) {
+            create("upload") {
+                storeFile = uploadKeystoreFile
+                storePassword = uploadStorePassword
+                keyAlias = "upload"
+                keyPassword = uploadKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("upload")
+                ?: signingConfigs.getByName("debug")
         }
     }
     
