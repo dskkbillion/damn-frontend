@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/dasn/data/dsn_order_repository.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
 import 'agent_ui_helpers.dart';
 
 class AgentRequestReviewPage extends StatefulWidget {
   final AgentRepository repository;
+  final DsnOrderRepository? orderRepository;
   final int requestId;
   const AgentRequestReviewPage(
-      {super.key, required this.repository, required this.requestId});
+      {super.key,
+      required this.repository,
+      this.orderRepository,
+      required this.requestId});
   @override
   State<AgentRequestReviewPage> createState() => _AgentRequestReviewPageState();
 }
@@ -171,6 +176,18 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                               context.go('/chat/refactored/${request.chatId}'),
                           icon: const Icon(Icons.forum_outlined),
                           label: Text(l10n.agentOpenChat),
+                        ),
+                      ],
+                      if (request.status == 'PROVIDER_RESPONDED' &&
+                          widget.orderRepository != null) ...[
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          onPressed: _busy
+                              ? null
+                              : () =>
+                                  context.push('/requests/${request.id}/order'),
+                          icon: const Icon(Icons.receipt_long_outlined),
+                          label: const Text('查看报价并继续下单'),
                         ),
                       ],
                       if (_hasTaskStatus(request)) ...[

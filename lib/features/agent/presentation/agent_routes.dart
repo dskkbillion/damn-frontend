@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import '../data/agent_repository.dart';
 import '../../../core/dasn/data/dasn_task_repository.dart';
+import '../../../core/dasn/data/dsn_order_repository.dart';
 import 'device_authorization_page.dart';
 import 'agent_request_review_page.dart';
+import 'dsn_order_flow_page.dart';
 import 'dsn_task_page.dart';
 
 class AgentRoutes {
@@ -15,6 +17,9 @@ class AgentRoutes {
 
   static DasnTaskRepository _taskRepository() =>
       DioDasnTaskRepository(GetIt.instance<Dio>());
+
+  static DsnOrderRepository _orderRepository() =>
+      DioDsnOrderRepository(GetIt.instance<Dio>());
 
   static List<RouteBase> get routes => [
         GoRoute(
@@ -35,10 +40,24 @@ class AgentRoutes {
           pageBuilder: (context, state) => state.buildSmartPage(
             AgentRequestReviewPage(
               repository: _repository(),
+              orderRepository: _orderRepository(),
               requestId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
             ),
             name: 'agentRequestReview',
             source: 'agent_request_handoff',
+          ),
+        ),
+        GoRoute(
+          path: '/requests/:id/order',
+          name: 'agentOrderFlow',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            DsnOrderFlowPage(
+              requestRepository: _repository(),
+              orderRepository: _orderRepository(),
+              requestId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+            ),
+            name: 'agentOrderFlow',
+            source: 'agent_dasn_buyer_order',
           ),
         ),
         GoRoute(

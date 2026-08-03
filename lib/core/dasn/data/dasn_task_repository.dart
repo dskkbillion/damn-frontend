@@ -38,7 +38,7 @@ class DioDasnTaskRepository implements DasnTaskRepository {
       final response = await dio.get(
         // The trusted App uses its normal member session.  Agent/CLI clients
         // continue to use the normative /agent/v1/tasks facade separately.
-        '/api/app/dasn/tasks/${Uri.encodeComponent(taskTraceId)}'
+        '/app/v1/tasks/${Uri.encodeComponent(taskTraceId)}'
         '${receipt ? '/receipt' : ''}',
       );
       final body = response.data;

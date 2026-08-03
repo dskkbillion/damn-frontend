@@ -33,6 +33,7 @@ import '../../../../core/services/image_compress_service.dart'; // 引入图片�
 import '../../../agent/data/agent_repository.dart';
 import '../../../agent/presentation/connected_agents_page.dart';
 import '../../../agent/presentation/agent_requests_page.dart';
+import '../../../../core/dasn/data/dsn_order_repository.dart';
 import '../../../credits/presentation/cubit/credits_purchase_cubit.dart';
 
 class ProfileRoutes {
@@ -204,6 +205,7 @@ class ProfileRoutes {
           pageBuilder: (context, state) => state.buildSmartPage(
             AgentRequestsPage(
               repository: DioAgentRepository(GetIt.instance<Dio>()),
+              orderRepository: DioDsnOrderRepository(GetIt.instance<Dio>()),
             ),
             name: 'agentRequests',
           ),

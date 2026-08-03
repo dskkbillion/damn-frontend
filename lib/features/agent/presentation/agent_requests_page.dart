@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import '../../../core/dasn/data/dsn_order_repository.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
 import 'agent_request_review_page.dart';
@@ -7,7 +8,9 @@ import 'agent_ui_helpers.dart';
 
 class AgentRequestsPage extends StatefulWidget {
   final AgentRepository repository;
-  const AgentRequestsPage({super.key, required this.repository});
+  final DsnOrderRepository? orderRepository;
+  const AgentRequestsPage(
+      {super.key, required this.repository, this.orderRepository});
   @override
   State<AgentRequestsPage> createState() => _AgentRequestsPageState();
 }
@@ -77,6 +80,8 @@ class _AgentRequestsPageState extends State<AgentRequestsPage> {
                                     MaterialPageRoute(
                                         builder: (_) => AgentRequestReviewPage(
                                             repository: widget.repository,
+                                            orderRepository:
+                                                widget.orderRepository,
                                             requestId: request.id)));
                                 _load();
                               },
