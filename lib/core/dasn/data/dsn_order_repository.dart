@@ -313,10 +313,33 @@ String _requiredString(Map<String, dynamic> map, String field) {
 
 int _requiredInt(Map<String, dynamic> map, String field) {
   final value = map[field];
-  if (value is! num) throw DsnOrderApiException('Missing DS 0.1 field: $field');
-  final parsed = value.toInt();
+  final parsed = _wireInt(value, field);
   if (parsed < 0) throw DsnOrderApiException('Invalid DS 0.1 field: $field');
   return parsed;
+}
+
+int _wireInt(dynamic value, String field) {
+  if (value is num) {
+    if (!value.isFinite || value != value.truncateToDouble()) {
+      throw DsnOrderApiException('Invalid DS 0.1 field: $field');
+    }
+    return value.toInt();
+  }
+  if (value is String) {
+    final text = value.trim();
+    // The canonical machine response uses string resource IDs.  Accept only
+    // an integer decimal representation; never truncate a decimal or coerce
+    // arbitrary text into a business fact.
+    if (!RegExp(r'^(0|[1-9][0-9]*)$').hasMatch(text)) {
+      throw DsnOrderApiException('Invalid DS 0.1 field: $field');
+    }
+    try {
+      return int.parse(text);
+    } on FormatException {
+      throw DsnOrderApiException('Invalid DS 0.1 field: $field');
+    }
+  }
+  throw DsnOrderApiException('Missing DS 0.1 field: $field');
 }
 
 int? _optionalInt(dynamic value) => value is num ? value.toInt() : null;
