@@ -60,6 +60,7 @@ void main() {
       'id': 9,
       'taskTraceId': 'ttr_1234567890abcdef',
       'version': 3,
+      'specHash': 'sha256:${'a' * 64}',
       'serviceId': 42,
       'title': 'Need a logo',
       'brief': 'Minimal blue identity',
@@ -75,6 +76,7 @@ void main() {
     expect(draft.serviceId, 42);
     expect(draft.taskTraceId, 'ttr_1234567890abcdef');
     expect(draft.version, 3);
+    expect(draft.specHash, 'sha256:${'a' * 64}');
     expect(draft.status, 'AWAITING_APP_REVIEW');
     expect(draft.appReviewUrl, '/requests/9/review');
     expect(draft.providerMemberId, 23);

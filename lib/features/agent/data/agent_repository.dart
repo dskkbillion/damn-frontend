@@ -20,6 +20,12 @@ abstract class AgentRepository {
   Future<int> revokeAllSessions();
   Future<List<AgentRequestDraft>> listRequests();
   Future<AgentRequestDraft> getRequest(int id);
+
+  /// Submit the App-reviewed request through the canonical DS 0.1 boundary.
+  /// Implementations must reuse the same key for a retry of the same version.
+  Future<void> submitRequest(int id,
+          {required int version, required String specHash}) =>
+      throw UnimplementedError();
   Future<AgentRequestDraft> approveRequest(int id);
   Future<AgentRequestDraft> abandonRequest(int id);
 }
@@ -92,6 +98,25 @@ class DioAgentRepository implements AgentRepository {
           await _request(() => dio.get('/api/agent-requests/$id')));
 
   @override
+  Future<void> submitRequest(int id,
+      {required int version, required String specHash}) async {
+    if (version < 0 || !RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(specHash)) {
+      throw const AgentApiException('Request submission facts are unavailable');
+    }
+    final key = 'app-submit:$id:$version';
+    await _request(
+        () => dio.post(
+              '/app/v1/requests/$id/submissions',
+              options: Options(headers: {
+                'Idempotency-Key': key,
+                'If-Match': '"$version"',
+              }),
+              data: {'expectedSpecHash': specHash},
+            ),
+        machineResponse: true);
+  }
+
+  @override
   Future<AgentRequestDraft> approveRequest(int id) async =>
       AgentRequestDraft.fromJson(
           await _request(() => dio.post('/api/agent-requests/$id/approve')));
@@ -105,11 +130,11 @@ class DioAgentRepository implements AgentRepository {
     await _request(operation);
   }
 
-  Future<dynamic> _request(
-      Future<Response<dynamic>> Function() operation) async {
+  Future<dynamic> _request(Future<Response<dynamic>> Function() operation,
+      {bool machineResponse = false}) async {
     try {
       final response = await operation();
-      return _data(response);
+      return machineResponse ? response.data : _data(response);
     } on DioException catch (error) {
       throw _mapError(error);
     }
@@ -129,6 +154,13 @@ class DioAgentRepository implements AgentRepository {
   AgentApiException _mapError(DioException error) {
     final body = error.response?.data;
     if (body is Map) {
+      final machineError = body['error'];
+      if (machineError is Map) {
+        return AgentApiException(
+          machineError['message']?.toString() ?? 'Request failed',
+          machineError['code']?.toString(),
+        );
+      }
       return AgentApiException(body['msg']?.toString() ?? 'Request failed',
           body['errorCode']?.toString());
     }

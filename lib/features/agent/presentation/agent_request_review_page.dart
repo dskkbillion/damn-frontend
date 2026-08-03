@@ -63,10 +63,20 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
     if (confirmed != true) return;
     setState(() => _busy = true);
     try {
-      final request = approve
-          ? await widget.repository.approveRequest(widget.requestId)
-          : await widget.repository.abandonRequest(widget.requestId);
-      if (mounted) setState(() => _request = request);
+      if (approve) {
+        final current = _request;
+        final version = current?.version;
+        final specHash = current?.specHash;
+        if (version == null || specHash == null || specHash.trim().isEmpty) {
+          throw const AgentApiException(
+              'Request submission facts are unavailable; refresh the task first');
+        }
+        await widget.repository.submitRequest(widget.requestId,
+            version: version, specHash: specHash);
+      } else {
+        await widget.repository.abandonRequest(widget.requestId);
+      }
+      await _load();
     } catch (error) {
       if (mounted) setState(() => _error = agentErrorMessage(context, error));
     } finally {

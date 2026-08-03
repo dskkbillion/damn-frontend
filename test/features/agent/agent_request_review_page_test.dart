@@ -31,6 +31,26 @@ void main() {
     expect(find.text('View task status'), findsNothing);
     expect(find.text('Submit to provider'), findsOneWidget);
   });
+
+  testWidgets('submits through canonical DS boundary', (tester) async {
+    final repository = _FakeRequestRepository(_request(
+      status: 'AWAITING_APP_REVIEW',
+      specHash: 'sha256:${'a' * 64}',
+    ));
+    await tester.pumpWidget(_app(AgentRequestReviewPage(
+      repository: repository,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Submit to provider'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm submission'));
+    await tester.pumpAndSettle();
+
+    expect(repository.submitted, isTrue);
+    expect(repository.approvedThroughLegacyRoute, isFalse);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -45,10 +65,12 @@ Widget _app(Widget child) => MaterialApp(
       home: child,
     );
 
-AgentRequestDraft _request({required String status}) => AgentRequestDraft(
+AgentRequestDraft _request({required String status, String? specHash}) =>
+    AgentRequestDraft(
       id: 9,
       taskTraceId: 'ttr_1234567890abcdef',
       version: 2,
+      specHash: specHash,
       serviceId: 42,
       title: 'Need a logo',
       brief: 'Minimal blue identity',
@@ -62,6 +84,8 @@ class _FakeRequestRepository implements AgentRepository {
   _FakeRequestRepository(this.request);
 
   final AgentRequestDraft request;
+  bool submitted = false;
+  bool approvedThroughLegacyRoute = false;
 
   @override
   Future<AgentRequestDraft> getRequest(int id) async => request;
@@ -75,8 +99,16 @@ class _FakeRequestRepository implements AgentRepository {
       throw UnimplementedError();
 
   @override
-  Future<AgentRequestDraft> approveRequest(int id) =>
-      throw UnimplementedError();
+  Future<AgentRequestDraft> approveRequest(int id) async {
+    approvedThroughLegacyRoute = true;
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> submitRequest(int id,
+      {required int version, required String specHash}) async {
+    submitted = true;
+  }
 
   @override
   Future<void> denyAuthorization(String userCode) => throw UnimplementedError();

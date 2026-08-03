@@ -144,6 +144,10 @@ class AgentRequestDraft {
   /// older request rows so the review page can remain backwards compatible.
   final String? taskTraceId;
   final int? version;
+
+  /// Server-computed DS 0.1 request specification hash used by canonical App
+  /// compare-and-submit.  Older rows may omit it and must fail closed.
+  final String? specHash;
   final int? serviceId;
   final String title;
   final String brief;
@@ -161,6 +165,7 @@ class AgentRequestDraft {
     required this.id,
     this.taskTraceId,
     this.version,
+    this.specHash,
     required this.serviceId,
     required this.title,
     required this.brief,
@@ -180,6 +185,7 @@ class AgentRequestDraft {
         id: (json['id'] as num).toInt(),
         taskTraceId: _stringOrNull(json['taskTraceId']),
         version: (json['version'] as num?)?.toInt(),
+        specHash: _stringOrNull(json['specHash']),
         serviceId: (json['serviceId'] as num?)?.toInt(),
         title: json['title'] as String? ?? '',
         brief: json['brief'] as String? ?? '',
