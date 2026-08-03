@@ -1,4 +1,6 @@
 import 'package:dskk_flutter_refactor/core/dasn/data/dsn_order_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dasn_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dasn_task_view.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_order_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
 import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
@@ -64,6 +66,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('支付已完成'), findsOneWidget);
     expect(orders.paymentCreated, isTrue);
+  });
+
+  testWidgets('restores a committed task without creating another order',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: orders,
+      taskRepository: _FakeTaskRepository(),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('服务方报价'), findsOneWidget);
+    expect(find.text('未支付订单已创建'), findsOneWidget);
+    expect(orders.previewCreated, isFalse);
+    expect(orders.confirmationIssued, isFalse);
+    expect(orders.orderCreated, isFalse);
+    expect(orders.paymentCreated, isFalse);
   });
 }
 
@@ -179,7 +204,9 @@ class _FakeOrderRepository implements DsnOrderRepository {
 
   @override
   Future<DsnConfirmationRef> issueConfirmationRef(int requestId,
-      {required String previewId, required List<String> allowedActions}) async {
+      {required String previewId,
+      required List<String> allowedActions,
+      required String idempotencyKey}) async {
     confirmationIssued = true;
     return DsnConfirmationRef(
       confirmationRef: 'cr_test-1',
@@ -236,4 +263,42 @@ class _FakeOrderRepository implements DsnOrderRepository {
   @override
   Future<DsnPaymentAttempt> getPaymentAttempt(String paymentAttemptId) =>
       throw UnimplementedError();
+}
+
+class _FakeTaskRepository implements DasnTaskRepository {
+  @override
+  Future<DasnTaskView> getTask(String taskTraceId) async => _view();
+
+  @override
+  Future<DasnTaskView> getReceipt(String taskTraceId) async => _view();
+
+  DasnTaskView _view() => DasnTaskView.fromJson({
+        'taskTraceId': 'ttr_1234567890abcdef',
+        'operationTraceId': 'trace_restore',
+        'task': {
+          'taskLifecycle': 'READY',
+          'responsibilityAction': 'PENDING',
+          'syncStatus': 'SYNCED',
+          'waitingOn': 'PRINCIPAL',
+          'nextActions': <dynamic>[],
+        },
+        'data': {
+          'commitment': {
+            'id': 'commit-1',
+            'orderId': 1001,
+            'previewId': 'preview-1',
+            'confirmationRef': 'cr_test-1',
+            'offerVersion': 2,
+            'specHash': 'a' * 64,
+            'quoteHash': 'b' * 64,
+            'amountCredits': 120,
+            'currency': 'CREDITS',
+          },
+          'order': {
+            'id': 1001,
+            'state': 'awaitingPayment',
+          },
+          'paymentAttempt': null,
+        },
+      });
 }

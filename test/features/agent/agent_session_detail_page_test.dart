@@ -113,4 +113,8 @@ class _SessionRepository implements AgentRepository {
   Future<int> revokeAllSessions() => throw UnimplementedError();
   @override
   Future<void> revokeSession(int id) => throw UnimplementedError();
+  @override
+  Future<void> submitRequest(int id,
+          {required int version, required String specHash}) =>
+      throw UnimplementedError();
 }

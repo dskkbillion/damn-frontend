@@ -28,6 +28,7 @@ abstract class DsnOrderRepository {
     int requestId, {
     required String previewId,
     required List<String> allowedActions,
+    required String idempotencyKey,
   });
 
   Future<DsnOrder> createOrder(
@@ -130,10 +131,12 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     int requestId, {
     required String previewId,
     required List<String> allowedActions,
+    required String idempotencyKey,
   }) async {
     final body = await _machine(
       () => dio.post(
         '/app/v1/requests/$requestId/confirmation-refs',
+        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
         data: <String, dynamic>{
           'previewId': previewId,
           'paymentMethodType': 'CREDITS',

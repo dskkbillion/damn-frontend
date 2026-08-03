@@ -54,6 +54,7 @@ class AgentRoutes {
             DsnOrderFlowPage(
               requestRepository: _repository(),
               orderRepository: _orderRepository(),
+              taskRepository: _taskRepository(),
               requestId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
             ),
             name: 'agentOrderFlow',

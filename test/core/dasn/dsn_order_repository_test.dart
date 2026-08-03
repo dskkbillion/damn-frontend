@@ -73,6 +73,46 @@ void main() {
       throwsA(isA<DsnOrderApiException>()),
     );
   });
+
+  test('sends confirmation idempotency key on the canonical App route', () async {
+    final dio = Dio();
+    String? seenKey;
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        seenKey = options.headers['Idempotency-Key']?.toString();
+        handler.resolve(Response(
+          requestOptions: options,
+          data: _machine(
+            state: 'CONFIRMATION_REF_ISSUED',
+            data: <String, dynamic>{
+              'confirmationRef': 'cr_test-1',
+              'requestId': '33',
+              'previewId': 'preview-1',
+              'specHash': _hash('a'),
+              'quoteHash': _hash('b'),
+              'amountMinor': '120',
+              'currency': 'CREDITS',
+              'paymentMethodType': 'CREDITS',
+              'allowedActions': <String>[
+                'CREATE_ORDER',
+                'CREATE_PAYMENT_ATTEMPT',
+              ],
+            },
+          ),
+        ));
+      },
+    ));
+
+    final ref = await DioDsnOrderRepository(dio).issueConfirmationRef(
+      33,
+      previewId: 'preview-1',
+      allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
+      idempotencyKey: 'app-confirmation:33:preview-1',
+    );
+
+    expect(seenKey, 'app-confirmation:33:preview-1');
+    expect(ref.confirmationRef, 'cr_test-1');
+  });
 }
 
 Map<String, dynamic> _machine({

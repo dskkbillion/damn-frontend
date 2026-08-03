@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
 import '../../../core/dasn/data/dsn_order_repository.dart';
+import '../../../core/dasn/data/dasn_task_repository.dart';
+import '../../../core/dasn/domain/dasn_task_view.dart';
 import '../../../core/dasn/domain/dsn_order_models.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
@@ -20,11 +22,13 @@ class DsnOrderFlowPage extends StatefulWidget {
     required this.requestRepository,
     required this.orderRepository,
     required this.requestId,
+    this.taskRepository,
   });
 
   final AgentRepository requestRepository;
   final DsnOrderRepository orderRepository;
   final int requestId;
+  final DasnTaskRepository? taskRepository;
 
   @override
   State<DsnOrderFlowPage> createState() => _DsnOrderFlowPageState();
@@ -37,9 +41,11 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
   DsnConfirmationRef? _confirmation;
   DsnOrder? _order;
   DsnPaymentAttempt? _payment;
+  String? _paymentAttemptRecoveryId;
   String? _error;
   bool _loading = false;
   bool _busy = false;
+  int _previewKeyGeneration = 0;
 
   @override
   void initState() {
@@ -61,7 +67,10 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       if (request.status == 'PROVIDER_RESPONDED') {
         final offer =
             await widget.orderRepository.getProviderOffer(widget.requestId);
-        if (mounted) setState(() => _offer = offer);
+        if (mounted) {
+          setState(() => _offer = offer);
+          await _restoreExistingTask(request, offer);
+        }
       }
     } catch (error) {
       if (mounted) setState(() => _error = _errorText(error));
@@ -70,17 +79,165 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     }
   }
 
+  /// Rehydrates an existing DS Commitment/PaymentAttempt after the page is
+  /// recreated.  The task projection is read-only truth; this method never
+  /// creates a new order or confirmation reference during recovery.
+  Future<void> _restoreExistingTask(
+    AgentRequestDraft request,
+    DsnProviderOffer offer,
+  ) async {
+    final repository = widget.taskRepository;
+    if (repository == null) return;
+    final taskTraceId = request.taskTraceId;
+    if (taskTraceId == null || taskTraceId.trim().isEmpty) return;
+    DasnTaskView task;
+    try {
+      task = await repository.getTask(taskTraceId);
+    } catch (_) {
+      // A projection outage must not block the ordinary offer flow. The next
+      // explicit action will still use the canonical idempotency keys.
+      return;
+    }
+    final commitment = _mapFact(task.data['commitment']);
+    final order = _mapFact(task.data['order']);
+    if (commitment == null || order == null) return;
+
+    final previewId = _stringFact(commitment, 'previewId');
+    final confirmationRef = _stringFact(commitment, 'confirmationRef');
+    final specHash = _wireHash(commitment['specHash']);
+    final quoteHash = _wireHash(commitment['quoteHash']);
+    final amount = _intFact(commitment['amountCredits']);
+    final offerVersion = _intFact(commitment['offerVersion']) ?? offer.offerVersion;
+    final currency = _stringFact(commitment, 'currency') ?? 'CREDITS';
+    final orderId = _stringFact(order, 'id');
+    final commitmentId = _stringFact(commitment, 'id');
+    if (previewId == null || confirmationRef == null || specHash == null ||
+        quoteHash == null || amount == null || amount <= 0 ||
+        offerVersion <= 0 || currency != 'CREDITS' || orderId == null ||
+        commitmentId == null) {
+      return;
+    }
+    // The current offer is the lineage anchor for the page.  If the task
+    // projection contains a different frozen version, stop recovery rather
+    // than showing a mismatched preview that could later be submitted with a
+    // stale If-Match value.
+    if (offerVersion != offer.offerVersion) return;
+
+    final restoredPreview = DsnOrderPreview(
+      requestId: request.id,
+      taskTraceId: taskTraceId,
+      previewId: previewId,
+      providerId: offer.providerId,
+      providerOfferId: offer.offerId,
+      providerAcceptanceId: offer.acceptanceId,
+      offerVersion: offerVersion,
+      specHash: specHash,
+      quoteHash: quoteHash,
+      amountMinor: amount,
+      currency: currency,
+      quantity: 1,
+      // The original preview expiry is deliberately not reconstructed as a
+      // live authorization fact. Payment recovery is bound to the persisted
+      // Commitment/confirmationRef and server If-Match checks.
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(0),
+    );
+    final restoredConfirmation = DsnConfirmationRef(
+      confirmationRef: confirmationRef,
+      requestId: request.id,
+      taskTraceId: taskTraceId,
+      previewId: previewId,
+      specHash: specHash,
+      quoteHash: quoteHash,
+      amountMinor: amount,
+      currency: currency,
+      paymentMethodType: 'CREDITS',
+      allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
+    );
+    final restoredOrder = DsnOrder(
+      orderId: orderId,
+      taskTraceId: taskTraceId,
+      commitmentId: commitmentId,
+      confirmationRef: confirmationRef,
+      amountMinor: amount,
+      currency: currency,
+      orderState: order['state']?.toString() ?? 'awaitingPayment',
+      offerId: offer.offerId,
+      replayed: true,
+    );
+    DsnPaymentAttempt? restoredPayment;
+    final paymentId = _stringFact(task.data['paymentAttempt'], 'id');
+    String? paymentRecoveryId = paymentId;
+    if (paymentId != null) {
+      try {
+        restoredPayment = await widget.orderRepository.getPaymentAttempt(paymentId);
+        paymentRecoveryId = null;
+      } catch (_) {
+        // Keep the recovered order visible, but fail closed: a projection
+        // that already contains a PaymentAttempt must never fall back to a
+        // second debit button merely because its status lookup was flaky.
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _preview = restoredPreview;
+      _confirmation = restoredConfirmation;
+      _order = restoredOrder;
+      _payment = restoredPayment;
+      _paymentAttemptRecoveryId = paymentRecoveryId;
+    });
+  }
+
+  Map<String, dynamic>? _mapFact(dynamic value) {
+    if (value is! Map) return null;
+    return Map<String, dynamic>.from(value);
+  }
+
+  String? _stringFact(dynamic value, String field) {
+    final map = _mapFact(value);
+    final fact = map?[field];
+    if (fact == null || fact.toString().trim().isEmpty) return null;
+    return fact.toString().trim();
+  }
+
+  int? _intFact(dynamic value) {
+    if (value is num && value == value.truncateToDouble()) return value.toInt();
+    if (value is String) return int.tryParse(value.trim());
+    return null;
+  }
+
+  String? _wireHash(dynamic value) {
+    if (value == null) return null;
+    final text = value.toString().trim();
+    final wire = text.startsWith('sha256:') ? text : 'sha256:$text';
+    return RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(wire) ? wire : null;
+  }
+
   Future<void> _createPreview() async {
     final offer = _offer;
     if (offer == null) return;
     await _runBusy(() async {
-      _preview = await widget.orderRepository.createPreview(
-        widget.requestId,
-        expectedSpecHash: offer.specHash,
-        quoteHash: offer.quoteHash,
-        idempotencyKey: 'app-preview:${widget.requestId}:${offer.offerVersion}',
-      );
+      try {
+        _preview = await _createPreviewWithKey(offer);
+      } on DsnOrderApiException catch (error) {
+        if (error.code != 'PREVIEW_EXPIRED_RETRY') rethrow;
+        // An expired preview is a new logical operation. Reusing its old
+        // idempotency key would correctly replay the old fact forever, so a
+        // new generation is required before asking the server for a fresh
+        // offer-bound preview.
+        _previewKeyGeneration += 1;
+        _preview = await _createPreviewWithKey(offer);
+      }
     });
+  }
+
+  Future<DsnOrderPreview> _createPreviewWithKey(DsnProviderOffer offer) {
+    return widget.orderRepository.createPreview(
+      widget.requestId,
+      expectedSpecHash: offer.specHash,
+      quoteHash: offer.quoteHash,
+      idempotencyKey:
+          'app-preview:${widget.requestId}:${offer.offerVersion}:$_previewKeyGeneration',
+    );
   }
 
   Future<void> _issueConfirmationRef() async {
@@ -93,11 +250,26 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     );
     if (accepted != true) return;
     await _runBusy(() async {
-      _confirmation = await widget.orderRepository.issueConfirmationRef(
-        widget.requestId,
-        previewId: preview.previewId,
-        allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
-      );
+      try {
+        _confirmation = await widget.orderRepository.issueConfirmationRef(
+          widget.requestId,
+          previewId: preview.previewId,
+          allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
+          idempotencyKey:
+              'app-confirmation:${widget.requestId}:${preview.previewId}',
+        );
+      } on DsnOrderApiException catch (error) {
+        if (error.code == 'PREVIEW_EXPIRED') {
+          _preview = null;
+          _confirmation = null;
+          _previewKeyGeneration += 1;
+          throw const DsnOrderApiException(
+            '报价预览已过期，请重新创建预览',
+            code: 'PREVIEW_EXPIRED_RETRY',
+          );
+        }
+        rethrow;
+      }
     });
   }
 
@@ -159,6 +331,15 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       _payment = await widget.orderRepository.getPaymentAttempt(
         payment.paymentAttemptId,
       );
+    });
+  }
+
+  Future<void> _recoverPaymentAttempt() async {
+    final paymentAttemptId = _paymentAttemptRecoveryId;
+    if (paymentAttemptId == null) return;
+    await _runBusy(() async {
+      _payment = await widget.orderRepository.getPaymentAttempt(paymentAttemptId);
+      _paymentAttemptRecoveryId = null;
     });
   }
 
@@ -264,7 +445,17 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                         else ...[
                           _orderCard(_order!),
                           const SizedBox(height: 12),
-                          if (_payment == null)
+                          if (_payment == null &&
+                              _paymentAttemptRecoveryId != null)
+                            _actionCard(
+                              title: '支付状态待恢复',
+                              message:
+                                  '服务器已经记录过支付尝试。先恢复其最终状态，不会重复扣除积分。',
+                              label: '恢复支付状态',
+                              onPressed:
+                                  _busy ? null : _recoverPaymentAttempt,
+                            )
+                          else if (_payment == null)
                             _actionCard(
                               title: '订单已创建，等待支付',
                               message: '这是最后一个资金动作，必须由你明确确认。',
