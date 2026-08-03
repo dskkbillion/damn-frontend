@@ -5381,6 +5381,99 @@ class AppLocalizationsZh extends AppLocalizations {
   String get agentAuditRequestAbandoned => '已放弃需求草稿';
 
   @override
+  String get agentViewTaskStatus => '查看任务状态';
+
+  @override
+  String get dsnTaskStatusTitle => '任务状态';
+
+  @override
+  String get dsnTaskIdentity => '任务标识';
+
+  @override
+  String get dsnTaskTraceId => '任务追踪 ID';
+
+  @override
+  String get dsnTaskOperationTraceId => '操作追踪 ID';
+
+  @override
+  String get dsnTaskAxes => '交互状态';
+
+  @override
+  String get dsnTaskLifecycle => '任务生命周期';
+
+  @override
+  String get dsnTaskResponsibility => '责任动作';
+
+  @override
+  String get dsnTaskSyncStatus => '同步状态';
+
+  @override
+  String get dsnTaskWaitingOn => '等待对象';
+
+  @override
+  String get dsnTaskPrimaryAction => '主操作';
+
+  @override
+  String get dsnTaskRefreshProjection => '刷新状态';
+
+  @override
+  String get dsnTaskReceipt => '回执';
+
+  @override
+  String get dsnTaskNoReceipt => '当前暂无回执。';
+
+  @override
+  String get dsnTaskLoadReceipt => '加载回执';
+
+  @override
+  String get dsnTaskRefreshReceipt => '刷新回执';
+
+  @override
+  String get dsnTaskReceiptState => '回执状态';
+
+  @override
+  String get dsnTaskReceiptOrder => '订单 ID';
+
+  @override
+  String get dsnTaskReceiptDeliveries => '交付数量';
+
+  @override
+  String get dsnTaskReceiptGeneratedAt => '生成时间';
+
+  @override
+  String get dsnTaskReceiptSource => '回执来源';
+
+  @override
+  String get dsnTaskLegacyFallback => '当前使用旧版事实回退；追加式回执尚不可用。';
+
+  @override
+  String get dsnTaskActionRecoverOperation => '恢复原操作状态';
+
+  @override
+  String get dsnTaskActionRecoverTask => '恢复任务状态';
+
+  @override
+  String get dsnTaskActionReviewResponsibility => '查看待确认责任';
+
+  @override
+  String get dsnTaskActionRecoveryInProgress => '恢复处理中';
+
+  @override
+  String get dsnTaskActionViewProgress => '查看进度';
+
+  @override
+  String get dsnTaskActionViewSystemStatus => '查看系统状态';
+
+  @override
+  String get dsnTaskActionViewRecord => '查看记录';
+
+  @override
+  String get dsnTaskActionDomain => '查看下一步';
+
+  @override
+  String get dsnTaskActionUnknown => '需要进一步确认';
+
+  @override
   String get credit_wallet_available => '可用积分';
 
   @override

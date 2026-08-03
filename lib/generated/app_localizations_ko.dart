@@ -5450,6 +5450,99 @@ class AppLocalizationsKo extends AppLocalizations {
   String get agentAuditRequestAbandoned => '요청 초안 폐기됨';
 
   @override
+  String get agentViewTaskStatus => '작업 상태 보기';
+
+  @override
+  String get dsnTaskStatusTitle => '작업 상태';
+
+  @override
+  String get dsnTaskIdentity => '작업 식별 정보';
+
+  @override
+  String get dsnTaskTraceId => '작업 추적 ID';
+
+  @override
+  String get dsnTaskOperationTraceId => '작업 추적 ID';
+
+  @override
+  String get dsnTaskAxes => '상호작용 상태';
+
+  @override
+  String get dsnTaskLifecycle => '작업 수명 주기';
+
+  @override
+  String get dsnTaskResponsibility => '책임 작업';
+
+  @override
+  String get dsnTaskSyncStatus => '동기화 상태';
+
+  @override
+  String get dsnTaskWaitingOn => '대기 대상';
+
+  @override
+  String get dsnTaskPrimaryAction => '주요 작업';
+
+  @override
+  String get dsnTaskRefreshProjection => '상태 새로고침';
+
+  @override
+  String get dsnTaskReceipt => '영수증';
+
+  @override
+  String get dsnTaskNoReceipt => '아직 영수증이 없습니다.';
+
+  @override
+  String get dsnTaskLoadReceipt => '영수증 불러오기';
+
+  @override
+  String get dsnTaskRefreshReceipt => '영수증 새로고침';
+
+  @override
+  String get dsnTaskReceiptState => '영수증 상태';
+
+  @override
+  String get dsnTaskReceiptOrder => '주문 ID';
+
+  @override
+  String get dsnTaskReceiptDeliveries => '배송 수';
+
+  @override
+  String get dsnTaskReceiptGeneratedAt => '생성 시간';
+
+  @override
+  String get dsnTaskReceiptSource => '영수증 출처';
+
+  @override
+  String get dsnTaskLegacyFallback => '추가 전용 영수증을 사용할 수 없어 기존 사실 보기를 사용 중입니다.';
+
+  @override
+  String get dsnTaskActionRecoverOperation => '원래 작업 상태 복구';
+
+  @override
+  String get dsnTaskActionRecoverTask => '작업 상태 복구';
+
+  @override
+  String get dsnTaskActionReviewResponsibility => '대기 중인 책임 검토';
+
+  @override
+  String get dsnTaskActionRecoveryInProgress => '복구 진행 중';
+
+  @override
+  String get dsnTaskActionViewProgress => '진행 상황 보기';
+
+  @override
+  String get dsnTaskActionViewSystemStatus => '시스템 상태 보기';
+
+  @override
+  String get dsnTaskActionViewRecord => '기록 보기';
+
+  @override
+  String get dsnTaskActionDomain => '다음 단계 보기';
+
+  @override
+  String get dsnTaskActionUnknown => '추가 확인이 필요합니다';
+
+  @override
   String get credit_wallet_available => '사용 가능한 크레딧';
 
   @override

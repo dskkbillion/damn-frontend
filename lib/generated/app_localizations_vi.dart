@@ -5631,6 +5631,100 @@ class AppLocalizationsVi extends AppLocalizations {
   String get agentAuditRequestAbandoned => 'Đã bỏ bản nháp yêu cầu';
 
   @override
+  String get agentViewTaskStatus => 'Xem trạng thái tác vụ';
+
+  @override
+  String get dsnTaskStatusTitle => 'Trạng thái tác vụ';
+
+  @override
+  String get dsnTaskIdentity => 'Định danh tác vụ';
+
+  @override
+  String get dsnTaskTraceId => 'ID truy vết tác vụ';
+
+  @override
+  String get dsnTaskOperationTraceId => 'ID truy vết thao tác';
+
+  @override
+  String get dsnTaskAxes => 'Trạng thái tương tác';
+
+  @override
+  String get dsnTaskLifecycle => 'Vòng đời tác vụ';
+
+  @override
+  String get dsnTaskResponsibility => 'Hành động trách nhiệm';
+
+  @override
+  String get dsnTaskSyncStatus => 'Trạng thái đồng bộ';
+
+  @override
+  String get dsnTaskWaitingOn => 'Đang chờ';
+
+  @override
+  String get dsnTaskPrimaryAction => 'Thao tác chính';
+
+  @override
+  String get dsnTaskRefreshProjection => 'Làm mới trạng thái';
+
+  @override
+  String get dsnTaskReceipt => 'Biên nhận';
+
+  @override
+  String get dsnTaskNoReceipt => 'Chưa có biên nhận.';
+
+  @override
+  String get dsnTaskLoadReceipt => 'Tải biên nhận';
+
+  @override
+  String get dsnTaskRefreshReceipt => 'Làm mới biên nhận';
+
+  @override
+  String get dsnTaskReceiptState => 'Trạng thái biên nhận';
+
+  @override
+  String get dsnTaskReceiptOrder => 'ID đơn hàng';
+
+  @override
+  String get dsnTaskReceiptDeliveries => 'Số lần giao';
+
+  @override
+  String get dsnTaskReceiptGeneratedAt => 'Tạo lúc';
+
+  @override
+  String get dsnTaskReceiptSource => 'Nguồn biên nhận';
+
+  @override
+  String get dsnTaskLegacyFallback =>
+      'Đang dùng dữ liệu cũ vì biên nhận chỉ ghi thêm chưa khả dụng.';
+
+  @override
+  String get dsnTaskActionRecoverOperation => 'Khôi phục thao tác gốc';
+
+  @override
+  String get dsnTaskActionRecoverTask => 'Khôi phục trạng thái tác vụ';
+
+  @override
+  String get dsnTaskActionReviewResponsibility => 'Xem trách nhiệm đang chờ';
+
+  @override
+  String get dsnTaskActionRecoveryInProgress => 'Đang khôi phục';
+
+  @override
+  String get dsnTaskActionViewProgress => 'Xem tiến độ';
+
+  @override
+  String get dsnTaskActionViewSystemStatus => 'Xem trạng thái hệ thống';
+
+  @override
+  String get dsnTaskActionViewRecord => 'Xem bản ghi';
+
+  @override
+  String get dsnTaskActionDomain => 'Xem bước tiếp theo';
+
+  @override
+  String get dsnTaskActionUnknown => 'Cần xác nhận thêm';
+
+  @override
   String get credit_wallet_available => 'Số điểm khả dụng';
 
   @override

@@ -157,13 +157,31 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                       ] else if (request.chatId != null) ...[
                         const SizedBox(height: 24),
                         FilledButton.icon(
-                          onPressed: () => context.go(
-                              '/chat/refactored/${request.chatId}'),
+                          onPressed: () =>
+                              context.go('/chat/refactored/${request.chatId}'),
                           icon: const Icon(Icons.forum_outlined),
                           label: Text(l10n.agentOpenChat),
                         ),
                       ],
+                      if (_hasTaskStatus(request)) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => context.go(
+                              '/agent/tasks/${Uri.encodeComponent(request.taskTraceId!)}'),
+                          icon: const Icon(Icons.timeline_outlined),
+                          label: Text(l10n.agentViewTaskStatus),
+                        ),
+                      ],
                     ]),
     );
+  }
+
+  bool _hasTaskStatus(AgentRequestDraft request) {
+    final taskTraceId = request.taskTraceId;
+    if (taskTraceId == null || taskTraceId.trim().isEmpty) return false;
+    // The App review controls are the mutable draft boundary.  Once a draft
+    // has been submitted (or otherwise leaves the draft state), only the
+    // read-only task projection is exposed from this page.
+    return request.status != 'AWAITING_APP_REVIEW' && request.status != 'DRAFT';
   }
 }

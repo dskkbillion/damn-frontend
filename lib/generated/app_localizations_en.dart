@@ -5631,6 +5631,101 @@ class AppLocalizationsEn extends AppLocalizations {
   String get agentAuditRequestAbandoned => 'Request draft abandoned';
 
   @override
+  String get agentViewTaskStatus => 'View task status';
+
+  @override
+  String get dsnTaskStatusTitle => 'Task status';
+
+  @override
+  String get dsnTaskIdentity => 'Task identity';
+
+  @override
+  String get dsnTaskTraceId => 'Task trace ID';
+
+  @override
+  String get dsnTaskOperationTraceId => 'Operation trace ID';
+
+  @override
+  String get dsnTaskAxes => 'Interaction state';
+
+  @override
+  String get dsnTaskLifecycle => 'Task lifecycle';
+
+  @override
+  String get dsnTaskResponsibility => 'Responsibility action';
+
+  @override
+  String get dsnTaskSyncStatus => 'Sync status';
+
+  @override
+  String get dsnTaskWaitingOn => 'Waiting on';
+
+  @override
+  String get dsnTaskPrimaryAction => 'Primary action';
+
+  @override
+  String get dsnTaskRefreshProjection => 'Refresh status';
+
+  @override
+  String get dsnTaskReceipt => 'Receipt';
+
+  @override
+  String get dsnTaskNoReceipt => 'No receipt is available yet.';
+
+  @override
+  String get dsnTaskLoadReceipt => 'Load receipt';
+
+  @override
+  String get dsnTaskRefreshReceipt => 'Refresh receipt';
+
+  @override
+  String get dsnTaskReceiptState => 'Receipt state';
+
+  @override
+  String get dsnTaskReceiptOrder => 'Order ID';
+
+  @override
+  String get dsnTaskReceiptDeliveries => 'Deliveries';
+
+  @override
+  String get dsnTaskReceiptGeneratedAt => 'Generated at';
+
+  @override
+  String get dsnTaskReceiptSource => 'Receipt source';
+
+  @override
+  String get dsnTaskLegacyFallback =>
+      'The legacy facts view is being used; the append-only receipt is not available yet.';
+
+  @override
+  String get dsnTaskActionRecoverOperation => 'Recover original operation';
+
+  @override
+  String get dsnTaskActionRecoverTask => 'Recover task state';
+
+  @override
+  String get dsnTaskActionReviewResponsibility =>
+      'Review pending responsibility';
+
+  @override
+  String get dsnTaskActionRecoveryInProgress => 'Recovery in progress';
+
+  @override
+  String get dsnTaskActionViewProgress => 'View progress';
+
+  @override
+  String get dsnTaskActionViewSystemStatus => 'View system status';
+
+  @override
+  String get dsnTaskActionViewRecord => 'View record';
+
+  @override
+  String get dsnTaskActionDomain => 'View next step';
+
+  @override
+  String get dsnTaskActionUnknown => 'Further confirmation required';
+
+  @override
   String get credit_wallet_available => 'Available credits';
 
   @override

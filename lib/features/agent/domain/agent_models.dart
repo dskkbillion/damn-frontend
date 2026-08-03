@@ -139,6 +139,11 @@ class AgentSessionDetail {
 
 class AgentRequestDraft {
   final int id;
+
+  /// Server-owned DS 0.1 task lineage.  A missing value is retained for
+  /// older request rows so the review page can remain backwards compatible.
+  final String? taskTraceId;
+  final int? version;
   final int? serviceId;
   final String title;
   final String brief;
@@ -154,6 +159,8 @@ class AgentRequestDraft {
 
   const AgentRequestDraft({
     required this.id,
+    this.taskTraceId,
+    this.version,
     required this.serviceId,
     required this.title,
     required this.brief,
@@ -171,6 +178,8 @@ class AgentRequestDraft {
   factory AgentRequestDraft.fromJson(Map<String, dynamic> json) =>
       AgentRequestDraft(
         id: (json['id'] as num).toInt(),
+        taskTraceId: _stringOrNull(json['taskTraceId']),
+        version: (json['version'] as num?)?.toInt(),
         serviceId: (json['serviceId'] as num?)?.toInt(),
         title: json['title'] as String? ?? '',
         brief: json['brief'] as String? ?? '',
@@ -184,6 +193,12 @@ class AgentRequestDraft {
         createdAt: _date(json['createdAt']),
         updatedAt: _date(json['updatedAt']),
       );
+}
+
+String? _stringOrNull(dynamic value) {
+  if (value == null) return null;
+  final string = value.toString().trim();
+  return string.isEmpty ? null : string;
 }
 
 Set<String> _stringSet(dynamic value) =>

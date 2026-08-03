@@ -58,6 +58,8 @@ void main() {
   test('parses App-reviewed request draft', () {
     final draft = AgentRequestDraft.fromJson({
       'id': 9,
+      'taskTraceId': 'ttr_1234567890abcdef',
+      'version': 3,
       'serviceId': 42,
       'title': 'Need a logo',
       'brief': 'Minimal blue identity',
@@ -71,6 +73,8 @@ void main() {
     });
 
     expect(draft.serviceId, 42);
+    expect(draft.taskTraceId, 'ttr_1234567890abcdef');
+    expect(draft.version, 3);
     expect(draft.status, 'AWAITING_APP_REVIEW');
     expect(draft.appReviewUrl, '/requests/9/review');
     expect(draft.providerMemberId, 23);

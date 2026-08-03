@@ -5439,6 +5439,99 @@ class AppLocalizationsJa extends AppLocalizations {
   String get agentAuditRequestAbandoned => 'リクエスト下書きが破棄されました';
 
   @override
+  String get agentViewTaskStatus => 'タスクの状態を表示';
+
+  @override
+  String get dsnTaskStatusTitle => 'タスクの状態';
+
+  @override
+  String get dsnTaskIdentity => 'タスク識別情報';
+
+  @override
+  String get dsnTaskTraceId => 'タスク追跡 ID';
+
+  @override
+  String get dsnTaskOperationTraceId => '操作追跡 ID';
+
+  @override
+  String get dsnTaskAxes => 'インタラクション状態';
+
+  @override
+  String get dsnTaskLifecycle => 'タスクのライフサイクル';
+
+  @override
+  String get dsnTaskResponsibility => '責任アクション';
+
+  @override
+  String get dsnTaskSyncStatus => '同期状態';
+
+  @override
+  String get dsnTaskWaitingOn => '待機対象';
+
+  @override
+  String get dsnTaskPrimaryAction => '主操作';
+
+  @override
+  String get dsnTaskRefreshProjection => '状態を更新';
+
+  @override
+  String get dsnTaskReceipt => 'レシート';
+
+  @override
+  String get dsnTaskNoReceipt => 'レシートはまだありません。';
+
+  @override
+  String get dsnTaskLoadReceipt => 'レシートを読み込む';
+
+  @override
+  String get dsnTaskRefreshReceipt => 'レシートを更新';
+
+  @override
+  String get dsnTaskReceiptState => 'レシート状態';
+
+  @override
+  String get dsnTaskReceiptOrder => '注文 ID';
+
+  @override
+  String get dsnTaskReceiptDeliveries => '配送数';
+
+  @override
+  String get dsnTaskReceiptGeneratedAt => '生成日時';
+
+  @override
+  String get dsnTaskReceiptSource => 'レシートソース';
+
+  @override
+  String get dsnTaskLegacyFallback => '追加専用レシートが利用できないため、旧事実ビューを使用しています。';
+
+  @override
+  String get dsnTaskActionRecoverOperation => '元の操作状態を復旧';
+
+  @override
+  String get dsnTaskActionRecoverTask => 'タスク状態を復旧';
+
+  @override
+  String get dsnTaskActionReviewResponsibility => '保留中の責任を確認';
+
+  @override
+  String get dsnTaskActionRecoveryInProgress => '復旧中';
+
+  @override
+  String get dsnTaskActionViewProgress => '進捗を表示';
+
+  @override
+  String get dsnTaskActionViewSystemStatus => 'システム状態を表示';
+
+  @override
+  String get dsnTaskActionViewRecord => '記録を表示';
+
+  @override
+  String get dsnTaskActionDomain => '次のステップを表示';
+
+  @override
+  String get dsnTaskActionUnknown => '追加確認が必要です';
+
+  @override
   String get credit_wallet_available => '利用可能なクレジット';
 
   @override

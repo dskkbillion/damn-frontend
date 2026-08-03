@@ -9992,6 +9992,192 @@ abstract class AppLocalizations {
   /// **'已放弃需求草稿'**
   String get agentAuditRequestAbandoned;
 
+  /// No description provided for @agentViewTaskStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看任务状态'**
+  String get agentViewTaskStatus;
+
+  /// No description provided for @dsnTaskStatusTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务状态'**
+  String get dsnTaskStatusTitle;
+
+  /// No description provided for @dsnTaskIdentity.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务标识'**
+  String get dsnTaskIdentity;
+
+  /// No description provided for @dsnTaskTraceId.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务追踪 ID'**
+  String get dsnTaskTraceId;
+
+  /// No description provided for @dsnTaskOperationTraceId.
+  ///
+  /// In zh, this message translates to:
+  /// **'操作追踪 ID'**
+  String get dsnTaskOperationTraceId;
+
+  /// No description provided for @dsnTaskAxes.
+  ///
+  /// In zh, this message translates to:
+  /// **'交互状态'**
+  String get dsnTaskAxes;
+
+  /// No description provided for @dsnTaskLifecycle.
+  ///
+  /// In zh, this message translates to:
+  /// **'任务生命周期'**
+  String get dsnTaskLifecycle;
+
+  /// No description provided for @dsnTaskResponsibility.
+  ///
+  /// In zh, this message translates to:
+  /// **'责任动作'**
+  String get dsnTaskResponsibility;
+
+  /// No description provided for @dsnTaskSyncStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步状态'**
+  String get dsnTaskSyncStatus;
+
+  /// No description provided for @dsnTaskWaitingOn.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待对象'**
+  String get dsnTaskWaitingOn;
+
+  /// No description provided for @dsnTaskPrimaryAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'主操作'**
+  String get dsnTaskPrimaryAction;
+
+  /// No description provided for @dsnTaskRefreshProjection.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新状态'**
+  String get dsnTaskRefreshProjection;
+
+  /// No description provided for @dsnTaskReceipt.
+  ///
+  /// In zh, this message translates to:
+  /// **'回执'**
+  String get dsnTaskReceipt;
+
+  /// No description provided for @dsnTaskNoReceipt.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前暂无回执。'**
+  String get dsnTaskNoReceipt;
+
+  /// No description provided for @dsnTaskLoadReceipt.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载回执'**
+  String get dsnTaskLoadReceipt;
+
+  /// No description provided for @dsnTaskRefreshReceipt.
+  ///
+  /// In zh, this message translates to:
+  /// **'刷新回执'**
+  String get dsnTaskRefreshReceipt;
+
+  /// No description provided for @dsnTaskReceiptState.
+  ///
+  /// In zh, this message translates to:
+  /// **'回执状态'**
+  String get dsnTaskReceiptState;
+
+  /// No description provided for @dsnTaskReceiptOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'订单 ID'**
+  String get dsnTaskReceiptOrder;
+
+  /// No description provided for @dsnTaskReceiptDeliveries.
+  ///
+  /// In zh, this message translates to:
+  /// **'交付数量'**
+  String get dsnTaskReceiptDeliveries;
+
+  /// No description provided for @dsnTaskReceiptGeneratedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'生成时间'**
+  String get dsnTaskReceiptGeneratedAt;
+
+  /// No description provided for @dsnTaskReceiptSource.
+  ///
+  /// In zh, this message translates to:
+  /// **'回执来源'**
+  String get dsnTaskReceiptSource;
+
+  /// No description provided for @dsnTaskLegacyFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前使用旧版事实回退；追加式回执尚不可用。'**
+  String get dsnTaskLegacyFallback;
+
+  /// No description provided for @dsnTaskActionRecoverOperation.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复原操作状态'**
+  String get dsnTaskActionRecoverOperation;
+
+  /// No description provided for @dsnTaskActionRecoverTask.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复任务状态'**
+  String get dsnTaskActionRecoverTask;
+
+  /// No description provided for @dsnTaskActionReviewResponsibility.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看待确认责任'**
+  String get dsnTaskActionReviewResponsibility;
+
+  /// No description provided for @dsnTaskActionRecoveryInProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复处理中'**
+  String get dsnTaskActionRecoveryInProgress;
+
+  /// No description provided for @dsnTaskActionViewProgress.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看进度'**
+  String get dsnTaskActionViewProgress;
+
+  /// No description provided for @dsnTaskActionViewSystemStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看系统状态'**
+  String get dsnTaskActionViewSystemStatus;
+
+  /// No description provided for @dsnTaskActionViewRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看记录'**
+  String get dsnTaskActionViewRecord;
+
+  /// No description provided for @dsnTaskActionDomain.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看下一步'**
+  String get dsnTaskActionDomain;
+
+  /// No description provided for @dsnTaskActionUnknown.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要进一步确认'**
+  String get dsnTaskActionUnknown;
+
   /// No description provided for @credit_wallet_available.
   ///
   /// In zh, this message translates to:

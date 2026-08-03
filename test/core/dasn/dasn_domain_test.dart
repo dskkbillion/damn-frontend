@@ -197,4 +197,60 @@ void main() {
       );
     });
   });
+
+  group('DasnTaskView transport envelope', () {
+    test('parses the backend task projection and keeps receipt facts opaque', () {
+      final view = DasnTaskView.fromJson({
+        'schemaVersion': '0.1',
+        'state': 'RUNNING',
+        'taskTraceId': 'ttr_1234567890abcdef',
+        'operationTraceId': 'trace-read-1',
+        'resource': {'id': 'ttr_1234567890abcdef', 'version': 2},
+        'nextActions': [
+          {'type': 'VIEW_PROGRESS'},
+        ],
+        'task': {
+          'taskLifecycle': 'RUNNING',
+          'responsibilityAction': 'NONE',
+          'syncStatus': 'SYNCED',
+          'waitingOn': 'COUNTERPARTY',
+          'nextActions': [
+            {'type': 'VIEW_PROGRESS'},
+          ],
+        },
+        'data': {
+          'receipt': {'state': 'AWAITING_DELIVERY', 'orderId': 88},
+          'paymentAttempt': {'status': 'SUCCEEDED'},
+        },
+      });
+
+      expect(view.taskTraceId, 'ttr_1234567890abcdef');
+      expect(view.projection.waitingOn, WaitingOn.counterparty);
+      expect(view.receipt?['state'], 'AWAITING_DELIVERY');
+      expect(view.data['paymentAttempt'], isA<Map<String, dynamic>>());
+    });
+
+    test('fails closed when task projection is absent or malformed', () {
+      expect(
+        () => DasnTaskView.fromJson({
+          'taskTraceId': 'ttr_1234567890abcdef',
+          'operationTraceId': 'trace-1',
+        }),
+        throwsA(isA<DasnProjectionFormatException>()),
+      );
+      expect(
+        () => DasnTaskView.fromJson({
+          'taskTraceId': 'ttr_1234567890abcdef',
+          'operationTraceId': 'trace-1',
+          'task': {
+            'taskLifecycle': 'RUNNING',
+            'responsibilityAction': 'NONE',
+            'syncStatus': 'SYNCED',
+          },
+          'data': 'not-an-object',
+        }),
+        throwsA(isA<DasnProjectionFormatException>()),
+      );
+    });
+  });
 }
