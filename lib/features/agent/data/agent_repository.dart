@@ -103,7 +103,10 @@ class DioAgentRepository implements AgentRepository {
     if (version < 0 || !RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(specHash)) {
       throw const AgentApiException('Request submission facts are unavailable');
     }
-    final key = 'app-submit:$id:$version';
+    // The canonical App boundary requires an Idempotency-Key of at least
+    // sixteen characters.  Keep the key stable for retries of the same
+    // request/version while retaining enough room for small numeric IDs.
+    final key = 'app-submit:$id:$version:v1';
     await _request(
         () => dio.post(
               '/app/v1/requests/$id/submissions',
