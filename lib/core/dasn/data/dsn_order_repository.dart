@@ -47,6 +47,10 @@ abstract class DsnOrderRepository {
   });
 
   Future<DsnPaymentAttempt> getPaymentAttempt(String paymentAttemptId);
+
+  /// Explicit read-repair for an uncertain result. The server endpoint never
+  /// initiates another debit; ordinary GET remains a side-effect-free query.
+  Future<DsnPaymentAttempt> reconcilePaymentAttempt(String paymentAttemptId);
 }
 
 class DioDsnOrderRepository implements DsnOrderRepository {
@@ -232,6 +236,18 @@ class DioDsnOrderRepository implements DsnOrderRepository {
   Future<DsnPaymentAttempt> getPaymentAttempt(String paymentAttemptId) async {
     final body = await _machine(
       () => dio.get('/app/v1/payment-attempts/$paymentAttemptId'),
+      expectedState: null,
+    );
+    return _payment(body);
+  }
+
+  @override
+  Future<DsnPaymentAttempt> reconcilePaymentAttempt(
+      String paymentAttemptId) async {
+    final body = await _machine(
+      () => dio.post(
+        '/app/v1/payment-attempts/$paymentAttemptId/reconcile',
+      ),
       expectedState: null,
     );
     return _payment(body);

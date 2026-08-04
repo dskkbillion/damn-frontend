@@ -90,6 +90,29 @@ void main() {
     expect(orders.orderCreated, isFalse);
     expect(orders.paymentCreated, isFalse);
   });
+
+  testWidgets('uses explicit reconcile when the server marks payment uncertain',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(reconcilingPayment: true);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: orders,
+      taskRepository: _FakeTaskRepository(includePayment: true),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('支付处理中'), findsOneWidget);
+    await tester.tap(find.text('刷新支付状态'));
+    await tester.pumpAndSettle();
+
+    expect(orders.paymentReconciled, isTrue);
+    expect(find.text('支付已完成'), findsOneWidget);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -155,10 +178,14 @@ class _FakeRequestRepository implements AgentRepository {
 }
 
 class _FakeOrderRepository implements DsnOrderRepository {
+  _FakeOrderRepository({this.reconcilingPayment = false});
+
+  final bool reconcilingPayment;
   bool previewCreated = false;
   bool confirmationIssued = false;
   bool orderCreated = false;
   bool paymentCreated = false;
+  bool paymentReconciled = false;
 
   final offer = DsnProviderOffer(
     requestId: 9,
@@ -262,10 +289,46 @@ class _FakeOrderRepository implements DsnOrderRepository {
 
   @override
   Future<DsnPaymentAttempt> getPaymentAttempt(String paymentAttemptId) =>
-      throw UnimplementedError();
+      reconcilingPayment
+          ? Future.value(_reconcilingPayment(paymentAttemptId))
+          : throw UnimplementedError();
+
+  @override
+  Future<DsnPaymentAttempt> reconcilePaymentAttempt(
+      String paymentAttemptId) async {
+    paymentReconciled = true;
+    return DsnPaymentAttempt(
+      paymentAttemptId: paymentAttemptId,
+      orderId: '1001',
+      taskTraceId: offer.taskTraceId,
+      state: 'PAYMENT_CAPTURED',
+      fundsDisposition: 'CAPTURED',
+      effectiveCommitment: true,
+      amountMinor: offer.amountMinor,
+      currency: 'CREDITS',
+      confirmationRef: 'cr_test-1',
+    );
+  }
+
+  DsnPaymentAttempt _reconcilingPayment(String paymentAttemptId) =>
+      DsnPaymentAttempt(
+        paymentAttemptId: paymentAttemptId,
+        orderId: '1001',
+        taskTraceId: offer.taskTraceId,
+        state: 'PAYMENT_RECONCILING',
+        fundsDisposition: 'RECONCILING',
+        effectiveCommitment: false,
+        amountMinor: offer.amountMinor,
+        currency: 'CREDITS',
+        confirmationRef: 'cr_test-1',
+        nextAction: 'RECONCILE_PAYMENT_ATTEMPT',
+      );
 }
 
 class _FakeTaskRepository implements DasnTaskRepository {
+  _FakeTaskRepository({this.includePayment = false});
+
+  final bool includePayment;
   @override
   Future<DasnTaskView> getTask(String taskTraceId) async => _view();
 
@@ -298,7 +361,12 @@ class _FakeTaskRepository implements DasnTaskRepository {
             'id': 1001,
             'state': 'awaitingPayment',
           },
-          'paymentAttempt': null,
+          'paymentAttempt': includePayment
+              ? {
+                  'id': 'payment-1',
+                  'fundsDisposition': 'RECONCILING',
+                }
+              : null,
         },
       });
 }

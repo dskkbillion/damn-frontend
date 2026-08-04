@@ -328,9 +328,13 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final payment = _payment;
     if (payment == null) return;
     await _runBusy(() async {
-      _payment = await widget.orderRepository.getPaymentAttempt(
-        payment.paymentAttemptId,
-      );
+      _payment = payment.nextAction == 'RECONCILE_PAYMENT_ATTEMPT'
+          ? await widget.orderRepository.reconcilePaymentAttempt(
+              payment.paymentAttemptId,
+            )
+          : await widget.orderRepository.getPaymentAttempt(
+              payment.paymentAttemptId,
+            );
     });
   }
 

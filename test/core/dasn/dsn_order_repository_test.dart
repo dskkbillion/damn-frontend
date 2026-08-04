@@ -74,7 +74,8 @@ void main() {
     );
   });
 
-  test('sends confirmation idempotency key on the canonical App route', () async {
+  test('sends confirmation idempotency key on the canonical App route',
+      () async {
     final dio = Dio();
     String? seenKey;
     dio.interceptors.add(InterceptorsWrapper(
@@ -112,6 +113,41 @@ void main() {
 
     expect(seenKey, 'app-confirmation:33:preview-1');
     expect(ref.confirmationRef, 'cr_test-1');
+  });
+
+  test('reconciles uncertain payment only through the explicit POST route',
+      () async {
+    final dio = Dio();
+    String? seenMethod;
+    String? seenPath;
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        seenMethod = options.method;
+        seenPath = options.path;
+        final body = _machine(
+          state: 'PAYMENT_CAPTURED',
+          data: <String, dynamic>{
+            'orderId': '41',
+            'confirmationRef': 'cr_test-1',
+            'amountMinor': '120',
+            'currency': 'CREDITS',
+          },
+        );
+        body['paymentAttempt'] = <String, dynamic>{
+          'paymentAttemptId': '51',
+          'fundsDisposition': 'CAPTURED',
+          'effectiveCommitment': true,
+        };
+        handler.resolve(Response(requestOptions: options, data: body));
+      },
+    ));
+
+    final payment =
+        await DioDsnOrderRepository(dio).reconcilePaymentAttempt('51');
+
+    expect(seenMethod, 'POST');
+    expect(seenPath, '/app/v1/payment-attempts/51/reconcile');
+    expect(payment.captured, isTrue);
   });
 }
 
