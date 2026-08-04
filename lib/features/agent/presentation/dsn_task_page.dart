@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/dasn/data/dasn_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_delivery_decision_repository.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dasn_domain.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 
-/// Read-only DS 0.1 task projection surface.
+/// DS 0.1 task projection surface with explicit buyer delivery decisions.
 ///
-/// This page deliberately has no order, payment, delivery or dispute write
-/// controls.  It can only refresh the server projection (or open the
-/// read-only receipt endpoint), so a stale client cannot change business
-/// facts while displaying a task.
+/// The projection remains read-only until the server returns a current
+/// append-only evidence fact. Decision writes then use that exact delivery
+/// id/submission/hash and a server-enforced If-Match/idempotency boundary.
 class DsnTaskPage extends StatefulWidget {
   const DsnTaskPage({
     super.key,
     required this.repository,
     required this.taskTraceId,
+    this.decisionRepository,
   });
 
   final DasnTaskRepository repository;
   final String taskTraceId;
+  final DsnDeliveryDecisionRepository? decisionRepository;
 
   @override
   State<DsnTaskPage> createState() => _DsnTaskPageState();
@@ -29,6 +31,9 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
   bool _loading = false;
   bool _loadingReceipt = false;
   String? _receiptError;
+  bool _decisionBusy = false;
+  DsnDeliveryDecisionResult? _decisionResult;
+  String? _decisionError;
 
   @override
   void initState() {
@@ -81,6 +86,10 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
         error.message.trim().isNotEmpty) {
       return error.message;
     }
+    if (error is DsnDeliveryDecisionApiException &&
+        error.message.trim().isNotEmpty) {
+      return error.message;
+    }
     return AppLocalizations.of(context).agentErrorGeneric;
   }
 
@@ -106,6 +115,8 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
                   _buildPrimaryActionCard(context, l10n, view.projection),
                   const SizedBox(height: 12),
                   _buildReceiptCard(context, l10n, view),
+                  const SizedBox(height: 12),
+                  _buildDeliveryDecisionCard(context, view),
                 ],
               ),
             ),
@@ -337,6 +348,176 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildDeliveryDecisionCard(BuildContext context, DasnTaskView view) {
+    final repository = widget.decisionRepository;
+    final fact = DsnCurrentDeliveryFact.fromTaskView(view);
+    if (repository == null || fact == null) return const SizedBox.shrink();
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final decisionResult = _decisionResult;
+    final decisionError = _decisionError;
+    if (!fact.decisionAvailable) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            fact.disputeOpen
+                ? (zh
+                    ? '当前交付已进入争议，验收操作已冻结。'
+                    : 'This delivery is disputed; acceptance is frozen.')
+                : (zh
+                    ? '当前交付已经验收。'
+                    : 'This delivery has already been accepted.'),
+          ),
+        ),
+      );
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(zh ? '交付决策' : 'Delivery decision',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _factRow(zh ? '交付 ID' : 'Delivery ID', fact.deliveryId),
+            _factRow(zh ? '提交序号' : 'Submission', fact.submissionNo),
+            _factRow(
+                zh ? '承诺版本' : 'Commitment version', fact.commitmentVersion),
+            _factRow(
+                zh ? '证据哈希' : 'Evidence hash',
+                fact.evidenceHash ??
+                    (zh ? '未提供（服务端仍会校验）' : 'Not provided (server validates)')),
+            if (decisionResult != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                zh
+                    ? '已提交：${decisionResult.action.wireValue}'
+                    : 'Submitted: ${decisionResult.action.wireValue}',
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              ),
+            ],
+            if (decisionError != null) ...[
+              const SizedBox(height: 8),
+              Text(decisionError,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: _decisionBusy
+                      ? null
+                      : () => _submitDecision(
+                          fact, DsnDeliveryDecisionAction.accept),
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: Text(zh ? '验收交付' : 'Accept delivery'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _decisionBusy
+                      ? null
+                      : () => _submitDecision(
+                          fact, DsnDeliveryDecisionAction.requestRevision),
+                  icon: const Icon(Icons.edit_note_outlined),
+                  label: Text(zh ? '要求补件' : 'Request revision'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: _decisionBusy
+                      ? null
+                      : () => _submitDecision(
+                          fact, DsnDeliveryDecisionAction.openDispute),
+                  icon: const Icon(Icons.report_problem_outlined),
+                  label: Text(zh ? '发起争议' : 'Open dispute'),
+                ),
+              ],
+            ),
+            if (_decisionBusy) ...[
+              const SizedBox(height: 10),
+              const LinearProgressIndicator(),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitDecision(
+    DsnCurrentDeliveryFact fact,
+    DsnDeliveryDecisionAction action,
+  ) async {
+    final repository = widget.decisionRepository;
+    if (repository == null) return;
+    final reason = await _decisionReason(action);
+    if (reason == null || !mounted) return;
+    final key =
+        'buyer-decision:${fact.orderId}:${fact.deliveryId}:${action.wireValue}:v1';
+    setState(() {
+      _decisionBusy = true;
+      _decisionError = null;
+      _decisionResult = null;
+    });
+    try {
+      final result = await repository.submitDecision(
+        DsnDeliveryDecisionInput(
+          orderId: fact.orderId,
+          decision: action,
+          deliveryId: fact.deliveryId,
+          submissionNo: fact.submissionNo,
+          commitmentVersion: fact.commitmentVersion,
+          expectedSubmissionHash: fact.evidenceHash,
+          reason: reason,
+        ),
+        idempotencyKey: key,
+      );
+      if (!mounted) return;
+      setState(() => _decisionResult = result);
+      await _load();
+    } catch (error) {
+      if (mounted) setState(() => _decisionError = _errorText(error));
+    } finally {
+      if (mounted) setState(() => _decisionBusy = false);
+    }
+  }
+
+  Future<String?> _decisionReason(DsnDeliveryDecisionAction action) {
+    final zh = Localizations.localeOf(context).languageCode == 'zh';
+    final controller = TextEditingController();
+    final title = switch (action) {
+      DsnDeliveryDecisionAction.accept => zh ? '确认验收' : 'Confirm acceptance',
+      DsnDeliveryDecisionAction.requestRevision =>
+        zh ? '要求补件' : 'Request revision',
+      DsnDeliveryDecisionAction.openDispute => zh ? '发起争议' : 'Open dispute',
+    };
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          maxLength: 4000,
+          decoration: InputDecoration(
+            hintText: action == DsnDeliveryDecisionAction.accept
+                ? (zh ? '可选备注' : 'Optional note')
+                : (zh ? '请说明原因（可选）' : 'Reason (optional)'),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(zh ? '取消' : 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            child: Text(zh ? '确认' : 'Confirm'),
+          ),
+        ],
+      ),
+    ).whenComplete(controller.dispose);
   }
 
   Widget _factRow(String label, Object? value) {

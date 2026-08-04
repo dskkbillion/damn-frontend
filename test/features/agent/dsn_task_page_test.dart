@@ -1,5 +1,7 @@
 import 'package:dskk_flutter_refactor/core/dasn/data/dasn_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_delivery_decision_repository.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dasn_task_view.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_delivery_decision_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/dsn_task_page.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -87,6 +89,57 @@ void main() {
     expect(find.text('COMPLETED'), findsOneWidget);
     expect(find.text('DSN_APPEND_ONLY'), findsOneWidget);
   });
+
+  testWidgets('shows explicit buyer delivery decisions from current evidence',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeDasnTaskRepository(_view(
+      waitingOn: 'PRINCIPAL',
+      receipt: {
+        'state': 'AWAITING_ACCEPTANCE',
+        'source': 'DSN_APPEND_ONLY',
+        'orderId': 88,
+        'commitmentVersion': 4,
+        'disputeOpen': false,
+        'latestEvidence': {
+          'deliveryId': 'del-2',
+          'commitmentVersion': 4,
+          'submissionNo': 2,
+          'evidenceHash': _hash('a'),
+        },
+      },
+    ));
+    final decisions = _FakeDsnDeliveryDecisionRepository();
+
+    await tester.pumpWidget(_app(DsnTaskPage(
+      repository: repository,
+      decisionRepository: decisions,
+      taskTraceId: 'ttr_1234567890abcdef',
+    )));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Accept delivery'));
+
+    expect(find.text('Accept delivery'), findsOneWidget);
+    expect(decisions.inputs, isEmpty);
+    await tester.tap(find.text('Accept delivery'));
+    await tester.pumpAndSettle();
+    expect(find.text('Confirm acceptance'), findsOneWidget);
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+
+    expect(decisions.inputs, hasLength(1));
+    final input = decisions.inputs.single;
+    expect(input.orderId, 88);
+    expect(input.deliveryId, 'del-2');
+    expect(input.submissionNo, 2);
+    expect(input.commitmentVersion, 4);
+    expect(input.expectedSubmissionHash, _hash('a'));
+    expect(input.decision, DsnDeliveryDecisionAction.accept);
+    expect(decisions.keys.single, 'buyer-decision:88:del-2:ACCEPT:v1');
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -143,3 +196,33 @@ class _FakeDasnTaskRepository implements DasnTaskRepository {
     return receiptView ?? taskView;
   }
 }
+
+class _FakeDsnDeliveryDecisionRepository
+    implements DsnDeliveryDecisionRepository {
+  final List<DsnDeliveryDecisionInput> inputs = [];
+  final List<String> keys = [];
+
+  @override
+  Future<DsnDeliveryDecisionResult> submitDecision(
+    DsnDeliveryDecisionInput input, {
+    required String idempotencyKey,
+  }) async {
+    inputs.add(input);
+    keys.add(idempotencyKey);
+    return DsnDeliveryDecisionResult(
+      state: input.decision.responseState,
+      taskTraceId: 'ttr_1234567890abcdef',
+      operationTraceId: 'trace-decision-test',
+      decisionId: 'dec-1',
+      orderId: input.orderId,
+      commitmentId: 'commit-1',
+      commitmentVersion: input.commitmentVersion,
+      deliveryId: input.deliveryId,
+      submissionNo: input.submissionNo,
+      action: input.decision,
+      actorType: 'PRINCIPAL',
+    );
+  }
+}
+
+String _hash(String letter) => 'sha256:${letter * 64}';

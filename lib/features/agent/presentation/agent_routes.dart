@@ -12,6 +12,7 @@ import 'dsn_task_page.dart';
 import 'provider_task_center_page.dart';
 import '../../../core/dasn/data/dsn_provider_repository.dart';
 import '../../../core/dasn/data/dsn_provider_task_repository.dart';
+import '../../../core/dasn/data/dsn_delivery_decision_repository.dart';
 
 class AgentRoutes {
   AgentRoutes._();
@@ -29,6 +30,9 @@ class AgentRoutes {
 
   static DsnProviderTaskRepository _providerTaskRepository() =>
       DioDsnProviderTaskRepository(GetIt.instance<Dio>());
+
+  static DsnDeliveryDecisionRepository _deliveryDecisionRepository() =>
+      DioDsnDeliveryDecisionRepository(GetIt.instance<Dio>());
 
   static List<RouteBase> get routes => [
         GoRoute(
@@ -77,6 +81,7 @@ class AgentRoutes {
             DsnTaskPage(
               repository: _taskRepository(),
               taskTraceId: state.pathParameters['taskTraceId'] ?? '',
+              decisionRepository: _deliveryDecisionRepository(),
             ),
             name: 'agentTaskStatus',
             source: 'agent_dasn_task_projection',
