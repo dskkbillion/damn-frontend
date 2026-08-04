@@ -103,7 +103,7 @@ class DsnProviderTask {
     final offer = offerValue == null
         ? null
         : DsnProviderOfferSnapshot.fromJson(<String, dynamic>{
-            ...Map<String, dynamic>.from(offerValue as Map),
+            ..._map(offerValue, 'offer'),
             if (acceptanceValue != null)
               'acceptance': acceptanceValue,
           });
@@ -124,7 +124,7 @@ class DsnProviderTask {
       commitment: commitmentValue == null
           ? null
           : DsnProviderCommitmentSnapshot.fromJson(
-              Map<String, dynamic>.from(commitmentValue as Map)),
+              _map(commitmentValue, 'commitment')),
       taskLifecycle: _optionalString(task['taskLifecycle']),
       responsibilityAction: _optionalString(task['responsibilityAction']),
       waitingOn: _optionalString(task['waitingOn']),

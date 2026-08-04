@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/dasn/data/dsn_provider_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_provider_task_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -63,6 +64,22 @@ void main() {
       throwsA(isA<DsnProviderTaskApiException>()),
     );
     expect(called, false);
+  });
+
+  test('fails closed when the detail envelope has a non-object provider fact',
+      () async {
+    final dio = Dio();
+    final envelope = _detailEnvelope();
+    (envelope['data'] as Map<String, dynamic>)['offer'] = 'not-an-object';
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      handler.resolve(Response(requestOptions: options, data: envelope));
+    }));
+
+    expect(
+      () => DioDsnProviderTaskRepository(dio)
+          .getAssignedTask('ttr_1234567890abcdef'),
+      throwsA(isA<DsnProviderTaskFormatException>()),
+    );
   });
 }
 
