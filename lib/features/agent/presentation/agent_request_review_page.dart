@@ -101,105 +101,117 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
               ? Center(child: Text(_error!))
               : request == null
                   ? const SizedBox.shrink()
-                  : ListView(padding: const EdgeInsets.all(20), children: [
-                      Card(
-                          child: Padding(
-                              padding: const EdgeInsets.all(18),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(request.title,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineSmall),
-                                  const SizedBox(height: 8),
-                                  Chip(
-                                      label: Text(agentStatusLabel(
-                                          context, request.status))),
-                                  const SizedBox(height: 16),
-                                  Text(l10n.agentRequestBrief,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium),
-                                  const SizedBox(height: 6),
-                                  Text(request.brief),
-                                  if (request.serviceId != null) ...[
-                                    const SizedBox(height: 14),
-                                    Text(
-                                        '${l10n.agentServiceId}: ${request.serviceId}'),
-                                  ],
-                                  const SizedBox(height: 14),
-                                  Text(
-                                      '${l10n.agentCreatedAt}: ${agentDate(request.createdAt)}'),
-                                  if (request.submittedAt != null) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        '${l10n.agentSubmittedAt}: ${agentDate(request.submittedAt)}'),
-                                  ],
-                                  if (request.providerRespondedAt != null) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        '${l10n.agentProviderRespondedAt}: ${agentDate(request.providerRespondedAt)}'),
-                                  ],
-                                  if (request.chatId != null) ...[
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        '${l10n.agentChatId}: ${request.chatId}'),
-                                  ],
-                                ],
-                              ))),
-                      const SizedBox(height: 12),
-                      Card(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(l10n.agentReviewSafetyNotice))),
-                      if (_error != null)
-                        Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(_error!,
-                                style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.error))),
-                      if (request.status == 'AWAITING_APP_REVIEW') ...[
-                        const SizedBox(height: 24),
-                        FilledButton(
-                            onPressed: _busy ? null : () => _review(true),
-                            child: Text(l10n.agentApproveRequest)),
-                        TextButton(
-                            onPressed: _busy ? null : () => _review(false),
-                            child: Text(l10n.agentAbandonRequest)),
-                      ] else if (request.chatId != null) ...[
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: () =>
-                              context.go('/chat/refactored/${request.chatId}'),
-                          icon: const Icon(Icons.forum_outlined),
-                          label: Text(l10n.agentOpenChat),
-                        ),
-                      ],
-                      if (request.status == 'PROVIDER_RESPONDED' &&
-                          widget.orderRepository != null) ...[
-                        const SizedBox(height: 12),
-                        FilledButton.icon(
-                          onPressed: _busy
-                              ? null
-                              : () =>
-                                  context.push('/requests/${request.id}/order'),
-                          icon: const Icon(Icons.receipt_long_outlined),
-                          label: const Text('查看报价并继续下单'),
-                        ),
-                      ],
-                      if (_hasTaskStatus(request)) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: () => context.go(
-                              '/agent/tasks/${Uri.encodeComponent(request.taskTraceId!)}'),
-                          icon: const Icon(Icons.timeline_outlined),
-                          label: Text(l10n.agentViewTaskStatus),
-                        ),
-                      ],
-                    ]),
+                  : ListView(
+                      // This page is opened inside the app shell, whose
+                      // floating tab bar overlays the bottom of the route.
+                      // Keep the final task-status/action controls above that
+                      // bar so they remain reachable on short screens.
+                      padding: EdgeInsets.fromLTRB(20, 20, 20,
+                          20 + MediaQuery.of(context).padding.bottom + 96),
+                      children: [
+                          Card(
+                              child: Padding(
+                                  padding: const EdgeInsets.all(18),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(request.title,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .headlineSmall),
+                                      const SizedBox(height: 8),
+                                      Chip(
+                                          label: Text(agentStatusLabel(
+                                              context, request.status))),
+                                      const SizedBox(height: 16),
+                                      Text(l10n.agentRequestBrief,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium),
+                                      const SizedBox(height: 6),
+                                      Text(request.brief),
+                                      if (request.serviceId != null) ...[
+                                        const SizedBox(height: 14),
+                                        Text(
+                                            '${l10n.agentServiceId}: ${request.serviceId}'),
+                                      ],
+                                      const SizedBox(height: 14),
+                                      Text(
+                                          '${l10n.agentCreatedAt}: ${agentDate(request.createdAt)}'),
+                                      if (request.submittedAt != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            '${l10n.agentSubmittedAt}: ${agentDate(request.submittedAt)}'),
+                                      ],
+                                      if (request.providerRespondedAt !=
+                                          null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            '${l10n.agentProviderRespondedAt}: ${agentDate(request.providerRespondedAt)}'),
+                                      ],
+                                      if (request.chatId != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                            '${l10n.agentChatId}: ${request.chatId}'),
+                                      ],
+                                    ],
+                                  ))),
+                          const SizedBox(height: 12),
+                          Card(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(l10n.agentReviewSafetyNotice))),
+                          if (_error != null)
+                            Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Text(_error!,
+                                    style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .error))),
+                          if (request.status == 'AWAITING_APP_REVIEW') ...[
+                            const SizedBox(height: 24),
+                            FilledButton(
+                                onPressed: _busy ? null : () => _review(true),
+                                child: Text(l10n.agentApproveRequest)),
+                            TextButton(
+                                onPressed: _busy ? null : () => _review(false),
+                                child: Text(l10n.agentAbandonRequest)),
+                          ] else if (request.chatId != null) ...[
+                            const SizedBox(height: 24),
+                            FilledButton.icon(
+                              onPressed: () => context
+                                  .go('/chat/refactored/${request.chatId}'),
+                              icon: const Icon(Icons.forum_outlined),
+                              label: Text(l10n.agentOpenChat),
+                            ),
+                          ],
+                          if (request.status == 'PROVIDER_RESPONDED' &&
+                              widget.orderRepository != null) ...[
+                            const SizedBox(height: 12),
+                            FilledButton.icon(
+                              onPressed: _busy
+                                  ? null
+                                  : () => context
+                                      .push('/requests/${request.id}/order'),
+                              icon: const Icon(Icons.receipt_long_outlined),
+                              label: const Text('查看报价并继续下单'),
+                            ),
+                          ],
+                          if (_hasTaskStatus(request)) ...[
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                              onPressed: () => context.go(
+                                  '/agent/tasks/${Uri.encodeComponent(request.taskTraceId!)}'),
+                              icon: const Icon(Icons.timeline_outlined),
+                              label: Text(l10n.agentViewTaskStatus),
+                            ),
+                          ],
+                        ]),
     );
   }
 
