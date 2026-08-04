@@ -965,7 +965,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           location == ProfileRoutes.accountSecurityPath ||
               location == ProfileRoutes.connectedAgentsPath ||
               location == ProfileRoutes.agentRequestsPath ||
-              location == '/agent/connect';
+              location == '/agent/connect' ||
+              location == '/provider/tasks';
       final List<String> buyerPaths = [
         HomeRoutes.homePath,
         '/ai_chat',
