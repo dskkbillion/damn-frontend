@@ -9,6 +9,9 @@ import 'device_authorization_page.dart';
 import 'agent_request_review_page.dart';
 import 'dsn_order_flow_page.dart';
 import 'dsn_task_page.dart';
+import 'provider_task_center_page.dart';
+import '../../../core/dasn/data/dsn_provider_repository.dart';
+import '../../../core/dasn/data/dsn_provider_task_repository.dart';
 
 class AgentRoutes {
   AgentRoutes._();
@@ -20,6 +23,12 @@ class AgentRoutes {
 
   static DsnOrderRepository _orderRepository() =>
       DioDsnOrderRepository(GetIt.instance<Dio>());
+
+  static DsnProviderRepository _providerRepository() =>
+      DioDsnProviderRepository(GetIt.instance<Dio>());
+
+  static DsnProviderTaskRepository _providerTaskRepository() =>
+      DioDsnProviderTaskRepository(GetIt.instance<Dio>());
 
   static List<RouteBase> get routes => [
         GoRoute(
@@ -71,6 +80,18 @@ class AgentRoutes {
             ),
             name: 'agentTaskStatus',
             source: 'agent_dasn_task_projection',
+          ),
+        ),
+        GoRoute(
+          path: '/provider/tasks',
+          name: 'providerTaskCenter',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            DsnProviderTaskCenterPage(
+              taskRepository: _providerTaskRepository(),
+              providerRepository: _providerRepository(),
+            ),
+            name: 'providerTaskCenter',
+            source: 'provider_dasn_task_center',
           ),
         ),
       ];
