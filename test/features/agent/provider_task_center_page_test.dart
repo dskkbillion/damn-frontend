@@ -1,0 +1,260 @@
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_provider_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_provider_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_provider_models.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_provider_task_models.dart';
+import 'package:dskk_flutter_refactor/features/agent/presentation/provider_task_center_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  testWidgets(
+    'records ProviderOffer and ProviderAcceptance separately before Commitment',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final tasks = _FakeProviderTaskRepository();
+      final provider = _FakeProviderRepository();
+      await tester.pumpWidget(_app(
+        DsnProviderTaskCenterPage(
+          taskRepository: tasks,
+          providerRepository: provider,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Provider 任务中心'), findsOneWidget);
+      expect(find.text('Provider task'), findsOneWidget);
+      expect(provider.offerCalls, 0);
+      expect(provider.acceptanceCalls, 0);
+
+      await _enter(tester, 'Capability ID', 'translation');
+      await _enter(tester, 'Variant ID', 'standard');
+      await _enter(tester, '积分金额', '120');
+      await _tapText(tester, '提交 ProviderOffer');
+      await tester.pumpAndSettle();
+
+      expect(provider.offerCalls, 1);
+      expect(provider.lastOffer?.offerVersion, 1);
+      expect(find.textContaining('报价已记录'), findsOneWidget);
+      expect(find.text('确认接单'), findsOneWidget);
+
+      await _tapText(tester, '确认接单');
+      await tester.pumpAndSettle();
+      expect(find.text('确认接单'), findsWidgets);
+      expect(provider.acceptanceCalls, 0);
+
+      await tester.tap(find.text('确认').last);
+      await tester.pumpAndSettle();
+      expect(provider.acceptanceCalls, 1);
+      expect(provider.lastAcceptance?.acceptance, DsnProviderAcceptance.accept);
+      expect(provider.commitmentCreated, isFalse,
+          reason: 'one-sided ProviderAcceptance must not create Commitment');
+      expect(find.textContaining('接单状态：ACCEPT'), findsOneWidget);
+      expect(find.text('订单 Commitment 尚未建立，当前不能提交交付。'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'requires refreshed Commitment and explicit confirmation before delivery',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final tasks = _FakeProviderTaskRepository();
+      final provider = _FakeProviderRepository();
+      await tester.pumpWidget(_app(
+        DsnProviderTaskCenterPage(
+          taskRepository: tasks,
+          providerRepository: provider,
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      tasks.includeCommitment = true;
+      await _tapText(tester, '刷新服务器事实');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Order order-1'), findsOneWidget);
+      expect(find.text('提交交付证据'), findsOneWidget);
+
+      await _enter(tester, '交付对象引用（objectRef）', 'staging://artifact/1');
+      await _tapText(tester, '提交交付证据');
+      await tester.pumpAndSettle();
+      expect(find.text('确认提交交付'), findsOneWidget);
+      expect(provider.deliveryCalls, 0);
+
+      await tester.tap(find.text('确认').last);
+      await tester.pumpAndSettle();
+      expect(provider.deliveryCalls, 1);
+      expect(provider.lastDelivery?.submissionNo, 1);
+      expect(provider.lastDelivery?.expectedCommitmentHash, _hash('c'));
+      expect(find.textContaining('交付已记录：delivery-1'), findsOneWidget);
+    },
+  );
+}
+
+Widget _app(Widget child) => MaterialApp(home: child);
+
+Future<void> _enter(WidgetTester tester, String label, String value) async {
+  final field = find.widgetWithText(TextField, label);
+  expect(field, findsOneWidget);
+  await tester.ensureVisible(field);
+  await tester.enterText(field, value);
+}
+
+Future<void> _tapText(WidgetTester tester, String label) async {
+  final finder = find.text(label);
+  expect(finder, findsOneWidget);
+  await tester.ensureVisible(finder);
+  final button = find.ancestor(
+    of: finder,
+    matching: find.byWidgetPredicate(
+      (widget) => widget is ButtonStyleButton || widget is TextButton,
+    ),
+  );
+  expect(button, findsOneWidget);
+  await tester.ensureVisible(button);
+  await tester.tap(button);
+}
+
+class _FakeProviderTaskRepository implements DsnProviderTaskRepository {
+  bool includeCommitment = false;
+  bool includeOffer = false;
+
+  @override
+  Future<DsnProviderTaskPage> listAssignedTasks({
+    String? cursor,
+    int limit = 20,
+  }) async {
+    return DsnProviderTaskPage(tasks: <DsnProviderTask>[_task()]);
+  }
+
+  @override
+  Future<DsnProviderTask> getAssignedTask(String taskTraceId) async {
+    includeOffer = true;
+    return _task();
+  }
+
+  DsnProviderTask _task() => DsnProviderTask(
+        requestId: 33,
+        version: includeCommitment ? 2 : 0,
+        taskTraceId: 'ttr_1234567890abcdef',
+        specHash: _hash('a'),
+        title: 'Provider task',
+        brief: 'A fixed brief',
+        status: includeCommitment ? 'COMMITTED' : 'SUBMITTED',
+        offer: includeOffer
+            ? DsnProviderOfferSnapshot(
+                offerId: 'offer-1',
+                offerVersion: 1,
+                specHash: _hash('a'),
+                quoteHash: _hash('b'),
+                capabilityId: 'translation',
+                variantId: 'standard',
+                quantity: 1,
+                amountMinor: 120,
+                currency: 'CREDITS',
+                status: 'ACTIVE',
+                acceptance: DsnProviderAcceptance.accept,
+              )
+            : null,
+        commitment: includeCommitment
+            ? DsnProviderCommitmentSnapshot(
+                orderId: 'order-1',
+                commitmentId: 'commit-1',
+                commitmentVersion: 1,
+                commitmentHash: _hash('c'),
+                nextSubmissionNo: 1,
+              )
+            : null,
+      );
+}
+
+class _FakeProviderRepository implements DsnProviderRepository {
+  int offerCalls = 0;
+  int acceptanceCalls = 0;
+  int deliveryCalls = 0;
+  bool commitmentCreated = false;
+  DsnProviderOfferInput? lastOffer;
+  DsnProviderAcceptanceInput? lastAcceptance;
+  DsnDeliveryInput? lastDelivery;
+
+  @override
+  Future<DsnProviderOfferResult> submitOffer(
+    int requestId, {
+    required DsnProviderOfferInput offer,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    offerCalls += 1;
+    lastOffer = offer;
+    return DsnProviderOfferResult(
+      metadata: _metadata('PROVIDER_OFFERED', version: ifMatchVersion + 1),
+      offerId: 'offer-1',
+      providerId: 'provider-1',
+      offerVersion: offer.offerVersion,
+      specHash: offer.specHash,
+      quoteHash: offer.quoteHash,
+      expiresAt: offer.expiresAt,
+      status: 'OFFERED',
+    );
+  }
+
+  @override
+  Future<DsnProviderAcceptanceResult> submitAcceptance(
+    int requestId, {
+    required DsnProviderAcceptanceInput acceptance,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    acceptanceCalls += 1;
+    lastAcceptance = acceptance;
+    return DsnProviderAcceptanceResult(
+      metadata: _metadata('PROVIDER_ACCEPTED', version: ifMatchVersion + 1),
+      acceptanceId: 'accept-1',
+      offerId: 'offer-1',
+      offerVersion: acceptance.offerVersion,
+      specHash: acceptance.specHash,
+      quoteHash: acceptance.quoteHash,
+      acceptance: acceptance.acceptance,
+      actorType: 'HUMAN',
+    );
+  }
+
+  @override
+  Future<DsnDeliveryResult> submitDelivery(
+    String orderId, {
+    required DsnDeliveryInput delivery,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    deliveryCalls += 1;
+    lastDelivery = delivery;
+    return DsnDeliveryResult(
+      metadata: _metadata('DELIVERY_SUBMITTED', version: ifMatchVersion + 1),
+      deliveryId: 'delivery-1',
+      orderId: orderId,
+      commitmentId: 'commit-1',
+      commitmentVersion: ifMatchVersion,
+      submissionNo: delivery.submissionNo,
+      evidenceHash: _hash('d'),
+      actorType: 'HUMAN',
+    );
+  }
+}
+
+DsnProviderMachineMetadata _metadata(String state, {required int version}) =>
+    DsnProviderMachineMetadata(
+      schemaVersion: '0.1',
+      state: state,
+      taskTraceId: 'ttr_1234567890abcdef',
+      operationTraceId: 'trace-provider-test',
+      resourceId: 'resource-1',
+      resourceVersion: version,
+      resourceHash: _hash('z'),
+      nextActions: const <dynamic>[],
+    );
+
+String _hash(String letter) => 'sha256:${letter * 64}';
