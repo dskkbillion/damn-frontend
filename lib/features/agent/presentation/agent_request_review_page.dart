@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/widgets/glass_surface.dart';
 import '../../../core/dasn/data/dsn_order_repository.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
@@ -106,8 +107,13 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                       // floating tab bar overlays the bottom of the route.
                       // Keep the final task-status/action controls above that
                       // bar so they remain reachable on short screens.
-                      padding: EdgeInsets.fromLTRB(20, 20, 20,
-                          20 + MediaQuery.of(context).padding.bottom + 96),
+                      padding: EdgeInsets.fromLTRB(
+                          20,
+                          20,
+                          20,
+                          20 +
+                              GlassNavigationMetrics.contentBottomInset(
+                                  context)),
                       children: [
                           Card(
                               child: Padding(
