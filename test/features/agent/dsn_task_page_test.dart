@@ -103,6 +103,7 @@ void main() {
         'source': 'DSN_APPEND_ONLY',
         'orderId': 88,
         'commitmentVersion': 4,
+        'fundsDisposition': 'CAPTURED',
         'disputeOpen': false,
         'latestEvidence': {
           'deliveryId': 'del-2',

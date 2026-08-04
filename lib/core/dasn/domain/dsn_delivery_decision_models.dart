@@ -31,6 +31,7 @@ class DsnCurrentDeliveryFact {
     required this.commitmentVersion,
     required this.submissionNo,
     required this.evidenceHash,
+    required this.paymentCaptured,
     required this.disputeOpen,
     required this.finalDecision,
   });
@@ -40,6 +41,7 @@ class DsnCurrentDeliveryFact {
   final int commitmentVersion;
   final int submissionNo;
   final String? evidenceHash;
+  final bool paymentCaptured;
   final bool disputeOpen;
   final DsnDeliveryDecisionAction? finalDecision;
 
@@ -48,7 +50,8 @@ class DsnCurrentDeliveryFact {
   /// The server rejects acceptance during a dispute and after acceptance.
   /// Keep the controls hidden in those terminal/frozen states instead of
   /// showing buttons that are guaranteed to fail.
-  bool get decisionAvailable => !disputeOpen && !alreadyAccepted;
+  bool get decisionAvailable =>
+      paymentCaptured && !disputeOpen && !alreadyAccepted;
 
   static DsnCurrentDeliveryFact? fromTaskView(DasnTaskView view) {
     final receipt = view.receipt;
@@ -71,17 +74,19 @@ class DsnCurrentDeliveryFact {
     }
     final evidenceHash = _optionalHash(evidence['evidenceHash']);
     if (evidence['evidenceHash'] != null && evidenceHash == null) return null;
+    final rawDisputeOpen = receipt['disputeOpen'];
+    if (rawDisputeOpen != null && rawDisputeOpen is! bool) return null;
     final rawFinalDecision = receipt['finalDecision'];
     DsnDeliveryDecisionAction? finalDecision;
-    if (rawFinalDecision is Map) {
-      finalDecision = DsnDeliveryDecisionAction.fromWire(
-        _nonEmptyString(Map<String, dynamic>.from(rawFinalDecision)['action']),
-      );
-      // A future/unknown decision must not be treated as an open control.
-      if (Map<String, dynamic>.from(rawFinalDecision)['action'] != null &&
-          finalDecision == null) {
-        return null;
-      }
+    if (rawFinalDecision != null) {
+      if (rawFinalDecision is! Map) return null;
+      final decisionMap = Map<String, dynamic>.from(rawFinalDecision);
+      final rawAction = _nonEmptyString(decisionMap['action']);
+      // A malformed, future, or unknown terminal decision must not be
+      // treated as an open control.
+      if (rawAction == null) return null;
+      finalDecision = DsnDeliveryDecisionAction.fromWire(rawAction);
+      if (finalDecision == null) return null;
     }
     return DsnCurrentDeliveryFact(
       orderId: orderId,
@@ -89,7 +94,8 @@ class DsnCurrentDeliveryFact {
       commitmentVersion: commitmentVersion,
       submissionNo: submissionNo,
       evidenceHash: evidenceHash,
-      disputeOpen: receipt['disputeOpen'] == true,
+      paymentCaptured: receipt['fundsDisposition']?.toString() == 'CAPTURED',
+      disputeOpen: rawDisputeOpen == true,
       finalDecision: finalDecision,
     );
   }

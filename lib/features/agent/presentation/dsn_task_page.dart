@@ -362,13 +362,17 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            fact.disputeOpen
+            !fact.paymentCaptured
                 ? (zh
-                    ? '当前交付已进入争议，验收操作已冻结。'
-                    : 'This delivery is disputed; acceptance is frozen.')
-                : (zh
-                    ? '当前交付已经验收。'
-                    : 'This delivery has already been accepted.'),
+                    ? '付款尚未确认入账，暂不能验收或发起争议。'
+                    : 'Payment is not captured; delivery decisions are unavailable.')
+                : fact.disputeOpen
+                    ? (zh
+                        ? '当前交付已进入争议，验收操作已冻结。'
+                        : 'This delivery is disputed; acceptance is frozen.')
+                    : (zh
+                        ? '当前交付已经验收。'
+                        : 'This delivery has already been accepted.'),
           ),
         ),
       );
