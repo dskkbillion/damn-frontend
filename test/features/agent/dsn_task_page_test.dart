@@ -123,6 +123,8 @@ void main() {
     await tester.ensureVisible(find.text('Accept delivery'));
 
     expect(find.text('Accept delivery'), findsOneWidget);
+    expect(find.text('Request revision'), findsOneWidget);
+    expect(find.text('Open dispute'), findsOneWidget);
     expect(decisions.inputs, isEmpty);
     await tester.tap(find.text('Accept delivery'));
     await tester.pumpAndSettle();
