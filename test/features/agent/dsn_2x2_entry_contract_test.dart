@@ -53,7 +53,7 @@ void main() {
   });
 
   testWidgets(
-      'all four pairings share review, order, payment and receipt surfaces',
+      'all four pairings share review and receipt surfaces; Agent buyers hand off Commitment',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
     tester.view.devicePixelRatio = 1;
@@ -91,31 +91,52 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('生成确认引用').last);
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, '创建未支付订单'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('创建未支付订单').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, '使用积分支付'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('确认支付').last);
-      await tester.pumpAndSettle();
-
-      expect(
+      if (pairing.buyerActor == 'AGENT') {
+        // The App has no Agent credential and must not POST the Agent
+        // commitment route.  This is a local handoff contract only; the
+        // external runner/Grant and its runtime HTTP path are tested outside
+        // this Flutter fixture.
+        expect(find.text('等待 Buyer Agent 创建 Commitment'), findsOneWidget,
+            reason: '${pairing.label} did not stop at the Agent handoff');
+        expect(find.text('创建未支付订单'), findsNothing);
+        expect(
           orderRepository.steps,
           <String>[
             'getProviderOffer',
             'createPreview',
             'issueConfirmationRef',
-            'createOrder',
-            'createPaymentAttempt',
           ],
-          reason: '${pairing.label} selected a different economic flow');
+          reason: '${pairing.label} used an App order side effect',
+        );
+      } else {
+        await tester.tap(find.widgetWithText(FilledButton, '创建未支付订单'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('创建未支付订单').last);
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, '使用积分支付'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('确认支付').last);
+        await tester.pumpAndSettle();
+
+        expect(
+            orderRepository.steps,
+            <String>[
+              'getProviderOffer',
+              'createPreview',
+              'issueConfirmationRef',
+              'createOrder',
+              'createPaymentAttempt',
+            ],
+            reason: '${pairing.label} selected a different economic flow');
+        expect(find.text('支付已完成'), findsOneWidget);
+      }
       expect(requestRepository.request.requesterActorType, pairing.buyerActor);
       expect(orderRepository.providerActor, pairing.providerActor);
-      expect(find.text('支付已完成'), findsOneWidget);
 
       // Delivery is an append-only server fact; the App reads the same task
       // projection and receipt after either Provider adapter has written it.
+      // For Agent buyers, the fixture starts after the external commitment;
+      // no App-side Agent token or Grant is fabricated here.
       await tester.pumpWidget(_app(DsnTaskPage(
         repository: _MatrixTaskRepository(pairing),
         taskTraceId: requestRepository.request.taskTraceId!,

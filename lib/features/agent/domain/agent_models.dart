@@ -150,9 +150,10 @@ class AgentRequestDraft {
   final String? specHash;
 
   /// Server-owned DS 0.2 provenance for the requester.  The App keeps this
-  /// fact read-only and deliberately does not branch its order/payment flow
-  /// on the actor type: HUMAN and AGENT requests converge on the same
-  /// canonical review, order, payment and task projection routes.
+  /// fact read-only and uses it only to choose the ingress adapter: HUMAN
+  /// requests may continue through the App order facade, while AGENT requests
+  /// stop at a credential-free Buyer Agent handoff.  Both converge again on
+  /// the same payment and task projection routes after Commitment exists.
   final String? requesterActorType;
   final int? serviceId;
   final String title;

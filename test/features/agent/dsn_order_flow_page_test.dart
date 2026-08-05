@@ -1,5 +1,6 @@
 import 'package:dskk_flutter_refactor/core/dasn/data/dsn_order_repository.dart';
 import 'package:dskk_flutter_refactor/core/dasn/data/dasn_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_buyer_agent_models.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dasn_task_view.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_order_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
@@ -87,6 +88,76 @@ void main() {
     expect(find.text('未支付订单已创建'), findsOneWidget);
     expect(orders.previewCreated, isFalse);
     expect(orders.confirmationIssued, isFalse);
+    expect(orders.orderCreated, isFalse);
+    expect(orders.paymentCreated, isFalse);
+  });
+
+  testWidgets(
+      'buyer Agent stops at a credential-free handoff and never creates an App order',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    DsnBuyerAgentHandoff? handoff;
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(requesterActorType: 'AGENT'),
+      orderRepository: orders,
+      requestId: 9,
+      onBuyerAgentHandoffReady: (value) => handoff = value,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '生成确认引用'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('生成确认引用').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('等待 Buyer Agent 创建 Commitment'), findsOneWidget);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(orders.orderCreated, isFalse);
+    expect(handoff, isNotNull);
+    expect(handoff!.status, DsnBuyerAgentHandoffStatus.readyForBuyerAgent);
+    expect(handoff!.status.wireName, 'READY_FOR_BUYER_AGENT');
+    expect(handoff!.toSafeJson(), containsPair('requestId', 9));
+    expect(
+        handoff!.toSafeJson().keys,
+        containsAll(<String>[
+          'previewId',
+          'providerAcceptanceId',
+          'offerVersion',
+          'expectedSpecHash',
+          'expectedQuoteHash',
+          'confirmationRef',
+        ]));
+    final safeHandoff = handoff!.toSafeJson();
+    expect(safeHandoff, isNot(contains('accessToken')));
+    expect(safeHandoff, isNot(contains('grant')));
+    expect(safeHandoff, isNot(contains('sessionToken')));
+  });
+
+  testWidgets(
+      'buyer Agent resumes the shared payment surface after external Commitment',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(requesterActorType: 'AGENT'),
+      orderRepository: orders,
+      taskRepository: _FakeTaskRepository(),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('未支付订单已创建'), findsOneWidget);
+    expect(find.text('等待 Buyer Agent 创建 Commitment'), findsNothing);
+    expect(find.text('使用积分支付'), findsOneWidget);
     expect(orders.orderCreated, isFalse);
     expect(orders.paymentCreated, isFalse);
   });
@@ -228,12 +299,17 @@ Widget _app(Widget child) => MaterialApp(
     );
 
 class _FakeRequestRepository implements AgentRepository {
+  _FakeRequestRepository({this.requesterActorType});
+
+  final String? requesterActorType;
+
   @override
   Future<AgentRequestDraft> getRequest(int id) async => AgentRequestDraft(
         id: id,
         taskTraceId: 'ttr_1234567890abcdef',
         version: 3,
         specHash: 'sha256:${'a' * 64}',
+        requesterActorType: requesterActorType,
         serviceId: 42,
         title: 'Need a logo',
         brief: 'Minimal blue identity',

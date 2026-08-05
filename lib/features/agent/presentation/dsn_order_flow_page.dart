@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import '../../../core/dasn/data/dsn_order_repository.dart';
 import '../../../core/dasn/data/dasn_task_repository.dart';
 import '../../../core/dasn/domain/dasn_task_view.dart';
+import '../../../core/dasn/domain/dsn_buyer_agent_models.dart';
 import '../../../core/dasn/domain/dsn_order_models.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
@@ -16,6 +17,12 @@ import '../domain/agent_models.dart';
 /// an unpaid order, and finally starting the internal-credits payment.  A
 /// network retry reuses the same idempotency key; the page never edits server
 /// facts or silently advances to the next side effect.
+///
+/// When the requester is an Agent, the page intentionally stops after the
+/// App-issued confirmation reference.  The external Buyer Agent adapter owns
+/// `/agent/v1/requests/{id}/commitment`; this page exposes a credential-free
+/// handoff and later restores the resulting order from the App task
+/// projection.
 class DsnOrderFlowPage extends StatefulWidget {
   const DsnOrderFlowPage({
     super.key,
@@ -23,12 +30,14 @@ class DsnOrderFlowPage extends StatefulWidget {
     required this.orderRepository,
     required this.requestId,
     this.taskRepository,
+    this.onBuyerAgentHandoffReady,
   });
 
   final AgentRepository requestRepository;
   final DsnOrderRepository orderRepository;
   final int requestId;
   final DasnTaskRepository? taskRepository;
+  final ValueChanged<DsnBuyerAgentHandoff>? onBuyerAgentHandoffReady;
 
   @override
   State<DsnOrderFlowPage> createState() => _DsnOrderFlowPageState();
@@ -51,11 +60,18 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
   DsnConfirmationRef? _confirmation;
   DsnOrder? _order;
   DsnPaymentAttempt? _payment;
+  DsnBuyerAgentHandoff? _buyerAgentHandoff;
   String? _paymentAttemptRecoveryId;
   String? _error;
   bool _loading = false;
   bool _busy = false;
   int _previewKeyGeneration = 0;
+
+  bool _isBuyerAgentRequest(AgentRequestDraft request) =>
+      request.requesterActorType?.trim().toUpperCase() == 'AGENT';
+
+  bool get _requiresBuyerAgentHandoff =>
+      _request != null && _isBuyerAgentRequest(_request!);
 
   @override
   void initState() {
@@ -196,12 +212,30 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       }
     }
     if (!mounted) return;
+    DsnBuyerAgentHandoff? restoredHandoff;
+    if (_isBuyerAgentRequest(request)) {
+      try {
+        restoredHandoff = DsnBuyerAgentHandoff(
+          requestId: request.id,
+          taskTraceId: taskTraceId,
+          commitment: buyerAgentCommitmentInputFromFacts(
+            preview: restoredPreview,
+            confirmation: restoredConfirmation,
+          ),
+          status: DsnBuyerAgentHandoffStatus.awaitingAppPayment,
+        );
+      } on ArgumentError {
+        // A malformed projection must never turn into a synthetic handoff.
+        restoredHandoff = null;
+      }
+    }
     setState(() {
       _preview = restoredPreview;
       _confirmation = restoredConfirmation;
       _order = restoredOrder;
       _payment = restoredPayment;
       _paymentAttemptRecoveryId = paymentRecoveryId;
+      _buyerAgentHandoff = restoredHandoff;
     });
   }
 
@@ -277,13 +311,28 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     if (accepted != true) return;
     await _runBusy(() async {
       try {
-        _confirmation = await widget.orderRepository.issueConfirmationRef(
+        final confirmation = await widget.orderRepository.issueConfirmationRef(
           widget.requestId,
           previewId: preview.previewId,
           allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
           idempotencyKey:
               'app-confirmation:${widget.requestId}:${preview.previewId}',
         );
+        _confirmation = confirmation;
+        final request = _request;
+        if (request != null && _isBuyerAgentRequest(request)) {
+          final handoff = DsnBuyerAgentHandoff(
+            requestId: request.id,
+            taskTraceId: preview.taskTraceId,
+            commitment: buyerAgentCommitmentInputFromFacts(
+              preview: preview,
+              confirmation: confirmation,
+            ),
+            status: DsnBuyerAgentHandoffStatus.readyForBuyerAgent,
+          );
+          _buyerAgentHandoff = handoff;
+          widget.onBuyerAgentHandoffReady?.call(handoff);
+        }
       } on DsnOrderApiException catch (error) {
         if (error.code == 'PREVIEW_EXPIRED') {
           _clearQuoteState(clearOffer: false);
@@ -309,6 +358,12 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final preview = _preview;
     final confirmation = _confirmation;
     if (request == null || preview == null || confirmation == null) return;
+    if (_isBuyerAgentRequest(request)) {
+      // This is an invariant guard in addition to the hidden button.  App
+      // JWTs must never be used to call the Agent commitment route.
+      setState(() => _error = 'Buyer Agent 请求需要由 Agent adapter 创建 Commitment');
+      return;
+    }
     final version = request.version;
     if (version == null || version < 0) {
       setState(() => _error = '请求版本缺失，已停止创建订单，请刷新任务');
@@ -351,6 +406,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     _order = null;
     _payment = null;
     _paymentAttemptRecoveryId = null;
+    _buyerAgentHandoff = null;
     _previewKeyGeneration += 1;
   }
 
@@ -498,12 +554,14 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                         _confirmationCard(_confirmation!),
                         const SizedBox(height: 12),
                         if (_order == null)
-                          _actionCard(
-                            title: '订单尚未创建',
-                            message: '创建订单不会扣积分；扣积分只发生在下一步明确支付。',
-                            label: '创建未支付订单',
-                            onPressed: _busy ? null : _createOrder,
-                          )
+                          _requiresBuyerAgentHandoff
+                              ? _buyerAgentHandoffCard()
+                              : _actionCard(
+                                  title: '订单尚未创建',
+                                  message: '创建订单不会扣积分；扣积分只发生在下一步明确支付。',
+                                  label: '创建未支付订单',
+                                  onPressed: _busy ? null : _createOrder,
+                                )
                         else ...[
                           _orderCard(_order!),
                           const SizedBox(height: 12),
@@ -645,6 +703,53 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
           ),
         ),
       );
+
+  Widget _buyerAgentHandoffCard() {
+    final handoff = _buyerAgentHandoff;
+    if (handoff == null) {
+      // This should only be reachable if a server projection is incomplete;
+      // fail closed rather than offering a direct App order button.
+      return _actionCard(
+        title: 'Buyer Agent handoff 不完整',
+        message: '缺少可验证的预览或确认引用，请刷新任务后重试。',
+        label: '刷新 Commitment 状态',
+        onPressed: _busy ? null : _load,
+      );
+    }
+    return Card(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('等待 Buyer Agent 创建 Commitment',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            const Text(
+              'Trusted App 已读取 accepted offer、预览和确认引用。接下来由外部 Buyer Agent adapter 在自己的 Grant/session 下提交；App 不会携带或伪造 Agent token。',
+            ),
+            const SizedBox(height: 12),
+            _fact('handoff 状态', handoff.status.wireName),
+            _fact('请求 ID', '${handoff.requestId}'),
+            _fact('任务', handoff.taskTraceId),
+            _fact('预览 ID', handoff.commitment.previewId),
+            _fact('服务方接单 ID', handoff.commitment.providerAcceptanceId),
+            _fact('报价版本', '${handoff.commitment.offerVersion}'),
+            _fact('规格哈希', handoff.commitment.specHash),
+            _fact('报价哈希', handoff.commitment.quoteHash),
+            _fact('确认引用', handoff.commitment.confirmationRef),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _load,
+              icon: const Icon(Icons.refresh),
+              label: const Text('刷新 Commitment 状态'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _paymentCard(DsnPaymentAttempt payment) {
     final captured = payment.captured;
