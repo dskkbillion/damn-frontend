@@ -1,7 +1,9 @@
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
 import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/agent_request_review_page.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_order_repository.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,6 +32,21 @@ void main() {
 
     expect(find.text('View task status'), findsNothing);
     expect(find.text('Submit to provider'), findsOneWidget);
+  });
+
+  testWidgets('offers order handoff after a provider response timestamp',
+      (tester) async {
+    await tester.pumpWidget(_app(AgentRequestReviewPage(
+      repository: _FakeRequestRepository(_request(
+        status: 'ALIGNING',
+        providerRespondedAt: DateTime(2026, 7, 21, 11),
+      )),
+      orderRepository: DioDsnOrderRepository(Dio()),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('查看报价并继续下单'), findsOneWidget);
   });
 
   testWidgets('submits through canonical DS boundary', (tester) async {
@@ -65,7 +82,10 @@ Widget _app(Widget child) => MaterialApp(
       home: child,
     );
 
-AgentRequestDraft _request({required String status, String? specHash}) =>
+AgentRequestDraft _request(
+        {required String status,
+        String? specHash,
+        DateTime? providerRespondedAt}) =>
     AgentRequestDraft(
       id: 9,
       taskTraceId: 'ttr_1234567890abcdef',
@@ -76,6 +96,7 @@ AgentRequestDraft _request({required String status, String? specHash}) =>
       brief: 'Minimal blue identity',
       status: status,
       appReviewUrl: '/requests/9/review',
+      providerRespondedAt: providerRespondedAt,
       createdAt: DateTime(2026, 7, 21, 10),
       updatedAt: DateTime(2026, 7, 21, 10),
     );

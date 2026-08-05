@@ -196,7 +196,12 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                               label: Text(l10n.agentOpenChat),
                             ),
                           ],
-                          if (request.status == 'PROVIDER_RESPONDED' &&
+                          // The provider response timestamp is the durable
+                          // server fact. Some task projections use a more
+                          // specific status after ProviderAcceptance, so
+                          // gating this handoff on one presentation status
+                          // would strand a valid accepted offer in the App.
+                          if (_providerResponseAvailable(request) &&
                               widget.orderRepository != null) ...[
                             const SizedBox(height: 12),
                             FilledButton.icon(
@@ -229,4 +234,8 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
     // read-only task projection is exposed from this page.
     return request.status != 'AWAITING_APP_REVIEW' && request.status != 'DRAFT';
   }
+
+  bool _providerResponseAvailable(AgentRequestDraft request) =>
+      request.status == 'PROVIDER_RESPONDED' ||
+      request.providerRespondedAt != null;
 }

@@ -64,7 +64,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
           await widget.requestRepository.getRequest(widget.requestId);
       if (!mounted) return;
       setState(() => _request = request);
-      if (request.status == 'PROVIDER_RESPONDED') {
+      if (_providerResponseAvailable(request)) {
         final offer =
             await widget.orderRepository.getProviderOffer(widget.requestId);
         if (mounted) {
@@ -107,13 +107,20 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final specHash = _wireHash(commitment['specHash']);
     final quoteHash = _wireHash(commitment['quoteHash']);
     final amount = _intFact(commitment['amountCredits']);
-    final offerVersion = _intFact(commitment['offerVersion']) ?? offer.offerVersion;
+    final offerVersion =
+        _intFact(commitment['offerVersion']) ?? offer.offerVersion;
     final currency = _stringFact(commitment, 'currency') ?? 'CREDITS';
     final orderId = _stringFact(order, 'id');
     final commitmentId = _stringFact(commitment, 'id');
-    if (previewId == null || confirmationRef == null || specHash == null ||
-        quoteHash == null || amount == null || amount <= 0 ||
-        offerVersion <= 0 || currency != 'CREDITS' || orderId == null ||
+    if (previewId == null ||
+        confirmationRef == null ||
+        specHash == null ||
+        quoteHash == null ||
+        amount == null ||
+        amount <= 0 ||
+        offerVersion <= 0 ||
+        currency != 'CREDITS' ||
+        orderId == null ||
         commitmentId == null) {
       return;
     }
@@ -169,7 +176,8 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     String? paymentRecoveryId = paymentId;
     if (paymentId != null) {
       try {
-        restoredPayment = await widget.orderRepository.getPaymentAttempt(paymentId);
+        restoredPayment =
+            await widget.orderRepository.getPaymentAttempt(paymentId);
         paymentRecoveryId = null;
       } catch (_) {
         // Keep the recovered order visible, but fail closed: a projection
@@ -342,7 +350,8 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final paymentAttemptId = _paymentAttemptRecoveryId;
     if (paymentAttemptId == null) return;
     await _runBusy(() async {
-      _payment = await widget.orderRepository.getPaymentAttempt(paymentAttemptId);
+      _payment =
+          await widget.orderRepository.getPaymentAttempt(paymentAttemptId);
       _paymentAttemptRecoveryId = null;
     });
   }
@@ -397,6 +406,10 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     return AppLocalizations.of(context).agentErrorGeneric;
   }
 
+  bool _providerResponseAvailable(AgentRequestDraft request) =>
+      request.status == 'PROVIDER_RESPONDED' ||
+      request.providerRespondedAt != null;
+
   @override
   Widget build(BuildContext context) {
     final request = _request;
@@ -414,7 +427,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                   if (request == null && !_loading)
                     const Center(child: Text('未找到请求'))
                   else if (request != null &&
-                      request.status != 'PROVIDER_RESPONDED')
+                      !_providerResponseAvailable(request))
                     _notReadyCard(request)
                   else if (_offer != null) ...[
                     _offerCard(_offer!),
@@ -453,11 +466,9 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                               _paymentAttemptRecoveryId != null)
                             _actionCard(
                               title: '支付状态待恢复',
-                              message:
-                                  '服务器已经记录过支付尝试。先恢复其最终状态，不会重复扣除积分。',
+                              message: '服务器已经记录过支付尝试。先恢复其最终状态，不会重复扣除积分。',
                               label: '恢复支付状态',
-                              onPressed:
-                                  _busy ? null : _recoverPaymentAttempt,
+                              onPressed: _busy ? null : _recoverPaymentAttempt,
                             )
                           else if (_payment == null)
                             _actionCard(
