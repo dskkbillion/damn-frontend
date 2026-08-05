@@ -206,6 +206,14 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     );
     final data = _map(body['data'], 'order data');
     final resource = _map(body['resource'], 'order resource');
+    final resourceVersion = _requiredPositiveInt(resource, 'version');
+    final dataVersion = _requiredPositiveInt(data, 'commitmentVersion');
+    if (resourceVersion != dataVersion) {
+      throw const DsnOrderApiException(
+        'Order response versions do not match',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
     return DsnOrder(
       orderId: _requiredString(data, 'orderId'),
       taskTraceId: _requiredString(body, 'taskTraceId'),
@@ -214,7 +222,7 @@ class DioDsnOrderRepository implements DsnOrderRepository {
       amountMinor: _requiredInt(data, 'amountMinor'),
       currency: _requiredString(data, 'currency'),
       orderState: _requiredString(data, 'orderState'),
-      commitmentVersion: _requiredPositiveInt(resource, 'version'),
+      commitmentVersion: resourceVersion,
       offerId: data['offerId']?.toString(),
       replayed: data['replayed'] == true,
     );

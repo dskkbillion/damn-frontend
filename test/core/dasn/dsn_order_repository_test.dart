@@ -119,6 +119,80 @@ void main() {
     expect(ref.confirmationRef, 'cr_test-1');
   });
 
+  test('parses the frozen Commitment version from the order response',
+      () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        handler.resolve(Response(
+          requestOptions: options,
+          data: _machine(
+            state: 'ORDER_COMMITMENT_CREATED',
+            data: <String, dynamic>{
+              'orderId': '41',
+              'commitmentId': 'commit-1',
+              'confirmationRef': 'cr_test-1',
+              'amountMinor': '120',
+              'currency': 'CREDITS',
+              'orderState': 'awaitingPayment',
+              'commitmentVersion': '2',
+            },
+          ),
+        ));
+      },
+    ));
+
+    final order = await DioDsnOrderRepository(dio).createOrder(
+      33,
+      preview: _orderPreview(),
+      confirmation: _orderConfirmation,
+      ifMatchVersion: 2,
+      idempotencyKey: 'app-order:33:cr_test-1',
+    );
+
+    expect(order.commitmentVersion, 2);
+  });
+
+  test('rejects an order response whose server versions disagree', () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        handler.resolve(Response(
+          requestOptions: options,
+          data: _machine(
+            state: 'ORDER_COMMITMENT_CREATED',
+            data: <String, dynamic>{
+              'orderId': '41',
+              'commitmentId': 'commit-1',
+              'confirmationRef': 'cr_test-1',
+              'amountMinor': '120',
+              'currency': 'CREDITS',
+              'orderState': 'awaitingPayment',
+              'commitmentVersion': '7',
+            },
+          ),
+        ));
+      },
+    ));
+
+    expect(
+      () => DioDsnOrderRepository(dio).createOrder(
+        33,
+        preview: _orderPreview(),
+        confirmation: _orderConfirmation,
+        ifMatchVersion: 2,
+        idempotencyKey: 'app-order:33:cr_test-1',
+      ),
+      throwsA(
+        isA<DsnOrderApiException>().having(
+          (error) => error.code,
+          'code',
+          'COMMITMENT_VERSION_MISMATCH',
+        ),
+      ),
+    );
+  });
+
   test('reconciles uncertain payment only through the explicit POST route',
       () async {
     final dio = Dio();
@@ -344,3 +418,32 @@ Map<String, dynamic> _machine({
 }
 
 String _hash(String letter) => 'sha256:${letter * 64}';
+
+DsnOrderPreview _orderPreview() => DsnOrderPreview(
+      requestId: 33,
+      taskTraceId: 'ttr_1234567890abcdef',
+      previewId: 'preview-1',
+      providerId: 'provider-1',
+      providerOfferId: 'offer-1',
+      providerAcceptanceId: 'accept-1',
+      offerVersion: 2,
+      specHash: _hash('a'),
+      quoteHash: _hash('b'),
+      amountMinor: 120,
+      currency: 'CREDITS',
+      quantity: 1,
+      expiresAt: DateTime(2026, 8, 6),
+    );
+
+const DsnConfirmationRef _orderConfirmation = DsnConfirmationRef(
+  confirmationRef: 'cr_test-1',
+  requestId: 33,
+  taskTraceId: 'ttr_1234567890abcdef',
+  previewId: 'preview-1',
+  specHash: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  quoteHash: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+  amountMinor: 120,
+  currency: 'CREDITS',
+  paymentMethodType: 'CREDITS',
+  allowedActions: ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
+);
