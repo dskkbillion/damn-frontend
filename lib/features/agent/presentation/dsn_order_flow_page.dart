@@ -174,6 +174,8 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final commitmentOrderId = _stringFact(commitment, 'orderId');
     final orderId = _stringFact(order, 'id');
     final orderState = _stringFact(order, 'state');
+    final commitmentVersion = _intFact(commitment['commitmentVersion']);
+    final orderCommitmentVersion = _intFact(order['commitmentVersion']);
     final commitmentId = _stringFact(commitment, 'id');
     if (projectedRequestId != request.id ||
         previewId == null ||
@@ -189,6 +191,9 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
         commitmentOrderId == null ||
         orderId == null ||
         orderState == null ||
+        commitmentVersion == null ||
+        commitmentVersion <= 0 ||
+        orderCommitmentVersion != commitmentVersion ||
         commitmentId == null ||
         offerVersion != offer.offerVersion ||
         specHash != offer.specHash ||
@@ -243,6 +248,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       amountMinor: amount,
       currency: currency,
       orderState: orderState,
+      commitmentVersion: commitmentVersion,
       offerId: offer.offerId,
       replayed: true,
     );
@@ -259,6 +265,14 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     if (projectedPaymentConfirmation != null &&
         projectedPaymentConfirmation != confirmationRef) {
       _blockTaskRecovery('支付确认引用不匹配，请刷新任务后重试');
+      return;
+    }
+    final projectedPaymentVersion =
+        _intFact(paymentFact?['commitmentVersion']);
+    if (paymentFact != null &&
+        (projectedPaymentVersion == null ||
+            projectedPaymentVersion != commitmentVersion)) {
+      _blockTaskRecovery('支付承诺版本不匹配，请刷新任务后重试');
       return;
     }
     String? paymentRecoveryId = paymentId;
@@ -530,6 +544,11 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final preview = _preview;
     final confirmation = _confirmation;
     if (order == null || preview == null || confirmation == null) return;
+    final commitmentVersion = order.commitmentVersion;
+    if (commitmentVersion == null || commitmentVersion < 1) {
+      setState(() => _error = '订单承诺版本缺失，已停止支付，请刷新任务');
+      return;
+    }
     final accepted = await _confirm(
       title: '确认支付',
       message:
@@ -542,6 +561,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
         order,
         preview: preview,
         confirmation: confirmation,
+        ifMatchVersion: commitmentVersion,
         idempotencyKey:
             'app-payment:${order.orderId}:${confirmation.confirmationRef}',
       );

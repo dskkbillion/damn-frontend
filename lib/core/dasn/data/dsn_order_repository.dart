@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:uuid/uuid.dart';
 
 import '../domain/dsn_order_models.dart';
 
@@ -43,6 +44,7 @@ abstract class DsnOrderRepository {
     DsnOrder order, {
     required DsnOrderPreview preview,
     required DsnConfirmationRef confirmation,
+    required int ifMatchVersion,
     required String idempotencyKey,
   });
 
@@ -54,14 +56,18 @@ abstract class DsnOrderRepository {
 }
 
 class DioDsnOrderRepository implements DsnOrderRepository {
-  DioDsnOrderRepository(this.dio);
+  DioDsnOrderRepository(this.dio, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
 
   final Dio dio;
+  final Uuid _uuid;
 
   @override
   Future<DsnProviderOffer> getProviderOffer(int requestId) async {
     final body = await _machine(
-      () => dio.get('/app/v1/requests/$requestId/provider-offer'),
+      () => dio.get(
+        '/app/v1/requests/$requestId/provider-offer',
+        options: _traceOptions('provider-offer-read'),
+      ),
       expectedState: 'PROVIDER_OFFER_ACCEPTED',
     );
     final data = _map(body['data'], 'provider offer data');
@@ -98,7 +104,10 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     final body = await _machine(
       () => dio.post(
         '/app/v1/requests/$requestId/order-previews',
-        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+        options: _writeOptions(
+          action: 'preview',
+          idempotencyKey: idempotencyKey,
+        ),
         data: <String, dynamic>{
           'expectedSpecHash': expectedSpecHash,
           'quoteHash': quoteHash,
@@ -140,7 +149,10 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     final body = await _machine(
       () => dio.post(
         '/app/v1/requests/$requestId/confirmation-refs',
-        options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+        options: _writeOptions(
+          action: 'confirmation',
+          idempotencyKey: idempotencyKey,
+        ),
         data: <String, dynamic>{
           'previewId': previewId,
           'paymentMethodType': 'CREDITS',
@@ -176,10 +188,11 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     final body = await _machine(
       () => dio.post(
         '/app/v1/requests/$requestId/orders',
-        options: Options(headers: {
-          'Idempotency-Key': idempotencyKey,
-          'If-Match': '"$ifMatchVersion"',
-        }),
+        options: _writeOptions(
+          action: 'order',
+          idempotencyKey: idempotencyKey,
+          ifMatchVersion: ifMatchVersion,
+        ),
         data: <String, dynamic>{
           'previewId': preview.previewId,
           'providerAcceptanceId': preview.providerAcceptanceId,
@@ -192,6 +205,7 @@ class DioDsnOrderRepository implements DsnOrderRepository {
       expectedState: 'ORDER_COMMITMENT_CREATED',
     );
     final data = _map(body['data'], 'order data');
+    final resource = _map(body['resource'], 'order resource');
     return DsnOrder(
       orderId: _requiredString(data, 'orderId'),
       taskTraceId: _requiredString(body, 'taskTraceId'),
@@ -200,6 +214,7 @@ class DioDsnOrderRepository implements DsnOrderRepository {
       amountMinor: _requiredInt(data, 'amountMinor'),
       currency: _requiredString(data, 'currency'),
       orderState: _requiredString(data, 'orderState'),
+      commitmentVersion: _requiredPositiveInt(resource, 'version'),
       offerId: data['offerId']?.toString(),
       replayed: data['replayed'] == true,
     );
@@ -210,15 +225,30 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     DsnOrder order, {
     required DsnOrderPreview preview,
     required DsnConfirmationRef confirmation,
+    required int ifMatchVersion,
     required String idempotencyKey,
   }) async {
+    if (ifMatchVersion < 1) {
+      throw const DsnOrderApiException(
+        'Commitment resource version must be positive',
+        code: 'INVALID_COMMITMENT_VERSION',
+      );
+    }
+    if (order.commitmentVersion != null &&
+        order.commitmentVersion != ifMatchVersion) {
+      throw const DsnOrderApiException(
+        'Payment version does not match the frozen Commitment',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
     final body = await _machine(
       () => dio.post(
         '/app/v1/orders/${order.orderId}/payment-attempts',
-        options: Options(headers: {
-          'Idempotency-Key': idempotencyKey,
-          'If-Match': '"${preview.offerVersion}"',
-        }),
+        options: _writeOptions(
+          action: 'payment',
+          idempotencyKey: idempotencyKey,
+          ifMatchVersion: ifMatchVersion,
+        ),
         data: <String, dynamic>{
           'confirmationRef': confirmation.confirmationRef,
           'amountMinor': preview.amountMinor,
@@ -235,7 +265,10 @@ class DioDsnOrderRepository implements DsnOrderRepository {
   @override
   Future<DsnPaymentAttempt> getPaymentAttempt(String paymentAttemptId) async {
     final body = await _machine(
-      () => dio.get('/app/v1/payment-attempts/$paymentAttemptId'),
+      () => dio.get(
+        '/app/v1/payment-attempts/$paymentAttemptId',
+        options: _traceOptions('payment-read'),
+      ),
       expectedState: null,
     );
     return _payment(body);
@@ -247,10 +280,27 @@ class DioDsnOrderRepository implements DsnOrderRepository {
     final body = await _machine(
       () => dio.post(
         '/app/v1/payment-attempts/$paymentAttemptId/reconcile',
+        options: _traceOptions('payment-reconcile'),
       ),
       expectedState: null,
     );
     return _payment(body);
+  }
+
+  Options _traceOptions(String action) => Options(headers: <String, dynamic>{
+        'X-Operation-Trace-Id': 'trace-app-$action-${_uuid.v4()}',
+      });
+
+  Options _writeOptions({
+    required String action,
+    required String idempotencyKey,
+    int? ifMatchVersion,
+  }) {
+    return Options(headers: <String, dynamic>{
+      'Idempotency-Key': idempotencyKey,
+      'X-Operation-Trace-Id': 'trace-app-$action-${_uuid.v4()}',
+      if (ifMatchVersion != null) 'If-Match': '"$ifMatchVersion"',
+    });
   }
 
   Future<Map<String, dynamic>> _machine(
@@ -335,6 +385,14 @@ int _requiredInt(Map<String, dynamic> map, String field) {
   final parsed = _wireInt(value, field);
   if (parsed < 0) throw DsnOrderApiException('Invalid DS 0.1 field: $field');
   return parsed;
+}
+
+int _requiredPositiveInt(Map<String, dynamic> map, String field) {
+  final value = _wireInt(map[field], field);
+  if (value < 1) {
+    throw DsnOrderApiException('Invalid DS 0.1 field: $field');
+  }
+  return value;
 }
 
 int _wireInt(dynamic value, String field) {

@@ -179,6 +179,68 @@ void main() {
     expect(find.text('未支付订单已创建'), findsNothing);
   });
 
+  testWidgets('blocks recovery when the server omits the Commitment version',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: _FakeOrderRepository(),
+      taskRepository: _FakeTaskRepository(
+        commitmentOverrides: {'commitmentVersion': null},
+      ),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(find.text('未支付订单已创建'), findsNothing);
+  });
+
+  testWidgets('blocks recovery when order and Commitment versions differ',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: _FakeOrderRepository(),
+      taskRepository: _FakeTaskRepository(orderCommitmentVersion: 3),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(find.text('未支付订单已创建'), findsNothing);
+  });
+
+  testWidgets('blocks recovery when a persisted payment has another version',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: _FakeOrderRepository(),
+      taskRepository: _FakeTaskRepository(
+        includePayment: true,
+        paymentCommitmentVersion: 3,
+      ),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(find.text('恢复支付状态'), findsNothing);
+  });
+
   testWidgets('restores a committed task without creating another order',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
@@ -582,6 +644,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       amountMinor: preview.amountMinor,
       currency: preview.currency,
       orderState: 'awaitingPayment',
+      commitmentVersion: 2,
       offerId: offer.offerId,
     );
   }
@@ -590,6 +653,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
   Future<DsnPaymentAttempt> createPaymentAttempt(DsnOrder order,
       {required DsnOrderPreview preview,
       required DsnConfirmationRef confirmation,
+      required int ifMatchVersion,
       required String idempotencyKey}) async {
     paymentCreated = true;
     return DsnPaymentAttempt(
@@ -647,10 +711,14 @@ class _FakeTaskRepository implements DasnTaskRepository {
   _FakeTaskRepository({
     this.includePayment = false,
     this.commitmentOverrides = const <String, dynamic>{},
+    this.orderCommitmentVersion = 2,
+    this.paymentCommitmentVersion = 2,
   });
 
   final bool includePayment;
   final Map<String, dynamic> commitmentOverrides;
+  final int? orderCommitmentVersion;
+  final int? paymentCommitmentVersion;
   @override
   Future<DasnTaskView> getTask(String taskTraceId) async => _view();
 
@@ -676,6 +744,7 @@ class _FakeTaskRepository implements DasnTaskRepository {
             'previewId': 'preview-1',
             'confirmationRef': 'cr_test-1',
             'offerVersion': 2,
+            'commitmentVersion': 2,
             'specHash': 'a' * 64,
             'quoteHash': 'b' * 64,
             'amountCredits': 120,
@@ -685,11 +754,13 @@ class _FakeTaskRepository implements DasnTaskRepository {
           'order': {
             'id': 1001,
             'state': 'awaitingPayment',
+            'commitmentVersion': orderCommitmentVersion,
           },
           'paymentAttempt': includePayment
               ? {
                   'id': 'payment-1',
                   'fundsDisposition': 'RECONCILING',
+                  'commitmentVersion': paymentCommitmentVersion,
                 }
               : null,
         },

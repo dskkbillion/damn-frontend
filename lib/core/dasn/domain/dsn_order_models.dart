@@ -122,6 +122,11 @@ class DsnOrder {
     required this.amountMinor,
     required this.currency,
     required this.orderState,
+    /// The server-owned frozen Commitment resource version returned in the
+    /// order response.  Payment, delivery and final acceptance must reuse
+    /// this exact version; it must never be reconstructed from the offer
+    /// version or a client-local order version.
+    this.commitmentVersion,
     this.offerId,
     this.replayed = false,
   });
@@ -133,6 +138,7 @@ class DsnOrder {
   final int amountMinor;
   final String currency;
   final String orderState;
+  final int? commitmentVersion;
   final String? offerId;
   final bool replayed;
 }

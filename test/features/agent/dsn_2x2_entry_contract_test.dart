@@ -365,6 +365,7 @@ class _MatrixOrderRepository implements DsnOrderRepository {
       amountMinor: preview.amountMinor,
       currency: preview.currency,
       orderState: 'awaitingPayment',
+      commitmentVersion: 2,
       offerId: offer.offerId,
     );
   }
@@ -373,6 +374,7 @@ class _MatrixOrderRepository implements DsnOrderRepository {
   Future<DsnPaymentAttempt> createPaymentAttempt(DsnOrder order,
       {required DsnOrderPreview preview,
       required DsnConfirmationRef confirmation,
+      required int ifMatchVersion,
       required String idempotencyKey}) async {
     steps.add('createPaymentAttempt');
     return DsnPaymentAttempt(
