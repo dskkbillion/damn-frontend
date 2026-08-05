@@ -148,6 +148,12 @@ class AgentRequestDraft {
   /// Server-computed DS 0.1 request specification hash used by canonical App
   /// compare-and-submit.  Older rows may omit it and must fail closed.
   final String? specHash;
+
+  /// Server-owned DS 0.2 provenance for the requester.  The App keeps this
+  /// fact read-only and deliberately does not branch its order/payment flow
+  /// on the actor type: HUMAN and AGENT requests converge on the same
+  /// canonical review, order, payment and task projection routes.
+  final String? requesterActorType;
   final int? serviceId;
   final String title;
   final String brief;
@@ -166,6 +172,7 @@ class AgentRequestDraft {
     this.taskTraceId,
     this.version,
     this.specHash,
+    this.requesterActorType,
     required this.serviceId,
     required this.title,
     required this.brief,
@@ -186,6 +193,7 @@ class AgentRequestDraft {
         taskTraceId: _stringOrNull(json['taskTraceId']),
         version: (json['version'] as num?)?.toInt(),
         specHash: _stringOrNull(json['specHash']),
+        requesterActorType: _stringOrNull(json['requesterActorType']),
         serviceId: (json['serviceId'] as num?)?.toInt(),
         title: json['title'] as String? ?? '',
         brief: json['brief'] as String? ?? '',

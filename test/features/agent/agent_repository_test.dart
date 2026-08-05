@@ -138,5 +138,6 @@ void main() {
     expect(result.single.serviceId, 581);
     expect(result.single.status, 'AWAITING_APP_REVIEW');
     expect(result.single.taskTraceId, 'ttr_human_1234567890');
+    expect(result.single.requesterActorType, 'HUMAN');
   });
 }
