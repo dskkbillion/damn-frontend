@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -49,25 +50,63 @@ String normalizeAgentCode(String value) {
   return '${compact.substring(0, 4)}-${compact.substring(4, end)}';
 }
 
+// TestFlight staging archives are release-mode Flutter builds, so kReleaseMode
+// alone cannot distinguish them from the public production app. The release
+// xcconfig passes ENV_FILE=.env.staging for those archives. Only this known
+// staging marker (or a non-release build) enables diagnostics; arbitrary
+// server messages are never rendered here.
+const String _agentEnvironmentFile =
+    String.fromEnvironment('ENV_FILE', defaultValue: '.env');
+
+bool get _showAgentDiagnostics =>
+    !kReleaseMode || _agentEnvironmentFile.endsWith('.staging');
+
+String? _canonicalAgentErrorCode(Object error) {
+  if (error is! AgentApiException) return null;
+  final code = error.code?.trim();
+  if (code == null || code.isEmpty) return null;
+
+  // Keep diagnostics machine-readable without allowing arbitrary server text
+  // (which could contain identifiers, URLs, or implementation details) into
+  // the UI.
+  if (!RegExp(r'^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$').hasMatch(code)) {
+    return null;
+  }
+  return code;
+}
+
 String agentErrorMessage(BuildContext context, Object error) {
   final l10n = AppLocalizations.of(context);
   final code = error is AgentApiException ? error.code : null;
+  final String message;
   switch (code) {
     case 'invalid_user_code':
-      return l10n.agentErrorInvalidCode;
+      message = l10n.agentErrorInvalidCode;
+      break;
     case 'expired_token':
-      return l10n.agentErrorExpired;
+      message = l10n.agentErrorExpired;
+      break;
     case 'invalid_grant':
-      return l10n.agentErrorAlreadyUsed;
+      message = l10n.agentErrorAlreadyUsed;
+      break;
     case 'access_denied':
-      return l10n.agentErrorDenied;
+      message = l10n.agentErrorDenied;
+      break;
     case 'rate_limited':
-      return l10n.agentErrorRateLimited;
+      message = l10n.agentErrorRateLimited;
+      break;
     case 'not_found':
-      return l10n.agentErrorNotFound;
+      message = l10n.agentErrorNotFound;
+      break;
     default:
-      return l10n.agentErrorGeneric;
+      message = l10n.agentErrorGeneric;
+      break;
   }
+
+  final diagnosticCode =
+      _showAgentDiagnostics ? _canonicalAgentErrorCode(error) : null;
+  if (diagnosticCode == null) return message;
+  return '$message [$diagnosticCode]';
 }
 
 String agentAuthorizationStatusMessage(BuildContext context, String status) {
