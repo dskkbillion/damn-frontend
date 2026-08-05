@@ -562,6 +562,13 @@ class _SellerHomePageState extends ConsumerState<SellerHomePage> {
                   label: AppLocalizations.of(context).seller_home_auto_reply,
                   onTap: () => context.push(SellerRoutes.autoReply),
                 ),
+                _buildFunctionItem(
+                  context,
+                  icon: Icons.assignment_turned_in_outlined,
+                  label: AppLocalizations.of(context)
+                      .seller_home_provider_task_center,
+                  onTap: () => context.push('/provider/tasks'),
+                ),
               ],
             ),
           ],

@@ -2024,6 +2024,12 @@ abstract class AppLocalizations {
   /// **'自动回复'**
   String get seller_home_auto_reply;
 
+  /// No description provided for @seller_home_provider_task_center.
+  ///
+  /// In zh, this message translates to:
+  /// **'接单任务'**
+  String get seller_home_provider_task_center;
+
   /// No description provided for @seller_home_recent_income.
   ///
   /// In zh, this message translates to:

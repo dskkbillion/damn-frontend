@@ -604,6 +604,7 @@
     "seller_home_auth_management": "认证管理",
     "seller_home_time_management": "时间管理",
     "seller_home_auto_reply": "自动回复",
+    "seller_home_provider_task_center": "接单任务",
     "seller_home_recent_income": "近期收入",
     "seller_home_no_recent_income": "暂无近期收入数据",
     "seller_home_no_income_data": "暂无收入数据",

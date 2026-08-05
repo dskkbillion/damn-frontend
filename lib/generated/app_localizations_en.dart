@@ -1066,6 +1066,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seller_home_auto_reply => 'Auto Reply';
 
   @override
+  String get seller_home_provider_task_center => 'Provider Tasks';
+
+  @override
   String get seller_home_recent_income => 'Recent Revenue';
 
   @override

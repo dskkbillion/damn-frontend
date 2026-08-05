@@ -604,6 +604,7 @@
     "seller_home_auth_management": "認証管理",
     "seller_home_time_management": "スケジュール管理",
     "seller_home_auto_reply": "自動返信",
+    "seller_home_provider_task_center": "受付タスク",
     "seller_home_recent_income": "最近の収益",
     "seller_home_no_recent_income": "最近の収益データはありません",
     "seller_home_no_income_data": "収益データはありません",

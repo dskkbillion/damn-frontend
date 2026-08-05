@@ -596,6 +596,7 @@
     "seller_home_auth_management": "인증 관리",
     "seller_home_time_management": "시간 관리",
     "seller_home_auto_reply": "자동 응답",
+    "seller_home_provider_task_center": "제공자 작업",
     "seller_home_recent_income": "최근 수익",
     "seller_home_no_recent_income": "최근 수익 데이터가 없습니다",
     "seller_home_no_income_data": "수익 데이터가 없습니다",

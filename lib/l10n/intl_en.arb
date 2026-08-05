@@ -604,6 +604,7 @@
     "seller_home_auth_management": "Auth",
     "seller_home_time_management": "Schedule",
     "seller_home_auto_reply": "Auto Reply",
+    "seller_home_provider_task_center": "Provider Tasks",
     "seller_home_recent_income": "Recent Revenue",
     "seller_home_no_recent_income": "No recent revenue data",
     "seller_home_no_income_data": "No revenue data",

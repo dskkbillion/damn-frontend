@@ -1046,6 +1046,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get seller_home_auto_reply => '자동 응답';
 
   @override
+  String get seller_home_provider_task_center => '제공자 작업';
+
+  @override
   String get seller_home_recent_income => '최근 수익';
 
   @override

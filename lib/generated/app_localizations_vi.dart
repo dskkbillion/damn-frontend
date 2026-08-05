@@ -1070,6 +1070,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get seller_home_auto_reply => 'Trả lời tự động';
 
   @override
+  String get seller_home_provider_task_center => 'Nhiệm vụ nhà cung cấp';
+
+  @override
   String get seller_home_recent_income => 'Doanh thu gần đây';
 
   @override

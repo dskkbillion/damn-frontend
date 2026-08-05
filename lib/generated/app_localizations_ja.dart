@@ -1046,6 +1046,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get seller_home_auto_reply => '自動返信';
 
   @override
+  String get seller_home_provider_task_center => '受付タスク';
+
+  @override
   String get seller_home_recent_income => '最近の収益';
 
   @override

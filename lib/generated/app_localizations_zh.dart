@@ -1040,6 +1040,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seller_home_auto_reply => '自动回复';
 
   @override
+  String get seller_home_provider_task_center => '接单任务';
+
+  @override
   String get seller_home_recent_income => '近期收入';
 
   @override
