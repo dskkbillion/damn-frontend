@@ -75,6 +75,19 @@ extension DsnBuyerAgentHandoffStatusWire on DsnBuyerAgentHandoffStatus {
         DsnBuyerAgentHandoffStatus.commitmentCreated => 'COMMITMENT_CREATED',
         DsnBuyerAgentHandoffStatus.awaitingAppPayment => 'AWAITING_APP_PAYMENT',
       };
+
+  /// Stable App-facing status labels for the 2x2 interaction surface.
+  ///
+  /// Keep [wireName] compatible with the handoff payload consumed by an
+  /// external Agent.  The App copy is intentionally explicit about the
+  /// boundary: it is waiting on an external Agent, or it has resumed at the
+  /// App-owned payment gate.
+  String get appName => switch (this) {
+        DsnBuyerAgentHandoffStatus.readyForBuyerAgent =>
+          'HANDOFF_PENDING_EXTERNAL_AGENT',
+        DsnBuyerAgentHandoffStatus.commitmentCreated => 'COMMITMENT_CREATED',
+        DsnBuyerAgentHandoffStatus.awaitingAppPayment => 'AWAITING_APP_PAYMENT',
+      };
 }
 
 /// Facts that the Trusted App can display or hand off without carrying Agent

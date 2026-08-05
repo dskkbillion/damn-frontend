@@ -102,11 +102,100 @@ void main() {
       throwsA(isA<DsnDeliveryDecisionApiException>()),
     );
   });
+
+  test('rejects a final decision without resource.version', () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        final response = _machine(
+          state: 'DELIVERY_ACCEPTED',
+          data: <String, dynamic>{
+            'decisionId': 'dec-missing-version',
+            'orderId': 88,
+            'commitmentId': 'commit-1',
+            'commitmentVersion': 4,
+            'deliveryId': 'del-2',
+            'submissionNo': 2,
+            'action': 'ACCEPT',
+            'actorType': 'PRINCIPAL',
+          },
+        );
+        (response['resource'] as Map<String, dynamic>).remove('version');
+        handler.resolve(Response(requestOptions: options, data: response));
+      },
+    ));
+
+    await expectLater(
+      DioDsnDeliveryDecisionRepository(dio).submitDecision(
+        const DsnDeliveryDecisionInput(
+          orderId: 88,
+          decision: DsnDeliveryDecisionAction.accept,
+          deliveryId: 'del-2',
+          submissionNo: 2,
+          commitmentVersion: 4,
+        ),
+        idempotencyKey: 'buyer-decision:88:del-2:missing:v1',
+      ),
+      throwsA(
+        isA<DsnDeliveryDecisionApiException>().having(
+          (error) => error.code,
+          'code',
+          'RESOURCE_VERSION_MISSING',
+        ),
+      ),
+    );
+  });
+
+  test('rejects a final decision whose resource version is stale', () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        handler.resolve(Response(
+          requestOptions: options,
+          data: _machine(
+            state: 'DELIVERY_ACCEPTED',
+            resourceVersion: 3,
+            data: <String, dynamic>{
+              'decisionId': 'dec-stale-version',
+              'orderId': 88,
+              'commitmentId': 'commit-1',
+              'commitmentVersion': 4,
+              'deliveryId': 'del-2',
+              'submissionNo': 2,
+              'action': 'ACCEPT',
+              'actorType': 'PRINCIPAL',
+            },
+          ),
+        ));
+      },
+    ));
+
+    await expectLater(
+      DioDsnDeliveryDecisionRepository(dio).submitDecision(
+        const DsnDeliveryDecisionInput(
+          orderId: 88,
+          decision: DsnDeliveryDecisionAction.accept,
+          deliveryId: 'del-2',
+          submissionNo: 2,
+          commitmentVersion: 4,
+        ),
+        idempotencyKey: 'buyer-decision:88:del-2:stale:v1',
+      ),
+      throwsA(
+        isA<DsnDeliveryDecisionApiException>().having(
+          (error) => error.code,
+          'code',
+          'COMMITMENT_VERSION_MISMATCH',
+        ),
+      ),
+    );
+  });
 }
 
 Map<String, dynamic> _machine({
   required String state,
   required Map<String, dynamic> data,
+  int resourceVersion = 4,
 }) {
   return <String, dynamic>{
     'protocolVersion': 'dasn/0.1',
@@ -115,7 +204,7 @@ Map<String, dynamic> _machine({
     'state': state,
     'taskTraceId': 'ttr_1234567890abcdef',
     'operationTraceId': 'trace_decision_test',
-    'resource': <String, dynamic>{'id': 'dec-1', 'version': 4},
+    'resource': <String, dynamic>{'id': 'dec-1', 'version': resourceVersion},
     'nextActions': <dynamic>[],
     'data': data,
   };

@@ -173,6 +173,7 @@ class DsnProviderOfferResult {
     required this.quoteHash,
     required this.expiresAt,
     required this.status,
+    this.actorType,
     this.operationId,
     this.operationStatus,
   });
@@ -185,6 +186,12 @@ class DsnProviderOfferResult {
   final String quoteHash;
   final DateTime? expiresAt;
   final String status;
+
+  /// Present on Agent responses when the server exposes actor provenance.
+  /// Human Provider responses from older deployments may omit it; the
+  /// explicit Provider Agent adapter rejects that omission rather than
+  /// treating a Member response as an Agent write.
+  final String? actorType;
   final String? operationId;
   final String? operationStatus;
 

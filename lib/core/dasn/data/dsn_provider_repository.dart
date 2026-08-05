@@ -150,15 +150,22 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   DsnProviderOfferResult _parseOffer(Map<String, dynamic> body) {
     final metadata = _parseMetadata(body);
     final data = _map(body['data'], 'ProviderOffer data');
+    final offerVersion = _requiredPositiveInt(data, 'offerVersion');
+    _requireResourceVersionMatches(
+      metadata,
+      offerVersion,
+      factName: 'offerVersion',
+    );
     return DsnProviderOfferResult(
       metadata: metadata,
       offerId: _requiredString(data, 'offerId'),
       providerId: _requiredString(data, 'providerId'),
-      offerVersion: _requiredPositiveInt(data, 'offerVersion'),
+      offerVersion: offerVersion,
       specHash: _requiredHash(data, 'specHash'),
       quoteHash: _requiredHash(data, 'quoteHash'),
       expiresAt: _optionalDate(data['expiresAt']),
       status: _requiredString(data, 'status'),
+      actorType: _optionalString(data['actorType']),
       operationId: _optionalString(data['operationId']),
       operationStatus: _optionalString(data['operationStatus']),
     );
@@ -167,6 +174,12 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   DsnProviderAcceptanceResult _parseAcceptance(Map<String, dynamic> body) {
     final metadata = _parseMetadata(body);
     final data = _map(body['data'], 'ProviderAcceptance data');
+    final offerVersion = _requiredPositiveInt(data, 'offerVersion');
+    _requireResourceVersionMatches(
+      metadata,
+      offerVersion,
+      factName: 'offerVersion',
+    );
     final wireAcceptance = _requiredString(data, 'acceptance');
     final acceptance = DsnProviderAcceptance.values.firstWhere(
       (value) => value.wireValue == wireAcceptance,
@@ -178,7 +191,7 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       metadata: metadata,
       acceptanceId: _requiredString(data, 'acceptanceId'),
       offerId: _requiredString(data, 'offerId'),
-      offerVersion: _requiredPositiveInt(data, 'offerVersion'),
+      offerVersion: offerVersion,
       specHash: _requiredHash(data, 'specHash'),
       quoteHash: _requiredHash(data, 'quoteHash'),
       acceptance: acceptance,
@@ -191,12 +204,18 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   DsnDeliveryResult _parseDelivery(Map<String, dynamic> body) {
     final metadata = _parseMetadata(body);
     final data = _map(body['data'], 'Delivery data');
+    final commitmentVersion = _requiredPositiveInt(data, 'commitmentVersion');
+    _requireResourceVersionMatches(
+      metadata,
+      commitmentVersion,
+      factName: 'commitmentVersion',
+    );
     return DsnDeliveryResult(
       metadata: metadata,
       deliveryId: _requiredString(data, 'deliveryId'),
       orderId: _requiredString(data, 'orderId'),
       commitmentId: _requiredString(data, 'commitmentId'),
-      commitmentVersion: _requiredPositiveInt(data, 'commitmentVersion'),
+      commitmentVersion: commitmentVersion,
       submissionNo: _requiredPositiveInt(data, 'submissionNo'),
       supersedesDeliveryId: _optionalString(data['supersedesDeliveryId']),
       evidenceHash: _requiredHash(data, 'evidenceHash'),
@@ -262,6 +281,101 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   static void _validateRequestId(int requestId) {
     if (requestId < 1) {
       throw const DsnProviderApiException('Request ID must be positive');
+    }
+  }
+
+  void _requireResourceVersionMatches(
+    DsnProviderMachineMetadata metadata,
+    int factVersion, {
+    required String factName,
+  }) {
+    final resourceVersion = metadata.resourceVersion;
+    if (resourceVersion == null || resourceVersion < 1) {
+      throw const DsnProviderApiException(
+        'DS 0.1 resource.version is required for Provider write responses',
+        code: 'RESOURCE_VERSION_MISSING',
+      );
+    }
+    if (resourceVersion != factVersion) {
+      throw DsnProviderApiException(
+        'DS 0.1 resource.version does not match $factName',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
+  }
+}
+
+/// Explicit Provider Agent identity adapter over the same Provider Core.
+///
+/// The supplied [agentDio] must be a separately configured client carrying a
+/// live Agent session token.  This type is intentionally distinct from
+/// [DioDsnProviderRepository], which is used by the Trusted App/member route;
+/// callers must never silently pass the App's global Member Dio here.  The
+/// request bodies and canonical paths remain identical because actor, Grant,
+/// assignment and session provenance are authenticated server facts.
+class DioDsnProviderAgentRepository implements DsnProviderRepository {
+  DioDsnProviderAgentRepository(Dio agentDio, {Uuid? uuid})
+      : _delegate = DioDsnProviderRepository(agentDio, uuid: uuid);
+
+  final DioDsnProviderRepository _delegate;
+
+  @override
+  Future<DsnProviderOfferResult> submitOffer(
+    int requestId, {
+    required DsnProviderOfferInput offer,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    final result = await _delegate.submitOffer(
+      requestId,
+      offer: offer,
+      ifMatchVersion: ifMatchVersion,
+      idempotencyKey: idempotencyKey,
+    );
+    _requireAgentActor(result.actorType);
+    return result;
+  }
+
+  @override
+  Future<DsnProviderAcceptanceResult> submitAcceptance(
+    int requestId, {
+    required DsnProviderAcceptanceInput acceptance,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    final result = await _delegate.submitAcceptance(
+      requestId,
+      acceptance: acceptance,
+      ifMatchVersion: ifMatchVersion,
+      idempotencyKey: idempotencyKey,
+    );
+    _requireAgentActor(result.actorType);
+    return result;
+  }
+
+  @override
+  Future<DsnDeliveryResult> submitDelivery(
+    String orderId, {
+    required DsnDeliveryInput delivery,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    final result = await _delegate.submitDelivery(
+      orderId,
+      delivery: delivery,
+      ifMatchVersion: ifMatchVersion,
+      idempotencyKey: idempotencyKey,
+    );
+    _requireAgentActor(result.actorType);
+    return result;
+  }
+
+  void _requireAgentActor(String? actorType) {
+    if (actorType != 'AGENT') {
+      throw const DsnProviderApiException(
+        'Provider Agent response is missing actorType=AGENT',
+        code: 'PROVIDER_AGENT_ACTOR_MISMATCH',
+      );
     }
   }
 }

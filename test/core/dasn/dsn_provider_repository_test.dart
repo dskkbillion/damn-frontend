@@ -132,6 +132,7 @@ void main() {
             requestOptions: options,
             data: _machine(
               state: 'DELIVERY_SUBMITTED',
+              resourceVersion: 1,
               data: <String, dynamic>{
                 'deliveryId': 'delivery-1',
                 'orderId': '1001',
@@ -223,6 +224,7 @@ void main() {
             requestOptions: options,
             data: _machine(
               state: 'PROVIDER_OFFERED',
+              resourceVersion: 1,
               data: <String, dynamic>{
                 'offerId': 'offer-0',
                 'providerId': '77',
@@ -255,12 +257,159 @@ void main() {
 
       expect(result.offerId, 'offer-0');
     });
+
+    test('should reject an offer response without resource.version', () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final response = _machine(
+            state: 'PROVIDER_OFFERED',
+            data: <String, dynamic>{
+              'offerId': 'offer-missing-version',
+              'providerId': '77',
+              'offerVersion': 2,
+              'specHash': _hash('a'),
+              'quoteHash': _hash('b'),
+              'status': 'OFFERED',
+            },
+          );
+          (response['resource'] as Map<String, dynamic>).remove('version');
+          handler.resolve(Response(requestOptions: options, data: response));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).submitOffer(
+          33,
+          offer: _offerInput(),
+          ifMatchVersion: 0,
+          idempotencyKey: 'provider-offer:33:missing:v1',
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'RESOURCE_VERSION_MISSING',
+          ),
+        ),
+      );
+    });
+
+    test('should reject an acceptance response with a stale resource version',
+        () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'PROVIDER_ACCEPTED',
+              data: <String, dynamic>{
+                'acceptanceId': 'accept-stale-version',
+                'offerId': 'offer-1',
+                'offerVersion': 2,
+                'specHash': _hash('a'),
+                'quoteHash': _hash('b'),
+                'acceptance': 'ACCEPT',
+                'actorType': 'HUMAN',
+              },
+              resourceVersion: 1,
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).submitAcceptance(
+          33,
+          acceptance: DsnProviderAcceptanceInput(
+            offerVersion: 2,
+            specHash: _hash('a'),
+            quoteHash: _hash('b'),
+            acceptance: DsnProviderAcceptance.accept,
+          ),
+          ifMatchVersion: 2,
+          idempotencyKey: 'provider-acceptance:33:stale:v1',
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'COMMITMENT_VERSION_MISMATCH',
+          ),
+        ),
+      );
+    });
+
+    test('should reject delivery when resource version differs from commitment',
+        () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'DELIVERY_SUBMITTED',
+              data: <String, dynamic>{
+                'deliveryId': 'delivery-stale-version',
+                'orderId': '1001',
+                'commitmentId': 'commit-1',
+                'commitmentVersion': 1,
+                'submissionNo': 1,
+                'evidenceHash': _hash('c'),
+                'actorType': 'HUMAN',
+              },
+              resourceVersion: 2,
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).submitDelivery(
+          '1001',
+          delivery: DsnDeliveryInput(
+            expectedCommitmentHash: _hash('d'),
+            submissionNo: 1,
+            artifacts: <DsnDeliveryArtifactInput>[
+              DsnDeliveryArtifactInput(
+                objectRef: 'staging://artifact/1',
+                size: 12,
+                mimeType: 'text/plain',
+              ),
+            ],
+          ),
+          ifMatchVersion: 1,
+          idempotencyKey: 'provider-delivery:1001:stale:v1',
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'COMMITMENT_VERSION_MISMATCH',
+          ),
+        ),
+      );
+    });
   });
 }
+
+DsnProviderOfferInput _offerInput() => DsnProviderOfferInput(
+      offerVersion: 2,
+      specHash: _hash('a'),
+      quoteHash: _hash('b'),
+      capabilityId: 'translation',
+      variantId: 'standard',
+      quantity: 1,
+      amountMinor: 120,
+      currency: 'CREDITS',
+      expiresAt: DateTime.utc(2026, 8, 5, 12),
+    );
 
 Map<String, dynamic> _machine({
   required String state,
   required Map<String, dynamic> data,
+  int resourceVersion = 2,
 }) {
   return <String, dynamic>{
     'schemaVersion': '0.1',
@@ -269,7 +418,7 @@ Map<String, dynamic> _machine({
     'operationTraceId': 'trace_test_1234',
     'resource': <String, dynamic>{
       'id': 'resource-1',
-      'version': 2,
+      'version': resourceVersion,
       'hash': _hash('b'),
     },
     'nextActions': <dynamic>[],

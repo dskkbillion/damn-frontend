@@ -10,7 +10,8 @@ import '../domain/dsn_provider_task_models.dart';
 /// canonical contract at `/provider/v1/tasks` and
 /// `/provider/v1/tasks/{taskTraceId}`.
 abstract class DsnProviderTaskRepository {
-  Future<DsnProviderTaskPage> listAssignedTasks({String? cursor, int limit = 20});
+  Future<DsnProviderTaskPage> listAssignedTasks(
+      {String? cursor, int limit = 20});
   Future<DsnProviderTask> getAssignedTask(String taskTraceId);
 }
 
@@ -20,7 +21,8 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
   final Dio dio;
 
   @override
-  Future<DsnProviderTaskPage> listAssignedTasks({String? cursor, int limit = 20}) async {
+  Future<DsnProviderTaskPage> listAssignedTasks(
+      {String? cursor, int limit = 20}) async {
     try {
       final response = await dio.get(
         '/provider/v1/tasks',
@@ -91,6 +93,28 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
       statusCode: status,
     );
   }
+}
+
+/// Explicit Provider Agent read adapter over the canonical Provider Task
+/// projection.  [agentDio] must be configured with a live Agent session; this
+/// wrapper exists so an App route cannot accidentally reuse its Member Dio and
+/// claim to have exercised the Provider Agent identity.
+class DioDsnProviderAgentTaskRepository implements DsnProviderTaskRepository {
+  DioDsnProviderAgentTaskRepository(Dio agentDio)
+      : _delegate = DioDsnProviderTaskRepository(agentDio);
+
+  final DioDsnProviderTaskRepository _delegate;
+
+  @override
+  Future<DsnProviderTaskPage> listAssignedTasks({
+    String? cursor,
+    int limit = 20,
+  }) =>
+      _delegate.listAssignedTasks(cursor: cursor, limit: limit);
+
+  @override
+  Future<DsnProviderTask> getAssignedTask(String taskTraceId) =>
+      _delegate.getAssignedTask(taskTraceId);
 }
 
 class DsnProviderTaskApiException implements Exception {

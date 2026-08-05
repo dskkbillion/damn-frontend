@@ -293,6 +293,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('等待 Buyer Agent 创建 Commitment'), findsOneWidget);
+    expect(
+        find.text('handoff 状态：HANDOFF_PENDING_EXTERNAL_AGENT'), findsOneWidget);
     expect(find.text('创建未支付订单'), findsNothing);
     expect(orders.orderCreated, isFalse);
     expect(handoff, isNotNull);
@@ -336,10 +338,75 @@ void main() {
 
     expect(find.text('未支付订单已创建'), findsOneWidget);
     expect(find.text('handoff 状态：COMMITMENT_CREATED'), findsOneWidget);
+    expect(find.text('支付阶段：AWAITING_APP_PAYMENT'), findsOneWidget);
     expect(find.text('等待 Buyer Agent 创建 Commitment'), findsNothing);
     expect(find.text('使用积分支付'), findsOneWidget);
     expect(orders.orderCreated, isFalse);
     expect(orders.paymentCreated, isFalse);
+  });
+
+  testWidgets(
+      'keeps Agent handoff fail-closed when the task projection cannot be read',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
+      orderRepository: orders,
+      taskRepository: _FakeTaskRepository(
+        error: StateError('Agent task projection unavailable'),
+      ),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, '刷新任务'), findsOneWidget);
+    expect(orders.orderCreated, isFalse);
+  });
+
+  testWidgets(
+      'keeps Agent handoff fail-closed when the confirmation has expired',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(
+      issueConfirmationError: const DsnOrderApiException(
+        'confirmation expired',
+        code: 'PREVIEW_EXPIRED',
+      ),
+    );
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '生成确认引用'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('生成确认引用').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('报价预览已过期，请重新创建预览'), findsOneWidget);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(orders.orderCreated, isFalse);
   });
 
   testWidgets('uses explicit reconcile when the server marks payment uncertain',
@@ -719,14 +786,19 @@ class _FakeTaskRepository implements DasnTaskRepository {
     this.commitmentOverrides = const <String, dynamic>{},
     this.orderCommitmentVersion = 2,
     this.paymentCommitmentVersion = 2,
+    this.error,
   });
 
   final bool includePayment;
   final Map<String, dynamic> commitmentOverrides;
   final int? orderCommitmentVersion;
   final int? paymentCommitmentVersion;
+  final Object? error;
   @override
-  Future<DasnTaskView> getTask(String taskTraceId) async => _view();
+  Future<DasnTaskView> getTask(String taskTraceId) async {
+    if (error != null) throw error!;
+    return _view();
+  }
 
   @override
   Future<DasnTaskView> getReceipt(String taskTraceId) async => _view();

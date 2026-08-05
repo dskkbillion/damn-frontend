@@ -267,8 +267,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       _blockTaskRecovery('支付确认引用不匹配，请刷新任务后重试');
       return;
     }
-    final projectedPaymentVersion =
-        _intFact(paymentFact?['commitmentVersion']);
+    final projectedPaymentVersion = _intFact(paymentFact?['commitmentVersion']);
     if (paymentFact != null &&
         (projectedPaymentVersion == null ||
             projectedPaymentVersion != commitmentVersion)) {
@@ -905,7 +904,9 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
               Text('未支付订单已创建', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
               if (_buyerAgentHandoff != null)
-                _fact('handoff 状态', _buyerAgentHandoff!.status.wireName),
+                _fact('handoff 状态', _buyerAgentHandoff!.status.appName),
+              if (_buyerAgentHandoff != null && _payment == null)
+                _fact('支付阶段', 'AWAITING_APP_PAYMENT'),
               _fact('订单 ID', order.orderId),
               _fact('承诺 ID', order.commitmentId),
               _fact('状态', order.orderState),
@@ -941,7 +942,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
               'Trusted App 已读取 accepted offer、预览和确认引用。接下来由外部 Buyer Agent adapter 在自己的 Grant/session 下提交；App 不会携带或伪造 Agent token。',
             ),
             const SizedBox(height: 12),
-            _fact('handoff 状态', handoff.status.wireName),
+            _fact('handoff 状态', handoff.status.appName),
             _fact('请求 ID', '${handoff.requestId}'),
             _fact('任务', handoff.taskTraceId),
             _fact('预览 ID', handoff.commitment.previewId),

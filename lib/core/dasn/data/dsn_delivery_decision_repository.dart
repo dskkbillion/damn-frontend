@@ -160,6 +160,8 @@ class DioDsnDeliveryDecisionRepository
       );
     }
     final data = _map(body['data'], 'decision data');
+    final commitmentVersion = _requiredPositiveInt(data, 'commitmentVersion');
+    _requireResourceVersionMatches(body, commitmentVersion);
     final action = DsnDeliveryDecisionAction.fromWire(
       _requiredString(data, 'action'),
     );
@@ -183,13 +185,33 @@ class DioDsnDeliveryDecisionRepository
       decisionId: _requiredString(data, 'decisionId'),
       orderId: _requiredPositiveInt(data, 'orderId'),
       commitmentId: _requiredString(data, 'commitmentId'),
-      commitmentVersion: _requiredPositiveInt(data, 'commitmentVersion'),
+      commitmentVersion: commitmentVersion,
       deliveryId: _requiredString(data, 'deliveryId'),
       submissionNo: _requiredPositiveInt(data, 'submissionNo'),
       action: action,
       actorType: actorType,
       createdAt: _optionalDate(data['createdAt']),
     );
+  }
+
+  void _requireResourceVersionMatches(
+    Map<String, dynamic> body,
+    int commitmentVersion,
+  ) {
+    final resource = _map(body['resource'], 'decision resource');
+    final resourceVersion = _optionalInt(resource['version']);
+    if (resourceVersion == null || resourceVersion < 1) {
+      throw const DsnDeliveryDecisionApiException(
+        'DS 0.1 resource.version is required for final delivery decisions',
+        code: 'RESOURCE_VERSION_MISSING',
+      );
+    }
+    if (resourceVersion != commitmentVersion) {
+      throw const DsnDeliveryDecisionApiException(
+        'DS 0.1 resource.version does not match commitmentVersion',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
   }
 }
 
@@ -227,6 +249,14 @@ int _requiredPositiveInt(Map<String, dynamic> map, String field) {
     'Invalid DS 0.1 field: $field',
     code: 'INVALID_RESPONSE',
   );
+}
+
+int? _optionalInt(dynamic value) {
+  if (value is num && value == value.truncateToDouble()) return value.toInt();
+  if (value is String && RegExp(r'^(0|[1-9][0-9]*)$').hasMatch(value.trim())) {
+    return int.tryParse(value.trim());
+  }
+  return null;
 }
 
 DateTime? _optionalDate(dynamic value) {
