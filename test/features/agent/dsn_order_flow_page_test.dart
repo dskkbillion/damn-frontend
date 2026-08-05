@@ -69,6 +69,116 @@ void main() {
     expect(orders.paymentCreated, isTrue);
   });
 
+  testWidgets('fails closed when requester actor type is missing',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(requesterActorType: null),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('买方身份类型缺失或不受支持'), findsOneWidget);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(orders.previewCreated, isFalse);
+  });
+
+  testWidgets(
+      'fails closed before confirmation when Agent principalRef is missing',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: null,
+      ),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Buyer Agent handoff 暂不可用'), findsOneWidget);
+    expect(find.text('生成确认引用'), findsNothing);
+    expect(orders.confirmationIssued, isFalse);
+  });
+
+  testWidgets('clears confirmation state when handoff facts mismatch',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(
+      confirmationResponse: DsnConfirmationRef(
+        confirmationRef: 'cr_test-1',
+        requestId: 9,
+        taskTraceId: 'ttr_1234567890abcdef',
+        previewId: 'preview-1',
+        specHash: 'sha256:${'c' * 64}',
+        quoteHash: 'sha256:${'b' * 64}',
+        amountMinor: 120,
+        currency: 'CREDITS',
+        paymentMethodType: 'CREDITS',
+        allowedActions: const ['CREATE_ORDER', 'CREATE_PAYMENT_ATTEMPT'],
+      ),
+    );
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '生成确认引用'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('生成确认引用').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('确认引用与当前报价事实不匹配，请刷新后重试'), findsOneWidget);
+    expect(find.text('服务器订单预览'), findsNothing);
+    expect(find.text('确认引用已生成'), findsNothing);
+    expect(find.text('等待 Buyer Agent 创建 Commitment'), findsNothing);
+    expect(orders.confirmationIssued, isTrue);
+  });
+
+  testWidgets('blocks payment surface when restored task facts mismatch offer',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: _FakeOrderRepository(),
+      taskRepository: _FakeTaskRepository(
+        commitmentOverrides: {'specHash': 'c' * 64},
+      ),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(find.text('未支付订单已创建'), findsNothing);
+  });
+
   testWidgets('restores a committed task without creating another order',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
@@ -102,7 +212,10 @@ void main() {
     final orders = _FakeOrderRepository();
     DsnBuyerAgentHandoff? handoff;
     await tester.pumpWidget(_app(DsnOrderFlowPage(
-      requestRepository: _FakeRequestRepository(requesterActorType: 'AGENT'),
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
       orderRepository: orders,
       requestId: 9,
       onBuyerAgentHandoffReady: (value) => handoff = value,
@@ -148,7 +261,10 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final orders = _FakeOrderRepository();
     await tester.pumpWidget(_app(DsnOrderFlowPage(
-      requestRepository: _FakeRequestRepository(requesterActorType: 'AGENT'),
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
       orderRepository: orders,
       taskRepository: _FakeTaskRepository(),
       requestId: 9,
@@ -156,6 +272,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('未支付订单已创建'), findsOneWidget);
+    expect(find.text('handoff 状态：COMMITMENT_CREATED'), findsOneWidget);
     expect(find.text('等待 Buyer Agent 创建 Commitment'), findsNothing);
     expect(find.text('使用积分支付'), findsOneWidget);
     expect(orders.orderCreated, isFalse);
@@ -299,9 +416,11 @@ Widget _app(Widget child) => MaterialApp(
     );
 
 class _FakeRequestRepository implements AgentRepository {
-  _FakeRequestRepository({this.requesterActorType});
+  _FakeRequestRepository(
+      {this.requesterActorType = 'HUMAN', this.principalRef});
 
   final String? requesterActorType;
+  final String? principalRef;
 
   @override
   Future<AgentRequestDraft> getRequest(int id) async => AgentRequestDraft(
@@ -310,6 +429,7 @@ class _FakeRequestRepository implements AgentRepository {
         version: 3,
         specHash: 'sha256:${'a' * 64}',
         requesterActorType: requesterActorType,
+        principalRef: principalRef,
         serviceId: 42,
         title: 'Need a logo',
         brief: 'Minimal blue identity',
@@ -367,12 +487,14 @@ class _FakeOrderRepository implements DsnOrderRepository {
     this.createPreviewError,
     this.issueConfirmationError,
     this.createOrderError,
+    this.confirmationResponse,
   });
 
   final bool reconcilingPayment;
   final DsnOrderApiException? createPreviewError;
   final DsnOrderApiException? issueConfirmationError;
   final DsnOrderApiException? createOrderError;
+  final DsnConfirmationRef? confirmationResponse;
   bool previewCreated = false;
   bool confirmationIssued = false;
   bool orderCreated = false;
@@ -429,18 +551,19 @@ class _FakeOrderRepository implements DsnOrderRepository {
       required String idempotencyKey}) async {
     if (issueConfirmationError != null) throw issueConfirmationError!;
     confirmationIssued = true;
-    return DsnConfirmationRef(
-      confirmationRef: 'cr_test-1',
-      requestId: requestId,
-      taskTraceId: offer.taskTraceId,
-      previewId: previewId,
-      specHash: offer.specHash,
-      quoteHash: offer.quoteHash,
-      amountMinor: offer.amountMinor,
-      currency: offer.currency,
-      paymentMethodType: 'CREDITS',
-      allowedActions: allowedActions,
-    );
+    return confirmationResponse ??
+        DsnConfirmationRef(
+          confirmationRef: 'cr_test-1',
+          requestId: requestId,
+          taskTraceId: offer.taskTraceId,
+          previewId: previewId,
+          specHash: offer.specHash,
+          quoteHash: offer.quoteHash,
+          amountMinor: offer.amountMinor,
+          currency: offer.currency,
+          paymentMethodType: 'CREDITS',
+          allowedActions: allowedActions,
+        );
   }
 
   @override
@@ -521,9 +644,13 @@ class _FakeOrderRepository implements DsnOrderRepository {
 }
 
 class _FakeTaskRepository implements DasnTaskRepository {
-  _FakeTaskRepository({this.includePayment = false});
+  _FakeTaskRepository({
+    this.includePayment = false,
+    this.commitmentOverrides = const <String, dynamic>{},
+  });
 
   final bool includePayment;
+  final Map<String, dynamic> commitmentOverrides;
   @override
   Future<DasnTaskView> getTask(String taskTraceId) async => _view();
 
@@ -541,9 +668,11 @@ class _FakeTaskRepository implements DasnTaskRepository {
           'nextActions': <dynamic>[],
         },
         'data': {
+          'request': {'id': 9},
           'commitment': {
             'id': 'commit-1',
             'orderId': 1001,
+            'acceptanceId': 'accept-1',
             'previewId': 'preview-1',
             'confirmationRef': 'cr_test-1',
             'offerVersion': 2,
@@ -551,6 +680,7 @@ class _FakeTaskRepository implements DasnTaskRepository {
             'quoteHash': 'b' * 64,
             'amountCredits': 120,
             'currency': 'CREDITS',
+            ...commitmentOverrides,
           },
           'order': {
             'id': 1001,

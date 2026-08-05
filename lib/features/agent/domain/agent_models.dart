@@ -155,6 +155,11 @@ class AgentRequestDraft {
   /// stop at a credential-free Buyer Agent handoff.  Both converge again on
   /// the same payment and task projection routes after Commitment exists.
   final String? requesterActorType;
+
+  /// Server-owned, non-secret identity binding shared by the Trusted App and
+  /// the external Buyer Agent handoff.  It is intentionally optional for
+  /// legacy rows; DS 0.2 Agent-origin requests must fail closed when absent.
+  final String? principalRef;
   final int? serviceId;
   final String title;
   final String brief;
@@ -174,6 +179,7 @@ class AgentRequestDraft {
     this.version,
     this.specHash,
     this.requesterActorType,
+    this.principalRef,
     required this.serviceId,
     required this.title,
     required this.brief,
@@ -195,6 +201,7 @@ class AgentRequestDraft {
         version: (json['version'] as num?)?.toInt(),
         specHash: _stringOrNull(json['specHash']),
         requesterActorType: _stringOrNull(json['requesterActorType']),
+        principalRef: _stringOrNull(json['principalRef']),
         serviceId: (json['serviceId'] as num?)?.toInt(),
         title: json['title'] as String? ?? '',
         brief: json['brief'] as String? ?? '',

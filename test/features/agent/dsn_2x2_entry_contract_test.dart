@@ -191,6 +191,7 @@ class _MatrixRequestRepository implements AgentRepository {
             version: 3,
             specHash: _hash('a'),
             requesterActorType: pairing.buyerActor,
+            principalRef: 'member:${pairing.label.toLowerCase()}',
             serviceId: 581,
             title: '${pairing.label} DS request',
             brief: 'Shared DS 0.2 request',

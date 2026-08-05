@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/router/smart_router_utils.dart';
 import '../data/agent_repository.dart';
 import '../../../core/dasn/data/dasn_task_repository.dart';
 import '../../../core/dasn/data/dsn_order_repository.dart';
+import '../../../core/dasn/domain/dsn_buyer_agent_models.dart';
 import 'device_authorization_page.dart';
 import 'agent_request_review_page.dart';
 import 'dsn_human_request_page.dart';
@@ -34,6 +35,15 @@ class AgentRoutes {
 
   static DsnDeliveryDecisionRepository _deliveryDecisionRepository() =>
       DioDsnDeliveryDecisionRepository(GetIt.instance<Dio>());
+
+  /// Route-level safe injection point for a Buyer Agent handoff.  The sink is
+  /// optional and receives only non-secret facts; it cannot supply or receive
+  /// an Agent token, session, or Grant, and the App still never calls the
+  /// `/agent/v1` commitment route.
+  static void _publishBuyerAgentHandoff(DsnBuyerAgentHandoff handoff) {
+    if (!GetIt.instance.isRegistered<DsnBuyerAgentHandoffSink>()) return;
+    GetIt.instance<DsnBuyerAgentHandoffSink>().onReady(handoff);
+  }
 
   static List<RouteBase> get routes => [
         GoRoute(
@@ -79,6 +89,7 @@ class AgentRoutes {
               orderRepository: _orderRepository(),
               taskRepository: _taskRepository(),
               requestId: int.tryParse(state.pathParameters['id'] ?? '') ?? 0,
+              onBuyerAgentHandoffReady: _publishBuyerAgentHandoff,
             ),
             name: 'agentOrderFlow',
             source: 'agent_dasn_buyer_order',

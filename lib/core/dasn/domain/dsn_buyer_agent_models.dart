@@ -80,23 +80,22 @@ extension DsnBuyerAgentHandoffStatusWire on DsnBuyerAgentHandoffStatus {
 /// Facts that the Trusted App can display or hand off without carrying Agent
 /// credentials.
 ///
-/// `principalRef` is optional because the current App request projection does
-/// not expose it.  A future external handoff channel may add a stable,
-/// non-secret principal reference; it must never be an access token or Grant.
+/// `principalRef` is a required, stable, non-secret identity binding for an
+/// Agent-origin request.  It must never be an access token or Grant.
 class DsnBuyerAgentHandoff {
   DsnBuyerAgentHandoff({
     required this.requestId,
     required this.taskTraceId,
     required this.commitment,
     required this.status,
-    this.principalRef,
-  });
+    required String principalRef,
+  }) : principalRef = _requirePrincipalRef(principalRef);
 
   final int requestId;
   final String taskTraceId;
   final DsnBuyerAgentCommitmentInput commitment;
   final DsnBuyerAgentHandoffStatus status;
-  final String? principalRef;
+  final String principalRef;
 
   DsnBuyerAgentHandoff copyWith({
     DsnBuyerAgentHandoffStatus? status,
@@ -117,9 +116,26 @@ class DsnBuyerAgentHandoff {
         'requestId': requestId,
         'taskTraceId': taskTraceId,
         'status': status.wireName,
-        if (principalRef != null) 'principalRef': principalRef,
+        'principalRef': principalRef,
         ...commitment.toJson(),
       };
+
+  static String _requirePrincipalRef(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      throw ArgumentError.value(value, 'principalRef', 'must not be empty');
+    }
+    return normalized;
+  }
+}
+
+/// Safe upper-layer injection point for the App handoff.
+///
+/// Implementations receive only non-secret handoff facts. They must not add
+/// or derive an Agent token, session, or Grant, and the Flutter route never
+/// calls the Agent commitment endpoint itself.
+abstract interface class DsnBuyerAgentHandoffSink {
+  void onReady(DsnBuyerAgentHandoff handoff);
 }
 
 /// Builds the handoff from the two server-owned facts already read by App.
@@ -132,7 +148,12 @@ DsnBuyerAgentCommitmentInput buyerAgentCommitmentInputFromFacts({
       preview.taskTraceId != confirmation.taskTraceId ||
       preview.previewId != confirmation.previewId ||
       preview.specHash != confirmation.specHash ||
-      preview.quoteHash != confirmation.quoteHash) {
+      preview.quoteHash != confirmation.quoteHash ||
+      preview.amountMinor != confirmation.amountMinor ||
+      preview.currency != confirmation.currency ||
+      confirmation.paymentMethodType != 'CREDITS' ||
+      !confirmation.allowedActions.contains('CREATE_ORDER') ||
+      !confirmation.allowedActions.contains('CREATE_PAYMENT_ATTEMPT')) {
     throw ArgumentError('confirmation reference does not match preview facts');
   }
   return DsnBuyerAgentCommitmentInput(

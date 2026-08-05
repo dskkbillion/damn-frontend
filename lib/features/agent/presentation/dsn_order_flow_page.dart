@@ -10,6 +10,8 @@ import '../../../core/dasn/domain/dsn_order_models.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
 
+enum _DsnBuyerActorType { human, agent, unknown }
+
 /// Trusted App surface for the DS 0.1 buyer P0 flow.
 ///
 /// Every economic step remains explicit: reading an accepted offer, creating
@@ -65,10 +67,24 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
   String? _error;
   bool _loading = false;
   bool _busy = false;
+  bool _recoveryBlocked = false;
   int _previewKeyGeneration = 0;
 
+  _DsnBuyerActorType _buyerActorType(AgentRequestDraft request) {
+    return switch (request.requesterActorType) {
+      'HUMAN' => _DsnBuyerActorType.human,
+      'AGENT' => _DsnBuyerActorType.agent,
+      _ => _DsnBuyerActorType.unknown,
+    };
+  }
+
   bool _isBuyerAgentRequest(AgentRequestDraft request) =>
-      request.requesterActorType?.trim().toUpperCase() == 'AGENT';
+      _buyerActorType(request) == _DsnBuyerActorType.agent;
+
+  String? _principalRef(AgentRequestDraft request) {
+    final value = request.principalRef?.trim();
+    return value == null || value.isEmpty ? null : value;
+  }
 
   bool get _requiresBuyerAgentHandoff =>
       _request != null && _isBuyerAgentRequest(_request!);
@@ -89,7 +105,10 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       final request =
           await widget.requestRepository.getRequest(widget.requestId);
       if (!mounted) return;
-      setState(() => _request = request);
+      setState(() {
+        _request = request;
+        _recoveryBlocked = false;
+      });
       if (_providerResponseAvailable(request)) {
         final offer =
             await widget.orderRepository.getProviderOffer(widget.requestId);
@@ -112,6 +131,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     AgentRequestDraft request,
     DsnProviderOffer offer,
   ) async {
+    _recoveryBlocked = false;
     final repository = widget.taskRepository;
     if (repository == null) return;
     final taskTraceId = request.taskTraceId;
@@ -120,41 +140,70 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     try {
       task = await repository.getTask(taskTraceId);
     } catch (_) {
-      // A projection outage must not block the ordinary offer flow. The next
-      // explicit action will still use the canonical idempotency keys.
+      // A task trace is an existing-lineage hint. If its projection cannot be
+      // read, do not expose a fresh payment/order surface that could race a
+      // previously persisted commitment.
+      _blockTaskRecovery('任务状态暂不可用，请刷新任务后重试');
       return;
     }
+    if (task.taskTraceId != taskTraceId) {
+      _blockTaskRecovery('任务引用不匹配，请刷新任务后重试');
+      return;
+    }
+    final requestFact = _mapFact(task.data['request']);
     final commitment = _mapFact(task.data['commitment']);
     final order = _mapFact(task.data['order']);
-    if (commitment == null || order == null) return;
+    final hasCommitmentFact = task.data['commitment'] != null;
+    final hasOrderFact = task.data['order'] != null;
+    if (commitment == null || order == null) {
+      if (hasCommitmentFact || hasOrderFact) {
+        _blockTaskRecovery('任务事实不完整，请刷新任务后重试');
+      }
+      return;
+    }
 
+    final projectedRequestId = _intFact(requestFact?['id']);
     final previewId = _stringFact(commitment, 'previewId');
     final confirmationRef = _stringFact(commitment, 'confirmationRef');
     final specHash = _wireHash(commitment['specHash']);
     final quoteHash = _wireHash(commitment['quoteHash']);
     final amount = _intFact(commitment['amountCredits']);
-    final offerVersion =
-        _intFact(commitment['offerVersion']) ?? offer.offerVersion;
-    final currency = _stringFact(commitment, 'currency') ?? 'CREDITS';
+    final offerVersion = _intFact(commitment['offerVersion']);
+    final currency = _stringFact(commitment, 'currency');
+    final acceptanceId = _stringFact(commitment, 'acceptanceId');
+    final commitmentOrderId = _stringFact(commitment, 'orderId');
     final orderId = _stringFact(order, 'id');
+    final orderState = _stringFact(order, 'state');
     final commitmentId = _stringFact(commitment, 'id');
-    if (previewId == null ||
+    if (projectedRequestId != request.id ||
+        previewId == null ||
         confirmationRef == null ||
         specHash == null ||
         quoteHash == null ||
         amount == null ||
         amount <= 0 ||
+        offerVersion == null ||
         offerVersion <= 0 ||
-        currency != 'CREDITS' ||
+        currency == null ||
+        acceptanceId == null ||
+        commitmentOrderId == null ||
         orderId == null ||
-        commitmentId == null) {
+        orderState == null ||
+        commitmentId == null ||
+        offerVersion != offer.offerVersion ||
+        specHash != offer.specHash ||
+        quoteHash != offer.quoteHash ||
+        acceptanceId != offer.acceptanceId ||
+        amount != offer.amountMinor ||
+        currency != offer.currency ||
+        commitmentOrderId != orderId) {
+      _blockTaskRecovery('任务报价或订单事实已变化，请刷新任务后重试');
       return;
     }
-    // The current offer is the lineage anchor for the page.  If the task
-    // projection contains a different frozen version, stop recovery rather
-    // than showing a mismatched preview that could later be submitted with a
-    // stale If-Match value.
-    if (offerVersion != offer.offerVersion) return;
+    if (_isBuyerAgentRequest(request) && _principalRef(request) == null) {
+      _blockTaskRecovery('买方 principalRef 缺失，已停止恢复订单，请刷新任务');
+      return;
+    }
 
     final restoredPreview = DsnOrderPreview(
       requestId: request.id,
@@ -168,7 +217,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       quoteHash: quoteHash,
       amountMinor: amount,
       currency: currency,
-      quantity: 1,
+      quantity: offer.quantity,
       // The original preview expiry is deliberately not reconstructed as a
       // live authorization fact. Payment recovery is bound to the persisted
       // Commitment/confirmationRef and server If-Match checks.
@@ -193,17 +242,38 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       confirmationRef: confirmationRef,
       amountMinor: amount,
       currency: currency,
-      orderState: order['state']?.toString() ?? 'awaitingPayment',
+      orderState: orderState,
       offerId: offer.offerId,
       replayed: true,
     );
     DsnPaymentAttempt? restoredPayment;
     final paymentId = _stringFact(task.data['paymentAttempt'], 'id');
+    final paymentFact = _mapFact(task.data['paymentAttempt']);
+    if (task.data['paymentAttempt'] != null &&
+        (paymentFact == null || paymentId == null)) {
+      _blockTaskRecovery('支付事实不完整，请刷新任务后重试');
+      return;
+    }
+    final projectedPaymentConfirmation =
+        _stringFact(paymentFact, 'confirmationRef');
+    if (projectedPaymentConfirmation != null &&
+        projectedPaymentConfirmation != confirmationRef) {
+      _blockTaskRecovery('支付确认引用不匹配，请刷新任务后重试');
+      return;
+    }
     String? paymentRecoveryId = paymentId;
     if (paymentId != null) {
       try {
         restoredPayment =
             await widget.orderRepository.getPaymentAttempt(paymentId);
+        if (restoredPayment.orderId != orderId ||
+            restoredPayment.taskTraceId != taskTraceId ||
+            restoredPayment.confirmationRef != confirmationRef ||
+            restoredPayment.amountMinor != amount ||
+            restoredPayment.currency != currency) {
+          _blockTaskRecovery('支付状态与订单事实不匹配，请刷新任务后重试');
+          return;
+        }
         paymentRecoveryId = null;
       } catch (_) {
         // Keep the recovered order visible, but fail closed: a projection
@@ -222,11 +292,12 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
             preview: restoredPreview,
             confirmation: restoredConfirmation,
           ),
-          status: DsnBuyerAgentHandoffStatus.awaitingAppPayment,
+          status: DsnBuyerAgentHandoffStatus.commitmentCreated,
+          principalRef: _principalRef(request)!,
         );
       } on ArgumentError {
-        // A malformed projection must never turn into a synthetic handoff.
-        restoredHandoff = null;
+        _blockTaskRecovery('Buyer Agent handoff 事实不匹配，请刷新任务后重试');
+        return;
       }
     }
     setState(() {
@@ -239,9 +310,27 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     });
   }
 
+  void _blockTaskRecovery(String message) {
+    if (!mounted) return;
+    setState(() {
+      _recoveryBlocked = true;
+      _error = message;
+      _preview = null;
+      _confirmation = null;
+      _order = null;
+      _payment = null;
+      _paymentAttemptRecoveryId = null;
+      _buyerAgentHandoff = null;
+    });
+  }
+
   Map<String, dynamic>? _mapFact(dynamic value) {
     if (value is! Map) return null;
-    return Map<String, dynamic>.from(value);
+    try {
+      return Map<String, dynamic>.from(value);
+    } catch (_) {
+      return null;
+    }
   }
 
   String? _stringFact(dynamic value, String field) {
@@ -265,6 +354,13 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
   }
 
   Future<void> _createPreview() async {
+    final request = _request;
+    if (request == null ||
+        _buyerActorType(request) != _DsnBuyerActorType.human &&
+            _buyerActorType(request) != _DsnBuyerActorType.agent) {
+      setState(() => _error = '买方身份类型缺失，已停止创建订单预览');
+      return;
+    }
     final offer = _offer;
     if (offer == null) return;
     await _runBusy(() async {
@@ -311,6 +407,15 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     if (accepted != true) return;
     await _runBusy(() async {
       try {
+        final request = _request;
+        if (request != null &&
+            _isBuyerAgentRequest(request) &&
+            _principalRef(request) == null) {
+          throw const DsnOrderApiException(
+            '买方 principalRef 缺失，无法安全交给 Buyer Agent',
+            code: 'BUYER_PRINCIPAL_REF_REQUIRED',
+          );
+        }
         final confirmation = await widget.orderRepository.issueConfirmationRef(
           widget.requestId,
           previewId: preview.previewId,
@@ -318,21 +423,30 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
           idempotencyKey:
               'app-confirmation:${widget.requestId}:${preview.previewId}',
         );
-        _confirmation = confirmation;
-        final request = _request;
-        if (request != null && _isBuyerAgentRequest(request)) {
+        final requestForHandoff = _request;
+        if (requestForHandoff != null &&
+            _isBuyerAgentRequest(requestForHandoff)) {
           final handoff = DsnBuyerAgentHandoff(
-            requestId: request.id,
-            taskTraceId: preview.taskTraceId,
-            commitment: buyerAgentCommitmentInputFromFacts(
-              preview: preview,
-              confirmation: confirmation,
-            ),
-            status: DsnBuyerAgentHandoffStatus.readyForBuyerAgent,
-          );
+              requestId: requestForHandoff.id,
+              taskTraceId: preview.taskTraceId,
+              commitment: buyerAgentCommitmentInputFromFacts(
+                preview: preview,
+                confirmation: confirmation,
+              ),
+              status: DsnBuyerAgentHandoffStatus.readyForBuyerAgent,
+              principalRef: _principalRef(requestForHandoff)!);
+          _confirmation = confirmation;
           _buyerAgentHandoff = handoff;
           widget.onBuyerAgentHandoffReady?.call(handoff);
+        } else {
+          _confirmation = confirmation;
         }
+      } on ArgumentError catch (_) {
+        _clearQuoteState(clearOffer: false);
+        throw const DsnOrderApiException(
+          '确认引用与当前报价事实不匹配，请刷新后重试',
+          code: 'HANDOFF_FACT_MISMATCH',
+        );
       } on DsnOrderApiException catch (error) {
         if (error.code == 'PREVIEW_EXPIRED') {
           _clearQuoteState(clearOffer: false);
@@ -358,10 +472,11 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     final preview = _preview;
     final confirmation = _confirmation;
     if (request == null || preview == null || confirmation == null) return;
-    if (_isBuyerAgentRequest(request)) {
+    if (_buyerActorType(request) != _DsnBuyerActorType.human) {
       // This is an invariant guard in addition to the hidden button.  App
-      // JWTs must never be used to call the Agent commitment route.
-      setState(() => _error = 'Buyer Agent 请求需要由 Agent adapter 创建 Commitment');
+      // JWTs must never be used to call the Agent commitment route, and an
+      // unknown actor type must never silently become a human buyer.
+      setState(() => _error = '买方身份类型不受支持，已停止创建订单');
       return;
     }
     final version = request.version;
@@ -530,6 +645,11 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                   else if (request != null &&
                       !_providerResponseAvailable(request))
                     _notReadyCard(request)
+                  else if (request != null &&
+                      _buyerActorType(request) == _DsnBuyerActorType.unknown)
+                    _actorTypeBlockedCard(request)
+                  else if (_recoveryBlocked)
+                    _recoveryBlockedCard()
                   else if (_offer != null) ...[
                     _offerCard(_offer!),
                     const SizedBox(height: 12),
@@ -544,12 +664,15 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
                       _previewCard(_preview!),
                       const SizedBox(height: 12),
                       if (_confirmation == null)
-                        _actionCard(
-                          title: '需要你的确认',
-                          message: '确认引用只允许当前这份预览继续创建订单和支付尝试。',
-                          label: '生成确认引用',
-                          onPressed: _busy ? null : _issueConfirmationRef,
-                        )
+                        _requiresBuyerAgentHandoff &&
+                                _principalRef(_request!) == null
+                            ? _principalRefBlockedCard()
+                            : _actionCard(
+                                title: '需要你的确认',
+                                message: '确认引用只允许当前这份预览继续创建订单和支付尝试。',
+                                label: '生成确认引用',
+                                onPressed: _busy ? null : _issueConfirmationRef,
+                              )
                       else ...[
                         _confirmationCard(_confirmation!),
                         const SizedBox(height: 12),
@@ -631,6 +754,71 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
         ),
       );
 
+  Widget _actorTypeBlockedCard(AgentRequestDraft request) => Card(
+        color: Theme.of(context).colorScheme.errorContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('买方身份类型缺失或不受支持',
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text('请求 ${request.id} 未明确标记为 HUMAN 或 AGENT，已停止订单操作。'),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _loading ? null : _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('刷新任务'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _recoveryBlockedCard() => Card(
+        color: Theme.of(context).colorScheme.errorContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('订单事实未安全恢复', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              const Text('服务器返回的任务、报价或支付事实不一致，当前不会显示支付操作。'),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _loading ? null : _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('刷新任务'),
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _principalRefBlockedCard() => Card(
+        color: Theme.of(context).colorScheme.errorContainer,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Buyer Agent handoff 暂不可用',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              const Text('缺少同一买方 App/Agent 使用的 principalRef，已停止签发确认引用。'),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _loading ? null : _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('刷新任务'),
+              ),
+            ],
+          ),
+        ),
+      );
+
   Widget _offerCard(DsnProviderOffer offer) => Card(
         child: Padding(
           padding: const EdgeInsets.all(18),
@@ -695,6 +883,8 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
             children: [
               Text('未支付订单已创建', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 10),
+              if (_buyerAgentHandoff != null)
+                _fact('handoff 状态', _buyerAgentHandoff!.status.wireName),
               _fact('订单 ID', order.orderId),
               _fact('承诺 ID', order.commitmentId),
               _fact('状态', order.orderState),
