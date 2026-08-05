@@ -143,6 +143,47 @@ void main() {
     expect(input.decision, DsnDeliveryDecisionAction.accept);
     expect(decisions.keys.single, 'buyer-decision:88:del-2:ACCEPT:v1');
   });
+
+  testWidgets(
+      'freezes delivery decisions while the current evidence is disputed',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final repository = _FakeDasnTaskRepository(_view(
+      waitingOn: 'PRINCIPAL',
+      receipt: {
+        'state': 'AWAITING_ACCEPTANCE',
+        'source': 'DSN_APPEND_ONLY',
+        'orderId': 88,
+        'commitmentVersion': 4,
+        'fundsDisposition': 'CAPTURED',
+        'disputeOpen': true,
+        'latestEvidence': {
+          'deliveryId': 'del-2',
+          'commitmentVersion': 4,
+          'submissionNo': 2,
+          'evidenceHash': _hash('a'),
+        },
+      },
+    ));
+
+    await tester.pumpWidget(_app(DsnTaskPage(
+      repository: repository,
+      decisionRepository: _FakeDsnDeliveryDecisionRepository(),
+      taskTraceId: 'ttr_1234567890abcdef',
+    )));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+        find.text('This delivery is disputed; acceptance is frozen.'));
+
+    expect(find.text('This delivery is disputed; acceptance is frozen.'),
+        findsOneWidget);
+    expect(find.text('Accept delivery'), findsNothing);
+    expect(find.text('Request revision'), findsNothing);
+    expect(find.text('Open dispute'), findsNothing);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(

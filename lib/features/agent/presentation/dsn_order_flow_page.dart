@@ -35,6 +35,16 @@ class DsnOrderFlowPage extends StatefulWidget {
 }
 
 class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
+  static const _quoteInvalidatingErrorCodes = <String>{
+    'OFFER_NOT_ACTIVE',
+    'OFFER_PREVIEW_MISMATCH',
+    'OFFER_VERSION_CONFLICT',
+    'PREVIEW_CONFLICT',
+    'PREVIEW_INVALID',
+    'REQUEST_SPEC_CONFLICT',
+    'REQUEST_VERSION_CONFLICT',
+  };
+
   AgentRequestDraft? _request;
   DsnProviderOffer? _offer;
   DsnOrderPreview? _preview;
@@ -227,13 +237,21 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
       try {
         _preview = await _createPreviewWithKey(offer);
       } on DsnOrderApiException catch (error) {
-        if (error.code != 'PREVIEW_EXPIRED_RETRY') rethrow;
-        // An expired preview is a new logical operation. Reusing its old
-        // idempotency key would correctly replay the old fact forever, so a
-        // new generation is required before asking the server for a fresh
-        // offer-bound preview.
-        _previewKeyGeneration += 1;
-        _preview = await _createPreviewWithKey(offer);
+        if (error.code == 'PREVIEW_EXPIRED_RETRY') {
+          // An expired preview is a new logical operation. Reusing its old
+          // idempotency key would correctly replay the old fact forever, so a
+          // new generation is required before asking the server for a fresh
+          // offer-bound preview.
+          _previewKeyGeneration += 1;
+          _preview = await _createPreviewWithKey(offer);
+        } else {
+          if (!_quoteNeedsRefresh(error)) rethrow;
+          _clearQuoteState();
+          throw const DsnOrderApiException(
+            '报价已变化，请刷新后重新创建预览',
+            code: 'STALE_QUOTE_RETRY',
+          );
+        }
       }
     });
   }
@@ -268,12 +286,17 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
         );
       } on DsnOrderApiException catch (error) {
         if (error.code == 'PREVIEW_EXPIRED') {
-          _preview = null;
-          _confirmation = null;
-          _previewKeyGeneration += 1;
+          _clearQuoteState(clearOffer: false);
           throw const DsnOrderApiException(
             '报价预览已过期，请重新创建预览',
             code: 'PREVIEW_EXPIRED_RETRY',
+          );
+        }
+        if (_quoteNeedsRefresh(error)) {
+          _clearQuoteState();
+          throw const DsnOrderApiException(
+            '报价已变化，请刷新后重新创建预览',
+            code: 'STALE_QUOTE_RETRY',
           );
         }
         rethrow;
@@ -299,14 +322,36 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     );
     if (accepted != true) return;
     await _runBusy(() async {
-      _order = await widget.orderRepository.createOrder(
-        widget.requestId,
-        preview: preview,
-        confirmation: confirmation,
-        ifMatchVersion: version,
-        idempotencyKey: 'app-order:${widget.requestId}:${preview.previewId}',
-      );
+      try {
+        _order = await widget.orderRepository.createOrder(
+          widget.requestId,
+          preview: preview,
+          confirmation: confirmation,
+          ifMatchVersion: version,
+          idempotencyKey: 'app-order:${widget.requestId}:${preview.previewId}',
+        );
+      } on DsnOrderApiException catch (error) {
+        if (!_quoteNeedsRefresh(error)) rethrow;
+        _clearQuoteState();
+        throw const DsnOrderApiException(
+          '报价已变化，请刷新后重新创建预览',
+          code: 'STALE_QUOTE_RETRY',
+        );
+      }
     });
+  }
+
+  bool _quoteNeedsRefresh(DsnOrderApiException error) =>
+      error.code != null && _quoteInvalidatingErrorCodes.contains(error.code);
+
+  void _clearQuoteState({bool clearOffer = true}) {
+    if (clearOffer) _offer = null;
+    _preview = null;
+    _confirmation = null;
+    _order = null;
+    _payment = null;
+    _paymentAttemptRecoveryId = null;
+    _previewKeyGeneration += 1;
   }
 
   Future<void> _pay() async {

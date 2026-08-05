@@ -113,6 +113,106 @@ void main() {
     expect(orders.paymentReconciled, isTrue);
     expect(find.text('支付已完成'), findsOneWidget);
   });
+
+  testWidgets('clears stale preview before an order side effect',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(
+      issueConfirmationError: const DsnOrderApiException(
+        'server quote changed',
+        code: 'PREVIEW_CONFLICT',
+      ),
+    );
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '生成确认引用'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('生成确认引用').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('报价已变化，请刷新后重新创建预览'), findsOneWidget);
+    expect(find.text('服务器订单预览'), findsNothing);
+    expect(find.text('确认引用已生成'), findsNothing);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(orders.orderCreated, isFalse);
+  });
+
+  testWidgets(
+      'clears stale preview when order creation sees a version conflict',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(
+      createOrderError: const DsnOrderApiException(
+        'server quote changed',
+        code: 'OFFER_VERSION_CONFLICT',
+      ),
+    );
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '生成确认引用'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('生成确认引用').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '创建未支付订单'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('创建未支付订单').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('报价已变化，请刷新后重新创建预览'), findsOneWidget);
+    expect(find.text('服务器订单预览'), findsNothing);
+    expect(find.text('确认引用已生成'), findsNothing);
+    expect(find.text('使用积分支付'), findsNothing);
+    expect(orders.orderCreated, isFalse);
+  });
+
+  testWidgets('fails closed when preview facts no longer match the offer',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository(
+      createPreviewError: const DsnOrderApiException(
+        'server quote changed',
+        code: 'PREVIEW_CONFLICT',
+      ),
+    );
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(),
+      orderRepository: orders,
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('查看报价并创建预览'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('报价已变化，请刷新后重新创建预览'), findsOneWidget);
+    expect(find.text('服务方报价'), findsNothing);
+    expect(find.text('服务器订单预览'), findsNothing);
+    expect(find.text('生成确认引用'), findsNothing);
+    expect(orders.previewCreated, isFalse);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -186,9 +286,17 @@ class _FakeRequestRepository implements AgentRepository {
 }
 
 class _FakeOrderRepository implements DsnOrderRepository {
-  _FakeOrderRepository({this.reconcilingPayment = false});
+  _FakeOrderRepository({
+    this.reconcilingPayment = false,
+    this.createPreviewError,
+    this.issueConfirmationError,
+    this.createOrderError,
+  });
 
   final bool reconcilingPayment;
+  final DsnOrderApiException? createPreviewError;
+  final DsnOrderApiException? issueConfirmationError;
+  final DsnOrderApiException? createOrderError;
   bool previewCreated = false;
   bool confirmationIssued = false;
   bool orderCreated = false;
@@ -219,6 +327,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       {required String expectedSpecHash,
       required String quoteHash,
       required String idempotencyKey}) async {
+    if (createPreviewError != null) throw createPreviewError!;
     previewCreated = true;
     return DsnOrderPreview(
       requestId: requestId,
@@ -242,6 +351,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       {required String previewId,
       required List<String> allowedActions,
       required String idempotencyKey}) async {
+    if (issueConfirmationError != null) throw issueConfirmationError!;
     confirmationIssued = true;
     return DsnConfirmationRef(
       confirmationRef: 'cr_test-1',
@@ -263,6 +373,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       required DsnConfirmationRef confirmation,
       required int ifMatchVersion,
       required String idempotencyKey}) async {
+    if (createOrderError != null) throw createOrderError!;
     orderCreated = true;
     return DsnOrder(
       orderId: '1001',
