@@ -13,6 +13,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(_app(AgentRequestReviewPage(
       repository: _FakeRequestRepository(_request(status: 'SUBMITTED')),
+      orderRepository: DioDsnOrderRepository(Dio()),
       requestId: 9,
     )));
     await tester.pumpAndSettle();
@@ -26,6 +27,7 @@ void main() {
     await tester.pumpWidget(_app(AgentRequestReviewPage(
       repository:
           _FakeRequestRepository(_request(status: 'AWAITING_APP_REVIEW')),
+      orderRepository: DioDsnOrderRepository(Dio()),
       requestId: 9,
     )));
     await tester.pumpAndSettle();
@@ -56,6 +58,7 @@ void main() {
     ));
     await tester.pumpWidget(_app(AgentRequestReviewPage(
       repository: repository,
+      orderRepository: DioDsnOrderRepository(Dio()),
       requestId: 9,
     )));
     await tester.pumpAndSettle();

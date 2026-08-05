@@ -9,9 +9,9 @@ import 'agent_ui_helpers.dart';
 
 class AgentRequestsPage extends StatefulWidget {
   final AgentRepository repository;
-  final DsnOrderRepository? orderRepository;
+  final DsnOrderRepository orderRepository;
   const AgentRequestsPage(
-      {super.key, required this.repository, this.orderRepository});
+      {super.key, required this.repository, required this.orderRepository});
   @override
   State<AgentRequestsPage> createState() => _AgentRequestsPageState();
 }

@@ -9,12 +9,12 @@ import 'agent_ui_helpers.dart';
 
 class AgentRequestReviewPage extends StatefulWidget {
   final AgentRepository repository;
-  final DsnOrderRepository? orderRepository;
+  final DsnOrderRepository orderRepository;
   final int requestId;
   const AgentRequestReviewPage(
       {super.key,
       required this.repository,
-      this.orderRepository,
+      required this.orderRepository,
       required this.requestId});
   @override
   State<AgentRequestReviewPage> createState() => _AgentRequestReviewPageState();
@@ -201,8 +201,7 @@ class _AgentRequestReviewPageState extends State<AgentRequestReviewPage> {
                           // specific status after ProviderAcceptance, so
                           // gating this handoff on one presentation status
                           // would strand a valid accepted offer in the App.
-                          if (_providerResponseAvailable(request) &&
-                              widget.orderRepository != null) ...[
+                          if (_providerResponseAvailable(request)) ...[
                             const SizedBox(height: 12),
                             FilledButton.icon(
                               onPressed: _busy

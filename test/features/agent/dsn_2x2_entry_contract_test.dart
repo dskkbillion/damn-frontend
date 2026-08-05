@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_order_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
 import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/agent_request_review_page.dart';
+import 'package:dskk_flutter_refactor/features/agent/presentation/agent_requests_page.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/agent_routes.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/dsn_order_flow_page.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/dsn_task_page.dart';
@@ -129,6 +130,24 @@ void main() {
       expect(find.text('Open dispute'), findsNothing);
     }
   });
+
+  testWidgets('request list forwards the same order facade into review',
+      (tester) async {
+    const pairing = _ActorPairing.a2a;
+    final requestRepository = _MatrixRequestRepository(pairing);
+    final orderRepository = _MatrixOrderRepository(pairing);
+
+    await tester.pumpWidget(_app(AgentRequestsPage(
+      repository: requestRepository,
+      orderRepository: orderRepository,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('${pairing.label} DS request'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('查看报价并继续下单'), findsOneWidget);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(
@@ -186,7 +205,9 @@ class _MatrixRequestRepository implements AgentRepository {
   Future<AgentSessionDetail> getSession(int id) => throw UnimplementedError();
 
   @override
-  Future<List<AgentRequestDraft>> listRequests() => throw UnimplementedError();
+  Future<List<AgentRequestDraft>> listRequests() async => <AgentRequestDraft>[
+        request,
+      ];
 
   @override
   Future<AgentRequestDraft> createHumanRequest(
