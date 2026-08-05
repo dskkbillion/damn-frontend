@@ -70,6 +70,7 @@ import 'package:dskk_flutter_refactor/features/chat/domain/repositories/i_chat_r
 import '../../features/payment/di/payment_di.dart';
 import 'package:dskk_flutter_refactor/core/services/background_refresh_service.dart';
 import 'package:dskk_flutter_refactor/core/storage/secure_storage_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_buyer_agent_handoff_broker.dart';
 
 final getIt = GetIt.instance;
 
@@ -371,6 +372,11 @@ Future<void> registerCoreDependencies() async {
   getIt.registerLazySingleton<IPaymentService>(() => AlipayPaymentService(
         getIt<ApiClient>(),
       ));
+
+  // Register the credential-free, one-shot Buyer Agent handoff boundary.
+  // The route publishes safe facts here; an external bridge consumes them and
+  // performs Agent work with its own session/Grant outside the App.
+  registerDsnBuyerAgentHandoffBroker(getIt);
 }
 
 // Auth Interceptor using FlutterSecureStorage
