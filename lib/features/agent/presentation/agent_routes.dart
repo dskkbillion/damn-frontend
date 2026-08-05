@@ -7,6 +7,7 @@ import '../../../core/dasn/data/dasn_task_repository.dart';
 import '../../../core/dasn/data/dsn_order_repository.dart';
 import 'device_authorization_page.dart';
 import 'agent_request_review_page.dart';
+import 'dsn_human_request_page.dart';
 import 'dsn_order_flow_page.dart';
 import 'dsn_task_page.dart';
 import 'provider_task_center_page.dart';
@@ -45,6 +46,15 @@ class AgentRoutes {
             ),
             name: 'agentConnect',
             source: 'agent_device_flow',
+          ),
+        ),
+        GoRoute(
+          path: '/requests/new',
+          name: 'humanRequestCreate',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            DsnHumanRequestPage(repository: _repository()),
+            name: 'humanRequestCreate',
+            source: 'human_dasn_request_create',
           ),
         ),
         GoRoute(

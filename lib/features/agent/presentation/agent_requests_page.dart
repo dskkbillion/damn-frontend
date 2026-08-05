@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/dasn/data/dsn_order_repository.dart';
 import '../data/agent_repository.dart';
 import '../domain/agent_models.dart';
@@ -42,7 +43,16 @@ class _AgentRequestsPageState extends State<AgentRequestsPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.agentRequestDrafts)),
+      appBar: AppBar(
+        title: Text(l10n.agentRequestDrafts),
+        actions: [
+          IconButton(
+            tooltip: 'Create a human request',
+            onPressed: () => context.push('/requests/new'),
+            icon: const Icon(Icons.add_task_outlined),
+          ),
+        ],
+      ),
       body: RefreshIndicator(
           onRefresh: _load,
           child: _error != null

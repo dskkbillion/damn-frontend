@@ -137,6 +137,14 @@ class _ConnectedAgentsRepository implements AgentRepository {
   @override
   Future<List<AgentRequestDraft>> listRequests() => throw UnimplementedError();
   @override
+  Future<AgentRequestDraft> createHumanRequest(
+          {required int serviceId,
+          required String capabilityRevision,
+          required String title,
+          required String brief,
+          int? budgetMaxMinor}) =>
+      throw UnimplementedError();
+  @override
   Future<AgentSession> reduceScopes(int id, Set<String> scopes) =>
       throw UnimplementedError();
   @override

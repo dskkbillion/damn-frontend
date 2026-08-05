@@ -21,6 +21,18 @@ abstract class AgentRepository {
   Future<List<AgentRequestDraft>> listRequests();
   Future<AgentRequestDraft> getRequest(int id);
 
+  /// Create a HUMAN-originated canonical DS request.  The server derives the
+  /// member identity from the App JWT and freezes a Trusted App snapshot;
+  /// callers must not send buyer/provider/session fields.
+  Future<AgentRequestDraft> createHumanRequest({
+    required int serviceId,
+    required String capabilityRevision,
+    required String title,
+    required String brief,
+    int? budgetMaxMinor,
+  }) =>
+      throw UnimplementedError();
+
   /// Submit the App-reviewed request through the canonical DS 0.1 boundary.
   /// Implementations must reuse the same key for a retry of the same version.
   Future<void> submitRequest(int id,
@@ -85,17 +97,71 @@ class DioAgentRepository implements AgentRepository {
 
   @override
   Future<List<AgentRequestDraft>> listRequests() async {
-    final data = await _request(() => dio.get('/api/agent-requests')) as List;
-    return data
-        .map((item) =>
-            AgentRequestDraft.fromJson(Map<String, dynamic>.from(item as Map)))
-        .toList();
+    // HUMAN buyer requests use the canonical DS0.2 App read boundary.  Do
+    // not fall back to `/api/agent-requests`: that compatibility endpoint
+    // returns an AjaxResult shape and would make the App depend on a route
+    // explicitly excluded from the DS runtime acceptance.
+    final body = await _request(
+      () => dio.get('/app/v1/requests'),
+      machineResponse: true,
+    );
+    return _parseCanonicalRequestCollection(body);
   }
 
   @override
   Future<AgentRequestDraft> getRequest(int id) async =>
-      AgentRequestDraft.fromJson(
-          await _request(() => dio.get('/api/agent-requests/$id')));
+      _parseCanonicalRequest(
+        await _request(
+          () => dio.get('/app/v1/requests/$id'),
+          machineResponse: true,
+        ),
+      );
+
+  @override
+  Future<AgentRequestDraft> createHumanRequest({
+    required int serviceId,
+    required String capabilityRevision,
+    required String title,
+    required String brief,
+    int? budgetMaxMinor,
+  }) async {
+    if (serviceId <= 0 ||
+        title.trim().isEmpty ||
+        brief.trim().isEmpty ||
+        !RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(capabilityRevision)) {
+      throw const AgentApiException('Request fields are invalid');
+    }
+    final key = 'human-request:${DateTime.now().microsecondsSinceEpoch}';
+    final response = await _request(
+      () => dio.post(
+        '/app/v1/requests',
+        options: Options(headers: {'Idempotency-Key': key}),
+        data: <String, dynamic>{
+          'capabilityId': 'service:$serviceId',
+          'capabilityRevision': capabilityRevision,
+          'goal': title.trim(),
+          'deliverables': <String>[brief.trim()],
+          'acceptanceCriteria': <String>['按需求说明完成并由买方在 App 中验收'],
+          if (budgetMaxMinor != null) 'budgetMaxMinor': budgetMaxMinor,
+          'currency': 'CREDITS',
+        },
+      ),
+      machineResponse: true,
+    );
+    if (response is! Map) {
+      throw const AgentApiException('Invalid server response');
+    }
+    final data = response['data'];
+    if (data is! Map || data['requestId'] == null) {
+      throw const AgentApiException('The server did not return a request id');
+    }
+    final requestId = int.tryParse(data['requestId'].toString());
+    if (requestId == null || requestId <= 0) {
+      throw const AgentApiException(
+          'The server returned an invalid request id');
+    }
+    return getRequest(requestId);
+  }
 
   @override
   Future<void> submitRequest(int id,
@@ -128,6 +194,65 @@ class DioAgentRepository implements AgentRepository {
   Future<AgentRequestDraft> abandonRequest(int id) async =>
       AgentRequestDraft.fromJson(
           await _request(() => dio.post('/api/agent-requests/$id/abandon')));
+
+  AgentRequestDraft _parseCanonicalRequest(dynamic value) {
+    if (value is! Map) {
+      throw const AgentApiException('Invalid DS request response');
+    }
+    final envelope = Map<String, dynamic>.from(value);
+    final data = envelope['data'];
+    if (data is! Map) {
+      throw const AgentApiException('DS request response is missing data');
+    }
+    final normalized = Map<String, dynamic>.from(data);
+    normalized['id'] ??= normalized['requestId'];
+    normalized['status'] ??= envelope['state'];
+    _normalizeRequestNumbers(normalized);
+    return AgentRequestDraft.fromJson(normalized);
+  }
+
+  List<AgentRequestDraft> _parseCanonicalRequestCollection(dynamic value) {
+    if (value is! Map) {
+      throw const AgentApiException('Invalid DS request collection response');
+    }
+    final envelope = Map<String, dynamic>.from(value);
+    final data = envelope['data'];
+    if (data is! Map || data['requests'] is! List) {
+      throw const AgentApiException(
+          'DS request collection response is missing requests');
+    }
+    return (data['requests'] as List).map((item) {
+      if (item is! Map) {
+        throw const AgentApiException('Invalid DS request collection item');
+      }
+      final normalized = Map<String, dynamic>.from(item);
+      normalized['id'] ??= normalized['requestId'];
+      normalized['status'] ??= normalized['state'];
+      _normalizeRequestNumbers(normalized);
+      // The collection intentionally returns a summary.  Full brief and
+      // timestamps are fetched from the canonical detail route on review.
+      normalized['brief'] ??= '';
+      return AgentRequestDraft.fromJson(normalized);
+    }).toList();
+  }
+
+  void _normalizeRequestNumbers(Map<String, dynamic> value) {
+    for (final field in <String>[
+      'id',
+      'requestId',
+      'version',
+      'serviceId',
+      'providerMemberId',
+      'chatId',
+      'initialMessageId',
+    ]) {
+      final raw = value[field];
+      if (raw is String) {
+        final parsed = int.tryParse(raw.trim());
+        if (parsed != null) value[field] = parsed;
+      }
+    }
+  }
 
   Future<void> _call(Future<Response<dynamic>> Function() operation) async {
     await _request(operation);
