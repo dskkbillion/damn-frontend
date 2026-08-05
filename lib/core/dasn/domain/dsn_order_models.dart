@@ -154,6 +154,7 @@ class DsnPaymentAttempt {
     required this.amountMinor,
     required this.currency,
     required this.confirmationRef,
+    required this.commitmentVersion,
     this.nextAction,
     this.replayed = false,
   });
@@ -167,6 +168,10 @@ class DsnPaymentAttempt {
   final int amountMinor;
   final String currency;
   final String confirmationRef;
+  /// Server-owned frozen Commitment version returned by the payment facade.
+  /// This must equal both the response resource version and the If-Match value
+  /// used to create the attempt.
+  final int commitmentVersion;
   final String? nextAction;
   final bool replayed;
 

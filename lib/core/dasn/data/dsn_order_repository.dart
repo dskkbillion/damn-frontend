@@ -259,7 +259,14 @@ class DioDsnOrderRepository implements DsnOrderRepository {
       ),
       expectedState: null,
     );
-    return _payment(body);
+    final payment = _payment(body);
+    if (payment.commitmentVersion != ifMatchVersion) {
+      throw const DsnOrderApiException(
+        'Payment response version does not match the frozen Commitment',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
+    return payment;
   }
 
   @override
@@ -351,6 +358,15 @@ class DioDsnOrderRepository implements DsnOrderRepository {
   DsnPaymentAttempt _payment(Map<String, dynamic> body) {
     final data = _map(body['data'], 'payment data');
     final payment = _map(body['paymentAttempt'], 'payment attempt');
+    final resource = _map(body['resource'], 'payment resource');
+    final resourceVersion = _requiredPositiveInt(resource, 'version');
+    final dataVersion = _requiredPositiveInt(data, 'commitmentVersion');
+    if (resourceVersion != dataVersion) {
+      throw const DsnOrderApiException(
+        'Payment response versions do not match',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
     return DsnPaymentAttempt(
       paymentAttemptId: _requiredString(payment, 'paymentAttemptId'),
       orderId: _requiredString(data, 'orderId'),
@@ -361,6 +377,7 @@ class DioDsnOrderRepository implements DsnOrderRepository {
       amountMinor: _requiredInt(data, 'amountMinor'),
       currency: _requiredString(data, 'currency'),
       confirmationRef: _requiredString(data, 'confirmationRef'),
+      commitmentVersion: resourceVersion,
       nextAction: payment['nextAction']?.toString(),
       replayed: data['replayed'] == true,
     );

@@ -67,6 +67,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('支付已完成'), findsOneWidget);
     expect(orders.paymentCreated, isTrue);
+    expect(orders.paymentIfMatchVersion, 2);
   });
 
   testWidgets('fails closed when requester actor type is missing',
@@ -562,6 +563,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
   bool orderCreated = false;
   bool paymentCreated = false;
   bool paymentReconciled = false;
+  int? paymentIfMatchVersion;
 
   final offer = DsnProviderOffer(
     requestId: 9,
@@ -656,6 +658,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       required int ifMatchVersion,
       required String idempotencyKey}) async {
     paymentCreated = true;
+    paymentIfMatchVersion = ifMatchVersion;
     return DsnPaymentAttempt(
       paymentAttemptId: 'payment-1',
       orderId: order.orderId,
@@ -666,6 +669,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       amountMinor: preview.amountMinor,
       currency: 'CREDITS',
       confirmationRef: confirmation.confirmationRef,
+      commitmentVersion: 2,
     );
   }
 
@@ -689,6 +693,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
       amountMinor: offer.amountMinor,
       currency: 'CREDITS',
       confirmationRef: 'cr_test-1',
+      commitmentVersion: 2,
     );
   }
 
@@ -703,6 +708,7 @@ class _FakeOrderRepository implements DsnOrderRepository {
         amountMinor: offer.amountMinor,
         currency: 'CREDITS',
         confirmationRef: 'cr_test-1',
+        commitmentVersion: 2,
         nextAction: 'RECONCILE_PAYMENT_ATTEMPT',
       );
 }

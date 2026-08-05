@@ -135,6 +135,7 @@ void main() {
             'confirmationRef': 'cr_test-1',
             'amountMinor': '120',
             'currency': 'CREDITS',
+            'commitmentVersion': '2',
           },
         );
         body['paymentAttempt'] = <String, dynamic>{
@@ -152,6 +153,7 @@ void main() {
     expect(seenMethod, 'POST');
     expect(seenPath, '/app/v1/payment-attempts/51/reconcile');
     expect(payment.captured, isTrue);
+    expect(payment.commitmentVersion, 2);
   });
 
   test('uses the frozen Commitment resource version for payment precondition',
@@ -168,6 +170,7 @@ void main() {
             'confirmationRef': 'cr_test-1',
             'amountMinor': '120',
             'currency': 'CREDITS',
+            'commitmentVersion': '7',
           },
         );
         body['paymentAttempt'] = <String, dynamic>{
@@ -175,6 +178,7 @@ void main() {
           'fundsDisposition': 'CAPTURED',
           'effectiveCommitment': true,
         };
+        (body['resource'] as Map<String, dynamic>)['version'] = '7';
         handler.resolve(Response(requestOptions: options, data: body));
       },
     ));
@@ -225,6 +229,41 @@ void main() {
     );
 
     expect(seenIfMatch, '"7"');
+  });
+
+  test('rejects a payment response whose server versions disagree', () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        final body = _machine(
+          state: 'PAYMENT_CAPTURED',
+          data: <String, dynamic>{
+            'orderId': '41',
+            'confirmationRef': 'cr_test-1',
+            'amountMinor': '120',
+            'currency': 'CREDITS',
+            'commitmentVersion': '7',
+          },
+        );
+        body['paymentAttempt'] = <String, dynamic>{
+          'paymentAttemptId': '51',
+          'fundsDisposition': 'CAPTURED',
+          'effectiveCommitment': true,
+        };
+        handler.resolve(Response(requestOptions: options, data: body));
+      },
+    ));
+
+    expect(
+      () => DioDsnOrderRepository(dio).reconcilePaymentAttempt('51'),
+      throwsA(
+        isA<DsnOrderApiException>().having(
+          (error) => error.code,
+          'code',
+          'COMMITMENT_VERSION_MISMATCH',
+        ),
+      ),
+    );
   });
 
   test('rejects a payment precondition that differs from the frozen order',

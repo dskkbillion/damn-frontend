@@ -284,7 +284,8 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
             restoredPayment.taskTraceId != taskTraceId ||
             restoredPayment.confirmationRef != confirmationRef ||
             restoredPayment.amountMinor != amount ||
-            restoredPayment.currency != currency) {
+            restoredPayment.currency != currency ||
+            restoredPayment.commitmentVersion != commitmentVersion) {
           _blockTaskRecovery('支付状态与订单事实不匹配，请刷新任务后重试');
           return;
         }

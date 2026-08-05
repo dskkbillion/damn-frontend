@@ -387,6 +387,7 @@ class _MatrixOrderRepository implements DsnOrderRepository {
       amountMinor: preview.amountMinor,
       currency: 'CREDITS',
       confirmationRef: confirmation.confirmationRef,
+      commitmentVersion: 2,
     );
   }
 
