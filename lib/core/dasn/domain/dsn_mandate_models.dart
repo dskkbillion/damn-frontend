@@ -108,27 +108,38 @@ class DsnMandateReviewCard {
     required this.capability,
     required this.provider,
     required this.buyer,
-    required this.variant,
+    required this.variantId,
     required this.quantity,
     required this.capacity,
-    required this.sla,
     required this.currency,
     required this.amountMinor,
     required this.quoteHash,
-    required this.maxDeliverySeconds,
+    required this.deliverySeconds,
+    required this.maxRevisions,
+    required this.outputTypes,
+    required this.slaHash,
+    required this.catalogRevision,
+    required this.fixedLineHash,
   });
 
   final String capability;
   final String provider;
   final String buyer;
-  final String variant;
+  final String variantId;
   final int quantity;
-  final int capacity;
-  final Map<String, dynamic> sla;
+
+  /// The fixed catalog line has no capacity dimension. The explicit null is
+  /// a reviewed server fact, never a client-side fallback value.
+  final int? capacity;
   final String currency;
   final int amountMinor;
   final String quoteHash;
-  final int maxDeliverySeconds;
+  final int deliverySeconds;
+  final int maxRevisions;
+  final List<String> outputTypes;
+  final String slaHash;
+  final String catalogRevision;
+  final String fixedLineHash;
 }
 
 class DsnMandatePreview {

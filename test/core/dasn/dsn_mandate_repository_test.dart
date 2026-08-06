@@ -40,6 +40,8 @@ void main() {
     expect(preview.previewHash, _hash('a'));
     expect(preview.reviewHash, _hash('b'));
     expect(preview.allowedActionClasses, ['BUYER_CONFIRM_COMMITMENT']);
+    expect(preview.review.capacity, isNull);
+    expect(preview.review.outputTypes, ['text']);
   });
 
   test('confirms with exactly the one-time preview facts', () async {
@@ -176,6 +178,29 @@ void main() {
         'code',
         'MANDATE_RESOURCE_BINDING_TEMPLATE_INVALID',
       )),
+    );
+  });
+
+  test('rejects a review card that invents a capacity value', () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      final data = _previewData();
+      final review = Map<String, dynamic>.from(data['review'] as Map)
+        ..['capacity'] = 1;
+      data['review'] = review;
+      handler.resolve(Response(
+        requestOptions: options,
+        statusCode: 201,
+        data: _machine('MANDATE_PREVIEW_CREATED', data),
+      ));
+    }));
+
+    await expectLater(
+      DioDsnMandateRepository(dio).createPreview(
+        _input(),
+        idempotencyKey: 'app-mandate-preview-123456',
+      ),
+      throwsA(isA<DsnMandateApiException>()),
     );
   });
 
@@ -328,14 +353,18 @@ Map<String, dynamic> _reviewData() => <String, dynamic>{
       'capability': 'captioning',
       'provider': 'provider-1',
       'buyer': 'buyer-1',
-      'variant': 'standard',
+      'variantId': 'standard',
       'quantity': 1,
-      'capacity': 1,
-      'sla': <String, dynamic>{'delivery': '24h'},
+      'capacity': null,
       'currency': 'CREDITS',
       'amountMinor': 100,
       'quoteHash': _hash('e'),
-      'maxDeliverySeconds': 86400,
+      'deliverySeconds': 86400,
+      'maxRevisions': 1,
+      'outputTypes': <String>['text'],
+      'slaHash': _hash('d'),
+      'catalogRevision': _hash('c'),
+      'fixedLineHash': _hash('b'),
     };
 
 Map<String, dynamic> _mandateData({

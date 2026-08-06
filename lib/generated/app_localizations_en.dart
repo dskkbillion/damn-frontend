@@ -5984,4 +5984,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agentMandateReviewMaxDelivery => 'Maximum delivery time';
+
+  @override
+  String get agentMandateReviewNoCapacity => 'No capacity limit';
+
+  @override
+  String get agentMandateReviewMaxRevisions => 'Maximum revisions';
+
+  @override
+  String get agentMandateReviewOutputTypes => 'Output types';
 }

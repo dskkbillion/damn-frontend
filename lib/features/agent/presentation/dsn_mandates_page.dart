@@ -500,20 +500,26 @@ class _DsnMandatePreviewPageState extends State<DsnMandatePreviewPage> {
                         preview.review.provider),
                     _reviewFact(
                         l10n.agentMandateReviewBuyer, preview.review.buyer),
-                    _reviewFact(
-                        l10n.agentMandateReviewVariant, preview.review.variant),
+                    _reviewFact(l10n.agentMandateReviewVariant,
+                        preview.review.variantId),
                     _reviewFact(l10n.agentMandateReviewQuantity,
                         preview.review.quantity.toString()),
-                    _reviewFact(l10n.agentMandateReviewCapacity,
-                        preview.review.capacity.toString()),
+                    _reviewFact(
+                        l10n.agentMandateReviewCapacity,
+                        preview.review.capacity?.toString() ??
+                            l10n.agentMandateReviewNoCapacity),
                     _reviewFact(
                       l10n.agentMandateReviewPrice,
                       '${preview.review.amountMinor} ${preview.review.currency}',
                     ),
-                    _reviewFact(l10n.agentMandateReviewSla,
-                        preview.review.sla.toString()),
+                    _reviewFact(
+                        l10n.agentMandateReviewSla, preview.review.slaHash),
                     _reviewFact(l10n.agentMandateReviewMaxDelivery,
-                        '${preview.review.maxDeliverySeconds}s'),
+                        '${preview.review.deliverySeconds}s'),
+                    _reviewFact(l10n.agentMandateReviewMaxRevisions,
+                        preview.review.maxRevisions.toString()),
+                    _reviewFact(l10n.agentMandateReviewOutputTypes,
+                        preview.review.outputTypes.join(', ')),
                     Text(
                         '${l10n.agentMandateExpiresAt}: ${preview.expiresAt.toLocal()}'),
                     const SizedBox(height: 8),

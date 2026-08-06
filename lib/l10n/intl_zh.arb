@@ -3359,5 +3359,8 @@
     "agentMandateReviewCapacity": "容量",
     "agentMandateReviewPrice": "价格",
     "agentMandateReviewSla": "服务等级协议",
-    "agentMandateReviewMaxDelivery": "最长交付时间"
+    "agentMandateReviewMaxDelivery": "最长交付时间",
+    "agentMandateReviewNoCapacity": "未设置容量限制",
+    "agentMandateReviewMaxRevisions": "最大修改次数",
+    "agentMandateReviewOutputTypes": "交付类型"
 }

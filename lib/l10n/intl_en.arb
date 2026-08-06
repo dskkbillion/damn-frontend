@@ -3335,5 +3335,8 @@
     "agentMandateReviewCapacity": "Capacity",
     "agentMandateReviewPrice": "Price",
     "agentMandateReviewSla": "SLA",
-    "agentMandateReviewMaxDelivery": "Maximum delivery time"
+    "agentMandateReviewMaxDelivery": "Maximum delivery time",
+    "agentMandateReviewNoCapacity": "No capacity limit",
+    "agentMandateReviewMaxRevisions": "Maximum revisions",
+    "agentMandateReviewOutputTypes": "Output types"
 }

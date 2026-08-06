@@ -5778,4 +5778,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get agentMandateReviewMaxDelivery => '最长交付时间';
+
+  @override
+  String get agentMandateReviewNoCapacity => '未设置容量限制';
+
+  @override
+  String get agentMandateReviewMaxRevisions => '最大修改次数';
+
+  @override
+  String get agentMandateReviewOutputTypes => '交付类型';
 }

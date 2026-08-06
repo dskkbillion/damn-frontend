@@ -443,48 +443,92 @@ class DioDsnMandateRepository implements DsnMandateRepository {
       'capability',
       'provider',
       'buyer',
-      'variant',
+      'variantId',
       'quantity',
       'capacity',
-      'sla',
       'currency',
       'amountMinor',
       'quoteHash',
-      'maxDeliverySeconds',
+      'deliverySeconds',
+      'maxRevisions',
+      'outputTypes',
+      'slaHash',
+      'catalogRevision',
+      'fixedLineHash',
     };
     if (review.keys.toSet().length != expected.length ||
         !review.keys.toSet().containsAll(expected) ||
-        review['sla'] is! Map ||
-        review['currency'] != 'CREDITS') {
+        review['currency'] != 'CREDITS' ||
+        review['quantity'] is! int ||
+        review['quantity'] != 1) {
       throw const DsnMandateApiException('Invalid Mandate review card');
     }
     return DsnMandateReviewCard(
-      capability:
-          _requiredText(review['capability']?.toString() ?? '', 'capability'),
-      provider: _requiredText(review['provider']?.toString() ?? '', 'provider'),
-      buyer: _requiredText(review['buyer']?.toString() ?? '', 'buyer'),
-      variant: _requiredText(review['variant']?.toString() ?? '', 'variant'),
-      quantity: _positiveInt(review['quantity'], 'quantity'),
-      capacity: _positiveInt(review['capacity'], 'capacity'),
-      sla: Map<String, dynamic>.unmodifiable(
-        Map<String, dynamic>.from(review['sla'] as Map),
-      ),
+      capability: _reviewText(review['capability'], 'capability'),
+      provider: _reviewText(review['provider'], 'provider'),
+      buyer: _reviewText(review['buyer'], 'buyer'),
+      variantId: _reviewText(review['variantId'], 'variantId'),
+      quantity: 1,
+      capacity: _nullCapacity(review['capacity']),
       currency: 'CREDITS',
-      amountMinor: _nonNegativeInt(review['amountMinor'], 'amountMinor'),
+      amountMinor: _reviewPositiveInt(review['amountMinor'], 'amountMinor'),
       quoteHash: _hash(review['quoteHash'], 'quoteHash'),
-      maxDeliverySeconds:
-          _positiveInt(review['maxDeliverySeconds'], 'maxDeliverySeconds'),
+      deliverySeconds:
+          _reviewPositiveInt(review['deliverySeconds'], 'deliverySeconds'),
+      maxRevisions:
+          _reviewNonNegativeInt(review['maxRevisions'], 'maxRevisions'),
+      outputTypes: _reviewOutputTypes(review['outputTypes']),
+      slaHash: _hash(review['slaHash'], 'slaHash'),
+      catalogRevision: _hash(review['catalogRevision'], 'catalogRevision'),
+      fixedLineHash: _hash(review['fixedLineHash'], 'fixedLineHash'),
     );
   }
 
-  static int _nonNegativeInt(dynamic value, String label) {
-    final parsed = value is num
-        ? (value == value.truncateToDouble() ? value.toInt() : null)
-        : int.tryParse(value?.toString().trim() ?? '');
-    if (parsed == null || parsed < 0) {
+  static int? _nullCapacity(dynamic value) {
+    if (value != null) {
+      throw const DsnMandateApiException(
+        'Mandate review capacity must be null',
+      );
+    }
+    return null;
+  }
+
+  static List<String> _reviewOutputTypes(dynamic value) {
+    if (value is! List || value.isEmpty) {
+      throw const DsnMandateApiException(
+        'Mandate review is missing outputTypes',
+      );
+    }
+    final outputTypes = value
+        .map((item) => _reviewText(item, 'outputType'))
+        .toList(growable: false);
+    if (outputTypes.toSet().length != outputTypes.length) {
+      throw const DsnMandateApiException(
+        'Mandate review outputTypes must be unique',
+      );
+    }
+    return outputTypes;
+  }
+
+  static String _reviewText(dynamic value, String label) {
+    if (value is! String) {
       throw DsnMandateApiException('Invalid $label');
     }
-    return parsed;
+    return _requiredText(value, label);
+  }
+
+  static int _reviewPositiveInt(dynamic value, String label) {
+    if (value is! int || value < 1) {
+      throw DsnMandateApiException('Invalid $label');
+    }
+    return value;
+  }
+
+  static int _reviewNonNegativeInt(dynamic value, String label) {
+    if (value is! int || value < 0) {
+      throw DsnMandateApiException('Invalid $label');
+    }
+    return value;
   }
 
   static int _positiveInt(dynamic value, String label) {

@@ -10627,6 +10627,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'最长交付时间'**
   String get agentMandateReviewMaxDelivery;
+
+  /// No description provided for @agentMandateReviewNoCapacity.
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置容量限制'**
+  String get agentMandateReviewNoCapacity;
+
+  /// No description provided for @agentMandateReviewMaxRevisions.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大修改次数'**
+  String get agentMandateReviewMaxRevisions;
+
+  /// No description provided for @agentMandateReviewOutputTypes.
+  ///
+  /// In zh, this message translates to:
+  /// **'交付类型'**
+  String get agentMandateReviewOutputTypes;
 }
 
 class _AppLocalizationsDelegate
