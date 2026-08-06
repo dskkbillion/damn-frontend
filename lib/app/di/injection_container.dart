@@ -103,7 +103,8 @@ Future<void> registerBackgroundRefreshService() async {
             ));
     AppLogger.d('[DI] Registered BackgroundRefreshService');
   } else {
-    AppLogger.d('[DI] BackgroundRefreshService already registered, skipping registration');
+    AppLogger.d(
+        '[DI] BackgroundRefreshService already registered, skipping registration');
   }
 }
 
@@ -393,17 +394,25 @@ class AuthInterceptor extends Interceptor {
     // Skip adding token for auth endpoints
     if (options.path.contains('/api/auth/login') ||
         options.path.contains('/api/auth/register') ||
-        options.path.contains('/api/auth/sms')) {
+        options.path.contains('/api/auth/sms') ||
+        options.path.contains('/api/common/send-code/login')) {
       AppLogger.d(
           '[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      return handler.next(options);
+    }
+
+    // A caller-provided token is authoritative. Do not perform a second
+    // platform-storage read that can block the request or replace this token.
+    if (options.headers.containsKey('Authorization')) {
+      AppLogger.d(
+          '[AuthInterceptor] Authorization header already present; skipping token read.');
       return handler.next(options);
     }
 
     String? token = await _getAuthToken();
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
-      AppLogger.d(
-          '[AuthInterceptor] 成功添加Authorization头');
+      AppLogger.d('[AuthInterceptor] 成功添加Authorization头');
     } else {
       AppLogger.d(
           '[AuthInterceptor] No token found. Request proceeding without Authorization header.');

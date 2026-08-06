@@ -191,9 +191,16 @@ class AuthInterceptor extends Interceptor {
     // Skip adding token for auth endpoints
     if (options.path.contains('/api/auth/login') ||
         options.path.contains('/api/auth/register') ||
-        options.path.contains('/api/auth/sms')) {
+        options.path.contains('/api/auth/sms') ||
+        options.path.contains('/api/common/send-code/login')) {
       AppLogger.d(
           '[AuthInterceptor] Skipping token for auth path: ${options.path}');
+      return handler.next(options);
+    }
+
+    if (options.headers.containsKey('Authorization')) {
+      AppLogger.d(
+          '[AuthInterceptor] Authorization header already present; skipping token read.');
       return handler.next(options);
     }
 
