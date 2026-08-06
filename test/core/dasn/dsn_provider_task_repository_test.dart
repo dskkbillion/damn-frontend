@@ -7,9 +7,11 @@ void main() {
   test('lists only the canonical Provider task collection', () async {
     final dio = Dio();
     String? path;
+    String? trace;
     Map<String, dynamic>? query;
     dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
       path = options.path;
+      trace = options.headers['X-Operation-Trace-Id']?.toString();
       query = options.queryParameters;
       handler.resolve(Response(
         requestOptions: options,
@@ -23,6 +25,7 @@ void main() {
     );
 
     expect(path, '/provider/v1/tasks');
+    expect(trace, startsWith('trace-provider-task-list-'));
     expect(query, <String, dynamic>{'cursor': '2', 'limit': 10});
     expect(page.tasks.single.taskTraceId, 'ttr_1234567890abcdef');
     expect(page.tasks.single.specHash, _hash('a'));
@@ -33,8 +36,10 @@ void main() {
       () async {
     final dio = Dio();
     String? path;
+    String? trace;
     dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
       path = options.path;
+      trace = options.headers['X-Operation-Trace-Id']?.toString();
       handler.resolve(Response(
         requestOptions: options,
         data: _detailEnvelope(),
@@ -45,6 +50,7 @@ void main() {
         .getAssignedTask('ttr_1234567890abcdef');
 
     expect(path, '/provider/v1/tasks/ttr_1234567890abcdef');
+    expect(trace, startsWith('trace-provider-task-read-'));
     expect(task.requestId, 33);
     expect(task.offer?.offerVersion, 1);
     expect(task.offer?.acceptance?.wireValue, 'ACCEPT');

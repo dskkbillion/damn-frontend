@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:uuid/uuid.dart';
 import '../domain/agent_models.dart';
 
 class AgentApiException implements Exception {
@@ -44,7 +45,10 @@ abstract class AgentRepository {
 
 class DioAgentRepository implements AgentRepository {
   final Dio dio;
-  DioAgentRepository(this.dio);
+  DioAgentRepository(this.dio, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
+
+  final Uuid _uuid;
+  String? _humanRequestIdempotencyKey;
 
   @override
   Future<AgentAuthorization> inspectAuthorization(String userCode) async =>
@@ -102,7 +106,10 @@ class DioAgentRepository implements AgentRepository {
     // returns an AjaxResult shape and would make the App depend on a route
     // explicitly excluded from the DS runtime acceptance.
     final body = await _request(
-      () => dio.get('/app/v1/requests'),
+      () => dio.get(
+        '/app/v1/requests',
+        options: _traceOptions('request-list'),
+      ),
       machineResponse: true,
     );
     return _parseCanonicalRequestCollection(body);
@@ -112,7 +119,13 @@ class DioAgentRepository implements AgentRepository {
   Future<AgentRequestDraft> getRequest(int id) async =>
       _parseCanonicalRequest(
         await _request(
-          () => dio.get('/app/v1/requests/$id'),
+          () => dio.get(
+            '/app/v1/requests/$id',
+            // The task/request read is part of the same traceable DS ingress
+            // boundary as submission and ordering; do not rely on gateway
+            // generated traces for App recovery evidence.
+            options: _traceOptions('request-read'),
+          ),
           machineResponse: true,
         ),
       );
@@ -131,11 +144,18 @@ class DioAgentRepository implements AgentRepository {
         !RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(capabilityRevision)) {
       throw const AgentApiException('Request fields are invalid');
     }
-    final key = 'human-request:${DateTime.now().microsecondsSinceEpoch}';
+    // The human request page keeps this repository instance across a retry.
+    // Reuse the same logical key so an unknown result cannot create a second
+    // draft; a new page/route receives a new repository and a new operation.
+    final key = _humanRequestIdempotencyKey ??=
+        'human-request:${DateTime.now().microsecondsSinceEpoch}';
     final response = await _request(
       () => dio.post(
         '/app/v1/requests',
-        options: Options(headers: {'Idempotency-Key': key}),
+        options: Options(headers: {
+          'Idempotency-Key': key,
+          'X-Operation-Trace-Id': 'trace-app-request-create-${_uuid.v4()}',
+        }),
         data: <String, dynamic>{
           'capabilityId': 'service:$serviceId',
           'capabilityRevision': capabilityRevision,
@@ -179,6 +199,8 @@ class DioAgentRepository implements AgentRepository {
               options: Options(headers: {
                 'Idempotency-Key': key,
                 'If-Match': '"$version"',
+                'X-Operation-Trace-Id':
+                    'trace-app-request-submit-${_uuid.v4()}',
               }),
               data: {'expectedSpecHash': specHash},
             ),
@@ -294,4 +316,8 @@ class DioAgentRepository implements AgentRepository {
     }
     return AgentApiException(error.message ?? 'Network request failed');
   }
+
+  Options _traceOptions(String action) => Options(headers: <String, dynamic>{
+        'X-Operation-Trace-Id': 'trace-app-$action-${_uuid.v4()}',
+      });
 }

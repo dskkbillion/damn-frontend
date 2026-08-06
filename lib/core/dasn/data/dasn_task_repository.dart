@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:uuid/uuid.dart';
 
 import '../domain/dasn_task_view.dart';
 
@@ -20,9 +21,10 @@ abstract class DasnTaskRepository {
 }
 
 class DioDasnTaskRepository implements DasnTaskRepository {
-  DioDasnTaskRepository(this.dio);
+  DioDasnTaskRepository(this.dio, {Uuid? uuid}) : _uuid = uuid ?? const Uuid();
 
   final Dio dio;
+  final Uuid _uuid;
 
   @override
   Future<DasnTaskView> getTask(String taskTraceId) async =>
@@ -40,6 +42,10 @@ class DioDasnTaskRepository implements DasnTaskRepository {
         // continue to use the normative /agent/v1/tasks facade separately.
         '/app/v1/tasks/${Uri.encodeComponent(taskTraceId)}'
         '${receipt ? '/receipt' : ''}',
+        options: Options(headers: <String, dynamic>{
+          'X-Operation-Trace-Id':
+              'trace-app-task-${receipt ? 'receipt' : 'read'}-${_uuid.v4()}',
+        }),
       );
       final body = response.data;
       if (body is! Map) {

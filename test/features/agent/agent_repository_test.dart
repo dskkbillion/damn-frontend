@@ -8,10 +8,12 @@ void main() {
     final dio = Dio();
     String? seenKey;
     String? seenIfMatch;
+    String? seenTrace;
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         seenKey = options.headers['Idempotency-Key']?.toString();
         seenIfMatch = options.headers['If-Match']?.toString();
+        seenTrace = options.headers['X-Operation-Trace-Id']?.toString();
         handler.resolve(Response(
           requestOptions: options,
           statusCode: 200,
@@ -29,17 +31,23 @@ void main() {
     expect(seenKey, 'app-submit:12:0:v1');
     expect(seenKey!.length, greaterThanOrEqualTo(16));
     expect(seenIfMatch, '"0"');
+    expect(seenTrace, startsWith('trace-app-request-submit-'));
   });
 
   test('creates a human request through the canonical App route', () async {
     final dio = Dio();
     final paths = <String>[];
     Map<String, dynamic>? body;
+    String? createKey;
+    String? createTrace;
+    String? readTrace;
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         paths.add(options.path);
         if (options.path == '/app/v1/requests') {
           body = Map<String, dynamic>.from(options.data as Map);
+          createKey = options.headers['Idempotency-Key']?.toString();
+          createTrace = options.headers['X-Operation-Trace-Id']?.toString();
           handler.resolve(Response(
             requestOptions: options,
             statusCode: 201,
@@ -49,6 +57,7 @@ void main() {
           ));
           return;
         }
+        readTrace = options.headers['X-Operation-Trace-Id']?.toString();
         handler.resolve(Response(
           requestOptions: options,
           statusCode: 200,
@@ -91,15 +100,20 @@ void main() {
     expect(paths, <String>['/app/v1/requests', '/app/v1/requests/34']);
     expect(body?['capabilityId'], 'service:581');
     expect(body?['currency'], 'CREDITS');
+    expect(createKey, startsWith('human-request:'));
+    expect(createTrace, startsWith('trace-app-request-create-'));
+    expect(readTrace, startsWith('trace-app-request-read-'));
     expect(result.id, 34);
     expect(result.status, 'AWAITING_APP_REVIEW');
   });
 
   test('lists human requests from the canonical collection envelope', () async {
     final dio = Dio();
+    String? seenTrace;
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         expect(options.path, '/app/v1/requests');
+        seenTrace = options.headers['X-Operation-Trace-Id']?.toString();
         handler.resolve(Response(
           requestOptions: options,
           statusCode: 200,
@@ -139,5 +153,6 @@ void main() {
     expect(result.single.status, 'AWAITING_APP_REVIEW');
     expect(result.single.taskTraceId, 'ttr_human_1234567890');
     expect(result.single.requesterActorType, 'HUMAN');
+    expect(seenTrace, startsWith('trace-app-request-list-'));
   });
 }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:uuid/uuid.dart';
 
 import '../domain/dsn_provider_task_models.dart';
 
@@ -16,9 +17,11 @@ abstract class DsnProviderTaskRepository {
 }
 
 class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
-  DioDsnProviderTaskRepository(this.dio);
+  DioDsnProviderTaskRepository(this.dio, {Uuid? uuid})
+      : _uuid = uuid ?? const Uuid();
 
   final Dio dio;
+  final Uuid _uuid;
 
   @override
   Future<DsnProviderTaskPage> listAssignedTasks(
@@ -26,6 +29,7 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
     try {
       final response = await dio.get(
         '/provider/v1/tasks',
+        options: _traceOptions('task-list'),
         queryParameters: <String, dynamic>{
           if (cursor != null && cursor.trim().isNotEmpty) 'cursor': cursor,
           'limit': limit,
@@ -48,6 +52,7 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
     try {
       final response = await dio.get(
         '/provider/v1/tasks/${Uri.encodeComponent(taskTraceId.trim())}',
+        options: _traceOptions('task-read'),
       );
       return DsnProviderTask.fromDetailEnvelope(_body(response));
     } on DioException catch (error) {
@@ -93,6 +98,10 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
       statusCode: status,
     );
   }
+
+  Options _traceOptions(String action) => Options(headers: <String, dynamic>{
+        'X-Operation-Trace-Id': 'trace-provider-$action-${_uuid.v4()}',
+      });
 }
 
 /// Explicit Provider Agent read adapter over the canonical Provider Task
@@ -100,8 +109,8 @@ class DioDsnProviderTaskRepository implements DsnProviderTaskRepository {
 /// wrapper exists so an App route cannot accidentally reuse its Member Dio and
 /// claim to have exercised the Provider Agent identity.
 class DioDsnProviderAgentTaskRepository implements DsnProviderTaskRepository {
-  DioDsnProviderAgentTaskRepository(Dio agentDio)
-      : _delegate = DioDsnProviderTaskRepository(agentDio);
+  DioDsnProviderAgentTaskRepository(Dio agentDio, {Uuid? uuid})
+      : _delegate = DioDsnProviderTaskRepository(agentDio, uuid: uuid);
 
   final DioDsnProviderTaskRepository _delegate;
 
