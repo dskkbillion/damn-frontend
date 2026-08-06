@@ -391,14 +391,17 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     );
     if (result == null || result.files.isEmpty) return null;
     final file = result.files.single;
-    final mimeType = _mimeTypeFor(file.name);
+    final declaredMimeType = _mimeTypeFor(file.name);
     final bytes = file.bytes;
     if (bytes != null) {
       return DsnArtifactUploadSource(
         fileName: file.name,
         bytes: bytes,
         size: bytes.length,
-        mimeType: mimeType,
+        mimeType: canonicalDsnArtifactMimeType(
+          bytes: bytes,
+          declaredMimeType: declaredMimeType,
+        ),
       );
     }
     if (file.path == null || file.path!.trim().isEmpty) {
@@ -411,7 +414,10 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
       fileName: file.name,
       path: file.path,
       size: file.size,
-      mimeType: mimeType,
+      mimeType: canonicalDsnArtifactMimeType(
+        bytes: null,
+        declaredMimeType: declaredMimeType,
+      ),
     );
   }
 
@@ -760,7 +766,7 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     final extension =
         fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
     const known = <String, String>{
-      'csv': 'text/csv',
+      'csv': 'text/plain',
       'gif': 'image/gif',
       'jpeg': 'image/jpeg',
       'jpg': 'image/jpeg',

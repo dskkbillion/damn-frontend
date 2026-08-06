@@ -466,7 +466,8 @@ void main() {
               data: <String, dynamic>{
                 'uploadRef': 'upl_fixture1',
                 'status': 'UPLOADED',
-                'sha256': _hash('e'),
+                'sha256':
+                    'sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
                 'size': 3,
                 'mimeType': 'text/plain',
               },
@@ -480,7 +481,7 @@ void main() {
         uploadRef: 'upl_fixture1',
         source: const DsnArtifactUploadSource(
           fileName: 'fixture.txt',
-          bytes: <int>[1, 2, 3],
+          bytes: <int>[97, 98, 99],
           size: 3,
           mimeType: 'text/plain',
         ),
@@ -497,9 +498,57 @@ void main() {
       expect(seenForm?.files.single.key, 'file');
       expect(seenForm?.files.single.value.filename, 'fixture.txt');
       expect(result.uploadRef, 'upl_fixture1');
-      expect(result.sha256, _hash('e'));
+      expect(result.sha256,
+          'sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
       expect(result.status, 'UPLOADED');
       expect(result.toString(), isNot(contains('objectRef')));
+    });
+
+    test('fails closed when upload response metadata disagrees with source',
+        () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOADED',
+              resourceVersion: 1,
+              data: <String, dynamic>{
+                'uploadRef': 'upl_fixture1',
+                'status': 'UPLOADED',
+                'sha256':
+                    'sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+                'size': 3,
+                'mimeType': 'application/octet-stream',
+              },
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).uploadArtifact(
+          '1001',
+          uploadRef: 'upl_fixture1',
+          source: const DsnArtifactUploadSource(
+            fileName: 'fixture.csv',
+            bytes: <int>[97, 98, 99],
+            size: 3,
+            mimeType: 'text/csv',
+          ),
+          commitmentHash: _hash('d'),
+          submissionNo: 1,
+          ifMatchVersion: 1,
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'ARTIFACT_RESPONSE_METADATA_MISMATCH',
+          ),
+        ),
+      );
     });
   });
 }

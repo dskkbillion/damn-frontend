@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // Server-bound facts for the DS 0.1 human Provider adapter.
 //
 // These models intentionally keep Provider identity out of every write body.
@@ -222,6 +224,100 @@ class DsnArtifactUploadSource {
   final String mimeType;
   final List<int>? bytes;
   final String? path;
+
+  String get canonicalMimeType =>
+      canonicalDsnArtifactMimeType(bytes: bytes, declaredMimeType: mimeType);
+}
+
+/// The server derives artifact MIME from bytes.  Keep the client request in
+/// the same small canonical vocabulary so a CSV/text upload does not fail the
+/// slot binding merely because the picker reported `text/csv`.
+String canonicalDsnArtifactMimeType({
+  required List<int>? bytes,
+  required String declaredMimeType,
+}) {
+  if (bytes != null && bytes.isNotEmpty) {
+    if (_startsWith(bytes, const <int>[
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a,
+    ])) {
+      return 'image/png';
+    }
+    if (_startsWith(bytes, const <int>[0xff, 0xd8, 0xff])) {
+      return 'image/jpeg';
+    }
+    if (_startsWithAscii(bytes, 'GIF87a') ||
+        _startsWithAscii(bytes, 'GIF89a')) {
+      return 'image/gif';
+    }
+    if (_startsWithAscii(bytes, '%PDF-')) return 'application/pdf';
+    if (_startsWithAscii(bytes, 'PK\x03\x04')) return 'application/zip';
+    if (_startsWithAscii(bytes, 'RIFF') &&
+        _startsWithAsciiAt(bytes, 'WEBP', 8)) {
+      return 'image/webp';
+    }
+    final text = _utf8Text(bytes);
+    if (text != null) {
+      final trimmed = text.trimLeft();
+      if ((trimmed.startsWith('{') && trimmed.trimRight().endsWith('}')) ||
+          (trimmed.startsWith('[') && trimmed.trimRight().endsWith(']'))) {
+        return 'application/json';
+      }
+      return 'text/plain';
+    }
+    // The server only accepts the generic binary label when its byte sniff
+    // cannot identify a more specific type; do not trust a picker label here.
+    return 'application/octet-stream';
+  }
+  final declared = declaredMimeType.trim().toLowerCase();
+  if (declared == 'text/csv' || declared.startsWith('text/')) {
+    return 'text/plain';
+  }
+  if (declared.isEmpty) return 'application/octet-stream';
+  return declared;
+}
+
+bool _startsWith(List<int> actual, List<int> prefix) {
+  if (actual.length < prefix.length) return false;
+  for (var index = 0; index < prefix.length; index++) {
+    if (actual[index] != prefix[index]) return false;
+  }
+  return true;
+}
+
+bool _startsWithAscii(List<int> actual, String prefix) =>
+    _startsWith(actual, prefix.codeUnits);
+
+bool _startsWithAsciiAt(List<int> actual, String prefix, int offset) {
+  if (offset < 0 || actual.length < offset + prefix.length) return false;
+  for (var index = 0; index < prefix.length; index++) {
+    if (actual[offset + index] != prefix.codeUnits[index]) return false;
+  }
+  return true;
+}
+
+String? _utf8Text(List<int> bytes) {
+  try {
+    final value = utf8.decode(bytes, allowMalformed: false);
+    for (final codeUnit in value.codeUnits) {
+      if (codeUnit == 0 ||
+          (codeUnit < 32 &&
+              codeUnit != 9 &&
+              codeUnit != 10 &&
+              codeUnit != 13)) {
+        return null;
+      }
+    }
+    return value;
+  } catch (_) {
+    return null;
+  }
 }
 
 class DsnDeliveryInput {

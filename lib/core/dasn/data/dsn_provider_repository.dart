@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:crypto/crypto.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:uuid/uuid.dart';
 
@@ -201,7 +202,9 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       ),
       expectedStates: const {'ARTIFACT_UPLOADED'},
     );
-    return _parseUpload(body, expectedUploadRef: normalizedUploadRef);
+    final result = _parseUpload(body, expectedUploadRef: normalizedUploadRef);
+    _assertUploadMatchesSource(result, source);
+    return result;
   }
 
   Options _options(int ifMatchVersion, String idempotencyKey, String action) {
@@ -404,7 +407,7 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   }
 
   Future<MultipartFile> _multipart(DsnArtifactUploadSource source) async {
-    final mediaType = _mediaType(source.mimeType);
+    final mediaType = _mediaType(source.canonicalMimeType);
     if (source.bytes != null) {
       return MultipartFile.fromBytes(
         source.bytes!,
@@ -424,6 +427,23 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       filename: source.fileName,
       contentType: mediaType,
     );
+  }
+
+  void _assertUploadMatchesSource(
+    DsnArtifactUploadResult result,
+    DsnArtifactUploadSource source,
+  ) {
+    final expectedMime = source.canonicalMimeType;
+    final sizeMatches = result.size == source.size;
+    final mimeMatches = result.mimeType.toLowerCase() == expectedMime;
+    final hashMatches = source.bytes == null ||
+        result.sha256 == 'sha256:${sha256.convert(source.bytes!)}';
+    if (!sizeMatches || !mimeMatches || !hashMatches) {
+      throw const DsnProviderApiException(
+        'Artifact upload response does not match the selected source',
+        code: 'ARTIFACT_RESPONSE_METADATA_MISMATCH',
+      );
+    }
   }
 
   MediaType? _mediaType(String value) {
