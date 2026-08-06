@@ -1,12 +1,16 @@
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/dasn/data/dsn_provider_repository.dart';
 import '../../../core/dasn/data/dsn_provider_task_repository.dart';
 import '../../../core/dasn/domain/dsn_provider_models.dart';
 import '../../../core/dasn/domain/dsn_provider_task_models.dart';
+
+typedef DsnArtifactSourcePicker = Future<DsnArtifactUploadSource?> Function(
+    BuildContext context);
 
 /// Minimal human Provider Task Center for DS 0.1.
 ///
@@ -20,18 +24,19 @@ class DsnProviderTaskCenterPage extends StatefulWidget {
     super.key,
     required this.taskRepository,
     required this.providerRepository,
+    this.artifactSourcePicker,
   });
 
   final DsnProviderTaskRepository taskRepository;
   final DsnProviderRepository providerRepository;
+  final DsnArtifactSourcePicker? artifactSourcePicker;
 
   @override
   State<DsnProviderTaskCenterPage> createState() =>
       _DsnProviderTaskCenterPageState();
 }
 
-class _DsnProviderTaskCenterPageState
-    extends State<DsnProviderTaskCenterPage> {
+class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
   List<DsnProviderTask>? _tasks;
   DsnProviderTask? _selected;
   String? _error;
@@ -42,6 +47,7 @@ class _DsnProviderTaskCenterPageState
   final Map<int, DsnProviderOfferResult> _offerResults = {};
   final Map<int, DsnProviderAcceptanceResult> _acceptanceResults = {};
   final Map<String, DsnDeliveryResult> _deliveryResults = {};
+  final Map<String, DsnArtifactUploadResult> _uploadResults = {};
 
   final _capabilityController = TextEditingController();
   final _variantController = TextEditingController();
@@ -49,10 +55,8 @@ class _DsnProviderTaskCenterPageState
   final _currencyController = TextEditingController(text: 'CREDITS');
   final _quantityController = TextEditingController(text: '1');
   final _expiryHoursController = TextEditingController(text: '24');
-  final _objectRefController = TextEditingController();
-  final _sizeController = TextEditingController(text: '0');
-  final _mimeTypeController = TextEditingController(text: 'text/plain');
   final _commitmentHashController = TextEditingController();
+  DsnArtifactUploadSource? _selectedArtifact;
 
   @override
   void initState() {
@@ -69,9 +73,6 @@ class _DsnProviderTaskCenterPageState
       _currencyController,
       _quantityController,
       _expiryHoursController,
-      _objectRefController,
-      _sizeController,
-      _mimeTypeController,
       _commitmentHashController,
     ]) {
       controller.dispose();
@@ -92,7 +93,9 @@ class _DsnProviderTaskCenterPageState
         _tasks = page.tasks;
         _selected = _selected == null
             ? (page.tasks.isEmpty ? null : page.tasks.first)
-            : page.tasks.where((task) => task.requestId == _selected!.requestId).firstOrNull;
+            : page.tasks
+                .where((task) => task.requestId == _selected!.requestId)
+                .firstOrNull;
       });
       _syncDeliveryFields(_selected);
     } catch (error) {
@@ -105,7 +108,8 @@ class _DsnProviderTaskCenterPageState
   Future<void> _refreshTask(DsnProviderTask task) async {
     if (_busy) return;
     try {
-      final fresh = await widget.taskRepository.getAssignedTask(task.taskTraceId);
+      final fresh =
+          await widget.taskRepository.getAssignedTask(task.taskTraceId);
       if (!mounted) return;
       setState(() {
         _tasks = [
@@ -128,12 +132,24 @@ class _DsnProviderTaskCenterPageState
       }
       return error.message;
     }
-    if (error is DsnProviderApiException) return error.message;
+    if (error is DsnProviderApiException) {
+      if (error.code == 'STORAGE_ADAPTER_UNAVAILABLE' ||
+          error.code == 'STORAGE_UPLOAD_FAILED' ||
+          error.statusCode == 503) {
+        return '服务端私有存储适配器尚未启用，文件上传已安全停止；不会回退到 objectRef。';
+      }
+      return error.message;
+    }
     return 'Provider 任务暂时无法加载，请稍后重试。';
   }
 
   void _select(DsnProviderTask task) {
-    setState(() => _selected = task);
+    setState(() {
+      _selected = task;
+      // A file selected for one Commitment must never silently follow the
+      // Provider to another task/order.
+      _selectedArtifact = null;
+    });
     _syncDeliveryFields(task);
   }
 
@@ -153,18 +169,25 @@ class _DsnProviderTaskCenterPageState
     final quantity = int.tryParse(_quantityController.text.trim());
     final amount = int.tryParse(_amountController.text.trim());
     final expiryHours = int.tryParse(_expiryHoursController.text.trim());
-    if (capabilityId.isEmpty || variantId.isEmpty ||
-        quantity == null || quantity < 1 || amount == null || amount < 0 ||
-        currency.isEmpty || expiryHours == null || expiryHours < 1) {
+    if (capabilityId.isEmpty ||
+        variantId.isEmpty ||
+        quantity == null ||
+        quantity < 1 ||
+        amount == null ||
+        amount < 0 ||
+        currency.isEmpty ||
+        expiryHours == null ||
+        expiryHours < 1) {
       setState(() => _error = '请填写有效的能力、版本、数量、积分金额和有效期。');
       return;
     }
     final offerVersion = (_offerResults[task.requestId]?.offerVersion ??
-            task.offer?.offerVersion ?? 0) +
+            task.offer?.offerVersion ??
+            0) +
         1;
     final expiresAt = DateTime.now().toUtc().add(
-      Duration(hours: expiryHours),
-    );
+          Duration(hours: expiryHours),
+        );
     final quoteHash = _quoteHash(
       capabilityId: capabilityId,
       variantId: variantId,
@@ -189,8 +212,7 @@ class _DsnProviderTaskCenterPageState
         task.requestId,
         offer: input,
         ifMatchVersion: task.version,
-        idempotencyKey:
-            'provider-offer:${task.requestId}:$offerVersion:v1',
+        idempotencyKey: 'provider-offer:${task.requestId}:$offerVersion:v1',
       );
       if (!mounted) return;
       setState(() {
@@ -227,16 +249,19 @@ class _DsnProviderTaskCenterPageState
     final input = _offerInputs[task.requestId];
     final snapshot = task.offer;
     final result = _offerResults[task.requestId];
-    final offerVersion = result?.offerVersion ?? input?.offerVersion ?? snapshot?.offerVersion;
+    final offerVersion =
+        result?.offerVersion ?? input?.offerVersion ?? snapshot?.offerVersion;
     final specHash = result?.specHash ?? input?.specHash ?? snapshot?.specHash;
-    final quoteHash = result?.quoteHash ?? input?.quoteHash ?? snapshot?.quoteHash;
+    final quoteHash =
+        result?.quoteHash ?? input?.quoteHash ?? snapshot?.quoteHash;
     if (offerVersion == null || specHash == null || quoteHash == null) {
       setState(() => _error = '当前任务没有可确认的 ProviderOffer。');
       return;
     }
     await _runBusy(() async {
       final expectedVersion =
-          _offerResults[task.requestId]?.metadata.resourceVersion ?? task.version;
+          _offerResults[task.requestId]?.metadata.resourceVersion ??
+              task.version;
       final acceptanceResult = await widget.providerRepository.submitAcceptance(
         task.requestId,
         acceptance: DsnProviderAcceptanceInput(
@@ -244,7 +269,9 @@ class _DsnProviderTaskCenterPageState
           specHash: specHash,
           quoteHash: quoteHash,
           acceptance: acceptance,
-          reason: acceptance == DsnProviderAcceptance.reject ? 'Provider declined' : null,
+          reason: acceptance == DsnProviderAcceptance.reject
+              ? 'Provider declined'
+              : null,
         ),
         ifMatchVersion: expectedVersion,
         idempotencyKey:
@@ -264,22 +291,51 @@ class _DsnProviderTaskCenterPageState
       setState(() => _error = '只有服务端已建立 Commitment 后才能提交交付。');
       return;
     }
-    final objectRef = _objectRefController.text.trim();
-    final mimeType = _mimeTypeController.text.trim();
-    final size = int.tryParse(_sizeController.text.trim());
+    final source = _selectedArtifact;
     final expectedHash = _commitmentHashController.text.trim();
-    if (objectRef.isEmpty || mimeType.isEmpty || size == null || size < 0 ||
-        !_isHash(expectedHash)) {
-      setState(() => _error = '请填写有效的交付对象、类型、大小和 Commitment 哈希。');
+    if (source == null || source.size < 1 || !_isHash(expectedHash)) {
+      setState(() => _error = '请先选择有效的交付文件，并确认 Commitment 哈希。');
       return;
     }
     final confirmed = await _confirm(
       title: '确认提交交付',
-      message: '交付将作为追加式事实提交；如需修改，请创建新的 submission。',
+      message: '文件会先上传到服务端签发的 uploadRef，再作为追加式事实提交；如需修改，请创建新的 submission。',
     );
     if (confirmed != true) return;
 
     await _runBusy(() async {
+      final slotResult =
+          await widget.providerRepository.issueArtifactUploadSlots(
+        commitment.orderId,
+        input: DsnArtifactUploadSlotInput(
+          expectedCommitmentHash: expectedHash,
+          submissionNo: commitment.nextSubmissionNo,
+          artifacts: [
+            DsnArtifactUploadMetadata(
+              size: source.size,
+              mimeType: source.mimeType,
+            ),
+          ],
+        ),
+        ifMatchVersion: commitment.commitmentVersion,
+        idempotencyKey:
+            'provider-upload-slots:${commitment.orderId}:${commitment.nextSubmissionNo}:v1',
+      );
+      if (slotResult.items.isEmpty) {
+        throw const DsnProviderApiException(
+          '服务端没有返回可用的 uploadRef',
+          code: 'INVALID_UPLOAD_SLOT_RESPONSE',
+        );
+      }
+      final slot = slotResult.items.first;
+      final upload = await widget.providerRepository.uploadArtifact(
+        commitment.orderId,
+        uploadRef: slot.uploadRef,
+        source: source,
+        commitmentHash: expectedHash,
+        submissionNo: commitment.nextSubmissionNo,
+        ifMatchVersion: commitment.commitmentVersion,
+      );
       final result = await widget.providerRepository.submitDelivery(
         commitment.orderId,
         delivery: DsnDeliveryInput(
@@ -287,9 +343,10 @@ class _DsnProviderTaskCenterPageState
           submissionNo: commitment.nextSubmissionNo,
           artifacts: [
             DsnDeliveryArtifactInput(
-              objectRef: objectRef,
-              size: size,
-              mimeType: mimeType,
+              uploadRef: upload.uploadRef,
+              size: upload.size,
+              mimeType: upload.mimeType,
+              sha256: upload.sha256,
             ),
           ],
         ),
@@ -299,10 +356,63 @@ class _DsnProviderTaskCenterPageState
       );
       if (!mounted) return;
       setState(() {
+        _uploadResults[commitment.orderId] = upload;
         _deliveryResults[commitment.orderId] = result;
         _error = null;
       });
     });
+  }
+
+  Future<void> _chooseArtifact() async {
+    final picker = widget.artifactSourcePicker ?? _pickWithFilePicker;
+    try {
+      final source = await picker(context);
+      if (!mounted || source == null) return;
+      if (source.size < 1) {
+        setState(() => _error = '交付文件不能为空。');
+        return;
+      }
+      setState(() {
+        _selectedArtifact = source;
+        _error = null;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = _errorText(error));
+    }
+  }
+
+  Future<DsnArtifactUploadSource?> _pickWithFilePicker(
+    BuildContext context,
+  ) async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      withData: true,
+      type: FileType.any,
+    );
+    if (result == null || result.files.isEmpty) return null;
+    final file = result.files.single;
+    final mimeType = _mimeTypeFor(file.name);
+    final bytes = file.bytes;
+    if (bytes != null) {
+      return DsnArtifactUploadSource(
+        fileName: file.name,
+        bytes: bytes,
+        size: bytes.length,
+        mimeType: mimeType,
+      );
+    }
+    if (file.path == null || file.path!.trim().isEmpty) {
+      throw const DsnProviderApiException(
+        '文件读取失败；当前平台没有返回文件内容。',
+        code: 'ARTIFACT_FILE_UNAVAILABLE',
+      );
+    }
+    return DsnArtifactUploadSource(
+      fileName: file.name,
+      path: file.path,
+      size: file.size,
+      mimeType: mimeType,
+    );
   }
 
   Future<void> _runBusy(Future<void> Function() operation) async {
@@ -447,11 +557,13 @@ class _DsnProviderTaskCenterPageState
                   style: Theme.of(context).textTheme.bodySmall),
               if (task.offer != null) ...[
                 const SizedBox(height: 8),
-                Text('Offer ${task.offer!.offerVersion} · ${task.offer!.status}'),
+                Text(
+                    'Offer ${task.offer!.offerVersion} · ${task.offer!.status}'),
               ],
               if (task.commitment != null) ...[
                 const SizedBox(height: 4),
-                Text('Order ${task.commitment!.orderId} · submission ${task.commitment!.nextSubmissionNo}'),
+                Text(
+                    'Order ${task.commitment!.orderId} · submission ${task.commitment!.nextSubmissionNo}'),
               ],
             ],
           ),
@@ -468,6 +580,9 @@ class _DsnProviderTaskCenterPageState
     final delivery = task.commitment == null
         ? null
         : _deliveryResults[task.commitment!.orderId];
+    final upload = task.commitment == null
+        ? null
+        : _uploadResults[task.commitment!.orderId];
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -484,9 +599,11 @@ class _DsnProviderTaskCenterPageState
             _field(_variantController, 'Variant ID'),
             Row(
               children: [
-                Expanded(child: _field(_amountController, '积分金额', numeric: true)),
+                Expanded(
+                    child: _field(_amountController, '积分金额', numeric: true)),
                 const SizedBox(width: 8),
-                Expanded(child: _field(_quantityController, '数量', numeric: true)),
+                Expanded(
+                    child: _field(_quantityController, '数量', numeric: true)),
               ],
             ),
             _field(_currencyController, '币种（当前建议 CREDITS）'),
@@ -496,7 +613,8 @@ class _DsnProviderTaskCenterPageState
               child: FilledButton.icon(
                 onPressed: _busy ? null : () => _submitOffer(task),
                 icon: const Icon(Icons.request_quote_outlined),
-                label: Text(offerResult == null ? '提交 ProviderOffer' : '提交新版本报价'),
+                label:
+                    Text(offerResult == null ? '提交 ProviderOffer' : '提交新版本报价'),
               ),
             ),
             if (offerResult != null) ...[
@@ -513,14 +631,20 @@ class _DsnProviderTaskCenterPageState
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _busy ? null : () => _submitAcceptance(task, DsnProviderAcceptance.reject),
+                      onPressed: _busy
+                          ? null
+                          : () => _submitAcceptance(
+                              task, DsnProviderAcceptance.reject),
                       child: const Text('拒单'),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton(
-                      onPressed: _busy ? null : () => _submitAcceptance(task, DsnProviderAcceptance.accept),
+                      onPressed: _busy
+                          ? null
+                          : () => _submitAcceptance(
+                              task, DsnProviderAcceptance.accept),
                       child: const Text('确认接单'),
                     ),
                   ),
@@ -528,7 +652,8 @@ class _DsnProviderTaskCenterPageState
               ),
               if (acceptanceResult != null) ...[
                 const SizedBox(height: 8),
-                Text('接单状态：${acceptanceResult.acceptance.wireValue} · ${acceptanceResult.actorType}'),
+                Text(
+                    '接单状态：${acceptanceResult.acceptance.wireValue} · ${acceptanceResult.actorType}'),
               ] else if (existingAcceptance != null) ...[
                 const SizedBox(height: 8),
                 Text('接单状态：${existingAcceptance.wireValue} · HUMAN'),
@@ -540,15 +665,26 @@ class _DsnProviderTaskCenterPageState
             if (task.commitment == null)
               const Text('订单 Commitment 尚未建立，当前不能提交交付。')
             else ...[
-              _field(_objectRefController, '交付对象引用（objectRef）'),
-              Row(
-                children: [
-                  Expanded(child: _field(_sizeController, '大小（字节）', numeric: true)),
-                  const SizedBox(width: 8),
-                  Expanded(child: _field(_mimeTypeController, 'MIME 类型')),
-                ],
+              const Text(
+                'DS 0.2 只接受服务端签发的 uploadRef。不要填写 objectRef、URL 或对象存储路径。',
               ),
-              _field(_commitmentHashController, 'Expected Commitment hash'),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: _busy ? null : _chooseArtifact,
+                icon: const Icon(Icons.attach_file),
+                label: Text(_selectedArtifact == null ? '选择交付文件' : '更换交付文件'),
+              ),
+              if (_selectedArtifact != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '已选择：${_selectedArtifact!.fileName} · ${_selectedArtifact!.size} bytes · ${_selectedArtifact!.mimeType}',
+                ),
+              ],
+              _field(
+                _commitmentHashController,
+                'Expected Commitment hash (server fact)',
+                readOnly: true,
+              ),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -559,7 +695,11 @@ class _DsnProviderTaskCenterPageState
               ),
               if (delivery != null) ...[
                 const SizedBox(height: 8),
-                Text('交付已记录：${delivery.deliveryId} · submission ${delivery.submissionNo}'),
+                Text(
+                    '交付已记录：${delivery.deliveryId} · submission ${delivery.submissionNo}'),
+              ] else if (upload != null) ...[
+                const SizedBox(height: 8),
+                Text('文件已上传：${upload.uploadRef} · ${upload.sha256}'),
               ],
             ],
             const SizedBox(height: 8),
@@ -578,11 +718,12 @@ class _DsnProviderTaskCenterPageState
   }
 
   Widget _field(TextEditingController controller, String label,
-      {bool numeric = false}) {
+      {bool numeric = false, bool readOnly = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: TextField(
         controller: controller,
+        readOnly: readOnly,
         keyboardType: numeric ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           labelText: label,
@@ -612,7 +753,26 @@ class _DsnProviderTaskCenterPageState
     return 'sha256:${sha256.convert(utf8.encode(jsonEncode(canonical)))}';
   }
 
-  bool _isHash(String value) => RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(value);
+  bool _isHash(String value) =>
+      RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(value);
+
+  String _mimeTypeFor(String fileName) {
+    final extension =
+        fileName.contains('.') ? fileName.split('.').last.toLowerCase() : '';
+    const known = <String, String>{
+      'csv': 'text/csv',
+      'gif': 'image/gif',
+      'jpeg': 'image/jpeg',
+      'jpg': 'image/jpeg',
+      'json': 'application/json',
+      'pdf': 'application/pdf',
+      'png': 'image/png',
+      'txt': 'text/plain',
+      'webp': 'image/webp',
+      'zip': 'application/zip',
+    };
+    return known[extension] ?? 'application/octet-stream';
+  }
 }
 
 extension<T> on Iterable<T> {

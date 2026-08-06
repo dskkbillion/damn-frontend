@@ -96,25 +96,132 @@ class DsnProviderAcceptanceInput {
       };
 }
 
+/// Canonical DS 0.2 delivery artifact input.
+///
+/// The client submits only a server-issued opaque upload handle.  A client
+/// chosen object key, URL or path is deliberately not representable here;
+/// legacy `objectRef` routes live behind a separate compatibility boundary and
+/// are not Provider conformance evidence.
 class DsnDeliveryArtifactInput {
   const DsnDeliveryArtifactInput({
-    required this.objectRef,
+    required this.uploadRef,
     required this.size,
     required this.mimeType,
     this.sha256,
   });
 
-  final String objectRef;
+  final String uploadRef;
   final String? sha256;
   final int size;
   final String mimeType;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'objectRef': objectRef,
+        'uploadRef': uploadRef,
         if (sha256 != null) 'sha256': sha256,
         'size': size,
         'mimeType': mimeType,
       };
+}
+
+/// Metadata sent when requesting a server-owned upload slot.
+class DsnArtifactUploadMetadata {
+  const DsnArtifactUploadMetadata({
+    required this.size,
+    required this.mimeType,
+    this.sha256,
+  });
+
+  final String? sha256;
+  final int size;
+  final String mimeType;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (sha256 != null) 'sha256': sha256,
+        'size': size,
+        'mimeType': mimeType,
+      };
+}
+
+class DsnArtifactUploadSlotInput {
+  const DsnArtifactUploadSlotInput({
+    required this.expectedCommitmentHash,
+    required this.submissionNo,
+    required this.artifacts,
+  });
+
+  final String expectedCommitmentHash;
+  final int submissionNo;
+  final List<DsnArtifactUploadMetadata> artifacts;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'expectedCommitmentHash': expectedCommitmentHash,
+        'submissionNo': submissionNo,
+        'artifacts': artifacts.map((artifact) => artifact.toJson()).toList(),
+      };
+}
+
+class DsnArtifactUploadSlot {
+  const DsnArtifactUploadSlot({
+    required this.uploadRef,
+    required this.expiresAt,
+    required this.maxBytes,
+  });
+
+  final String uploadRef;
+  final DateTime expiresAt;
+  final int maxBytes;
+}
+
+class DsnArtifactUploadSlotResult {
+  const DsnArtifactUploadSlotResult({
+    required this.metadata,
+    required this.submissionNo,
+    required this.items,
+  });
+
+  final DsnProviderMachineMetadata metadata;
+  final int submissionNo;
+  final List<DsnArtifactUploadSlot> items;
+}
+
+class DsnArtifactUploadResult {
+  const DsnArtifactUploadResult({
+    required this.metadata,
+    required this.uploadRef,
+    required this.status,
+    required this.sha256,
+    required this.size,
+    required this.mimeType,
+  });
+
+  final DsnProviderMachineMetadata metadata;
+  final String uploadRef;
+  final String status;
+  final String sha256;
+  final int size;
+  final String mimeType;
+}
+
+/// Source bytes selected by the Provider UI or supplied by a staging fixture.
+///
+/// `bytes` keeps widget tests and mobile file pickers deterministic.  A
+/// `path` is supported for platforms where FilePicker cannot return bytes in
+/// memory.  Neither field crosses the HTTP boundary; the repository sends a
+/// multipart `file` part only.
+class DsnArtifactUploadSource {
+  const DsnArtifactUploadSource({
+    required this.fileName,
+    required this.size,
+    required this.mimeType,
+    this.bytes,
+    this.path,
+  }) : assert(bytes != null || path != null);
+
+  final String fileName;
+  final int size;
+  final String mimeType;
+  final List<int>? bytes;
+  final String? path;
 }
 
 class DsnDeliveryInput {

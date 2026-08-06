@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:uuid/uuid.dart';
 
 import '../domain/dsn_provider_models.dart';
 
-/// Errors returned by the canonical human Provider DS 0.1 adapter.
+/// Errors returned by the canonical human Provider DS 0.2 adapter.
 class DsnProviderApiException implements Exception {
   const DsnProviderApiException(this.message, {this.code, this.statusCode});
 
@@ -15,8 +16,8 @@ class DsnProviderApiException implements Exception {
   String toString() => message;
 }
 
-/// Canonical human Provider boundary for ProviderOffer, ProviderAcceptance
-/// and append-only Delivery writes.
+/// Canonical human Provider boundary for ProviderOffer, ProviderAcceptance,
+/// server-owned artifact upload and append-only Delivery writes.
 ///
 /// The authenticated member session is added by the app's normal Dio
 /// interceptor. No identity, role, grant or task selector is accepted in a
@@ -41,6 +42,22 @@ abstract class DsnProviderRepository {
     required DsnDeliveryInput delivery,
     required int ifMatchVersion,
     required String idempotencyKey,
+  });
+
+  Future<DsnArtifactUploadSlotResult> issueArtifactUploadSlots(
+    String orderId, {
+    required DsnArtifactUploadSlotInput input,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  });
+
+  Future<DsnArtifactUploadResult> uploadArtifact(
+    String orderId, {
+    required String uploadRef,
+    required DsnArtifactUploadSource source,
+    required String commitmentHash,
+    required int submissionNo,
+    required int ifMatchVersion,
   });
 }
 
@@ -111,6 +128,80 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       expectedStates: const {'DELIVERY_SUBMITTED'},
     );
     return _parseDelivery(body);
+  }
+
+  @override
+  Future<DsnArtifactUploadSlotResult> issueArtifactUploadSlots(
+    String orderId, {
+    required DsnArtifactUploadSlotInput input,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    _validateOrderId(orderId);
+    _validatePreconditions(ifMatchVersion, idempotencyKey);
+    final body = await _machine(
+      () => dio.post(
+        '/provider/v1/orders/${Uri.encodeComponent(orderId)}/artifact-upload-slots',
+        options: _options(ifMatchVersion, idempotencyKey, 'upload-slots'),
+        data: input.toJson(),
+      ),
+      expectedStates: const {'ARTIFACT_UPLOAD_SLOTS_ISSUED'},
+    );
+    return _parseUploadSlots(body, expectedVersion: ifMatchVersion);
+  }
+
+  @override
+  Future<DsnArtifactUploadResult> uploadArtifact(
+    String orderId, {
+    required String uploadRef,
+    required DsnArtifactUploadSource source,
+    required String commitmentHash,
+    required int submissionNo,
+    required int ifMatchVersion,
+  }) async {
+    _validateOrderId(orderId);
+    _validateIfMatchVersion(ifMatchVersion);
+    _requireHash(commitmentHash, 'commitmentHash');
+    final normalizedUploadRef = uploadRef.trim();
+    if (!RegExp(r'^upl_[A-Za-z0-9]+$').hasMatch(normalizedUploadRef)) {
+      throw const DsnProviderApiException(
+        'uploadRef must be a server-issued opaque handle',
+        code: 'INVALID_UPLOAD_REF',
+      );
+    }
+    if (submissionNo < 1) {
+      throw const DsnProviderApiException(
+        'submissionNo must be positive',
+        code: 'INVALID_SUBMISSION_NO',
+      );
+    }
+    if (source.size < 1) {
+      throw const DsnProviderApiException(
+        'Artifact size must be positive',
+        code: 'INVALID_ARTIFACT_SIZE',
+      );
+    }
+    if (source.bytes != null && source.bytes!.length != source.size) {
+      throw const DsnProviderApiException(
+        'Artifact source size does not match its bytes',
+        code: 'INVALID_ARTIFACT_SIZE',
+      );
+    }
+    final multipart = await _multipart(source);
+    final body = await _machine(
+      () => dio.put(
+        '/provider/v1/orders/${Uri.encodeComponent(orderId)}/artifact-upload-slots/${Uri.encodeComponent(normalizedUploadRef)}',
+        options: Options(headers: <String, dynamic>{
+          'If-Match': '"$ifMatchVersion"',
+          'X-Commitment-Hash': commitmentHash,
+          'X-Submission-No': '$submissionNo',
+          'X-Operation-Trace-Id': 'trace-provider-upload-${_uuid.v4()}',
+        }),
+        data: FormData.fromMap(<String, dynamic>{'file': multipart}),
+      ),
+      expectedStates: const {'ARTIFACT_UPLOADED'},
+    );
+    return _parseUpload(body, expectedUploadRef: normalizedUploadRef);
   }
 
   Options _options(int ifMatchVersion, String idempotencyKey, String action) {
@@ -224,6 +315,130 @@ class DioDsnProviderRepository implements DsnProviderRepository {
     );
   }
 
+  DsnArtifactUploadSlotResult _parseUploadSlots(
+    Map<String, dynamic> body, {
+    required int expectedVersion,
+  }) {
+    final metadata = _parseMetadata(body);
+    if (metadata.resourceVersion != expectedVersion) {
+      throw const DsnProviderApiException(
+        'Artifact upload slot response version does not match If-Match',
+        code: 'COMMITMENT_VERSION_MISMATCH',
+      );
+    }
+    final data = _map(body['data'], 'Artifact upload slot data');
+    final submissionNo = _requiredPositiveInt(data, 'submissionNo');
+    final rawItems = data['items'];
+    if (rawItems is! List || rawItems.isEmpty) {
+      throw const DsnProviderApiException(
+        'Artifact upload slot response must contain items',
+        code: 'INVALID_UPLOAD_SLOT_RESPONSE',
+      );
+    }
+    final items = <DsnArtifactUploadSlot>[];
+    for (final value in rawItems) {
+      final item = _map(value, 'Artifact upload slot item');
+      final uploadRef = _requiredString(item, 'uploadRef');
+      if (!RegExp(r'^upl_[A-Za-z0-9]+$').hasMatch(uploadRef)) {
+        throw const DsnProviderApiException(
+          'Artifact upload slot uploadRef is invalid',
+          code: 'INVALID_UPLOAD_REF',
+        );
+      }
+      final expiresAt = _requiredDate(item['expiresAt'], 'expiresAt');
+      final maxBytes = _optionalInt(item['maxBytes']);
+      if (maxBytes == null || maxBytes < 1) {
+        throw const DsnProviderApiException(
+          'Artifact upload slot maxBytes is invalid',
+          code: 'INVALID_UPLOAD_SLOT_RESPONSE',
+        );
+      }
+      items.add(DsnArtifactUploadSlot(
+        uploadRef: uploadRef,
+        expiresAt: expiresAt,
+        maxBytes: maxBytes,
+      ));
+    }
+    return DsnArtifactUploadSlotResult(
+      metadata: metadata,
+      submissionNo: submissionNo,
+      items: List<DsnArtifactUploadSlot>.unmodifiable(items),
+    );
+  }
+
+  DsnArtifactUploadResult _parseUpload(
+    Map<String, dynamic> body, {
+    required String expectedUploadRef,
+  }) {
+    final metadata = _parseMetadata(body);
+    if (metadata.resourceVersion == null || metadata.resourceVersion! < 1) {
+      throw const DsnProviderApiException(
+        'Artifact upload response resource.version is required',
+        code: 'RESOURCE_VERSION_MISSING',
+      );
+    }
+    final data = _map(body['data'], 'Artifact upload data');
+    final status = _requiredString(data, 'status');
+    if (status != 'UPLOADED') {
+      throw DsnProviderApiException(
+        'Unexpected artifact upload status: $status',
+        code: 'UNEXPECTED_UPLOAD_STATUS',
+      );
+    }
+    final uploadRef = _requiredString(data, 'uploadRef');
+    if (uploadRef != expectedUploadRef ||
+        !RegExp(r'^upl_[A-Za-z0-9]+$').hasMatch(uploadRef)) {
+      throw const DsnProviderApiException(
+        'Artifact upload response uploadRef does not match the request',
+        code: 'UPLOAD_REF_LINEAGE_CONFLICT',
+      );
+    }
+    return DsnArtifactUploadResult(
+      metadata: metadata,
+      uploadRef: uploadRef,
+      status: status,
+      sha256: _requiredHash(data, 'sha256'),
+      size: _requiredPositiveInt(data, 'size'),
+      mimeType: _requiredString(data, 'mimeType'),
+    );
+  }
+
+  Future<MultipartFile> _multipart(DsnArtifactUploadSource source) async {
+    final mediaType = _mediaType(source.mimeType);
+    if (source.bytes != null) {
+      return MultipartFile.fromBytes(
+        source.bytes!,
+        filename: source.fileName,
+        contentType: mediaType,
+      );
+    }
+    final path = source.path;
+    if (path == null || path.trim().isEmpty) {
+      throw const DsnProviderApiException(
+        'Artifact source has no bytes or file path',
+        code: 'INVALID_ARTIFACT_SOURCE',
+      );
+    }
+    return MultipartFile.fromFile(
+      path,
+      filename: source.fileName,
+      contentType: mediaType,
+    );
+  }
+
+  MediaType? _mediaType(String value) {
+    final normalized = value.trim();
+    if (normalized.isEmpty) return null;
+    try {
+      return MediaType.parse(normalized);
+    } on FormatException {
+      throw const DsnProviderApiException(
+        'Artifact MIME type is invalid',
+        code: 'INVALID_ARTIFACT_MIME_TYPE',
+      );
+    }
+  }
+
   DsnProviderMachineMetadata _parseMetadata(Map<String, dynamic> body) {
     for (final field in <String>[
       'schemaVersion',
@@ -266,11 +481,7 @@ class DioDsnProviderRepository implements DsnProviderRepository {
     // A newly submitted DS request starts at resource version 0.  The
     // provider's first offer therefore legitimately uses If-Match: "0";
     // later facts advance the same server-owned version monotonically.
-    if (version < 0) {
-      throw const DsnProviderApiException(
-        'If-Match version must be non-negative',
-      );
-    }
+    _validateIfMatchVersion(version);
     if (key.trim().length < 16 || key.trim().length > 128) {
       throw const DsnProviderApiException(
         'Idempotency-Key must contain 16-128 characters',
@@ -281,6 +492,29 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   static void _validateRequestId(int requestId) {
     if (requestId < 1) {
       throw const DsnProviderApiException('Request ID must be positive');
+    }
+  }
+
+  static void _validateOrderId(String orderId) {
+    if (orderId.trim().isEmpty) {
+      throw const DsnProviderApiException('Order ID is required');
+    }
+  }
+
+  static void _validateIfMatchVersion(int version) {
+    if (version < 0) {
+      throw const DsnProviderApiException(
+        'If-Match version must be non-negative',
+      );
+    }
+  }
+
+  static void _requireHash(String value, String field) {
+    if (!RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(value.trim())) {
+      throw DsnProviderApiException(
+        '$field must be sha256:<64 lowercase hex>',
+        code: 'INVALID_HASH',
+      );
     }
   }
 
@@ -370,6 +604,42 @@ class DioDsnProviderAgentRepository implements DsnProviderRepository {
     return result;
   }
 
+  @override
+  Future<DsnArtifactUploadSlotResult> issueArtifactUploadSlots(
+    String orderId, {
+    required DsnArtifactUploadSlotInput input,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) =>
+      _delegate.issueArtifactUploadSlots(
+        orderId,
+        input: input,
+        ifMatchVersion: ifMatchVersion,
+        idempotencyKey: idempotencyKey,
+      );
+
+  @override
+  Future<DsnArtifactUploadResult> uploadArtifact(
+    String orderId, {
+    required String uploadRef,
+    required DsnArtifactUploadSource source,
+    required String commitmentHash,
+    required int submissionNo,
+    required int ifMatchVersion,
+  }) async {
+    final result = await _delegate.uploadArtifact(
+      orderId,
+      uploadRef: uploadRef,
+      source: source,
+      commitmentHash: commitmentHash,
+      submissionNo: submissionNo,
+      ifMatchVersion: ifMatchVersion,
+    );
+    // Upload responses do not carry a business actorType; the Agent Dio
+    // instance is the identity boundary for the binary write.
+    return result;
+  }
+
   void _requireAgentActor(String? actorType) {
     if (actorType != 'AGENT') {
       throw const DsnProviderApiException(
@@ -439,6 +709,14 @@ DateTime? _optionalDate(dynamic value) {
   final parsed = DateTime.tryParse(value);
   if (parsed == null) {
     throw const DsnProviderApiException('Invalid DS 0.1 date');
+  }
+  return parsed;
+}
+
+DateTime _requiredDate(dynamic value, String field) {
+  final parsed = _optionalDate(value);
+  if (parsed == null) {
+    throw DsnProviderApiException('Missing DS 0.2 field: $field');
   }
   return parsed;
 }

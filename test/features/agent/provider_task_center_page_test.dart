@@ -20,6 +20,12 @@ void main() {
         DsnProviderTaskCenterPage(
           taskRepository: tasks,
           providerRepository: provider,
+          artifactSourcePicker: (_) async => const DsnArtifactUploadSource(
+            fileName: 'fixture.txt',
+            bytes: <int>[1, 2, 3],
+            size: 3,
+            mimeType: 'text/plain',
+          ),
         ),
       ));
       await tester.pumpAndSettle();
@@ -69,6 +75,12 @@ void main() {
         DsnProviderTaskCenterPage(
           taskRepository: tasks,
           providerRepository: provider,
+          artifactSourcePicker: (_) async => const DsnArtifactUploadSource(
+            fileName: 'fixture.txt',
+            bytes: <int>[1, 2, 3],
+            size: 3,
+            mimeType: 'text/plain',
+          ),
         ),
       ));
       await tester.pumpAndSettle();
@@ -79,7 +91,9 @@ void main() {
       expect(find.textContaining('Order order-1'), findsOneWidget);
       expect(find.text('提交交付证据'), findsOneWidget);
 
-      await _enter(tester, '交付对象引用（objectRef）', 'staging://artifact/1');
+      await _tapText(tester, '选择交付文件');
+      await tester.pumpAndSettle();
+      expect(find.textContaining('已选择：fixture.txt'), findsOneWidget);
       await _tapText(tester, '提交交付证据');
       await tester.pumpAndSettle();
       expect(find.text('确认提交交付'), findsOneWidget);
@@ -88,8 +102,13 @@ void main() {
       await tester.tap(find.text('确认').last);
       await tester.pumpAndSettle();
       expect(provider.deliveryCalls, 1);
+      expect(provider.uploadSlotCalls, 1);
+      expect(provider.uploadCalls, 1);
       expect(provider.lastDelivery?.submissionNo, 1);
       expect(provider.lastDelivery?.expectedCommitmentHash, _hash('c'));
+      expect(provider.lastDelivery?.artifacts.single.uploadRef, 'upl_fixture');
+      expect(provider.lastDelivery?.artifacts.single.toJson(),
+          isNot(contains('objectRef')));
       expect(find.textContaining('交付已记录：delivery-1'), findsOneWidget);
     },
   );
@@ -176,6 +195,8 @@ class _FakeProviderRepository implements DsnProviderRepository {
   int offerCalls = 0;
   int acceptanceCalls = 0;
   int deliveryCalls = 0;
+  int uploadSlotCalls = 0;
+  int uploadCalls = 0;
   bool commitmentCreated = false;
   DsnProviderOfferInput? lastOffer;
   DsnProviderAcceptanceInput? lastAcceptance;
@@ -241,6 +262,48 @@ class _FakeProviderRepository implements DsnProviderRepository {
       submissionNo: delivery.submissionNo,
       evidenceHash: _hash('d'),
       actorType: 'HUMAN',
+    );
+  }
+
+  @override
+  Future<DsnArtifactUploadSlotResult> issueArtifactUploadSlots(
+    String orderId, {
+    required DsnArtifactUploadSlotInput input,
+    required int ifMatchVersion,
+    required String idempotencyKey,
+  }) async {
+    uploadSlotCalls += 1;
+    return DsnArtifactUploadSlotResult(
+      metadata:
+          _metadata('ARTIFACT_UPLOAD_SLOTS_ISSUED', version: ifMatchVersion),
+      submissionNo: input.submissionNo,
+      items: <DsnArtifactUploadSlot>[
+        DsnArtifactUploadSlot(
+          uploadRef: 'upl_fixture',
+          expiresAt: DateTime.utc(2026, 8, 7),
+          maxBytes: 25 * 1024 * 1024,
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<DsnArtifactUploadResult> uploadArtifact(
+    String orderId, {
+    required String uploadRef,
+    required DsnArtifactUploadSource source,
+    required String commitmentHash,
+    required int submissionNo,
+    required int ifMatchVersion,
+  }) async {
+    uploadCalls += 1;
+    return DsnArtifactUploadResult(
+      metadata: _metadata('ARTIFACT_UPLOADED', version: ifMatchVersion),
+      uploadRef: uploadRef,
+      status: 'UPLOADED',
+      sha256: _hash('e'),
+      size: source.size,
+      mimeType: source.mimeType,
     );
   }
 }

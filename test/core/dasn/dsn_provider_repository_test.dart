@@ -154,7 +154,7 @@ void main() {
           submissionNo: 1,
           artifacts: [
             DsnDeliveryArtifactInput(
-              objectRef: 'staging://artifact/1',
+              uploadRef: 'upl_artifact1',
               size: 12,
               mimeType: 'text/plain',
               sha256: _hash('e'),
@@ -373,7 +373,7 @@ void main() {
             submissionNo: 1,
             artifacts: <DsnDeliveryArtifactInput>[
               DsnDeliveryArtifactInput(
-                objectRef: 'staging://artifact/1',
+                uploadRef: 'upl_artifact1',
                 size: 12,
                 mimeType: 'text/plain',
               ),
@@ -390,6 +390,116 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('issues canonical uploadRef slots before delivery', () async {
+      final dio = Dio();
+      String? seenPath;
+      Map<String, dynamic>? seenBody;
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          seenPath = options.path;
+          seenBody = Map<String, dynamic>.from(options.data as Map);
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOAD_SLOTS_ISSUED',
+              resourceVersion: 1,
+              data: <String, dynamic>{
+                'submissionNo': 1,
+                'items': <Map<String, dynamic>>[
+                  <String, dynamic>{
+                    'uploadRef': 'upl_fixture1',
+                    'expiresAt': '2026-08-06T12:00:00Z',
+                    'maxBytes': 1024,
+                  },
+                ],
+              },
+            ),
+          ));
+        },
+      ));
+
+      final result =
+          await DioDsnProviderRepository(dio).issueArtifactUploadSlots(
+        '1001',
+        input: DsnArtifactUploadSlotInput(
+          expectedCommitmentHash: _hash('d'),
+          submissionNo: 1,
+          artifacts: const <DsnArtifactUploadMetadata>[
+            DsnArtifactUploadMetadata(size: 3, mimeType: 'text/plain'),
+          ],
+        ),
+        ifMatchVersion: 1,
+        idempotencyKey: 'provider-upload-slots:1001:1:v1',
+      );
+
+      expect(seenPath, '/provider/v1/orders/1001/artifact-upload-slots');
+      expect(seenBody?['expectedCommitmentHash'], _hash('d'));
+      expect(seenBody?['artifacts'], isA<List>());
+      expect(seenBody?['artifacts'], isNot(contains('objectRef')));
+      expect(result.items.single.uploadRef, 'upl_fixture1');
+      expect(result.items.single.maxBytes, 1024);
+    });
+
+    test(
+        'uploads multipart bytes to opaque uploadRef and parses verified facts',
+        () async {
+      final dio = Dio();
+      String? seenPath;
+      String? seenIfMatch;
+      String? seenCommitmentHash;
+      String? seenSubmissionNo;
+      FormData? seenForm;
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          seenPath = options.path;
+          seenIfMatch = options.headers['If-Match']?.toString();
+          seenCommitmentHash = options.headers['X-Commitment-Hash']?.toString();
+          seenSubmissionNo = options.headers['X-Submission-No']?.toString();
+          seenForm = options.data as FormData;
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOADED',
+              resourceVersion: 1,
+              data: <String, dynamic>{
+                'uploadRef': 'upl_fixture1',
+                'status': 'UPLOADED',
+                'sha256': _hash('e'),
+                'size': 3,
+                'mimeType': 'text/plain',
+              },
+            ),
+          ));
+        },
+      ));
+
+      final result = await DioDsnProviderRepository(dio).uploadArtifact(
+        '1001',
+        uploadRef: 'upl_fixture1',
+        source: const DsnArtifactUploadSource(
+          fileName: 'fixture.txt',
+          bytes: <int>[1, 2, 3],
+          size: 3,
+          mimeType: 'text/plain',
+        ),
+        commitmentHash: _hash('d'),
+        submissionNo: 1,
+        ifMatchVersion: 1,
+      );
+
+      expect(seenPath,
+          '/provider/v1/orders/1001/artifact-upload-slots/upl_fixture1');
+      expect(seenIfMatch, '"1"');
+      expect(seenCommitmentHash, _hash('d'));
+      expect(seenSubmissionNo, '1');
+      expect(seenForm?.files.single.key, 'file');
+      expect(seenForm?.files.single.value.filename, 'fixture.txt');
+      expect(result.uploadRef, 'upl_fixture1');
+      expect(result.sha256, _hash('e'));
+      expect(result.status, 'UPLOADED');
+      expect(result.toString(), isNot(contains('objectRef')));
     });
   });
 }

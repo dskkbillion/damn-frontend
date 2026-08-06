@@ -132,7 +132,7 @@ void main() {
         submissionNo: 1,
         artifacts: <DsnDeliveryArtifactInput>[
           DsnDeliveryArtifactInput(
-            objectRef: 'staging://artifact/agent-1',
+            uploadRef: 'upl_agent1',
             size: 12,
             mimeType: 'text/plain',
             sha256: _hash('e'),
