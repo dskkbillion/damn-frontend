@@ -257,7 +257,6 @@ String canonicalDsnArtifactMimeType({
       return 'image/gif';
     }
     if (_startsWithAscii(bytes, '%PDF-')) return 'application/pdf';
-    if (_startsWithAscii(bytes, 'PK\x03\x04')) return 'application/zip';
     if (_startsWithAscii(bytes, 'RIFF') &&
         _startsWithAsciiAt(bytes, 'WEBP', 8)) {
       return 'image/webp';
