@@ -18,6 +18,7 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
   static const Duration _defaultLoginTimeout = Duration(seconds: 45);
   final Duration sendCodeTimeout;
   final Duration loginTimeout;
+  int _operationGeneration = 0;
 
   SmsLoginCubit({
     required this.sendVerificationCodeUseCase,
@@ -27,18 +28,27 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
   }) : super(SmsLoginInitial());
 
   Future<void> sendCode(String phone) async {
+    final operationGeneration = ++_operationGeneration;
+    if (isClosed) return;
     emit(SmsLoginCodeSending());
     final params = SendVerificationCodeParams(phone: phone);
     try {
       final result = await sendVerificationCodeUseCase(params).timeout(
         sendCodeTimeout,
       );
+      if (!_isCurrentOperation(operationGeneration)) return;
       result.fold(
-        (failure) => emit(SmsLoginCodeSendFailure(failure)),
+        (failure) {
+          if (_isCurrentOperation(operationGeneration)) {
+            emit(SmsLoginCodeSendFailure(failure));
+          }
+        },
         (_) {
+          if (!_isCurrentOperation(operationGeneration)) return;
           emit(SmsLoginCodeSentSuccess());
           Future.delayed(const Duration(seconds: _countdownSeconds), () {
-            if (state is SmsLoginCodeSentSuccess) {
+            if (_isCurrentOperation(operationGeneration) &&
+                state is SmsLoginCodeSentSuccess) {
               AppLogger.d('Countdown finished, resetting SMS login state.');
               emit(SmsLoginInitial());
             }
@@ -46,10 +56,12 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
         },
       );
     } on TimeoutException {
+      if (!_isCurrentOperation(operationGeneration)) return;
       AppLogger.d('Send-code use case timed out.');
       emit(const SmsLoginCodeSendFailure(
           NetworkFailure(message: '验证码请求超时，请稍后重试', code: 'TIMEOUT')));
     } catch (error) {
+      if (!_isCurrentOperation(operationGeneration)) return;
       // Keep an unexpected send-code failure from leaving the button loading.
       AppLogger.d(
           'Send-code use case failed unexpectedly: ${error.runtimeType}');
@@ -59,6 +71,8 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
   }
 
   Future<void> login(String phone, String code) async {
+    final operationGeneration = ++_operationGeneration;
+    if (isClosed) return;
     emit(SmsLoginLoading());
     final credentials = VerificationCodeCredentials(phone: phone, code: code);
     try {
@@ -66,19 +80,34 @@ class SmsLoginCubit extends Cubit<SmsLoginState> {
           await loginWithVerificationCodeUseCase(credentials).timeout(
         loginTimeout,
       );
+      if (!_isCurrentOperation(operationGeneration)) return;
       result.fold(
-        (failure) => emit(SmsLoginFailure(failure)),
-        (user) => emit(SmsLoginSuccess(user)),
+        (failure) {
+          if (_isCurrentOperation(operationGeneration)) {
+            emit(SmsLoginFailure(failure));
+          }
+        },
+        (user) {
+          if (_isCurrentOperation(operationGeneration)) {
+            emit(SmsLoginSuccess(user));
+          }
+        },
       );
     } on TimeoutException {
+      if (!_isCurrentOperation(operationGeneration)) return;
       AppLogger.d('Login use case timed out.');
       emit(const SmsLoginFailure(
           NetworkFailure(message: '登录请求超时，请稍后重试', code: 'TIMEOUT')));
     } catch (error) {
+      if (!_isCurrentOperation(operationGeneration)) return;
       // Keep an unexpected use-case failure from leaving the button in the
       // loading state forever. Do not expose exception details to the UI.
       AppLogger.d('Login use case failed unexpectedly: ${error.runtimeType}');
       emit(const SmsLoginFailure(UnknownFailure(message: '登录失败，请稍后重试')));
     }
+  }
+
+  bool _isCurrentOperation(int generation) {
+    return !isClosed && generation == _operationGeneration;
   }
 }

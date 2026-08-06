@@ -15,6 +15,8 @@ import '../../domain/usecases/login_with_verification_code_test.mocks.dart';
 
 void main() {
   late MockIAuthRepository authRepository;
+  late Completer<Either<Failure, AuthenticatedUser>> staleLoginFirst;
+  late Completer<Either<Failure, AuthenticatedUser>> staleLoginSecond;
 
   setUp(() {
     authRepository = MockIAuthRepository();
@@ -106,6 +108,45 @@ void main() {
       const SmsLoginCodeSendFailure(
         NetworkFailure(message: '验证码请求超时，请稍后重试', code: 'TIMEOUT'),
       ),
+    ],
+  );
+
+  blocTest<SmsLoginCubit, SmsLoginState>(
+    'ignores a stale login result after a newer login starts',
+    build: () {
+      staleLoginFirst = Completer<Either<Failure, AuthenticatedUser>>();
+      staleLoginSecond = Completer<Either<Failure, AuthenticatedUser>>();
+      var calls = 0;
+      when(authRepository.loginWithVerificationCode(any)).thenAnswer((_) {
+        calls += 1;
+        return calls == 1
+            ? staleLoginFirst.future
+            : staleLoginSecond.future;
+      });
+      return SmsLoginCubit(
+        sendVerificationCodeUseCase:
+            SendVerificationCodeUseCase(authRepository),
+        loginWithVerificationCodeUseCase:
+            LoginWithVerificationCodeUseCase(authRepository),
+        loginTimeout: const Duration(seconds: 1),
+      );
+    },
+    act: (cubit) async {
+      final firstCall = cubit.login('test@example.com', '111111');
+      await Future<void>.delayed(Duration.zero);
+      final secondCall = cubit.login('test@example.com', '222222');
+
+      staleLoginFirst.complete(const Right(
+          AuthenticatedUser(id: 1, token: 'stale-token')));
+      await Future<void>.delayed(Duration.zero);
+      staleLoginSecond.complete(
+          const Left(ServerFailure(message: 'second request failed')));
+      await Future.wait([firstCall, secondCall]);
+    },
+    expect: () => [
+      SmsLoginLoading(),
+      const SmsLoginFailure(
+          ServerFailure(message: 'second request failed')),
     ],
   );
 }
