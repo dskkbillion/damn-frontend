@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:crypto/crypto.dart';
 import 'package:http_parser/http_parser.dart';
@@ -188,7 +190,18 @@ class DioDsnProviderRepository implements DsnProviderRepository {
         code: 'INVALID_ARTIFACT_SIZE',
       );
     }
-    final multipart = await _multipart(source);
+    final sourceBytes = await _sourceBytes(source);
+    if (sourceBytes.length != source.size) {
+      throw const DsnProviderApiException(
+        'Artifact source size does not match the selected file',
+        code: 'INVALID_ARTIFACT_SIZE',
+      );
+    }
+    final expectedMime = canonicalDsnArtifactMimeType(
+      bytes: sourceBytes,
+      declaredMimeType: source.mimeType,
+    );
+    final multipart = _multipart(source, sourceBytes, expectedMime);
     final body = await _machine(
       () => dio.put(
         '/provider/v1/orders/${Uri.encodeComponent(orderId)}/artifact-upload-slots/${Uri.encodeComponent(normalizedUploadRef)}',
@@ -202,8 +215,12 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       ),
       expectedStates: const {'ARTIFACT_UPLOADED'},
     );
-    final result = _parseUpload(body, expectedUploadRef: normalizedUploadRef);
-    _assertUploadMatchesSource(result, source);
+    final result = _parseUpload(
+      body,
+      expectedUploadRef: normalizedUploadRef,
+      expectedVersion: ifMatchVersion,
+    );
+    _assertUploadMatchesSource(result, sourceBytes, expectedMime);
     return result;
   }
 
@@ -372,12 +389,14 @@ class DioDsnProviderRepository implements DsnProviderRepository {
   DsnArtifactUploadResult _parseUpload(
     Map<String, dynamic> body, {
     required String expectedUploadRef,
+    required int expectedVersion,
   }) {
     final metadata = _parseMetadata(body);
-    if (metadata.resourceVersion == null || metadata.resourceVersion! < 1) {
+    if (metadata.resourceVersion == null ||
+        metadata.resourceVersion != expectedVersion) {
       throw const DsnProviderApiException(
-        'Artifact upload response resource.version is required',
-        code: 'RESOURCE_VERSION_MISSING',
+        'Artifact upload response resource.version does not match If-Match',
+        code: 'COMMITMENT_VERSION_MISMATCH',
       );
     }
     final data = _map(body['data'], 'Artifact upload data');
@@ -406,38 +425,46 @@ class DioDsnProviderRepository implements DsnProviderRepository {
     );
   }
 
-  Future<MultipartFile> _multipart(DsnArtifactUploadSource source) async {
-    final mediaType = _mediaType(source.canonicalMimeType);
-    if (source.bytes != null) {
-      return MultipartFile.fromBytes(
-        source.bytes!,
-        filename: source.fileName,
-        contentType: mediaType,
-      );
-    }
-    final path = source.path;
-    if (path == null || path.trim().isEmpty) {
+  Future<List<int>> _sourceBytes(DsnArtifactUploadSource source) async {
+    if (source.bytes != null) return source.bytes!;
+    final path = source.path?.trim();
+    if (path == null || path.isEmpty) {
       throw const DsnProviderApiException(
         'Artifact source has no bytes or file path',
         code: 'INVALID_ARTIFACT_SOURCE',
       );
     }
-    return MultipartFile.fromFile(
-      path,
+    try {
+      return await File(path).readAsBytes();
+    } on Object {
+      throw const DsnProviderApiException(
+        'Artifact source file could not be read',
+        code: 'INVALID_ARTIFACT_SOURCE',
+      );
+    }
+  }
+
+  MultipartFile _multipart(
+    DsnArtifactUploadSource source,
+    List<int> bytes,
+    String mimeType,
+  ) {
+    return MultipartFile.fromBytes(
+      bytes,
       filename: source.fileName,
-      contentType: mediaType,
+      contentType: _mediaType(mimeType),
     );
   }
 
   void _assertUploadMatchesSource(
     DsnArtifactUploadResult result,
-    DsnArtifactUploadSource source,
+    List<int> sourceBytes,
+    String expectedMime,
   ) {
-    final expectedMime = source.canonicalMimeType;
-    final sizeMatches = result.size == source.size;
+    final sizeMatches = result.size == sourceBytes.length;
     final mimeMatches = result.mimeType.toLowerCase() == expectedMime;
-    final hashMatches = source.bytes == null ||
-        result.sha256 == 'sha256:${sha256.convert(source.bytes!)}';
+    final hashMatches =
+        result.sha256 == 'sha256:${sha256.convert(sourceBytes)}';
     if (!sizeMatches || !mimeMatches || !hashMatches) {
       throw const DsnProviderApiException(
         'Artifact upload response does not match the selected source',

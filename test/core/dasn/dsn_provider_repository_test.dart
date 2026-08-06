@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dskk_flutter_refactor/core/dasn/data/dsn_provider_repository.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_provider_models.dart';
@@ -549,6 +552,99 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('fails closed when upload response commitment version drifts',
+        () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOADED',
+              resourceVersion: 2,
+              data: <String, dynamic>{
+                'uploadRef': 'upl_fixture1',
+                'status': 'UPLOADED',
+                'sha256':
+                    'sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+                'size': 3,
+                'mimeType': 'text/plain',
+              },
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).uploadArtifact(
+          '1001',
+          uploadRef: 'upl_fixture1',
+          source: const DsnArtifactUploadSource(
+            fileName: 'fixture.txt',
+            bytes: <int>[97, 98, 99],
+            size: 3,
+            mimeType: 'text/plain',
+          ),
+          commitmentHash: _hash('d'),
+          submissionNo: 1,
+          ifMatchVersion: 1,
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'COMMITMENT_VERSION_MISMATCH',
+          ),
+        ),
+      );
+    });
+
+    test('hashes and MIME-sniffs a path source before PUT', () async {
+      final directory = await Directory.systemTemp.createTemp('dsn-upload-');
+      addTearDown(() => directory.delete(recursive: true));
+      final file = File('${directory.path}/fixture.csv');
+      await file.writeAsString('a,b\n');
+      final bytes = await file.readAsBytes();
+      final hash = 'sha256:${sha256.convert(bytes)}';
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOADED',
+              resourceVersion: 1,
+              data: <String, dynamic>{
+                'uploadRef': 'upl_fixture1',
+                'status': 'UPLOADED',
+                'sha256': hash,
+                'size': bytes.length,
+                'mimeType': 'text/plain',
+              },
+            ),
+          ));
+        },
+      ));
+
+      final result = await DioDsnProviderRepository(dio).uploadArtifact(
+        '1001',
+        uploadRef: 'upl_fixture1',
+        source: DsnArtifactUploadSource(
+          fileName: file.uri.pathSegments.last,
+          path: file.path,
+          size: bytes.length,
+          mimeType: 'text/csv',
+        ),
+        commitmentHash: _hash('d'),
+        submissionNo: 1,
+        ifMatchVersion: 1,
+      );
+
+      expect(result.sha256, hash);
+      expect(result.size, bytes.length);
+      expect(result.mimeType, 'text/plain');
     });
   });
 }
