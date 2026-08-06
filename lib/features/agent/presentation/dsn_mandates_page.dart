@@ -116,7 +116,8 @@ class _DsnMandatesPageState extends State<DsnMandatesPage> {
                         ..._items!.map((item) => Card(
                               child: ListTile(
                                 leading: Icon(_stateIcon(item.state)),
-                                title: Text(_templateLabel(item.templateCode)),
+                                title: Text(
+                                    _templateLabel(l10n, item.templateCode)),
                                 subtitle: Text(
                                   '${item.subjectRole.wireValue} · ${item.agentClientId ?? '—'}\n'
                                   '${item.state.wireValue} · v${item.mandateVersion}',
@@ -150,9 +151,6 @@ class DsnMandateCreatePage extends StatefulWidget {
 class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
   final _formKey = GlobalKey<FormState>();
   final _resource = TextEditingController();
-  final _resourceVersion = TextEditingController();
-  final _specHash = TextEditingController();
-  final _quoteHash = TextEditingController();
   final _uuid = const Uuid();
   DsnMandateTemplateCode _template =
       DsnMandateTemplateCode.buyerFixedCommitmentV1;
@@ -171,9 +169,6 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
   @override
   void dispose() {
     _resource.dispose();
-    _resourceVersion.dispose();
-    _specHash.dispose();
-    _quoteHash.dispose();
     super.dispose();
   }
 
@@ -218,9 +213,6 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
           agentClientId: _agent!.clientId.toString(),
           subjectRole: _role,
           resourceRef: _resource.text,
-          expectedResourceVersion: int.tryParse(_resourceVersion.text.trim()),
-          expectedSpecHash: _blankToNull(_specHash.text),
-          expectedQuoteHash: _blankToNull(_quoteHash.text),
         ),
         idempotencyKey: 'app-mandate-preview-${_uuid.v4()}',
       );
@@ -244,20 +236,6 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
   String? _required(String? value) =>
       value == null || value.trim().isEmpty ? 'Required' : null;
 
-  String? _version(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    return (int.tryParse(value.trim()) ?? 0) < 1
-        ? 'Use a positive integer'
-        : null;
-  }
-
-  String? _hash(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    return RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(value.trim())
-        ? null
-        : 'Use sha256:<64 lowercase hex>';
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -279,7 +257,7 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
                     items: DsnMandateTemplateCode.values
                         .map((template) => DropdownMenuItem(
                               value: template,
-                              child: Text(_templateLabel(template)),
+                              child: Text(_templateLabel(l10n, template)),
                             ))
                         .toList(growable: false),
                     onChanged: _busy
@@ -323,28 +301,6 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
                       helperText: l10n.agentMandateResourceHint,
                     ),
                     validator: _required,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _resourceVersion,
-                    decoration: InputDecoration(
-                        labelText: l10n.agentMandateResourceVersion),
-                    keyboardType: TextInputType.number,
-                    validator: _version,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _specHash,
-                    decoration:
-                        InputDecoration(labelText: l10n.agentMandateSpecHash),
-                    validator: _hash,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _quoteHash,
-                    decoration:
-                        InputDecoration(labelText: l10n.agentMandateQuoteHash),
-                    validator: _hash,
                   ),
                   if (_error != null) ...[
                     const SizedBox(height: 16),
@@ -442,7 +398,7 @@ class _DsnMandatePreviewPageState extends State<DsnMandatePreviewPage> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_templateLabel(preview.templateCode),
+                    Text(_templateLabel(l10n, preview.templateCode),
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     Text(
@@ -450,7 +406,9 @@ class _DsnMandatePreviewPageState extends State<DsnMandatePreviewPage> {
                     Text(
                         '${l10n.agentMandateResource}: ${preview.resourceRef ?? '—'}'),
                     Text(
-                        '${l10n.agentMandateAllowedActions}: ${preview.allowedActions.join(', ')}'),
+                      '${l10n.agentMandateAllowedActions}:\n'
+                      '${preview.allowedActions.map((action) => _actionLabel(l10n, action)).join('\n')}',
+                    ),
                     Text(
                         '${l10n.agentMandateExpiresAt}: ${preview.expiresAt.toLocal()}'),
                     const SizedBox(height: 8),
@@ -565,7 +523,7 @@ class _DsnMandateDetailPageState extends State<DsnMandateDetailPage> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text(_templateLabel(mandate.templateCode),
+                Text(_templateLabel(l10n, mandate.templateCode),
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 12),
                 _fact(
@@ -613,15 +571,21 @@ IconData _stateIcon(DsnMandateState state) => switch (state) {
       DsnMandateState.exhausted => Icons.hourglass_empty_outlined,
     };
 
-String _templateLabel(DsnMandateTemplateCode template) => switch (template) {
-      DsnMandateTemplateCode.buyerFixedCommitmentV1 => 'Buyer fixed commitment',
-      DsnMandateTemplateCode.providerFixedResponseV1 =>
-        'Provider fixed response',
-      DsnMandateTemplateCode.providerFixedDeliveryV1 =>
-        'Provider fixed delivery',
+String _templateLabel(AppLocalizations l10n, DsnMandateTemplateCode template) =>
+    switch (template) {
+      DsnMandateTemplateCode.buyerFixedCommitmentV1 =>
+        l10n.agentMandateBuyerTemplate,
+      DsnMandateTemplateCode.providerFixedTaskV1 =>
+        l10n.agentMandateProviderTaskTemplate,
     };
 
-String? _blankToNull(String value) {
-  final text = value.trim();
-  return text.isEmpty ? null : text;
-}
+/// The server remains authoritative for this exact action set. The App only
+/// turns known fixed codes into reviewable text; unknown server actions remain
+/// visible as their wire code rather than being silently permitted or hidden.
+String _actionLabel(AppLocalizations l10n, String action) => switch (action) {
+      'BUYER_CONFIRM_COMMITMENT' => l10n.agentMandateActionBuyerCommitment,
+      'PROVIDER_SUBMIT_FIXED_OFFER' => l10n.agentMandateActionProviderOffer,
+      'PROVIDER_ACCEPT_FIXED_REQUEST' => l10n.agentMandateActionProviderAccept,
+      'PROVIDER_SUBMIT_DELIVERY' => l10n.agentMandateActionProviderDelivery,
+      _ => action,
+    };

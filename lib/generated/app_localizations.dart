@@ -10507,6 +10507,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。'**
   String get agentMandateRevokeConfirm;
+
+  /// No description provided for @agentMandateBuyerTemplate.
+  ///
+  /// In zh, this message translates to:
+  /// **'买方固定承诺'**
+  String get agentMandateBuyerTemplate;
+
+  /// No description provided for @agentMandateProviderTaskTemplate.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务方固定任务'**
+  String get agentMandateProviderTaskTemplate;
+
+  /// No description provided for @agentMandateActionBuyerCommitment.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认固定承诺'**
+  String get agentMandateActionBuyerCommitment;
+
+  /// No description provided for @agentMandateActionProviderOffer.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交固定报价'**
+  String get agentMandateActionProviderOffer;
+
+  /// No description provided for @agentMandateActionProviderAccept.
+  ///
+  /// In zh, this message translates to:
+  /// **'接受固定请求'**
+  String get agentMandateActionProviderAccept;
+
+  /// No description provided for @agentMandateActionProviderDelivery.
+  ///
+  /// In zh, this message translates to:
+  /// **'在 Commitment 存在后提交交付'**
+  String get agentMandateActionProviderDelivery;
 }
 
 class _AppLocalizationsDelegate

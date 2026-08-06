@@ -5920,4 +5920,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get agentMandateRevokeConfirm =>
       'Revoke this authorization now? New Agent operations will be blocked; historical facts remain intact.';
+
+  @override
+  String get agentMandateBuyerTemplate => 'Buyer fixed commitment';
+
+  @override
+  String get agentMandateProviderTaskTemplate => 'Provider fixed task';
+
+  @override
+  String get agentMandateActionBuyerCommitment =>
+      'Confirm the fixed commitment';
+
+  @override
+  String get agentMandateActionProviderOffer => 'Submit the fixed offer';
+
+  @override
+  String get agentMandateActionProviderAccept => 'Accept the fixed request';
+
+  @override
+  String get agentMandateActionProviderDelivery =>
+      'Submit delivery after a commitment exists';
 }

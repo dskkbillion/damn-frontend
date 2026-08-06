@@ -3339,5 +3339,11 @@
     "agentMandateHash": "预授权哈希",
     "agentMandateRevokedAt": "撤销时间",
     "agentMandateRevoke": "撤销预授权",
-    "agentMandateRevokeConfirm": "现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。"
+    "agentMandateRevokeConfirm": "现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。",
+    "agentMandateBuyerTemplate": "买方固定承诺",
+    "agentMandateProviderTaskTemplate": "服务方固定任务",
+    "agentMandateActionBuyerCommitment": "确认固定承诺",
+    "agentMandateActionProviderOffer": "提交固定报价",
+    "agentMandateActionProviderAccept": "接受固定请求",
+    "agentMandateActionProviderDelivery": "在 Commitment 存在后提交交付"
 }

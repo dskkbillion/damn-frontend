@@ -5718,4 +5718,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get agentMandateRevokeConfirm => '现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。';
+
+  @override
+  String get agentMandateBuyerTemplate => '买方固定承诺';
+
+  @override
+  String get agentMandateProviderTaskTemplate => '服务方固定任务';
+
+  @override
+  String get agentMandateActionBuyerCommitment => '确认固定承诺';
+
+  @override
+  String get agentMandateActionProviderOffer => '提交固定报价';
+
+  @override
+  String get agentMandateActionProviderAccept => '接受固定请求';
+
+  @override
+  String get agentMandateActionProviderDelivery => '在 Commitment 存在后提交交付';
 }

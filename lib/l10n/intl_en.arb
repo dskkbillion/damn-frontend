@@ -3315,5 +3315,11 @@
     "agentMandateHash": "Mandate hash",
     "agentMandateRevokedAt": "Revoked at",
     "agentMandateRevoke": "Revoke mandate",
-    "agentMandateRevokeConfirm": "Revoke this authorization now? New Agent operations will be blocked; historical facts remain intact."
+    "agentMandateRevokeConfirm": "Revoke this authorization now? New Agent operations will be blocked; historical facts remain intact.",
+    "agentMandateBuyerTemplate": "Buyer fixed commitment",
+    "agentMandateProviderTaskTemplate": "Provider fixed task",
+    "agentMandateActionBuyerCommitment": "Confirm the fixed commitment",
+    "agentMandateActionProviderOffer": "Submit the fixed offer",
+    "agentMandateActionProviderAccept": "Accept the fixed request",
+    "agentMandateActionProviderDelivery": "Submit delivery after a commitment exists"
 }

@@ -68,6 +68,31 @@ void main() {
     expect(mandate.mandateId, 'mandate-1');
   });
 
+  test('accepts the one unified Provider task template and server action set',
+      () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      handler.resolve(Response(
+        requestOptions: options,
+        statusCode: 201,
+        data: _machine('MANDATE_PREVIEW_CREATED', _providerPreviewData()),
+      ));
+    }));
+
+    final preview = await DioDsnMandateRepository(dio).createPreview(
+      _providerInput(),
+      idempotencyKey: 'app-mandate-provider-preview-123456',
+    );
+
+    expect(preview.templateCode, DsnMandateTemplateCode.providerFixedTaskV1);
+    expect(preview.subjectRole, DsnMandateSubjectRole.provider);
+    expect(preview.allowedActions, <String>[
+      'PROVIDER_SUBMIT_FIXED_OFFER',
+      'PROVIDER_ACCEPT_FIXED_REQUEST',
+      'PROVIDER_SUBMIT_DELIVERY',
+    ]);
+  });
+
   test('revoke sends its optimistic version in body and If-Match', () async {
     final dio = Dio();
     Map<String, dynamic>? body;
@@ -147,11 +172,13 @@ DsnMandatePreviewInput _input() => const DsnMandatePreviewInput(
       agentClientId: '7',
       subjectRole: DsnMandateSubjectRole.buyer,
       resourceRef: 'request:42',
-      expectedResourceVersion: 2,
-      expectedSpecHash:
-          'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      expectedQuoteHash:
-          'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+    );
+
+DsnMandatePreviewInput _providerInput() => const DsnMandatePreviewInput(
+      templateCode: DsnMandateTemplateCode.providerFixedTaskV1,
+      agentClientId: '8',
+      subjectRole: DsnMandateSubjectRole.provider,
+      resourceRef: 'request:42',
     );
 
 DsnMandate _mandate() => DsnMandate(
@@ -176,6 +203,25 @@ Map<String, dynamic> _previewData() => <String, dynamic>{
       'reviewHash': _hash('b'),
       'approvalRef': 'apr_1',
       'allowedActions': <String>['BUYER_CONFIRM_COMMITMENT'],
+      'expiresAt': '2026-08-07T00:00:00Z',
+      'state': 'PREVIEWED',
+    };
+
+Map<String, dynamic> _providerPreviewData() => <String, dynamic>{
+      'previewId': 'preview-provider-1',
+      'templateCode': 'PROVIDER_FIXED_TASK_V1',
+      'templateVersion': 1,
+      'subjectRole': 'PROVIDER',
+      'agentClientId': '8',
+      'resourceRef': 'request:42',
+      'previewHash': _hash('d'),
+      'reviewHash': _hash('e'),
+      'approvalRef': 'apr_provider_1',
+      'allowedActions': <String>[
+        'PROVIDER_SUBMIT_FIXED_OFFER',
+        'PROVIDER_ACCEPT_FIXED_REQUEST',
+        'PROVIDER_SUBMIT_DELIVERY',
+      ],
       'expiresAt': '2026-08-07T00:00:00Z',
       'state': 'PREVIEWED',
     };

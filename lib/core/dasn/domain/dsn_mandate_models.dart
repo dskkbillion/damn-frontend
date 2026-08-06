@@ -5,8 +5,7 @@
 /// and any Agent session credentials never enter the Flutter process.
 enum DsnMandateTemplateCode {
   buyerFixedCommitmentV1('BUYER_FIXED_COMMITMENT_V1'),
-  providerFixedResponseV1('PROVIDER_FIXED_RESPONSE_V1'),
-  providerFixedDeliveryV1('PROVIDER_FIXED_DELIVERY_V1');
+  providerFixedTaskV1('PROVIDER_FIXED_TASK_V1');
 
   const DsnMandateTemplateCode(this.wireValue);
 
@@ -75,28 +74,18 @@ class DsnMandatePreviewInput {
     required this.agentClientId,
     required this.subjectRole,
     required this.resourceRef,
-    this.expectedResourceVersion,
-    this.expectedSpecHash,
-    this.expectedQuoteHash,
   });
 
   final DsnMandateTemplateCode templateCode;
   final String agentClientId;
   final DsnMandateSubjectRole subjectRole;
   final String resourceRef;
-  final int? expectedResourceVersion;
-  final String? expectedSpecHash;
-  final String? expectedQuoteHash;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'templateCode': templateCode.wireValue,
         'agentClientId': agentClientId.trim(),
         'subjectRole': subjectRole.wireValue,
         'resourceRef': resourceRef.trim(),
-        if (expectedResourceVersion != null)
-          'expectedResourceVersion': expectedResourceVersion,
-        if (expectedSpecHash != null) 'expectedSpecHash': expectedSpecHash,
-        if (expectedQuoteHash != null) 'expectedQuoteHash': expectedQuoteHash,
       };
 }
 

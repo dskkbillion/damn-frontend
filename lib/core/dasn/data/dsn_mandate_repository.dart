@@ -262,18 +262,6 @@ class DioDsnMandateRepository implements DsnMandateRepository {
   static void _validatePreview(DsnMandatePreviewInput input, String key) {
     _requiredText(input.agentClientId, 'agentClientId');
     _requiredText(input.resourceRef, 'resourceRef');
-    if (input.expectedResourceVersion != null &&
-        input.expectedResourceVersion! < 1) {
-      throw const DsnMandateApiException(
-        'expectedResourceVersion must be positive',
-      );
-    }
-    if (input.expectedSpecHash != null) {
-      _validateHash(input.expectedSpecHash!, 'expectedSpecHash');
-    }
-    if (input.expectedQuoteHash != null) {
-      _validateHash(input.expectedQuoteHash!, 'expectedQuoteHash');
-    }
     _validateIdempotencyKey(key);
   }
 
