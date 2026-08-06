@@ -10543,6 +10543,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'在 Commitment 存在后提交交付'**
   String get agentMandateActionProviderDelivery;
+
+  /// No description provided for @agentMandateBuyerContext.
+  ///
+  /// In zh, this message translates to:
+  /// **'具有已接受报价的买方请求'**
+  String get agentMandateBuyerContext;
+
+  /// No description provided for @agentMandateProviderContext.
+  ///
+  /// In zh, this message translates to:
+  /// **'已分配的服务方任务'**
+  String get agentMandateProviderContext;
+
+  /// No description provided for @agentMandateNoBuyerContexts.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可用于预授权的已接受报价买方请求。'**
+  String get agentMandateNoBuyerContexts;
+
+  /// No description provided for @agentMandateNoProviderContexts.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可用于预授权的已分配服务方任务。'**
+  String get agentMandateNoProviderContexts;
+
+  /// No description provided for @agentMandateReviewFacts.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务端确认的固定事实'**
+  String get agentMandateReviewFacts;
+
+  /// No description provided for @agentMandateReviewCapability.
+  ///
+  /// In zh, this message translates to:
+  /// **'能力'**
+  String get agentMandateReviewCapability;
+
+  /// No description provided for @agentMandateReviewProvider.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务方'**
+  String get agentMandateReviewProvider;
+
+  /// No description provided for @agentMandateReviewBuyer.
+  ///
+  /// In zh, this message translates to:
+  /// **'买方'**
+  String get agentMandateReviewBuyer;
+
+  /// No description provided for @agentMandateReviewVariant.
+  ///
+  /// In zh, this message translates to:
+  /// **'规格'**
+  String get agentMandateReviewVariant;
+
+  /// No description provided for @agentMandateReviewQuantity.
+  ///
+  /// In zh, this message translates to:
+  /// **'数量'**
+  String get agentMandateReviewQuantity;
+
+  /// No description provided for @agentMandateReviewCapacity.
+  ///
+  /// In zh, this message translates to:
+  /// **'容量'**
+  String get agentMandateReviewCapacity;
+
+  /// No description provided for @agentMandateReviewPrice.
+  ///
+  /// In zh, this message translates to:
+  /// **'价格'**
+  String get agentMandateReviewPrice;
+
+  /// No description provided for @agentMandateReviewSla.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务等级协议'**
+  String get agentMandateReviewSla;
+
+  /// No description provided for @agentMandateReviewMaxDelivery.
+  ///
+  /// In zh, this message translates to:
+  /// **'最长交付时间'**
+  String get agentMandateReviewMaxDelivery;
 }
 
 class _AppLocalizationsDelegate

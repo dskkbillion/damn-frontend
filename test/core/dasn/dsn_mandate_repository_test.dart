@@ -34,10 +34,12 @@ void main() {
     expect(body, isNot(contains('scope')));
     expect(body, isNot(contains('grant')));
     expect(body, isNot(contains('sessionToken')));
+    expect(body, isNot(contains('agentClientId')));
+    expect(body, isNot(contains('subjectRole')));
     expect(preview.approvalRef, 'apr_1');
     expect(preview.previewHash, _hash('a'));
     expect(preview.reviewHash, _hash('b'));
-    expect(preview.allowedActions, ['BUYER_CONFIRM_COMMITMENT']);
+    expect(preview.allowedActionClasses, ['BUYER_CONFIRM_COMMITMENT']);
   });
 
   test('confirms with exactly the one-time preview facts', () async {
@@ -86,11 +88,95 @@ void main() {
 
     expect(preview.templateCode, DsnMandateTemplateCode.providerFixedTaskV1);
     expect(preview.subjectRole, DsnMandateSubjectRole.provider);
-    expect(preview.allowedActions, <String>[
+    expect(preview.allowedActionClasses, <String>[
       'PROVIDER_SUBMIT_FIXED_OFFER',
       'PROVIDER_ACCEPT_FIXED_REQUEST',
       'PROVIDER_SUBMIT_DELIVERY',
     ]);
+  });
+
+  test('binds a buyer request with only its selected session ID', () async {
+    final dio = Dio();
+    String? path;
+    Map<String, dynamic>? body;
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      path = options.path;
+      body = Map<String, dynamic>.from(options.data as Map);
+      handler.resolve(Response(
+        requestOptions: options,
+        statusCode: 201,
+        data: _machine('MANDATE_RESOURCE_BOUND', _buyerBindingData()),
+      ));
+    }));
+
+    final binding = await DioDsnMandateRepository(dio).bindBuyerRequest(
+      42,
+      agentSessionId: '17',
+      idempotencyKey: 'app-mandate-buyer-binding-123456',
+    );
+
+    expect(path, '/app/v1/requests/42/buyer-mandate-resource-bindings');
+    expect(body, <String, dynamic>{'agentSessionId': '17'});
+    expect(binding.resourceRef, 'opaque-buyer-binding');
+    expect(binding.allowedTemplateCodes,
+        [DsnMandateTemplateCode.buyerFixedCommitmentV1]);
+  });
+
+  test('binds a provider task with only its selected session ID', () async {
+    final dio = Dio();
+    String? path;
+    Map<String, dynamic>? body;
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      path = options.path;
+      body = Map<String, dynamic>.from(options.data as Map);
+      handler.resolve(Response(
+        requestOptions: options,
+        statusCode: 201,
+        data: _machine('MANDATE_RESOURCE_BOUND', _providerBindingData()),
+      ));
+    }));
+
+    final binding = await DioDsnMandateRepository(dio).bindProviderTask(
+      'ttr_1234567890abcdef',
+      agentSessionId: '18',
+      idempotencyKey: 'app-mandate-provider-binding-123456',
+    );
+
+    expect(path,
+        '/app/v1/provider-tasks/ttr_1234567890abcdef/mandate-resource-bindings');
+    expect(body, <String, dynamic>{'agentSessionId': '18'});
+    expect(binding.allowedTemplateCodes,
+        [DsnMandateTemplateCode.providerFixedTaskV1]);
+  });
+
+  test('rejects a binding whose strict template scope is not canonical',
+      () async {
+    final dio = Dio();
+    dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+      final data = _buyerBindingData()
+        ..['allowedTemplateCodes'] = <String>[
+          'BUYER_FIXED_COMMITMENT_V1',
+          'PROVIDER_FIXED_TASK_V1',
+        ];
+      handler.resolve(Response(
+        requestOptions: options,
+        statusCode: 201,
+        data: _machine('MANDATE_RESOURCE_BOUND', data),
+      ));
+    }));
+
+    await expectLater(
+      DioDsnMandateRepository(dio).bindBuyerRequest(
+        42,
+        agentSessionId: '17',
+        idempotencyKey: 'app-mandate-buyer-binding-123456',
+      ),
+      throwsA(isA<DsnMandateApiException>().having(
+        (error) => error.code,
+        'code',
+        'MANDATE_RESOURCE_BINDING_TEMPLATE_INVALID',
+      )),
+    );
   });
 
   test('revoke sends its optimistic version in body and If-Match', () async {
@@ -169,16 +255,12 @@ void main() {
 
 DsnMandatePreviewInput _input() => const DsnMandatePreviewInput(
       templateCode: DsnMandateTemplateCode.buyerFixedCommitmentV1,
-      agentClientId: '7',
-      subjectRole: DsnMandateSubjectRole.buyer,
-      resourceRef: 'request:42',
+      resourceRef: 'opaque-buyer-binding',
     );
 
 DsnMandatePreviewInput _providerInput() => const DsnMandatePreviewInput(
       templateCode: DsnMandateTemplateCode.providerFixedTaskV1,
-      agentClientId: '8',
-      subjectRole: DsnMandateSubjectRole.provider,
-      resourceRef: 'request:42',
+      resourceRef: 'opaque-provider-binding',
     );
 
 DsnMandate _mandate() => DsnMandate(
@@ -198,11 +280,12 @@ Map<String, dynamic> _previewData() => <String, dynamic>{
       'templateVersion': 1,
       'subjectRole': 'BUYER',
       'agentClientId': '7',
-      'resourceRef': 'request:42',
+      'resourceRef': 'opaque-buyer-binding',
       'previewHash': _hash('a'),
       'reviewHash': _hash('b'),
       'approvalRef': 'apr_1',
-      'allowedActions': <String>['BUYER_CONFIRM_COMMITMENT'],
+      'allowedActionClasses': <String>['BUYER_CONFIRM_COMMITMENT'],
+      'review': _reviewData(),
       'expiresAt': '2026-08-07T00:00:00Z',
       'state': 'PREVIEWED',
     };
@@ -213,17 +296,46 @@ Map<String, dynamic> _providerPreviewData() => <String, dynamic>{
       'templateVersion': 1,
       'subjectRole': 'PROVIDER',
       'agentClientId': '8',
-      'resourceRef': 'request:42',
+      'resourceRef': 'opaque-provider-binding',
       'previewHash': _hash('d'),
       'reviewHash': _hash('e'),
       'approvalRef': 'apr_provider_1',
-      'allowedActions': <String>[
+      'allowedActionClasses': <String>[
         'PROVIDER_SUBMIT_FIXED_OFFER',
         'PROVIDER_ACCEPT_FIXED_REQUEST',
         'PROVIDER_SUBMIT_DELIVERY',
       ],
+      'review': _reviewData(),
       'expiresAt': '2026-08-07T00:00:00Z',
       'state': 'PREVIEWED',
+    };
+
+Map<String, dynamic> _buyerBindingData() => <String, dynamic>{
+      'resourceRef': 'opaque-buyer-binding',
+      'expiresAt': '2026-08-07T00:00:00Z',
+      'resourceHash': _hash('f'),
+      'allowedTemplateCodes': <String>['BUYER_FIXED_COMMITMENT_V1'],
+    };
+
+Map<String, dynamic> _providerBindingData() => <String, dynamic>{
+      'resourceRef': 'opaque-provider-binding',
+      'expiresAt': '2026-08-07T00:00:00Z',
+      'resourceHash': _hash('e'),
+      'allowedTemplateCodes': <String>['PROVIDER_FIXED_TASK_V1'],
+    };
+
+Map<String, dynamic> _reviewData() => <String, dynamic>{
+      'capability': 'captioning',
+      'provider': 'provider-1',
+      'buyer': 'buyer-1',
+      'variant': 'standard',
+      'quantity': 1,
+      'capacity': 1,
+      'sla': <String, dynamic>{'delivery': '24h'},
+      'currency': 'CREDITS',
+      'amountMinor': 100,
+      'quoteHash': _hash('e'),
+      'maxDeliverySeconds': 86400,
     };
 
 Map<String, dynamic> _mandateData({

@@ -3345,5 +3345,19 @@
     "agentMandateActionBuyerCommitment": "确认固定承诺",
     "agentMandateActionProviderOffer": "提交固定报价",
     "agentMandateActionProviderAccept": "接受固定请求",
-    "agentMandateActionProviderDelivery": "在 Commitment 存在后提交交付"
+    "agentMandateActionProviderDelivery": "在 Commitment 存在后提交交付",
+    "agentMandateBuyerContext": "具有已接受报价的买方请求",
+    "agentMandateProviderContext": "已分配的服务方任务",
+    "agentMandateNoBuyerContexts": "暂无可用于预授权的已接受报价买方请求。",
+    "agentMandateNoProviderContexts": "暂无可用于预授权的已分配服务方任务。",
+    "agentMandateReviewFacts": "服务端确认的固定事实",
+    "agentMandateReviewCapability": "能力",
+    "agentMandateReviewProvider": "服务方",
+    "agentMandateReviewBuyer": "买方",
+    "agentMandateReviewVariant": "规格",
+    "agentMandateReviewQuantity": "数量",
+    "agentMandateReviewCapacity": "容量",
+    "agentMandateReviewPrice": "价格",
+    "agentMandateReviewSla": "服务等级协议",
+    "agentMandateReviewMaxDelivery": "最长交付时间"
 }

@@ -71,22 +71,64 @@ class DsnMandateApiException implements Exception {
 class DsnMandatePreviewInput {
   const DsnMandatePreviewInput({
     required this.templateCode,
-    required this.agentClientId,
-    required this.subjectRole,
     required this.resourceRef,
   });
 
   final DsnMandateTemplateCode templateCode;
-  final String agentClientId;
-  final DsnMandateSubjectRole subjectRole;
   final String resourceRef;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'templateCode': templateCode.wireValue,
-        'agentClientId': agentClientId.trim(),
-        'subjectRole': subjectRole.wireValue,
         'resourceRef': resourceRef.trim(),
       };
+}
+
+/// One short-lived, Member-issued context binding used to create a preview.
+///
+/// It intentionally contains neither the subject role nor a Client/session
+/// tuple. Those facts remain on the server and are re-derived from the bound
+/// request or task before a preview is created.
+class DsnMandateResourceBinding {
+  const DsnMandateResourceBinding({
+    required this.resourceRef,
+    required this.expiresAt,
+    required this.resourceHash,
+    required this.allowedTemplateCodes,
+  });
+
+  final String resourceRef;
+  final DateTime expiresAt;
+  final String resourceHash;
+  final List<DsnMandateTemplateCode> allowedTemplateCodes;
+}
+
+/// Server-derived facts that must be reviewed before confirming a Mandate.
+class DsnMandateReviewCard {
+  const DsnMandateReviewCard({
+    required this.capability,
+    required this.provider,
+    required this.buyer,
+    required this.variant,
+    required this.quantity,
+    required this.capacity,
+    required this.sla,
+    required this.currency,
+    required this.amountMinor,
+    required this.quoteHash,
+    required this.maxDeliverySeconds,
+  });
+
+  final String capability;
+  final String provider;
+  final String buyer;
+  final String variant;
+  final int quantity;
+  final int capacity;
+  final Map<String, dynamic> sla;
+  final String currency;
+  final int amountMinor;
+  final String quoteHash;
+  final int maxDeliverySeconds;
 }
 
 class DsnMandatePreview {
@@ -98,7 +140,8 @@ class DsnMandatePreview {
     required this.agentClientId,
     required this.resourceRef,
     required this.previewHash,
-    required this.allowedActions,
+    required this.allowedActionClasses,
+    required this.review,
     required this.approvalRef,
     required this.reviewHash,
     required this.expiresAt,
@@ -113,9 +156,10 @@ class DsnMandatePreview {
   final String? resourceRef;
   final String previewHash;
 
-  /// Server-derived, human-readable action names. The App displays these but
-  /// never creates an action/scope list of its own.
-  final List<String> allowedActions;
+  /// Server-derived action classes. The App displays these but never creates
+  /// an action/scope list of its own.
+  final List<String> allowedActionClasses;
+  final DsnMandateReviewCard review;
 
   /// One-time, Principal-bound confirmation reference. This lives only in the
   /// in-memory review object and is never copied into [DsnMandate].

@@ -9,6 +9,22 @@ import '../domain/dsn_mandate_models.dart';
 /// here. This intentionally has no Agent-authenticated implementation and no
 /// parameters for a Grant, scope or session secret.
 abstract interface class DsnMandateRepository {
+  /// Creates a short-lived opaque binding for a concrete, Member-visible
+  /// Provider task. The selected session is issuance audit only.
+  Future<DsnMandateResourceBinding> bindProviderTask(
+    String taskTraceId, {
+    required String agentSessionId,
+    required String idempotencyKey,
+  });
+
+  /// Creates a short-lived opaque binding for a concrete buyer request with
+  /// an accepted offer. The selected session is issuance audit only.
+  Future<DsnMandateResourceBinding> bindBuyerRequest(
+    int requestId, {
+    required String agentSessionId,
+    required String idempotencyKey,
+  });
+
   Future<DsnMandatePreview> createPreview(
     DsnMandatePreviewInput input, {
     required String idempotencyKey,
@@ -38,6 +54,58 @@ class DioDsnMandateRepository implements DsnMandateRepository {
 
   final Dio dio;
   final Uuid _uuid;
+
+  @override
+  Future<DsnMandateResourceBinding> bindProviderTask(
+    String taskTraceId, {
+    required String agentSessionId,
+    required String idempotencyKey,
+  }) async {
+    _requiredText(taskTraceId, 'taskTraceId');
+    _requiredText(agentSessionId, 'agentSessionId');
+    _validateIdempotencyKey(idempotencyKey);
+    final data = await _machine(
+      () => dio.post(
+        '/app/v1/provider-tasks/${Uri.encodeComponent(taskTraceId.trim())}/mandate-resource-bindings',
+        data: <String, dynamic>{'agentSessionId': agentSessionId.trim()},
+        options: _writeOptions(idempotencyKey, 'mandate-provider-binding'),
+      ),
+      expectedStates: null,
+    );
+    final binding = _parseBinding(data);
+    _requireOnlyTemplate(
+      binding,
+      DsnMandateTemplateCode.providerFixedTaskV1,
+    );
+    return binding;
+  }
+
+  @override
+  Future<DsnMandateResourceBinding> bindBuyerRequest(
+    int requestId, {
+    required String agentSessionId,
+    required String idempotencyKey,
+  }) async {
+    if (requestId < 1) {
+      throw const DsnMandateApiException('requestId must be positive');
+    }
+    _requiredText(agentSessionId, 'agentSessionId');
+    _validateIdempotencyKey(idempotencyKey);
+    final data = await _machine(
+      () => dio.post(
+        '/app/v1/requests/$requestId/buyer-mandate-resource-bindings',
+        data: <String, dynamic>{'agentSessionId': agentSessionId.trim()},
+        options: _writeOptions(idempotencyKey, 'mandate-buyer-binding'),
+      ),
+      expectedStates: null,
+    );
+    final binding = _parseBinding(data);
+    _requireOnlyTemplate(
+      binding,
+      DsnMandateTemplateCode.buyerFixedCommitmentV1,
+    );
+    return binding;
+  }
 
   @override
   Future<DsnMandatePreview> createPreview(
@@ -222,7 +290,8 @@ class DioDsnMandateRepository implements DsnMandateRepository {
         agentClientId: _optionalText(data['agentClientId']),
         resourceRef: _optionalText(data['resourceRef']),
         previewHash: _hash(data['previewHash'], 'previewHash'),
-        allowedActions: _actions(data['allowedActions']),
+        allowedActionClasses: _actions(data['allowedActionClasses']),
+        review: _review(data['review']),
         approvalRef: _requiredText(
           data['approvalRef']?.toString() ?? '',
           'approvalRef',
@@ -260,9 +329,64 @@ class DioDsnMandateRepository implements DsnMandateRepository {
   }
 
   static void _validatePreview(DsnMandatePreviewInput input, String key) {
-    _requiredText(input.agentClientId, 'agentClientId');
     _requiredText(input.resourceRef, 'resourceRef');
     _validateIdempotencyKey(key);
+  }
+
+  static DsnMandateResourceBinding _parseBinding(Map<String, dynamic> data) {
+    const expected = <String>{
+      'resourceRef',
+      'expiresAt',
+      'resourceHash',
+      'allowedTemplateCodes',
+    };
+    if (data.keys.toSet().length != expected.length ||
+        !data.keys.toSet().containsAll(expected)) {
+      throw const DsnMandateApiException(
+        'Invalid Mandate resource binding response',
+        code: 'MANDATE_RESOURCE_BINDING_INVALID',
+      );
+    }
+    final rawTemplates = data['allowedTemplateCodes'];
+    if (rawTemplates is! List || rawTemplates.isEmpty) {
+      throw const DsnMandateApiException(
+        'Mandate resource binding is missing allowedTemplateCodes',
+        code: 'MANDATE_RESOURCE_BINDING_INVALID',
+      );
+    }
+    final templates = rawTemplates.map((value) {
+      return DsnMandateTemplateCode.parse(
+        _requiredText(value?.toString() ?? '', 'allowedTemplateCode'),
+      );
+    }).toList(growable: false);
+    if (templates.toSet().length != templates.length) {
+      throw const DsnMandateApiException(
+        'Mandate resource binding has duplicate template codes',
+        code: 'MANDATE_RESOURCE_BINDING_INVALID',
+      );
+    }
+    return DsnMandateResourceBinding(
+      resourceRef: _requiredText(
+        data['resourceRef']?.toString() ?? '',
+        'resourceRef',
+      ),
+      expiresAt: _date(data['expiresAt'], 'expiresAt'),
+      resourceHash: _hash(data['resourceHash'], 'resourceHash'),
+      allowedTemplateCodes: templates,
+    );
+  }
+
+  static void _requireOnlyTemplate(
+    DsnMandateResourceBinding binding,
+    DsnMandateTemplateCode expected,
+  ) {
+    if (binding.allowedTemplateCodes.length != 1 ||
+        binding.allowedTemplateCodes.single != expected) {
+      throw const DsnMandateApiException(
+        'Mandate resource binding returned an invalid template scope',
+        code: 'MANDATE_RESOURCE_BINDING_TEMPLATE_INVALID',
+      );
+    }
   }
 
   static void _validateIdempotencyKey(String key) {
@@ -308,6 +432,59 @@ class DioDsnMandateRepository implements DsnMandateRepository {
       return text;
     }).toList(growable: false);
     return actions;
+  }
+
+  static DsnMandateReviewCard _review(dynamic value) {
+    if (value is! Map) {
+      throw const DsnMandateApiException('Mandate preview is missing review');
+    }
+    final review = Map<String, dynamic>.from(value);
+    const expected = <String>{
+      'capability',
+      'provider',
+      'buyer',
+      'variant',
+      'quantity',
+      'capacity',
+      'sla',
+      'currency',
+      'amountMinor',
+      'quoteHash',
+      'maxDeliverySeconds',
+    };
+    if (review.keys.toSet().length != expected.length ||
+        !review.keys.toSet().containsAll(expected) ||
+        review['sla'] is! Map ||
+        review['currency'] != 'CREDITS') {
+      throw const DsnMandateApiException('Invalid Mandate review card');
+    }
+    return DsnMandateReviewCard(
+      capability:
+          _requiredText(review['capability']?.toString() ?? '', 'capability'),
+      provider: _requiredText(review['provider']?.toString() ?? '', 'provider'),
+      buyer: _requiredText(review['buyer']?.toString() ?? '', 'buyer'),
+      variant: _requiredText(review['variant']?.toString() ?? '', 'variant'),
+      quantity: _positiveInt(review['quantity'], 'quantity'),
+      capacity: _positiveInt(review['capacity'], 'capacity'),
+      sla: Map<String, dynamic>.unmodifiable(
+        Map<String, dynamic>.from(review['sla'] as Map),
+      ),
+      currency: 'CREDITS',
+      amountMinor: _nonNegativeInt(review['amountMinor'], 'amountMinor'),
+      quoteHash: _hash(review['quoteHash'], 'quoteHash'),
+      maxDeliverySeconds:
+          _positiveInt(review['maxDeliverySeconds'], 'maxDeliverySeconds'),
+    );
+  }
+
+  static int _nonNegativeInt(dynamic value, String label) {
+    final parsed = value is num
+        ? (value == value.truncateToDouble() ? value.toInt() : null)
+        : int.tryParse(value?.toString().trim() ?? '');
+    if (parsed == null || parsed < 0) {
+      throw DsnMandateApiException('Invalid $label');
+    }
+    return parsed;
   }
 
   static int _positiveInt(dynamic value, String label) {

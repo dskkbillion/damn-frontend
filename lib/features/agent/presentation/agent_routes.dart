@@ -107,6 +107,7 @@ class AgentRoutes {
             DsnMandatesPage(
               repository: _mandateRepository(),
               agentRepository: _repository(),
+              providerTaskRepository: _providerTaskRepository(),
             ),
             name: 'agentMandates',
             source: 'app_dasn_mandates',

@@ -5672,4 +5672,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get agentMandateActionProviderDelivery => '在 Commitment 存在后提交交付';
+
+  @override
+  String get agentMandateBuyerContext => '具有已接受报价的买方请求';
+
+  @override
+  String get agentMandateProviderContext => '已分配的服务方任务';
+
+  @override
+  String get agentMandateNoBuyerContexts => '暂无可用于预授权的已接受报价买方请求。';
+
+  @override
+  String get agentMandateNoProviderContexts => '暂无可用于预授权的已分配服务方任务。';
+
+  @override
+  String get agentMandateReviewFacts => '服务端确认的固定事实';
+
+  @override
+  String get agentMandateReviewCapability => '能力';
+
+  @override
+  String get agentMandateReviewProvider => '服务方';
+
+  @override
+  String get agentMandateReviewBuyer => '买方';
+
+  @override
+  String get agentMandateReviewVariant => '规格';
+
+  @override
+  String get agentMandateReviewQuantity => '数量';
+
+  @override
+  String get agentMandateReviewCapacity => '容量';
+
+  @override
+  String get agentMandateReviewPrice => '价格';
+
+  @override
+  String get agentMandateReviewSla => '服务等级协议';
+
+  @override
+  String get agentMandateReviewMaxDelivery => '最长交付时间';
 }

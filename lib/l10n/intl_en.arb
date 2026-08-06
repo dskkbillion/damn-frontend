@@ -3321,5 +3321,19 @@
     "agentMandateActionBuyerCommitment": "Confirm the fixed commitment",
     "agentMandateActionProviderOffer": "Submit the fixed offer",
     "agentMandateActionProviderAccept": "Accept the fixed request",
-    "agentMandateActionProviderDelivery": "Submit delivery after a commitment exists"
+    "agentMandateActionProviderDelivery": "Submit delivery after a commitment exists",
+    "agentMandateBuyerContext": "Buyer request with an accepted offer",
+    "agentMandateProviderContext": "Assigned provider task",
+    "agentMandateNoBuyerContexts": "No buyer request with an accepted offer is available for a mandate.",
+    "agentMandateNoProviderContexts": "No assigned provider task is available for a mandate.",
+    "agentMandateReviewFacts": "Server-confirmed fixed facts",
+    "agentMandateReviewCapability": "Capability",
+    "agentMandateReviewProvider": "Provider",
+    "agentMandateReviewBuyer": "Buyer",
+    "agentMandateReviewVariant": "Variant",
+    "agentMandateReviewQuantity": "Quantity",
+    "agentMandateReviewCapacity": "Capacity",
+    "agentMandateReviewPrice": "Price",
+    "agentMandateReviewSla": "SLA",
+    "agentMandateReviewMaxDelivery": "Maximum delivery time"
 }

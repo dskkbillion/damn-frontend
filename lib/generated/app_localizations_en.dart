@@ -5940,4 +5940,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get agentMandateActionProviderDelivery =>
       'Submit delivery after a commitment exists';
+
+  @override
+  String get agentMandateBuyerContext => 'Buyer request with an accepted offer';
+
+  @override
+  String get agentMandateProviderContext => 'Assigned provider task';
+
+  @override
+  String get agentMandateNoBuyerContexts =>
+      'No buyer request with an accepted offer is available for a mandate.';
+
+  @override
+  String get agentMandateNoProviderContexts =>
+      'No assigned provider task is available for a mandate.';
+
+  @override
+  String get agentMandateReviewFacts => 'Server-confirmed fixed facts';
+
+  @override
+  String get agentMandateReviewCapability => 'Capability';
+
+  @override
+  String get agentMandateReviewProvider => 'Provider';
+
+  @override
+  String get agentMandateReviewBuyer => 'Buyer';
+
+  @override
+  String get agentMandateReviewVariant => 'Variant';
+
+  @override
+  String get agentMandateReviewQuantity => 'Quantity';
+
+  @override
+  String get agentMandateReviewCapacity => 'Capacity';
+
+  @override
+  String get agentMandateReviewPrice => 'Price';
+
+  @override
+  String get agentMandateReviewSla => 'SLA';
+
+  @override
+  String get agentMandateReviewMaxDelivery => 'Maximum delivery time';
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dskk_flutter_refactor/core/dasn/data/dsn_mandate_repository.dart';
 import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_mandate_models.dart';
+import 'package:dskk_flutter_refactor/core/dasn/data/dsn_provider_task_repository.dart';
+import 'package:dskk_flutter_refactor/core/dasn/domain/dsn_provider_task_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/data/agent_repository.dart';
 import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
@@ -16,10 +18,12 @@ class DsnMandatesPage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.agentRepository,
+    required this.providerTaskRepository,
   });
 
   final DsnMandateRepository repository;
   final AgentRepository agentRepository;
+  final DsnProviderTaskRepository providerTaskRepository;
 
   @override
   State<DsnMandatesPage> createState() => _DsnMandatesPageState();
@@ -50,6 +54,7 @@ class _DsnMandatesPageState extends State<DsnMandatesPage> {
       builder: (_) => DsnMandateCreatePage(
         repository: widget.repository,
         agentRepository: widget.agentRepository,
+        providerTaskRepository: widget.providerTaskRepository,
       ),
     ));
     if (mounted) await _load();
@@ -139,24 +144,29 @@ class DsnMandateCreatePage extends StatefulWidget {
     super.key,
     required this.repository,
     required this.agentRepository,
+    required this.providerTaskRepository,
   });
 
   final DsnMandateRepository repository;
   final AgentRepository agentRepository;
+  final DsnProviderTaskRepository providerTaskRepository;
 
   @override
   State<DsnMandateCreatePage> createState() => _DsnMandateCreatePageState();
 }
 
 class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
-  final _formKey = GlobalKey<FormState>();
-  final _resource = TextEditingController();
   final _uuid = const Uuid();
   DsnMandateTemplateCode _template =
       DsnMandateTemplateCode.buyerFixedCommitmentV1;
   List<AgentSession>? _agents;
   AgentSession? _agent;
+  List<AgentRequestDraft>? _buyerRequests;
+  AgentRequestDraft? _buyerRequest;
+  List<DsnProviderTask>? _providerTasks;
+  DsnProviderTask? _providerTask;
   bool _loadingAgents = true;
+  bool _loadingContexts = true;
   bool _busy = false;
   String? _error;
 
@@ -164,12 +174,7 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
   void initState() {
     super.initState();
     _loadAgents();
-  }
-
-  @override
-  void dispose() {
-    _resource.dispose();
-    super.dispose();
+    _loadContexts();
   }
 
   Future<void> _loadAgents() async {
@@ -195,24 +200,68 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
     }
   }
 
-  DsnMandateSubjectRole get _role =>
-      _template == DsnMandateTemplateCode.buyerFixedCommitmentV1
-          ? DsnMandateSubjectRole.buyer
-          : DsnMandateSubjectRole.provider;
+  Future<void> _loadContexts() async {
+    setState(() => _loadingContexts = true);
+    List<AgentRequestDraft> buyerRequests = const <AgentRequestDraft>[];
+    List<DsnProviderTask> providerTasks = const <DsnProviderTask>[];
+    Object? loadError;
+    try {
+      buyerRequests = await widget.agentRepository.listRequests();
+    } catch (error) {
+      loadError ??= error;
+    }
+    try {
+      providerTasks =
+          (await widget.providerTaskRepository.listAssignedTasks()).tasks;
+    } catch (error) {
+      loadError ??= error;
+    }
+    if (mounted) {
+      setState(() {
+        _buyerRequests = buyerRequests;
+        _buyerRequest = buyerRequests.isEmpty ? null : buyerRequests.first;
+        _providerTasks = providerTasks;
+        _providerTask = providerTasks.isEmpty ? null : providerTasks.first;
+        if (loadError != null) _error = loadError.toString();
+      });
+    }
+    if (mounted) setState(() => _loadingContexts = false);
+  }
+
+  bool get _isBuyerTemplate =>
+      _template == DsnMandateTemplateCode.buyerFixedCommitmentV1;
+
+  bool get _hasSelectedContext =>
+      _isBuyerTemplate ? _buyerRequest != null : _providerTask != null;
 
   Future<void> _preview() async {
-    if (!_formKey.currentState!.validate() || _agent == null || _busy) return;
+    if (_agent == null || !_hasSelectedContext || _busy) return;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
+      final binding = _isBuyerTemplate
+          ? await widget.repository.bindBuyerRequest(
+              _buyerRequest!.id,
+              agentSessionId: _agent!.id.toString(),
+              idempotencyKey: 'app-mandate-buyer-binding-${_uuid.v4()}',
+            )
+          : await widget.repository.bindProviderTask(
+              _providerTask!.taskTraceId,
+              agentSessionId: _agent!.id.toString(),
+              idempotencyKey: 'app-mandate-provider-binding-${_uuid.v4()}',
+            );
+      if (!binding.allowedTemplateCodes.contains(_template)) {
+        throw const DsnMandateApiException(
+          'Selected context cannot create this Mandate template',
+          code: 'MANDATE_RESOURCE_BINDING_TEMPLATE_INVALID',
+        );
+      }
       final preview = await widget.repository.createPreview(
         DsnMandatePreviewInput(
           templateCode: _template,
-          agentClientId: _agent!.clientId.toString(),
-          subjectRole: _role,
-          resourceRef: _resource.text,
+          resourceRef: binding.resourceRef,
         ),
         idempotencyKey: 'app-mandate-preview-${_uuid.v4()}',
       );
@@ -233,93 +282,128 @@ class _DsnMandateCreatePageState extends State<DsnMandateCreatePage> {
     }
   }
 
-  String? _required(String? value) =>
-      value == null || value.trim().isEmpty ? 'Required' : null;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.agentCreateMandate)),
-      body: _loadingAgents
+      body: _loadingAgents || _loadingContexts
           ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-                children: [
-                  Text(l10n.agentMandatesHint),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<DsnMandateTemplateCode>(
-                    initialValue: _template,
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+              children: [
+                Text(l10n.agentMandatesHint),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<DsnMandateTemplateCode>(
+                  initialValue: _template,
+                  decoration:
+                      InputDecoration(labelText: l10n.agentMandateTemplate),
+                  items: DsnMandateTemplateCode.values
+                      .map((template) => DropdownMenuItem(
+                            value: template,
+                            child: Text(_templateLabel(l10n, template)),
+                          ))
+                      .toList(growable: false),
+                  onChanged: _busy
+                      ? null
+                      : (template) {
+                          if (template != null) {
+                            setState(() => _template = template);
+                          }
+                        },
+                ),
+                const SizedBox(height: 12),
+                if (_agents!.isEmpty)
+                  Card(
+                    color: Theme.of(context).colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(l10n.agentMandateNoAgents),
+                    ),
+                  )
+                else
+                  DropdownButtonFormField<AgentSession>(
+                    initialValue: _agent,
                     decoration:
-                        InputDecoration(labelText: l10n.agentMandateTemplate),
-                    items: DsnMandateTemplateCode.values
-                        .map((template) => DropdownMenuItem(
-                              value: template,
-                              child: Text(_templateLabel(l10n, template)),
+                        InputDecoration(labelText: l10n.agentMandateAgent),
+                    items: _agents!
+                        .map((agent) => DropdownMenuItem(
+                              value: agent,
+                              child: Text(
+                                  '${agent.clientName} (#${agent.clientId})'),
                             ))
                         .toList(growable: false),
                     onChanged: _busy
                         ? null
-                        : (template) {
-                            if (template != null) {
-                              setState(() => _template = template);
-                            }
-                          },
+                        : (agent) => setState(() => _agent = agent),
                   ),
-                  const SizedBox(height: 12),
-                  if (_agents!.isEmpty)
-                    Card(
-                      color: Theme.of(context).colorScheme.errorContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(l10n.agentMandateNoAgents),
-                      ),
-                    )
+                const SizedBox(height: 12),
+                if (_isBuyerTemplate) ...[
+                  Text(l10n.agentMandateBuyerContext,
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  if (_buyerRequests!.isEmpty)
+                    _missingContextCard(
+                        context, l10n.agentMandateNoBuyerContexts)
                   else
-                    DropdownButtonFormField<AgentSession>(
-                      initialValue: _agent,
-                      decoration:
-                          InputDecoration(labelText: l10n.agentMandateAgent),
-                      items: _agents!
-                          .map((agent) => DropdownMenuItem(
-                                value: agent,
+                    DropdownButtonFormField<AgentRequestDraft>(
+                      initialValue: _buyerRequest,
+                      decoration: InputDecoration(
+                          labelText: l10n.agentMandateBuyerContext),
+                      items: _buyerRequests!
+                          .map((request) => DropdownMenuItem(
+                                value: request,
                                 child: Text(
-                                    '${agent.clientName} (#${agent.clientId})'),
+                                    '#${request.id} · ${request.title} (${request.status})'),
                               ))
                           .toList(growable: false),
                       onChanged: _busy
                           ? null
-                          : (agent) => setState(() => _agent = agent),
+                          : (request) =>
+                              setState(() => _buyerRequest = request),
                     ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _resource,
-                    decoration: InputDecoration(
-                      labelText: l10n.agentMandateResource,
-                      helperText: l10n.agentMandateResourceHint,
+                ] else ...[
+                  Text(l10n.agentMandateProviderContext,
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  if (_providerTasks!.isEmpty)
+                    _missingContextCard(
+                        context, l10n.agentMandateNoProviderContexts)
+                  else
+                    DropdownButtonFormField<DsnProviderTask>(
+                      initialValue: _providerTask,
+                      decoration: InputDecoration(
+                          labelText: l10n.agentMandateProviderContext),
+                      items: _providerTasks!
+                          .map((task) => DropdownMenuItem(
+                                value: task,
+                                child: Text('${task.title} (${task.status})'),
+                              ))
+                          .toList(growable: false),
+                      onChanged: _busy
+                          ? null
+                          : (task) => setState(() => _providerTask = task),
                     ),
-                    validator: _required,
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(_error!,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error)),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _agents!.isEmpty || _busy ? null : _preview,
-                    child: _busy
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text(l10n.agentMandatePreview),
-                  ),
                 ],
-              ),
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Text(_error!,
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.error)),
+                ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: _agents!.isEmpty || !_hasSelectedContext || _busy
+                      ? null
+                      : _preview,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : Text(l10n.agentMandatePreview),
+                ),
+              ],
             ),
     );
   }
@@ -404,11 +488,32 @@ class _DsnMandatePreviewPageState extends State<DsnMandatePreviewPage> {
                     Text(
                         '${l10n.agentMandateAgent}: ${preview.agentClientId ?? '—'}'),
                     Text(
-                        '${l10n.agentMandateResource}: ${preview.resourceRef ?? '—'}'),
-                    Text(
                       '${l10n.agentMandateAllowedActions}:\n'
-                      '${preview.allowedActions.map((action) => _actionLabel(l10n, action)).join('\n')}',
+                      '${preview.allowedActionClasses.map((action) => _actionLabel(l10n, action)).join('\n')}',
                     ),
+                    const SizedBox(height: 12),
+                    Text(l10n.agentMandateReviewFacts,
+                        style: Theme.of(context).textTheme.titleSmall),
+                    _reviewFact(l10n.agentMandateReviewCapability,
+                        preview.review.capability),
+                    _reviewFact(l10n.agentMandateReviewProvider,
+                        preview.review.provider),
+                    _reviewFact(
+                        l10n.agentMandateReviewBuyer, preview.review.buyer),
+                    _reviewFact(
+                        l10n.agentMandateReviewVariant, preview.review.variant),
+                    _reviewFact(l10n.agentMandateReviewQuantity,
+                        preview.review.quantity.toString()),
+                    _reviewFact(l10n.agentMandateReviewCapacity,
+                        preview.review.capacity.toString()),
+                    _reviewFact(
+                      l10n.agentMandateReviewPrice,
+                      '${preview.review.amountMinor} ${preview.review.currency}',
+                    ),
+                    _reviewFact(l10n.agentMandateReviewSla,
+                        preview.review.sla.toString()),
+                    _reviewFact(l10n.agentMandateReviewMaxDelivery,
+                        '${preview.review.maxDeliverySeconds}s'),
                     Text(
                         '${l10n.agentMandateExpiresAt}: ${preview.expiresAt.toLocal()}'),
                     const SizedBox(height: 8),
@@ -562,6 +667,19 @@ Widget _fact(BuildContext context, String label, String value) => Padding(
         const SizedBox(height: 3),
         SelectableText(value),
       ]),
+    );
+
+Widget _reviewFact(String label, String value) => Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Text('$label: $value'),
+    );
+
+Widget _missingContextCard(BuildContext context, String message) => Card(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(message),
+      ),
     );
 
 IconData _stateIcon(DsnMandateState state) => switch (state) {
