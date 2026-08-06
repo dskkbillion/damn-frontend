@@ -16,6 +16,7 @@ import '../../../core/dasn/data/dsn_provider_repository.dart';
 import '../../../core/dasn/data/dsn_provider_task_repository.dart';
 import '../../../core/dasn/data/dsn_delivery_decision_repository.dart';
 import '../../../core/dasn/data/dsn_mandate_repository.dart';
+import '../../../core/dasn/data/dsn_service_capability_repository.dart';
 import 'dsn_mandates_page.dart';
 
 class AgentRoutes {
@@ -40,6 +41,9 @@ class AgentRoutes {
 
   static DsnMandateRepository _mandateRepository() =>
       DioDsnMandateRepository(GetIt.instance<Dio>());
+
+  static DsnServiceCapabilityRepository _serviceCapabilityRepository() =>
+      DioDsnServiceCapabilityRepository(GetIt.instance<Dio>());
 
   /// Route-level safe injection point for a Buyer Agent handoff.  The sink is
   /// optional and receives only non-secret facts; it cannot supply or receive
@@ -67,7 +71,14 @@ class AgentRoutes {
           path: '/requests/new',
           name: 'humanRequestCreate',
           pageBuilder: (context, state) => state.buildSmartPage(
-            DsnHumanRequestPage(repository: _repository()),
+            DsnHumanRequestPage(
+              repository: _repository(),
+              capabilityRepository: _serviceCapabilityRepository(),
+              initialServiceId: int.tryParse(
+                    state.uri.queryParameters['serviceId'] ?? '',
+                  ) ??
+                  DioDsnServiceCapabilityRepository.defaultStagingServiceId,
+            ),
             name: 'humanRequestCreate',
             source: 'human_dasn_request_create',
           ),

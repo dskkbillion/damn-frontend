@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/dasn/data/dsn_service_capability_repository.dart';
+import '../../../core/dasn/domain/dsn_service_capability_models.dart';
 import '../data/agent_repository.dart';
 
 /// DS 0.2 HUMAN buyer ingress.
@@ -9,8 +11,16 @@ import '../data/agent_repository.dart';
 /// boundaries; no App callback writes an order directly.
 class DsnHumanRequestPage extends StatefulWidget {
   final AgentRepository repository;
+  final DsnServiceCapabilityRepository capabilityRepository;
+  final int initialServiceId;
 
-  const DsnHumanRequestPage({super.key, required this.repository});
+  const DsnHumanRequestPage({
+    super.key,
+    required this.repository,
+    required this.capabilityRepository,
+    this.initialServiceId =
+        DioDsnServiceCapabilityRepository.defaultStagingServiceId,
+  });
 
   @override
   State<DsnHumanRequestPage> createState() => _DsnHumanRequestPageState();
@@ -18,22 +28,89 @@ class DsnHumanRequestPage extends StatefulWidget {
 
 class _DsnHumanRequestPageState extends State<DsnHumanRequestPage> {
   final _formKey = GlobalKey<FormState>();
-  final _serviceController = TextEditingController(text: '581');
-  final _revisionController = TextEditingController(text: 'sha256:${'0' * 64}');
+  late final TextEditingController _serviceController;
   final _titleController = TextEditingController();
   final _briefController = TextEditingController();
   final _budgetController = TextEditingController();
   bool _busy = false;
+  bool _loadingCapability = false;
+  DsnServiceCapability? _capability;
+  int _capabilityLoadGeneration = 0;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _serviceController =
+        TextEditingController(text: widget.initialServiceId.toString());
+    // Resolve the initial catalog entry as soon as the page is mounted. The
+    // request button remains fail-closed until the server returns a complete
+    // capability and its revision.
+    Future<void>.microtask(_loadCapability);
+  }
 
   @override
   void dispose() {
     _serviceController.dispose();
-    _revisionController.dispose();
     _titleController.dispose();
     _briefController.dispose();
     _budgetController.dispose();
     super.dispose();
+  }
+
+  int? _serviceId() {
+    final value = int.tryParse(_serviceController.text.trim());
+    return value != null && value > 0 ? value : null;
+  }
+
+  Future<void> _loadCapability() async {
+    final serviceId = _serviceId();
+    if (serviceId == null) {
+      if (mounted) {
+        setState(() {
+          _capability = null;
+          _error = 'Use a positive numeric service ID';
+        });
+      }
+      return;
+    }
+    final generation = ++_capabilityLoadGeneration;
+    setState(() {
+      _loadingCapability = true;
+      _capability = null;
+      _error = null;
+    });
+    try {
+      final capability =
+          await widget.capabilityRepository.getServiceCapability(serviceId);
+      if (!mounted || generation != _capabilityLoadGeneration) return;
+      if (capability.serviceId != serviceId) {
+        throw const DsnServiceCapabilityFormatException(
+          'Capability response does not match the requested service',
+          code: 'CAPABILITY_ID_MISMATCH',
+        );
+      }
+      setState(() => _capability = capability);
+    } catch (error) {
+      if (mounted && generation == _capabilityLoadGeneration) {
+        setState(() {
+          _capability = null;
+          _error = error.toString();
+        });
+      }
+    } finally {
+      if (mounted && generation == _capabilityLoadGeneration) {
+        setState(() => _loadingCapability = false);
+      }
+    }
+  }
+
+  Future<DsnServiceCapability?> _ensureCapability() async {
+    final serviceId = _serviceId();
+    if (serviceId == null) return null;
+    if (_capability?.serviceId == serviceId) return _capability;
+    await _loadCapability();
+    return _capability?.serviceId == serviceId ? _capability : null;
   }
 
   Future<void> _create() async {
@@ -43,9 +120,16 @@ class _DsnHumanRequestPageState extends State<DsnHumanRequestPage> {
       _error = null;
     });
     try {
+      final capability = await _ensureCapability();
+      if (capability == null) {
+        throw const DsnServiceCapabilityFormatException(
+          'Load the server capability before creating a request',
+          code: 'CAPABILITY_REQUIRED',
+        );
+      }
       final draft = await widget.repository.createHumanRequest(
-        serviceId: int.parse(_serviceController.text.trim()),
-        capabilityRevision: _revisionController.text.trim(),
+        serviceId: capability.serviceId,
+        capabilityRevision: capability.revision,
         title: _titleController.text,
         brief: _briefController.text,
         budgetMaxMinor: int.tryParse(_budgetController.text.trim()),
@@ -87,25 +171,71 @@ class _DsnHumanRequestPageState extends State<DsnHumanRequestPage> {
               controller: _serviceController,
               decoration: const InputDecoration(labelText: 'Service ID'),
               keyboardType: TextInputType.number,
+              onChanged: (_) {
+                setState(() {
+                  ++_capabilityLoadGeneration;
+                  _loadingCapability = false;
+                  _capability = null;
+                  _error = null;
+                });
+              },
+              onFieldSubmitted: (_) => _loadCapability(),
               validator: (value) {
                 final error = _required(value, 'Service ID');
                 if (error != null) return error;
-                return int.tryParse(value!.trim()) == null
-                    ? 'Use a numeric service ID'
+                final serviceId = int.tryParse(value!.trim());
+                return serviceId == null || serviceId <= 0
+                    ? 'Use a positive numeric service ID'
                     : null;
               },
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _revisionController,
-              decoration: const InputDecoration(
-                labelText: 'Capability revision (sha256)',
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _busy || _loadingCapability ? null : _loadCapability,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Load server capability'),
               ),
-              validator: (value) => value != null &&
-                      RegExp(r'^sha256:[a-f0-9]{64}$').hasMatch(value.trim())
-                  ? null
-                  : 'Use sha256:<64 lowercase hex>',
             ),
+            const SizedBox(height: 12),
+            if (_loadingCapability)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(),
+              ),
+            if (_capability != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Server capability',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      Text(_capability!.title),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_capability!.amountMinor} ${_capability!.currency} · '
+                        '${_capability!.deliveryHours}h delivery · '
+                        '${_capability!.maxRevisions} revisions',
+                      ),
+                      const SizedBox(height: 4),
+                      SelectableText('Revision: ${_capability!.revision}'),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Card(
+                color: Theme.of(context).colorScheme.errorContainer,
+                child: const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'A current server capability is required. The request will not use a local or placeholder revision.',
+                  ),
+                ),
+              ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _titleController,
@@ -144,7 +274,10 @@ class _DsnHumanRequestPageState extends State<DsnHumanRequestPage> {
             ],
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: _busy ? null : _create,
+              key: const ValueKey<String>('create-human-request'),
+              onPressed: _busy || _loadingCapability || _capability == null
+                  ? null
+                  : _create,
               child: _busy
                   ? const SizedBox(
                       width: 18,
