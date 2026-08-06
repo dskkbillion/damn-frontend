@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -113,6 +115,40 @@ void main() {
           verifyNoMoreInteractions(mockUserInfoRepository);
           // Allow interactions with secure storage from _initializeAuthStatus in setUp
           // verifyNoMoreInteractions(mockSecureStorage);
+        },
+      );
+
+      test(
+        'should continue with the request when the network probe times out',
+        () async {
+          // The iOS simulator can leave internet_connection_checker pending.
+          // A bounded probe must not prevent the login request from starting.
+          final hangingProbe = Completer<bool>();
+          when(mockNetworkInfo.isConnected)
+              .thenAnswer((_) => hangingProbe.future);
+
+          final repo = AuthRepositoryImpl(
+            remoteDataSource: mockRemoteDataSource,
+            userInfoRepository: mockUserInfoRepository,
+            secureStorage: mockSecureStorage,
+            networkInfo: mockNetworkInfo,
+            tokenValidator: mockTokenValidator,
+            networkProbeTimeout: const Duration(milliseconds: 20),
+          );
+          when(mockRemoteDataSource.loginWithVerificationCode(any))
+              .thenAnswer((_) async => tAuthenticatedUserModel);
+          when(mockUserInfoRepository.fetchUserInfo(tToken))
+              .thenAnswer((_) async => const Right(tUserInfo));
+          when(mockSecureStorage.saveInt('user_id', tUserId))
+              .thenAnswer((_) async => Future.value());
+          when(mockSecureStorage.saveString('auth_token', tToken))
+              .thenAnswer((_) async => Future.value());
+
+          final result = await repo.loginWithVerificationCode(tCredentials);
+
+          expect(result, const Right(tAuthenticatedUser));
+          verify(mockRemoteDataSource.loginWithVerificationCode(tCredentials));
+          verify(mockUserInfoRepository.fetchUserInfo(tToken));
         },
       );
 

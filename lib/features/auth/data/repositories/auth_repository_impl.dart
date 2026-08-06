@@ -27,11 +27,14 @@ import 'package:dskk_flutter_refactor/core/services/background_refresh_service.d
     as: IAuthRepository) // Register as LazySingleton for the interface
 @injectable // Mark class for injectable generator
 class AuthRepositoryImpl implements IAuthRepository {
+  static const Duration _defaultNetworkProbeTimeout = Duration(seconds: 3);
+
   final AuthRemoteDataSource remoteDataSource;
   final ISecureStorageRepository secureStorage; // 注入安全存储
   final NetworkInfo networkInfo; // 注入网络状态检查
   final IUserInfoRepository userInfoRepository; // 注入 UserInfo Repository
   final TokenValidator tokenValidator;
+  final Duration networkProbeTimeout;
 
   final StreamController<AuthStatus> _statusController =
       StreamController<AuthStatus>.broadcast();
@@ -43,6 +46,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required this.networkInfo,
     required this.userInfoRepository, // 添加依赖
     required this.tokenValidator, // 添加依赖
+    this.networkProbeTimeout = _defaultNetworkProbeTimeout,
   }) {
     // 初始化时检查本地存储的认证状态
     _initializeAuthStatus();
@@ -109,31 +113,39 @@ class AuthRepositoryImpl implements IAuthRepository {
   // 辅助函数，用于执行需要网络的操作
   Future<Either<Failure, T>> _networkedOperation<T>(
       Future<T> Function() operation) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final result = await operation();
-        return Right(result);
-      } on ServerException catch (e) {
-        // TODO: 可以根据 e 的具体错误信息返回更具体的 Failure
-        AppLogger.d('ServerException in repository: ${e.message}');
-        // Check for unauthenticated errors specifically if needed
-        if (e is UnauthenticatedException) {
-          await _handleLogoutLocally(); // Ensure local state is cleared on auth errors
-          return Left(AuthenticationFailure(
-              message: e.message ?? 'Session expired or invalid'));
-        }
-        return Left(
-            ServerFailure(message: e.message ?? 'Unknown server error'));
-      } on CacheException catch (e) {
-        // 假设 SecureStorage 可能抛出
-        AppLogger.d('CacheException in repository: ${e.message}');
-        return Left(CacheFailure(message: e.message ?? 'Storage error'));
-      } catch (e) {
-        AppLogger.d('Unknown exception in repository: ${e.toString()}');
-        return const Left(UnknownFailure(message: 'An unknown error occurred'));
+    try {
+      final isConnected = await networkInfo.isConnected.timeout(
+        networkProbeTimeout,
+        onTimeout: () {
+          // Connectivity plugins can fail to answer on simulators. The HTTP
+          // client has its own timeout, so let it make the authoritative call.
+          AppLogger.d(
+              'Network connectivity probe timed out; proceeding with request.');
+          return true;
+        },
+      );
+      if (!isConnected) {
+        return const Left(NetworkFailure(message: 'No internet connection'));
       }
-    } else {
-      return const Left(NetworkFailure(message: 'No internet connection'));
+      final result = await operation();
+      return Right(result);
+    } on ServerException catch (e) {
+      // TODO: 可以根据 e 的具体错误信息返回更具体的 Failure
+      AppLogger.d('ServerException in repository: ${e.message}');
+      // Check for unauthenticated errors specifically if needed
+      if (e is UnauthenticatedException) {
+        await _handleLogoutLocally(); // Ensure local state is cleared on auth errors
+        return Left(AuthenticationFailure(
+            message: e.message ?? 'Session expired or invalid'));
+      }
+      return Left(ServerFailure(message: e.message ?? 'Unknown server error'));
+    } on CacheException catch (e) {
+      // 假设 SecureStorage 可能抛出
+      AppLogger.d('CacheException in repository: ${e.message}');
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      AppLogger.d('Unknown exception in repository: ${e.toString()}');
+      return const Left(UnknownFailure(message: 'An unknown error occurred'));
     }
   }
 
