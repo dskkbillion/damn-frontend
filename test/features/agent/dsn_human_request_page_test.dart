@@ -5,6 +5,7 @@ import 'package:dskk_flutter_refactor/features/agent/domain/agent_models.dart';
 import 'package:dskk_flutter_refactor/features/agent/presentation/dsn_human_request_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('loads the default staging capability and displays its revision',
@@ -47,6 +48,41 @@ void main() {
     expect(tester.widget<FilledButton>(button).onPressed, isNull);
     expect(find.textContaining('Capability is unavailable'), findsOneWidget);
   });
+
+  testWidgets('submits the loaded server revision to the canonical draft',
+      (tester) async {
+    final agentRepository = _FakeAgentRepository();
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, __) => DsnHumanRequestPage(
+            repository: agentRepository,
+            capabilityRepository: _FakeCapabilityRepository(_capability()),
+          ),
+        ),
+        GoRoute(
+          path: '/requests/:id/review',
+          builder: (_, __) => const SizedBox(key: ValueKey('review-route')),
+        ),
+      ],
+    );
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await tester.pumpAndSettle();
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(1), 'Human request');
+    await tester.enterText(fields.at(2), 'Human brief');
+    final button = find.byKey(const ValueKey<String>('create-human-request'));
+    await tester.scrollUntilVisible(button, 500,
+        scrollable: find.byType(Scrollable).first);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+
+    expect(agentRepository.createdServiceId, 582);
+    expect(agentRepository.createdCapabilityRevision, _hash('a'));
+    expect(find.byKey(const ValueKey('review-route')), findsOneWidget);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(home: child);
@@ -82,6 +118,9 @@ class _FakeCapabilityRepository implements DsnServiceCapabilityRepository {
 }
 
 class _FakeAgentRepository implements AgentRepository {
+  int? createdServiceId;
+  String? createdCapabilityRevision;
+
   @override
   Future<AgentRequestDraft> abandonRequest(int id) =>
       throw UnimplementedError();
@@ -101,8 +140,20 @@ class _FakeAgentRepository implements AgentRepository {
     required String title,
     required String brief,
     int? budgetMaxMinor,
-  }) =>
-      throw UnimplementedError();
+  }) async {
+    createdServiceId = serviceId;
+    createdCapabilityRevision = capabilityRevision;
+    return AgentRequestDraft(
+      id: 34,
+      serviceId: serviceId,
+      title: title,
+      brief: brief,
+      status: 'AWAITING_APP_REVIEW',
+      appReviewUrl: '/requests/34/review',
+      createdAt: DateTime(2026, 8, 7),
+      updatedAt: DateTime(2026, 8, 7),
+    );
+  }
 
   @override
   Future<void> denyAuthorization(String userCode) => throw UnimplementedError();
