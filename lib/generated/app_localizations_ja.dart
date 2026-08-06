@@ -5643,4 +5643,79 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get credit_purchase_status_delayed =>
       '支払い記録を引き続き確認しています。重複して購入しないでください。長時間反映されない場合やアプリストアで請求されていない場合は、サポートにお問い合わせください。';
+
+  @override
+  String get agentMandates => 'Agent 预授权';
+
+  @override
+  String get agentMandatesHint =>
+      '预授权是你在本 App 内审核的固定、有限授权；它不会共享你的登录凭证或 Agent 凭证。';
+
+  @override
+  String get agentCreateMandate => '创建预授权';
+
+  @override
+  String get agentMandateNoItems => '暂无预授权';
+
+  @override
+  String get agentMandateNoAgents => '请先连接一个活跃的 Agent，再创建预授权。';
+
+  @override
+  String get agentMandateTemplate => '固定模板';
+
+  @override
+  String get agentMandateAgent => '已连接的 Agent';
+
+  @override
+  String get agentMandateResource => '服务端资源引用';
+
+  @override
+  String get agentMandateResourceHint =>
+      '使用 DeepStream 提供的请求、已接受报价或 Commitment 引用。';
+
+  @override
+  String get agentMandateResourceVersion => '预期资源版本（可选）';
+
+  @override
+  String get agentMandateSpecHash => '预期规格哈希（可选）';
+
+  @override
+  String get agentMandateQuoteHash => '预期报价哈希（可选）';
+
+  @override
+  String get agentMandatePreview => '审核固定授权';
+
+  @override
+  String get agentMandateReviewTitle => '审核预授权';
+
+  @override
+  String get agentMandateConfirm => '确认预授权';
+
+  @override
+  String get agentMandateConfirmMessage =>
+      '确认后将为展示的 Agent 和服务端资源创建有限授权。Agent 无法自行扩大该授权。';
+
+  @override
+  String get agentMandateExpiresAt => '审核过期时间';
+
+  @override
+  String get agentMandateAllowedActions => '允许动作';
+
+  @override
+  String get agentMandateStatus => '状态';
+
+  @override
+  String get agentMandateVersion => '预授权版本';
+
+  @override
+  String get agentMandateHash => '预授权哈希';
+
+  @override
+  String get agentMandateRevokedAt => '撤销时间';
+
+  @override
+  String get agentMandateRevoke => '撤销预授权';
+
+  @override
+  String get agentMandateRevokeConfirm => '现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。';
 }

@@ -44,6 +44,7 @@ void main() {
         '/requests/new',
         '/requests/:id/review',
         '/requests/:id/order',
+        '/agent/mandates',
         '/agent/tasks/:taskTraceId',
         '/provider/tasks',
       ]),

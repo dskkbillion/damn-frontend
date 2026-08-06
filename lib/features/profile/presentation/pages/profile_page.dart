@@ -250,6 +250,13 @@ class _ProfilePageState extends State<ProfilePage> {
                         },
                       ),
                       MenuItem(
+                        icon: Icons.verified_user_outlined,
+                        text: appLocalizations.agentMandates,
+                        onTap: () {
+                          context.push('/agent/mandates');
+                        },
+                      ),
+                      MenuItem(
                         icon: Icons.assignment_outlined,
                         text: appLocalizations.agentRequestDrafts,
                         onTap: () {

@@ -5842,4 +5842,82 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get credit_purchase_status_delayed =>
       'Payment verification is still in progress. Do not purchase again. If the credits do not arrive or the app store has not charged you after an extended period, contact support.';
+
+  @override
+  String get agentMandates => 'Agent mandates';
+
+  @override
+  String get agentMandatesHint =>
+      'A mandate is a fixed, limited authorization you review in this app. It never shares your login or Agent credentials.';
+
+  @override
+  String get agentCreateMandate => 'Create mandate';
+
+  @override
+  String get agentMandateNoItems => 'No mandates yet';
+
+  @override
+  String get agentMandateNoAgents =>
+      'Connect an active Agent before creating a mandate.';
+
+  @override
+  String get agentMandateTemplate => 'Fixed template';
+
+  @override
+  String get agentMandateAgent => 'Connected Agent';
+
+  @override
+  String get agentMandateResource => 'Server resource reference';
+
+  @override
+  String get agentMandateResourceHint =>
+      'Use the request, accepted offer, or commitment reference supplied by DeepStream.';
+
+  @override
+  String get agentMandateResourceVersion =>
+      'Expected resource version (optional)';
+
+  @override
+  String get agentMandateSpecHash => 'Expected specification hash (optional)';
+
+  @override
+  String get agentMandateQuoteHash => 'Expected quote hash (optional)';
+
+  @override
+  String get agentMandatePreview => 'Review fixed authorization';
+
+  @override
+  String get agentMandateReviewTitle => 'Review mandate';
+
+  @override
+  String get agentMandateConfirm => 'Confirm mandate';
+
+  @override
+  String get agentMandateConfirmMessage =>
+      'Confirming creates a limited authorization for the shown Agent and server resource. It cannot be expanded from the Agent.';
+
+  @override
+  String get agentMandateExpiresAt => 'Review expires at';
+
+  @override
+  String get agentMandateAllowedActions => 'Allowed actions';
+
+  @override
+  String get agentMandateStatus => 'Status';
+
+  @override
+  String get agentMandateVersion => 'Mandate version';
+
+  @override
+  String get agentMandateHash => 'Mandate hash';
+
+  @override
+  String get agentMandateRevokedAt => 'Revoked at';
+
+  @override
+  String get agentMandateRevoke => 'Revoke mandate';
+
+  @override
+  String get agentMandateRevokeConfirm =>
+      'Revoke this authorization now? New Agent operations will be blocked; historical facts remain intact.';
 }

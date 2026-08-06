@@ -15,6 +15,8 @@ import 'provider_task_center_page.dart';
 import '../../../core/dasn/data/dsn_provider_repository.dart';
 import '../../../core/dasn/data/dsn_provider_task_repository.dart';
 import '../../../core/dasn/data/dsn_delivery_decision_repository.dart';
+import '../../../core/dasn/data/dsn_mandate_repository.dart';
+import 'dsn_mandates_page.dart';
 
 class AgentRoutes {
   AgentRoutes._();
@@ -35,6 +37,9 @@ class AgentRoutes {
 
   static DsnDeliveryDecisionRepository _deliveryDecisionRepository() =>
       DioDsnDeliveryDecisionRepository(GetIt.instance<Dio>());
+
+  static DsnMandateRepository _mandateRepository() =>
+      DioDsnMandateRepository(GetIt.instance<Dio>());
 
   /// Route-level safe injection point for a Buyer Agent handoff.  The sink is
   /// optional and receives only non-secret facts; it cannot supply or receive
@@ -93,6 +98,18 @@ class AgentRoutes {
             ),
             name: 'agentOrderFlow',
             source: 'agent_dasn_buyer_order',
+          ),
+        ),
+        GoRoute(
+          path: '/agent/mandates',
+          name: 'agentMandates',
+          pageBuilder: (context, state) => state.buildSmartPage(
+            DsnMandatesPage(
+              repository: _mandateRepository(),
+              agentRepository: _repository(),
+            ),
+            name: 'agentMandates',
+            source: 'app_dasn_mandates',
           ),
         ),
         GoRoute(

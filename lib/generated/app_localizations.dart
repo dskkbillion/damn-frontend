@@ -10363,6 +10363,150 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'付款记录仍在核对中，请勿重复购买；若长期未到账或应用商店未扣款，请联系客服核对。'**
   String get credit_purchase_status_delayed;
+
+  /// No description provided for @agentMandates.
+  ///
+  /// In zh, this message translates to:
+  /// **'Agent 预授权'**
+  String get agentMandates;
+
+  /// No description provided for @agentMandatesHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'预授权是你在本 App 内审核的固定、有限授权；它不会共享你的登录凭证或 Agent 凭证。'**
+  String get agentMandatesHint;
+
+  /// No description provided for @agentCreateMandate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建预授权'**
+  String get agentCreateMandate;
+
+  /// No description provided for @agentMandateNoItems.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无预授权'**
+  String get agentMandateNoItems;
+
+  /// No description provided for @agentMandateNoAgents.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先连接一个活跃的 Agent，再创建预授权。'**
+  String get agentMandateNoAgents;
+
+  /// No description provided for @agentMandateTemplate.
+  ///
+  /// In zh, this message translates to:
+  /// **'固定模板'**
+  String get agentMandateTemplate;
+
+  /// No description provided for @agentMandateAgent.
+  ///
+  /// In zh, this message translates to:
+  /// **'已连接的 Agent'**
+  String get agentMandateAgent;
+
+  /// No description provided for @agentMandateResource.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务端资源引用'**
+  String get agentMandateResource;
+
+  /// No description provided for @agentMandateResourceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用 DeepStream 提供的请求、已接受报价或 Commitment 引用。'**
+  String get agentMandateResourceHint;
+
+  /// No description provided for @agentMandateResourceVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'预期资源版本（可选）'**
+  String get agentMandateResourceVersion;
+
+  /// No description provided for @agentMandateSpecHash.
+  ///
+  /// In zh, this message translates to:
+  /// **'预期规格哈希（可选）'**
+  String get agentMandateSpecHash;
+
+  /// No description provided for @agentMandateQuoteHash.
+  ///
+  /// In zh, this message translates to:
+  /// **'预期报价哈希（可选）'**
+  String get agentMandateQuoteHash;
+
+  /// No description provided for @agentMandatePreview.
+  ///
+  /// In zh, this message translates to:
+  /// **'审核固定授权'**
+  String get agentMandatePreview;
+
+  /// No description provided for @agentMandateReviewTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'审核预授权'**
+  String get agentMandateReviewTitle;
+
+  /// No description provided for @agentMandateConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认预授权'**
+  String get agentMandateConfirm;
+
+  /// No description provided for @agentMandateConfirmMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认后将为展示的 Agent 和服务端资源创建有限授权。Agent 无法自行扩大该授权。'**
+  String get agentMandateConfirmMessage;
+
+  /// No description provided for @agentMandateExpiresAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'审核过期时间'**
+  String get agentMandateExpiresAt;
+
+  /// No description provided for @agentMandateAllowedActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许动作'**
+  String get agentMandateAllowedActions;
+
+  /// No description provided for @agentMandateStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'状态'**
+  String get agentMandateStatus;
+
+  /// No description provided for @agentMandateVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'预授权版本'**
+  String get agentMandateVersion;
+
+  /// No description provided for @agentMandateHash.
+  ///
+  /// In zh, this message translates to:
+  /// **'预授权哈希'**
+  String get agentMandateHash;
+
+  /// No description provided for @agentMandateRevokedAt.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销时间'**
+  String get agentMandateRevokedAt;
+
+  /// No description provided for @agentMandateRevoke.
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销预授权'**
+  String get agentMandateRevoke;
+
+  /// No description provided for @agentMandateRevokeConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'现在撤销此授权？新的 Agent 操作将被阻断，历史事实仍会保留。'**
+  String get agentMandateRevokeConfirm;
 }
 
 class _AppLocalizationsDelegate
