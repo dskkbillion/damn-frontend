@@ -408,10 +408,11 @@ class DioDsnProviderRepository implements DsnProviderRepository {
       );
     }
     final uploadRef = _requiredString(data, 'uploadRef');
-    if (uploadRef != expectedUploadRef ||
+    if (metadata.resourceId != expectedUploadRef ||
+        uploadRef != expectedUploadRef ||
         !RegExp(r'^upl_[A-Za-z0-9]+$').hasMatch(uploadRef)) {
       throw const DsnProviderApiException(
-        'Artifact upload response uploadRef does not match the request',
+        'Artifact upload response lineage does not match the request',
         code: 'UPLOAD_REF_LINEAGE_CONFLICT',
       );
     }

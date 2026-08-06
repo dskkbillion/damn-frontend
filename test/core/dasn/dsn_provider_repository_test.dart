@@ -466,6 +466,7 @@ void main() {
             data: _machine(
               state: 'ARTIFACT_UPLOADED',
               resourceVersion: 1,
+              resourceId: 'upl_fixture1',
               data: <String, dynamic>{
                 'uploadRef': 'upl_fixture1',
                 'status': 'UPLOADED',
@@ -517,6 +518,7 @@ void main() {
             data: _machine(
               state: 'ARTIFACT_UPLOADED',
               resourceVersion: 1,
+              resourceId: 'upl_fixture1',
               data: <String, dynamic>{
                 'uploadRef': 'upl_fixture1',
                 'status': 'UPLOADED',
@@ -564,6 +566,7 @@ void main() {
             data: _machine(
               state: 'ARTIFACT_UPLOADED',
               resourceVersion: 2,
+              resourceId: 'upl_fixture1',
               data: <String, dynamic>{
                 'uploadRef': 'upl_fixture1',
                 'status': 'UPLOADED',
@@ -616,6 +619,7 @@ void main() {
             data: _machine(
               state: 'ARTIFACT_UPLOADED',
               resourceVersion: 1,
+              resourceId: 'upl_fixture1',
               data: <String, dynamic>{
                 'uploadRef': 'upl_fixture1',
                 'status': 'UPLOADED',
@@ -646,6 +650,54 @@ void main() {
       expect(result.size, bytes.length);
       expect(result.mimeType, 'text/plain');
     });
+
+    test('fails closed when upload envelope resource lineage drifts',
+        () async {
+      final dio = Dio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'ARTIFACT_UPLOADED',
+              resourceVersion: 1,
+              resourceId: 'upl_other',
+              data: <String, dynamic>{
+                'uploadRef': 'upl_fixture1',
+                'status': 'UPLOADED',
+                'sha256':
+                    'sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+                'size': 3,
+                'mimeType': 'text/plain',
+              },
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderRepository(dio).uploadArtifact(
+          '1001',
+          uploadRef: 'upl_fixture1',
+          source: const DsnArtifactUploadSource(
+            fileName: 'fixture.txt',
+            bytes: <int>[97, 98, 99],
+            size: 3,
+            mimeType: 'text/plain',
+          ),
+          commitmentHash: _hash('d'),
+          submissionNo: 1,
+          ifMatchVersion: 1,
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'UPLOAD_REF_LINEAGE_CONFLICT',
+          ),
+        ),
+      );
+    });
   });
 }
 
@@ -665,6 +717,7 @@ Map<String, dynamic> _machine({
   required String state,
   required Map<String, dynamic> data,
   int resourceVersion = 2,
+  String resourceId = 'resource-1',
 }) {
   return <String, dynamic>{
     'schemaVersion': '0.1',
@@ -672,7 +725,7 @@ Map<String, dynamic> _machine({
     'taskTraceId': 'ttr_1234567890abcdef',
     'operationTraceId': 'trace_test_1234',
     'resource': <String, dynamic>{
-      'id': 'resource-1',
+      'id': resourceId,
       'version': resourceVersion,
       'hash': _hash('b'),
     },
