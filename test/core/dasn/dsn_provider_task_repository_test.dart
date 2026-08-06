@@ -54,6 +54,10 @@ void main() {
     expect(task.requestId, 33);
     expect(task.offer?.offerVersion, 1);
     expect(task.offer?.acceptance?.wireValue, 'ACCEPT');
+    expect(task.fixedLine?.capabilityId, 'translation');
+    expect(task.fixedLine?.amountMinor, 100);
+    expect(task.fixedLine?.quoteHash, _hash('b'));
+    expect(task.fixedLine?.maxRevisions, 2);
     expect(task.commitment, isNull);
   });
 
@@ -161,6 +165,23 @@ Map<String, dynamic> _detailEnvelope() => <String, dynamic>{
           'amountMinor': 100,
           'currency': 'CREDITS',
           'status': 'ACTIVE',
+        },
+        'fixedLine': <String, dynamic>{
+          'capability': 'translation',
+          'provider': 'provider-1',
+          'buyer': 'buyer-1',
+          'variantId': 'standard',
+          'quantity': 1,
+          'capacity': null,
+          'currency': 'CREDITS',
+          'amountMinor': 100,
+          'quoteHash': _hash('b'),
+          'deliverySeconds': 3600,
+          'maxRevisions': 2,
+          'outputTypes': <String>['FILE'],
+          'slaHash': _hash('c'),
+          'catalogRevision': _hash('d'),
+          'fixedLineHash': _hash('e'),
         },
         'acceptance': <String, dynamic>{
           'acceptanceId': 'accept-1',

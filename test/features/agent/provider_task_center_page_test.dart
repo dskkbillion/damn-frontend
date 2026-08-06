@@ -35,14 +35,21 @@ void main() {
       expect(provider.offerCalls, 0);
       expect(provider.acceptanceCalls, 0);
 
-      await _enter(tester, 'Capability ID', 'translation');
-      await _enter(tester, 'Variant ID', 'standard');
-      await _enter(tester, '积分金额', '120');
+      expect(find.text('服务器固定目录事实（只读）'), findsOneWidget);
+      expect(find.textContaining('translation / standard'), findsOneWidget);
+      expect(find.textContaining('120 / CREDITS'), findsOneWidget);
       await _tapText(tester, '提交 ProviderOffer');
       await tester.pumpAndSettle();
 
       expect(provider.offerCalls, 1);
       expect(provider.lastOffer?.offerVersion, 1);
+      expect(provider.lastOffer?.capabilityId, 'translation');
+      expect(provider.lastOffer?.variantId, 'standard');
+      expect(provider.lastOffer?.quantity, 1);
+      expect(provider.lastOffer?.amountMinor, 120);
+      expect(provider.lastOffer?.currency, 'CREDITS');
+      expect(provider.lastOffer?.quoteHash, _hash('b'));
+      expect(provider.lastOffer?.maxRevisions, 2);
       expect(find.textContaining('报价已记录'), findsOneWidget);
       expect(find.text('确认接单'), findsOneWidget);
 
@@ -61,6 +68,44 @@ void main() {
       expect(find.text('订单 Commitment 尚未建立，当前不能提交交付。'), findsOneWidget);
     },
   );
+
+  testWidgets('blocks a first offer until server fixed facts are available',
+      (tester) async {
+    final tasks = _FakeProviderTaskRepository()..includeFixedLine = false;
+    final provider = _FakeProviderRepository();
+    await tester.pumpWidget(_app(DsnProviderTaskCenterPage(
+      taskRepository: tasks,
+      providerRepository: provider,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('服务器尚未提供固定目录事实；请刷新任务后再提交报价。'), findsOneWidget);
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, '提交 ProviderOffer'),
+    );
+    expect(button.onPressed, isNull);
+    expect(provider.offerCalls, 0);
+  });
+
+  testWidgets('rejects a nonpositive server amount before posting',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final tasks = _FakeProviderTaskRepository()..fixedLineAmount = 0;
+    final provider = _FakeProviderRepository();
+    await tester.pumpWidget(_app(DsnProviderTaskCenterPage(
+      taskRepository: tasks,
+      providerRepository: provider,
+    )));
+    await tester.pumpAndSettle();
+
+    await _tapText(tester, '提交 ProviderOffer');
+    await tester.pumpAndSettle();
+    expect(provider.offerCalls, 0);
+    expect(find.text('服务器固定目录事实无效，请刷新任务后再试。'), findsOneWidget);
+  });
 
   testWidgets(
     'requires refreshed Commitment and explicit confirmation before delivery',
@@ -116,13 +161,6 @@ void main() {
 
 Widget _app(Widget child) => MaterialApp(home: child);
 
-Future<void> _enter(WidgetTester tester, String label, String value) async {
-  final field = find.widgetWithText(TextField, label);
-  expect(field, findsOneWidget);
-  await tester.ensureVisible(field);
-  await tester.enterText(field, value);
-}
-
 Future<void> _tapText(WidgetTester tester, String label) async {
   final finder = find.text(label);
   expect(finder, findsOneWidget);
@@ -141,6 +179,8 @@ Future<void> _tapText(WidgetTester tester, String label) async {
 class _FakeProviderTaskRepository implements DsnProviderTaskRepository {
   bool includeCommitment = false;
   bool includeOffer = false;
+  bool includeFixedLine = true;
+  int fixedLineAmount = 120;
 
   @override
   Future<DsnProviderTaskPage> listAssignedTasks({
@@ -164,6 +204,25 @@ class _FakeProviderTaskRepository implements DsnProviderTaskRepository {
         title: 'Provider task',
         brief: 'A fixed brief',
         status: includeCommitment ? 'COMMITTED' : 'SUBMITTED',
+        fixedLine: includeFixedLine
+            ? DsnProviderFixedCatalogLine(
+                fixedLineHash: _hash('d'),
+                capabilityId: 'translation',
+                providerId: 'provider-1',
+                buyerId: 'buyer-1',
+                variantId: 'standard',
+                quantity: 1,
+                capacity: null,
+                currency: 'CREDITS',
+                amountMinor: fixedLineAmount,
+                quoteHash: _hash('b'),
+                deliverySeconds: 3600,
+                maxRevisions: 2,
+                outputTypes: const <String>['FILE'],
+                slaHash: _hash('e'),
+                catalogRevision: _hash('f'),
+              )
+            : null,
         offer: includeOffer
             ? DsnProviderOfferSnapshot(
                 offerId: 'offer-1',

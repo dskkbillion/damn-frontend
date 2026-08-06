@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -49,11 +46,6 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
   final Map<String, DsnDeliveryResult> _deliveryResults = {};
   final Map<String, DsnArtifactUploadResult> _uploadResults = {};
 
-  final _capabilityController = TextEditingController();
-  final _variantController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _currencyController = TextEditingController(text: 'CREDITS');
-  final _quantityController = TextEditingController(text: '1');
   final _expiryHoursController = TextEditingController(text: '24');
   final _commitmentHashController = TextEditingController();
   DsnArtifactUploadSource? _selectedArtifact;
@@ -67,11 +59,6 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
   @override
   void dispose() {
     for (final controller in <TextEditingController>[
-      _capabilityController,
-      _variantController,
-      _amountController,
-      _currencyController,
-      _quantityController,
       _expiryHoursController,
       _commitmentHashController,
     ]) {
@@ -163,22 +150,23 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
   }
 
   Future<void> _submitOffer(DsnProviderTask task) async {
-    final capabilityId = _capabilityController.text.trim();
-    final variantId = _variantController.text.trim();
-    final currency = _currencyController.text.trim().toUpperCase();
-    final quantity = int.tryParse(_quantityController.text.trim());
-    final amount = int.tryParse(_amountController.text.trim());
+    final fixedLine = task.fixedLine;
     final expiryHours = int.tryParse(_expiryHoursController.text.trim());
-    if (capabilityId.isEmpty ||
-        variantId.isEmpty ||
-        quantity == null ||
-        quantity < 1 ||
-        amount == null ||
-        amount < 0 ||
-        currency.isEmpty ||
-        expiryHours == null ||
-        expiryHours < 1) {
-      setState(() => _error = '请填写有效的能力、版本、数量、积分金额和有效期。');
+    if (fixedLine == null) {
+      setState(() => _error = '服务器尚未返回固定目录事实，请刷新任务后再提交报价。');
+      return;
+    }
+    if (fixedLine.amountMinor < 1 ||
+        fixedLine.quantity < 1 ||
+        fixedLine.capacity != null ||
+        fixedLine.currency != 'CREDITS' ||
+        !_isHash(fixedLine.quoteHash) ||
+        !_isHash(fixedLine.fixedLineHash)) {
+      setState(() => _error = '服务器固定目录事实无效，请刷新任务后再试。');
+      return;
+    }
+    if (expiryHours == null || expiryHours < 1) {
+      setState(() => _error = '请填写有效的报价有效期。');
       return;
     }
     final offerVersion = (_offerResults[task.requestId]?.offerVersion ??
@@ -188,24 +176,18 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     final expiresAt = DateTime.now().toUtc().add(
           Duration(hours: expiryHours),
         );
-    final quoteHash = _quoteHash(
-      capabilityId: capabilityId,
-      variantId: variantId,
-      quantity: quantity,
-      amountMinor: amount,
-      currency: currency,
-      expiresAt: expiresAt,
-    );
     final input = DsnProviderOfferInput(
       offerVersion: offerVersion,
       specHash: task.specHash,
-      quoteHash: quoteHash,
-      capabilityId: capabilityId,
-      variantId: variantId,
-      quantity: quantity,
-      amountMinor: amount,
-      currency: currency,
+      quoteHash: fixedLine.quoteHash,
+      capabilityId: fixedLine.capabilityId,
+      variantId: fixedLine.variantId,
+      quantity: fixedLine.quantity,
+      capacity: fixedLine.capacity,
+      amountMinor: fixedLine.amountMinor,
+      currency: fixedLine.currency,
       expiresAt: expiresAt,
+      maxRevisions: fixedLine.maxRevisions,
     );
     await _runBusy(() async {
       final result = await widget.providerRepository.submitOffer(
@@ -582,6 +564,7 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     final offerResult = _offerResults[task.requestId];
     final acceptanceResult = _acceptanceResults[task.requestId];
     final existingAcceptance = task.offer?.acceptance;
+    final fixedLine = task.fixedLine;
     final canAccept = offerResult != null || task.offer != null;
     final delivery = task.commitment == null
         ? null
@@ -601,23 +584,19 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
             const Divider(height: 24),
             Text('提交报价', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
-            _field(_capabilityController, 'Capability ID'),
-            _field(_variantController, 'Variant ID'),
-            Row(
-              children: [
-                Expanded(
-                    child: _field(_amountController, '积分金额', numeric: true)),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: _field(_quantityController, '数量', numeric: true)),
-              ],
-            ),
-            _field(_currencyController, '币种（当前建议 CREDITS）'),
+            if (fixedLine == null)
+              const Text('服务器尚未提供固定目录事实；请刷新任务后再提交报价。')
+            else ...[
+              _fixedLineFacts(fixedLine),
+              const SizedBox(height: 6),
+            ],
             _field(_expiryHoursController, '报价有效期（小时）', numeric: true),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _busy ? null : () => _submitOffer(task),
+                onPressed: _busy || fixedLine == null
+                    ? null
+                    : () => _submitOffer(task),
                 icon: const Icon(Icons.request_quote_outlined),
                 label:
                     Text(offerResult == null ? '提交 ProviderOffer' : '提交新版本报价'),
@@ -740,23 +719,28 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     );
   }
 
-  String _quoteHash({
-    required String capabilityId,
-    required String variantId,
-    required int quantity,
-    required int amountMinor,
-    required String currency,
-    required DateTime expiresAt,
-  }) {
-    final canonical = <String, dynamic>{
-      'amountMinor': amountMinor,
-      'capabilityId': capabilityId,
-      'currency': currency,
-      'expiresAt': expiresAt.toUtc().toIso8601String(),
-      'quantity': quantity,
-      'variantId': variantId,
-    };
-    return 'sha256:${sha256.convert(utf8.encode(jsonEncode(canonical)))}';
+  Widget _fixedLineFacts(DsnProviderFixedCatalogLine line) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('服务器固定目录事实（只读）'),
+        const SizedBox(height: 4),
+        _fact('能力 / 变体', '${line.capabilityId} / ${line.variantId}'),
+        _fact('价格 / 币种', '${line.amountMinor} / ${line.currency}'),
+        _fact('数量 / 容量', '${line.quantity} / ${line.capacity ?? '无'}'),
+        _fact('最大修改次数', '${line.maxRevisions}'),
+        _fact('交付窗口', '${line.deliverySeconds} 秒'),
+        _fact('目录版本', line.catalogRevision),
+        _fact('固定行哈希', line.fixedLineHash),
+      ],
+    );
+  }
+
+  Widget _fact(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Text('$label：$value'),
+    );
   }
 
   bool _isHash(String value) =>
