@@ -159,10 +159,12 @@ void main() {
   test('abandons a human request through the canonical App route', () async {
     final dio = Dio();
     String? seenTrace;
+    final seenKeys = <String?>[];
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         expect(options.path, '/app/v1/requests/34/abandon');
         seenTrace = options.headers['X-Operation-Trace-Id']?.toString();
+        seenKeys.add(options.headers['Idempotency-Key']?.toString());
         handler.resolve(Response(
           requestOptions: options,
           statusCode: 200,
@@ -195,10 +197,15 @@ void main() {
       },
     ));
 
-    final result = await DioAgentRepository(dio).abandonRequest(34);
+    final repository = DioAgentRepository(dio);
+    final result = await repository.abandonRequest(34);
+    final replay = await repository.abandonRequest(34);
 
     expect(result.id, 34);
     expect(result.status, 'ABANDONED');
+    expect(replay.id, result.id);
+    expect(replay.status, result.status);
+    expect(seenKeys, <String?>['app-abandon:34:v1', 'app-abandon:34:v1']);
     expect(seenTrace, startsWith('trace-app-request-abandon-'));
   });
 }

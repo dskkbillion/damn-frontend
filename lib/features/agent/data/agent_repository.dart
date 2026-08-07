@@ -218,7 +218,10 @@ class DioAgentRepository implements AgentRepository {
         await _request(
           () => dio.post(
             '/app/v1/requests/$id/abandon',
-            options: _traceOptions('request-abandon'),
+            options: Options(headers: <String, dynamic>{
+              'Idempotency-Key': 'app-abandon:$id:v1',
+              'X-Operation-Trace-Id': 'trace-app-request-abandon-${_uuid.v4()}',
+            }),
           ),
           machineResponse: true,
         ),
