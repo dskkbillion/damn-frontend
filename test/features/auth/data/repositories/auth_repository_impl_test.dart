@@ -119,6 +119,63 @@ void main() {
       );
 
       test(
+        'waits for startup storage initialization before starting login',
+        () async {
+          final initialUserIdRead = Completer<int?>();
+          final loginStarted = Completer<void>();
+          final events = <String>[];
+
+          when(mockSecureStorage.getInt('user_id'))
+              .thenAnswer((_) => initialUserIdRead.future);
+          when(mockSecureStorage.getString('auth_token'))
+              .thenAnswer((_) async => null);
+          when(mockSecureStorage.delete(any)).thenAnswer((invocation) async {
+            events.add('delete:${invocation.positionalArguments.first}');
+          });
+          when(mockSecureStorage.deleteCommonUserId())
+              .thenAnswer((_) async {});
+          when(mockRemoteDataSource.loginWithVerificationCode(any))
+              .thenAnswer((_) async {
+            loginStarted.complete();
+            return tAuthenticatedUserModel;
+          });
+          when(mockUserInfoRepository.fetchUserInfo(tToken))
+              .thenAnswer((_) async => const Right(tUserInfo));
+          when(mockSecureStorage.saveInt('user_id', tUserId))
+              .thenAnswer((_) async {
+            events.add('save:user_id');
+          });
+          when(mockSecureStorage.saveString('auth_token', tToken))
+              .thenAnswer((_) async {
+            events.add('save:auth_token');
+          });
+
+          final repo = AuthRepositoryImpl(
+            remoteDataSource: mockRemoteDataSource,
+            userInfoRepository: mockUserInfoRepository,
+            secureStorage: mockSecureStorage,
+            networkInfo: mockNetworkInfo,
+            tokenValidator: mockTokenValidator,
+          );
+
+          final loginFuture = repo.loginWithVerificationCode(tCredentials);
+          await Future<void>.delayed(Duration.zero);
+
+          expect(loginStarted.isCompleted, isFalse);
+          verifyNever(mockRemoteDataSource.loginWithVerificationCode(any));
+
+          // Let the constructor's initial read finish. Its cleanup must happen
+          // before login writes the new credentials.
+          initialUserIdRead.complete(null);
+          final result = await loginFuture;
+
+          expect(result, const Right(tAuthenticatedUser));
+          expect(events.indexOf('delete:user_id'), lessThan(events.indexOf('save:user_id')));
+          expect(loginStarted.isCompleted, isTrue);
+        },
+      );
+
+      test(
         'should continue with the request when the network probe times out',
         () async {
           // The iOS simulator can leave internet_connection_checker pending.

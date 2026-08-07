@@ -39,6 +39,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   final StreamController<AuthStatus> _statusController =
       StreamController<AuthStatus>.broadcast();
   AuthenticatedUser? _currentUser;
+  late final Future<void> _authInitialization;
 
   AuthRepositoryImpl({
     required this.remoteDataSource,
@@ -49,7 +50,10 @@ class AuthRepositoryImpl implements IAuthRepository {
     this.networkProbeTimeout = _defaultNetworkProbeTimeout,
   }) {
     // 初始化时检查本地存储的认证状态
-    _initializeAuthStatus();
+    // Keep startup storage cleanup/validation ahead of any login or logout
+    // mutation. Without this barrier, a slow initial read can finish after a
+    // successful login and clear the newly persisted credentials.
+    _authInitialization = _initializeAuthStatus();
   }
 
   // 初始化认证状态
@@ -152,6 +156,11 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<Either<Failure, AuthenticatedUser>> loginWithVerificationCode(
       VerificationCodeCredentials credentials) async {
+    // The constructor starts an async storage read. Wait for it before
+    // writing credentials so its "no existing session" cleanup cannot race
+    // with this login.
+    await _authInitialization;
+
     // Step 1: Call login API to get the token model
     final loginResult = await _networkedOperation(
         () => remoteDataSource.loginWithVerificationCode(credentials));
@@ -248,6 +257,8 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<Either<Failure, void>> logout() async {
+    // Keep logout's cleanup ordered with the same startup barrier as login.
+    await _authInitialization;
     // Logout is now primarily a local operation
     await _handleLogoutLocally();
     // Since there's no backend call confirmed, always return success locally
