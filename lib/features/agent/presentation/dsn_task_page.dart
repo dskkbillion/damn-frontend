@@ -357,7 +357,18 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
     final zh = Localizations.localeOf(context).languageCode == 'zh';
     final decisionResult = _decisionResult;
     final decisionError = _decisionError;
-    if (!fact.decisionAvailable) {
+    // A decision response is authoritative for this exact evidence version
+    // even if the subsequent projection read is briefly stale.  Keep the
+    // final-accept/dispute controls frozen locally until the receipt catches
+    // up, but do not carry a result over to a newer delivery submission.
+    final localDecision = _decisionForFact(fact);
+    final effectiveDecision = fact.finalDecision ?? localDecision?.action;
+    final effectiveDisputeOpen = fact.disputeOpen ||
+        effectiveDecision == DsnDeliveryDecisionAction.openDispute;
+    final decisionAvailable = fact.paymentCaptured &&
+        !effectiveDisputeOpen &&
+        effectiveDecision != DsnDeliveryDecisionAction.accept;
+    if (!decisionAvailable) {
       return Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -366,7 +377,7 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
                 ? (zh
                     ? '付款尚未确认入账，暂不能验收或发起争议。'
                     : 'Payment is not captured; delivery decisions are unavailable.')
-                : fact.disputeOpen
+                : effectiveDisputeOpen
                     ? (zh
                         ? '当前交付已进入争议，验收操作已冻结。'
                         : 'This delivery is disputed; acceptance is frozen.')
@@ -447,6 +458,18 @@ class _DsnTaskPageState extends State<DsnTaskPage> {
         ),
       ),
     );
+  }
+
+  DsnDeliveryDecisionResult? _decisionForFact(DsnCurrentDeliveryFact fact) {
+    final result = _decisionResult;
+    if (result == null ||
+        result.orderId != fact.orderId ||
+        result.deliveryId != fact.deliveryId ||
+        result.submissionNo != fact.submissionNo ||
+        result.commitmentVersion != fact.commitmentVersion) {
+      return null;
+    }
+    return result;
   }
 
   Future<void> _submitDecision(

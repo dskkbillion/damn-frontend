@@ -184,6 +184,55 @@ void main() {
     expect(find.text('Request revision'), findsNothing);
     expect(find.text('Open dispute'), findsNothing);
   });
+
+  testWidgets(
+      'freezes final acceptance while the receipt projection catches up',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    // The task read intentionally remains stale after the decision response;
+    // the App must not briefly expose a second final-accept action while the
+    // append-only receipt projection catches up.
+    final repository = _FakeDasnTaskRepository(_view(
+      waitingOn: 'PRINCIPAL',
+      receipt: {
+        'state': 'AWAITING_ACCEPTANCE',
+        'source': 'DSN_APPEND_ONLY',
+        'orderId': 88,
+        'commitmentVersion': 4,
+        'fundsDisposition': 'CAPTURED',
+        'disputeOpen': false,
+        'latestEvidence': {
+          'deliveryId': 'del-2',
+          'commitmentVersion': 4,
+          'submissionNo': 2,
+          'evidenceHash': _hash('a'),
+        },
+      },
+    ));
+    final decisions = _FakeDsnDeliveryDecisionRepository();
+
+    await tester.pumpWidget(_app(DsnTaskPage(
+      repository: repository,
+      decisionRepository: decisions,
+      taskTraceId: 'ttr_1234567890abcdef',
+    )));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Accept delivery'));
+    await tester.tap(find.text('Accept delivery'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+
+    expect(decisions.inputs.single.decision, DsnDeliveryDecisionAction.accept);
+    expect(
+        find.text('This delivery has already been accepted.'), findsOneWidget);
+    expect(find.text('Accept delivery'), findsNothing);
+    expect(find.text('Request revision'), findsNothing);
+    expect(find.text('Open dispute'), findsNothing);
+  });
 }
 
 Widget _app(Widget child) => MaterialApp(

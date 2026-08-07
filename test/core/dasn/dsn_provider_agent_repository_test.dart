@@ -231,6 +231,102 @@ void main() {
         ),
       );
     });
+
+    test('rejects a ProviderAcceptance response with HUMAN provenance',
+        () async {
+      final dio = _agentDio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'PROVIDER_ACCEPTED',
+              resourceVersion: 2,
+              data: <String, dynamic>{
+                'acceptanceId': 'accept-human',
+                'offerId': 'offer-human',
+                'offerVersion': 2,
+                'specHash': _hash('a'),
+                'quoteHash': _hash('b'),
+                'acceptance': 'ACCEPT',
+                'actorType': 'HUMAN',
+              },
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderAgentRepository(dio).submitAcceptance(
+          33,
+          acceptance: DsnProviderAcceptanceInput(
+            offerVersion: 2,
+            specHash: _hash('a'),
+            quoteHash: _hash('b'),
+            acceptance: DsnProviderAcceptance.accept,
+          ),
+          ifMatchVersion: 2,
+          idempotencyKey: 'agent-provider-accept:33:human:v1',
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'PROVIDER_AGENT_ACTOR_MISMATCH',
+          ),
+        ),
+      );
+    });
+
+    test('rejects Agent delivery when the response says HUMAN', () async {
+      final dio = _agentDio();
+      dio.interceptors.add(InterceptorsWrapper(
+        onRequest: (options, handler) {
+          handler.resolve(Response(
+            requestOptions: options,
+            data: _machine(
+              state: 'DELIVERY_SUBMITTED',
+              resourceVersion: 1,
+              data: <String, dynamic>{
+                'deliveryId': 'delivery-human',
+                'orderId': '1001',
+                'commitmentId': 'commit-1',
+                'commitmentVersion': 1,
+                'submissionNo': 1,
+                'evidenceHash': _hash('c'),
+                'actorType': 'HUMAN',
+              },
+            ),
+          ));
+        },
+      ));
+
+      await expectLater(
+        DioDsnProviderAgentRepository(dio).submitDelivery(
+          '1001',
+          delivery: DsnDeliveryInput(
+            expectedCommitmentHash: _hash('d'),
+            submissionNo: 1,
+            artifacts: <DsnDeliveryArtifactInput>[
+              const DsnDeliveryArtifactInput(
+                uploadRef: 'upl_agent1',
+                size: 3,
+                mimeType: 'text/plain',
+              ),
+            ],
+          ),
+          ifMatchVersion: 1,
+          idempotencyKey: 'agent-provider-delivery:1001:human:v1',
+        ),
+        throwsA(
+          isA<DsnProviderApiException>().having(
+            (error) => error.code,
+            'code',
+            'PROVIDER_AGENT_ACTOR_MISMATCH',
+          ),
+        ),
+      );
+    });
   });
 }
 
