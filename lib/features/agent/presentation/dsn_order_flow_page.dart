@@ -298,6 +298,15 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
     if (!mounted) return;
     DsnBuyerAgentHandoff? restoredHandoff;
     if (_isBuyerAgentRequest(request)) {
+      final principalRef = _principalRef(request);
+      if (principalRef == null) {
+        // An Agent-origin task may only resume through the same buyer
+        // principal that the Trusted App bound before handing off.  Do not
+        // let malformed/legacy data reach the non-null assertion below: a
+        // missing binding is a recoverable protocol error, not an App crash.
+        _blockTaskRecovery('Buyer Agent handoff 事实缺少 principalRef，请刷新任务后重试');
+        return;
+      }
       try {
         restoredHandoff = DsnBuyerAgentHandoff(
           requestId: request.id,
@@ -307,7 +316,7 @@ class _DsnOrderFlowPageState extends State<DsnOrderFlowPage> {
             confirmation: restoredConfirmation,
           ),
           status: DsnBuyerAgentHandoffStatus.commitmentCreated,
-          principalRef: _principalRef(request)!,
+          principalRef: principalRef,
         );
       } on ArgumentError {
         _blockTaskRecovery('Buyer Agent handoff 事实不匹配，请刷新任务后重试');

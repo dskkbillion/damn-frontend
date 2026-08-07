@@ -266,6 +266,30 @@ void main() {
   });
 
   testWidgets(
+      'fails closed instead of crashing when restored Agent task lacks principalRef',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: null,
+      ),
+      orderRepository: _FakeOrderRepository(),
+      taskRepository: _FakeTaskRepository(),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('订单事实未安全恢复'), findsOneWidget);
+    expect(find.textContaining('principalRef'), findsOneWidget);
+    expect(find.text('创建未支付订单'), findsNothing);
+    expect(find.text('使用积分支付'), findsNothing);
+  });
+
+  testWidgets(
       'buyer Agent stops at a credential-free handoff and never creates an App order',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
