@@ -214,8 +214,15 @@ class DioAgentRepository implements AgentRepository {
 
   @override
   Future<AgentRequestDraft> abandonRequest(int id) async =>
-      AgentRequestDraft.fromJson(
-          await _request(() => dio.post('/api/agent-requests/$id/abandon')));
+      _parseCanonicalRequest(
+        await _request(
+          () => dio.post(
+            '/app/v1/requests/$id/abandon',
+            options: _traceOptions('request-abandon'),
+          ),
+          machineResponse: true,
+        ),
+      );
 
   AgentRequestDraft _parseCanonicalRequest(dynamic value) {
     if (value is! Map) {

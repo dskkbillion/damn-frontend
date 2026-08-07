@@ -155,4 +155,50 @@ void main() {
     expect(result.single.requesterActorType, 'HUMAN');
     expect(seenTrace, startsWith('trace-app-request-list-'));
   });
+
+  test('abandons a human request through the canonical App route', () async {
+    final dio = Dio();
+    String? seenTrace;
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        expect(options.path, '/app/v1/requests/34/abandon');
+        seenTrace = options.headers['X-Operation-Trace-Id']?.toString();
+        handler.resolve(Response(
+          requestOptions: options,
+          statusCode: 200,
+          data: <String, dynamic>{
+            'protocolVersion': 'dasn/0.1',
+            'dsVersion': 'DS 0.2',
+            'schemaVersion': '0.1',
+            'state': 'ABANDONED',
+            'taskTraceId': 'ttr_human_1234567890',
+            'operationTraceId': 'trace-test',
+            'resource': <String, dynamic>{
+              'id': '34',
+              'version': 0,
+              'hash': 'sha256:${'a' * 64}',
+            },
+            'nextActions': <dynamic>[],
+            'data': <String, dynamic>{
+              'requestId': '34',
+              'taskTraceId': 'ttr_human_1234567890',
+              'version': 0,
+              'specHash': 'sha256:${'a' * 64}',
+              'serviceId': '581',
+              'title': 'Human request',
+              'brief': 'Human brief',
+              'status': 'ABANDONED',
+              'appReviewUrl': '/requests/34/review',
+            },
+          },
+        ));
+      },
+    ));
+
+    final result = await DioAgentRepository(dio).abandonRequest(34);
+
+    expect(result.id, 34);
+    expect(result.status, 'ABANDONED');
+    expect(seenTrace, startsWith('trace-app-request-abandon-'));
+  });
 }
