@@ -7,6 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('surfaces Provider task contract errors instead of hiding them',
+      (tester) async {
+    final tasks = _ThrowingProviderTaskRepository();
+    await tester.pumpWidget(_app(DsnProviderTaskCenterPage(
+      taskRepository: tasks,
+      providerRepository: _FakeProviderRepository(),
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Provider task hash specHash is invalid'), findsOneWidget);
+    expect(find.text('Provider 任务暂时无法加载，请稍后重试。'), findsNothing);
+    expect(find.text('重试'), findsOneWidget);
+  });
+
   testWidgets(
     'records ProviderOffer and ProviderAcceptance separately before Commitment',
     (tester) async {
@@ -174,6 +188,25 @@ void main() {
       expect(find.textContaining('交付已记录：delivery-1'), findsOneWidget);
     },
   );
+}
+
+class _ThrowingProviderTaskRepository implements DsnProviderTaskRepository {
+  @override
+  Future<DsnProviderTaskPage> listAssignedTasks({
+    String? cursor,
+    int limit = 20,
+  }) async {
+    throw const DsnProviderTaskFormatException(
+      'Provider task hash specHash is invalid',
+    );
+  }
+
+  @override
+  Future<DsnProviderTask> getAssignedTask(String taskTraceId) async {
+    throw const DsnProviderTaskFormatException(
+      'Provider task hash specHash is invalid',
+    );
+  }
 }
 
 Widget _app(Widget child) => MaterialApp(home: child);

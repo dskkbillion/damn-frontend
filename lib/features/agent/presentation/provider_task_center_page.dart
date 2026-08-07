@@ -113,6 +113,9 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
   }
 
   String _errorText(Object error) {
+    if (error is DsnProviderTaskFormatException) {
+      return error.message;
+    }
     if (error is DsnProviderTaskApiException) {
       if (error.code == 'PROVIDER_TASK_READ_NOT_AVAILABLE') {
         return 'Provider 任务读取接口尚未启用；未回退到买方需求列表。';
