@@ -69,6 +69,23 @@ void main() {
     },
   );
 
+  testWidgets('renders the current accepted offer as a read-only Provider fact',
+      (tester) async {
+    final tasks = _FakeProviderTaskRepository()..includeOffer = true;
+    final provider = _FakeProviderRepository();
+    await tester.pumpWidget(_app(DsnProviderTaskCenterPage(
+      taskRepository: tasks,
+      providerRepository: provider,
+    )));
+    await tester.pumpAndSettle();
+
+    expect(find.text('接单状态：ACCEPT · HUMAN'), findsOneWidget);
+    expect(find.text('确认接单'), findsNothing);
+    expect(find.text('拒单'), findsNothing);
+    expect(find.text('请先提交报价，或刷新获取已有报价。'), findsNothing);
+    expect(provider.acceptanceCalls, 0);
+  });
+
   testWidgets('blocks a first offer until server fixed facts are available',
       (tester) async {
     final tasks = _FakeProviderTaskRepository()..includeFixedLine = false;

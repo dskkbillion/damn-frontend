@@ -565,7 +565,19 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
     final acceptanceResult = _acceptanceResults[task.requestId];
     final existingAcceptance = task.offer?.acceptance;
     final fixedLine = task.fixedLine;
-    final canAccept = offerResult != null || task.offer != null;
+    // An acceptance is a fact about one specific offer version.  Once the
+    // current version has an acceptance, keep the human Provider UI read-only
+    // for that version; a later offer revision gets its own acceptance action.
+    // This prevents duplicate responsibility actions while preserving the
+    // same Core/lineage when a Provider deliberately submits a new quote.
+    final currentOfferVersion =
+        offerResult?.offerVersion ?? task.offer?.offerVersion;
+    final acceptanceForCurrentOffer = acceptanceResult != null &&
+            acceptanceResult.offerVersion == currentOfferVersion
+        ? acceptanceResult.acceptance
+        : task.offer?.offerVersion == currentOfferVersion
+            ? existingAcceptance
+            : null;
     final delivery = task.commitment == null
         ? null
         : _deliveryResults[task.commitment!.orderId];
@@ -609,9 +621,9 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
             const Divider(height: 24),
             Text('接单事实', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
-            if (!canAccept)
+            if (offerResult == null && task.offer == null)
               const Text('请先提交报价，或刷新获取已有报价。')
-            else ...[
+            else if (acceptanceForCurrentOffer == null) ...[
               Row(
                 children: [
                   Expanded(
@@ -635,14 +647,18 @@ class _DsnProviderTaskCenterPageState extends State<DsnProviderTaskCenterPage> {
                   ),
                 ],
               ),
-              if (acceptanceResult != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                    '接单状态：${acceptanceResult.acceptance.wireValue} · ${acceptanceResult.actorType}'),
-              ] else if (existingAcceptance != null) ...[
-                const SizedBox(height: 8),
-                Text('接单状态：${existingAcceptance.wireValue} · HUMAN'),
-              ],
+            ],
+            if (acceptanceForCurrentOffer != null &&
+                acceptanceResult != null &&
+                acceptanceResult.offerVersion == currentOfferVersion) ...[
+              const SizedBox(height: 8),
+              Text(
+                  '接单状态：${acceptanceResult.acceptance.wireValue} · ${acceptanceResult.actorType}'),
+            ] else if (acceptanceForCurrentOffer != null &&
+                existingAcceptance != null &&
+                task.offer?.offerVersion == currentOfferVersion) ...[
+              const SizedBox(height: 8),
+              Text('接单状态：${existingAcceptance.wireValue} · HUMAN'),
             ],
             const Divider(height: 24),
             Text('提交交付', style: Theme.of(context).textTheme.titleSmall),
