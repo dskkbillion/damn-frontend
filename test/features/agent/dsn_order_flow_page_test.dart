@@ -370,6 +370,40 @@ void main() {
   });
 
   testWidgets(
+      'buyer Agent payment after Commitment uses the shared App payment route',
+      (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final orders = _FakeOrderRepository();
+    await tester.pumpWidget(_app(DsnOrderFlowPage(
+      requestRepository: _FakeRequestRepository(
+        requesterActorType: 'AGENT',
+        principalRef: 'member:buyer',
+      ),
+      orderRepository: orders,
+      taskRepository: _FakeTaskRepository(),
+      requestId: 9,
+    )));
+    await tester.pumpAndSettle();
+
+    // The external Buyer Agent has already created the Commitment. The
+    // Trusted App now owns the explicit payment confirmation and must use the
+    // same App/member payment adapter as a human buyer.
+    await tester.tap(find.widgetWithText(FilledButton, '使用积分支付'));
+    await tester.pumpAndSettle();
+    expect(find.text('确认支付'), findsNWidgets(2));
+    expect(orders.paymentCreated, isFalse);
+    await tester.tap(find.text('确认支付').last);
+    await tester.pumpAndSettle();
+
+    expect(orders.paymentCreated, isTrue);
+    expect(orders.paymentIfMatchVersion, 2);
+    expect(find.text('支付已完成'), findsOneWidget);
+  });
+
+  testWidgets(
       'keeps Agent handoff fail-closed when the task projection cannot be read',
       (tester) async {
     tester.view.physicalSize = const Size(800, 1600);
