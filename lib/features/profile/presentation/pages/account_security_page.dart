@@ -11,6 +11,7 @@ import 'package:dskk_flutter_refactor/core/utils/image_upload_helper.dart';
 import 'package:dskk_flutter_refactor/generated/app_localizations.dart';
 import 'package:dskk_flutter_refactor/core/config/theme/app_colors.dart';
 import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart';
 import '../pages/bind_contact_page.dart';
 import '../bloc/bind_contact_cubit.dart';
 
@@ -45,7 +46,7 @@ class _AccountSecurityPageState extends State<AccountSecurityPage> {
               if (state is ProfileLoggedOut) {
                 // 登出成功后导航到登录页面，并清除导航栈
                 print('【退出登录】用户已成功登出，正在重定向到登录页面...');
-                context.go('/auth/login');
+                context.go(AuthRoutes.loginPath);
               }
             },
           ),

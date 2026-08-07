@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// 此测试通过静态分析源码确保 go() 没有在子页面导航场景被误用。
 void main() {
-  // 合法 go() 场景（参考）：登出清栈 /auth/login；Tab 切换 /home /chat /profile
+  // 合法 go() 场景（参考）：登出清栈 /login；Tab 切换 /home /chat /profile
   // /ai-docs /ai_chat /dev /dev_menu；canPop 兜底 /seller /orders；
   // 支付清栈 /profile/orders?status=...；跨 Shell /chat/refactored（#349）。
 
@@ -20,7 +20,7 @@ void main() {
       final content = file.readAsStringSync();
       final goMatches = RegExp(r'context\.go\(').allMatches(content);
 
-      // 只允许 1 处 go: 登出到 /auth/login
+      // 只允许 1 处 go: 登出到已注册的 AuthRoutes.loginPath
       for (final match in goMatches) {
         final lineStart = content.lastIndexOf('\n', match.start) + 1;
         final lineEnd = content.indexOf('\n', match.end);
@@ -28,9 +28,28 @@ void main() {
         // Skip commented-out lines
         if (line.startsWith('//')) continue;
         expect(
-          line.contains('/auth/login'),
+          line.contains('AuthRoutes.loginPath'),
           isTrue,
           reason: 'profile_page.dart has go() not for logout: $line',
+        );
+      }
+    });
+
+    test('logout redirects use the registered login route', () {
+      for (final path in [
+        'lib/features/profile/presentation/pages/profile_page.dart',
+        'lib/features/profile/presentation/pages/account_security_page.dart',
+      ]) {
+        final content = File(path).readAsStringSync();
+        expect(
+          content.contains("context.go('/auth/login')"),
+          isFalse,
+          reason: '$path uses an unregistered /auth/login route',
+        );
+        expect(
+          content.contains('AuthRoutes.loginPath'),
+          isTrue,
+          reason: '$path should redirect through AuthRoutes.loginPath',
         );
       }
     });

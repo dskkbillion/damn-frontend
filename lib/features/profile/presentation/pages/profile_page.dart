@@ -15,6 +15,7 @@ import '../widgets/order_status_section.dart';
 import '../widgets/profile_menu_section.dart';
 import 'package:dskk_flutter_refactor/core/widgets/skeleton/skeleton_page.dart';
 import 'package:dskk_flutter_refactor/core/widgets/glass_surface.dart';
+import 'package:dskk_flutter_refactor/features/auth/presentation/routes/auth_routes.dart';
 import '../routes/profile_routes.dart'; // 导入路由常量
 
 class ProfilePage extends StatefulWidget {
@@ -52,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // 处理登出后的逻辑，导航到登录页面
             AppLogger.d(
                 '[ProfilePage] User logged out, redirecting to login page.');
-            context.go('/auth/login');
+            context.go(AuthRoutes.loginPath);
           } else if (state is ProfileUpdated) {
             // 用户信息更新成功，状态已包含最新数据
             AppLogger.d(
