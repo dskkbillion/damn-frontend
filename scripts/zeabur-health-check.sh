@@ -86,6 +86,27 @@ public_check() {
   fi
 }
 
+semantic_health_check() {
+  local name="$1"
+  local url="$2"
+  local body_file
+  body_file="$(mktemp)"
+  local code
+  code=$(curl -sS -o "${body_file}" -w "%{http_code}" --max-time 15 "${url}" 2>/dev/null || echo "000")
+  local status
+  status=$(jq -r 'if (type == "object") then (.status // empty) else empty end' "${body_file}" 2>/dev/null || true)
+  local legacy_code
+  legacy_code=$(jq -r 'if (type == "object") then (.code // empty) else empty end' "${body_file}" 2>/dev/null || true)
+  rm -f "${body_file}"
+  if [[ "${code}" == "200" && "${status}" == "UP" && -z "${legacy_code}" ]]; then
+    echo "${GREEN}✅${RESET} ${name} HTTP 200 status=UP"
+    PASS=$((PASS+1))
+  else
+    echo "${RED}❌${RESET} ${name} HTTP ${code} status=${status:-missing} legacyCode=${legacy_code:-none}"
+    FAIL=$((FAIL+1))
+  fi
+}
+
 curl_check() {
   local name="$1"
   local url="$2"
@@ -158,7 +179,8 @@ echo ""
 
 echo "${CYAN}2. 官方入口健康探测${RESET}"
 public_check "GET  /healthz               " "$GATEWAY_URL/healthz" "200"
-public_check "GET  /prod-api/healthz      " "$BACKEND_URL/healthz" "200"
+semantic_health_check "GET  backend liveness      " "$BACKEND_URL/actuator/health/liveness"
+semantic_health_check "GET  backend readiness     " "$BACKEND_URL/actuator/health/readiness"
 echo ""
 
 if [[ -n "$TOKEN" ]]; then
